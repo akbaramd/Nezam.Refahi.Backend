@@ -459,6 +459,9 @@ public class ReservationDomainServiceTests
 
     #region CompleteReservationAsync Tests
 
+    // این تست بررسی می‌کند که آیا متد CompleteReservationAsync به درستی رزرو را تکمیل می‌کند
+    // انتظار داریم که وضعیت رزرو به حالت تکمیل شده تغییر کند و رزرو در مخزن به‌روزرسانی شود
+    // این تست برای اطمینان از عملکرد صحیح سرویس دامنه در تکمیل رزرو انجام می‌شود
     [Fact]
     public async Task CompleteReservationAsync_Completes_Reservation()
     {
@@ -478,6 +481,9 @@ public class ReservationDomainServiceTests
         Assert.Equal(ReservationStatus.Completed, _reservation.Status);
     }
 
+    // این تست بررسی می‌کند که آیا متد CompleteReservationAsync زمانی که رزرو وجود ندارد خطای مناسب پرتاب می‌کند
+    // انتظار داریم که اگر رزرو با شناسه مورد نظر پیدا نشود، خطای InvalidOperationException پرتاب شود
+    // این تست برای اطمینان از مدیریت صحیح حالت‌های خطا در سرویس دامنه انجام می‌شود
     [Fact]
     public async Task CompleteReservationAsync_Throws_Exception_When_Reservation_Not_Found()
     {
