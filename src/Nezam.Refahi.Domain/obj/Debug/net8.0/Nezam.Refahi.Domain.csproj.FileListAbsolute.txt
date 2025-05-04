@@ -9,3 +9,4 @@ D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Domain\obj\Debug\
 D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Domain\obj\Debug\net8.0\refint\Nezam.Refahi.Domain.dll
 D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Domain\obj\Debug\net8.0\Nezam.Refahi.Domain.pdb
 D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Domain\obj\Debug\net8.0\ref\Nezam.Refahi.Domain.dll
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Domain\obj\Debug\net8.0\Nezam.Refahi.Domain.sourcelink.json

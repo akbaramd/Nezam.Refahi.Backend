@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Nezam.Refahi.Domain.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d107f0b9f8853110bf51cd11d227fa038625aaf7")]
 [assembly: System.Reflection.AssemblyProductAttribute("Nezam.Refahi.Domain.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Nezam.Refahi.Domain.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
