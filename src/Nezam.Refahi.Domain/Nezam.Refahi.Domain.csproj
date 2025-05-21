@@ -4,4 +4,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="BoundedContexts\Payment\Aggregates\" />
+    <Folder Include="BoundedContexts\Payment\Entities\" />
+    <Folder Include="BoundedContexts\Payment\Repositories\" />
+    <Folder Include="BoundedContexts\Payment\Services\" />
+  </ItemGroup>
 </Project>
