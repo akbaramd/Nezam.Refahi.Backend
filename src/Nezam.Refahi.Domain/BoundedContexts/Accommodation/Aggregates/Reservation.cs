@@ -29,9 +29,11 @@ public class Reservation : BaseEntity
     
     public IReadOnlyCollection<Guest> Guests => _guests.AsReadOnly();
     
-    // Payment tracking
-    public Guid? PaymentId { get; private set; }
-    public DateTimeOffset? PaymentDate { get; private set; }
+    // Payment tracking - References to Payment Bounded Context
+    public Guid? LastPaymentTransactionId { get; private set; }
+    public DateTimeOffset? LastPaymentDate { get; private set; }
+    public decimal PaidAmount { get; private set; }
+    public bool IsFullyPaid => PaidAmount >= TotalPrice.Amount;
     
     // Reservation locking
     private DateTimeOffset _lockExpirationTime;
@@ -180,8 +182,8 @@ public class Reservation : BaseEntity
         if (TotalPrice.IsFree)
             throw new InvalidOperationException("Cannot record payment for a free reservation");
             
-        PaymentId = paymentId;
-        PaymentDate = DateTimeOffset.UtcNow;
+        LastPaymentTransactionId = paymentId;
+        LastPaymentDate = DateTimeOffset.UtcNow;
         ConfirmReservation();
     }
     
@@ -266,11 +268,12 @@ public class Reservation : BaseEntity
         // and update the remaining balance. For simplicity, we'll just record the payment
         // and set the status to PendingPayment if not already.
         
-        PaymentId = paymentId;
-        PaymentDate = DateTimeOffset.UtcNow;
+        LastPaymentTransactionId = paymentId;
+        LastPaymentDate = DateTimeOffset.UtcNow;
+        PaidAmount += amount.Amount;
         
         // If the amount equals or exceeds the total price, confirm the reservation
-        if (amount.Amount >= TotalPrice.Amount)
+        if (PaidAmount >= TotalPrice.Amount)
         {
             ConfirmReservation();
         }
@@ -303,4 +306,84 @@ public class Reservation : BaseEntity
     }
     
     public int GuestCount => _guests.Count;
+
+    /// <summary>
+    /// Processes a partial payment for the reservation
+    /// </summary>
+    /// <param name="paymentId">The ID of the payment transaction</param>
+    /// <param name="amount">The amount paid</param>
+    public void ProcessPartialPayment(Guid paymentId, Money amount)
+    {
+        if (amount == null)
+            throw new ArgumentNullException(nameof(amount), "Payment amount cannot be null");
+        
+        if (amount.Amount <= 0)
+            throw new ArgumentException("Payment amount must be greater than zero", nameof(amount));
+        
+        // Record the payment
+        LastPaymentTransactionId = paymentId;
+        LastPaymentDate = DateTimeOffset.UtcNow;
+        PaidAmount += amount.Amount;
+        
+        // If the amount equals or exceeds the total price, confirm the reservation
+        if (PaidAmount >= TotalPrice.Amount)
+        {
+            ConfirmReservation();
+        }
+        else if (Status != ReservationStatus.PendingPayment && Status != ReservationStatus.Confirmed)
+        {
+            // Update status to pending payment if not already
+            Status = ReservationStatus.PendingPayment;
+        }
+        
+        UpdateModifiedAt();
+    }
+
+    /// <summary>
+    /// Records a refund transaction for the reservation
+    /// </summary>
+    /// <param name="refundTransactionId">The ID of the refund transaction</param>
+    /// <param name="refundAmount">The amount refunded</param>
+    public void RecordRefund(Guid refundTransactionId, Money refundAmount)
+    {
+        if (refundAmount == null)
+            throw new ArgumentNullException(nameof(refundAmount), "Refund amount cannot be null");
+        
+        if (refundAmount.Amount <= 0)
+            throw new ArgumentException("Refund amount must be greater than zero", nameof(refundAmount));
+        
+        if (refundAmount.Amount > PaidAmount)
+            throw new InvalidOperationException("Refund amount cannot exceed the total paid amount");
+        
+        // Record the refund
+        LastPaymentTransactionId = refundTransactionId;
+        LastPaymentDate = DateTimeOffset.UtcNow;
+        PaidAmount -= refundAmount.Amount;
+        
+        // Update the reservation status if needed
+        if (Status == ReservationStatus.Confirmed && !IsFullyPaid)
+        {
+            Status = ReservationStatus.PendingPayment;
+        }
+        
+        UpdateModifiedAt();
+    }
+    
+    /// <summary>
+    /// Marks a payment as failed
+    /// </summary>
+    /// <param name="paymentTransactionId">The ID of the failed payment transaction</param>
+    /// <param name="failureReason">The reason for the payment failure</param>
+    public void MarkPaymentAsFailed(Guid paymentTransactionId, string failureReason)
+    {
+        if (string.IsNullOrWhiteSpace(failureReason))
+            throw new ArgumentException("Failure reason cannot be empty", nameof(failureReason));
+        
+        // Record the failed payment
+        LastPaymentTransactionId = paymentTransactionId;
+        LastPaymentDate = DateTimeOffset.UtcNow;
+        
+        // No need to change status, just record the information
+        UpdateModifiedAt();
+    }
 }

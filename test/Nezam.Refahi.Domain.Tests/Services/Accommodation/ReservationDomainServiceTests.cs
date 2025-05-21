@@ -353,7 +353,7 @@ public class ReservationDomainServiceTests
         Assert.True(result);
         _mockReservationRepository.Verify(r => r.GetByIdAsync(_reservation.Id), Times.Once);
         _mockReservationRepository.Verify(r => r.UpdateAsync(_reservation), Times.Once);
-        Assert.Equal(paymentId, _reservation.PaymentId);
+        Assert.Equal(paymentId, _reservation.LastPaymentTransactionId);
         Assert.Equal(ReservationStatus.Confirmed, _reservation.Status);
     }
 

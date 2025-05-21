@@ -105,3 +105,4 @@ D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\test\Nezam.Refahi.Domain.Tests\bin
 D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\test\Nezam.Refahi.Domain.Tests\bin\Debug\net8.0\System.Diagnostics.EventLog.dll
 D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\test\Nezam.Refahi.Domain.Tests\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Diagnostics.EventLog.Messages.dll
 D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\test\Nezam.Refahi.Domain.Tests\bin\Debug\net8.0\runtimes\win\lib\net6.0\System.Diagnostics.EventLog.dll
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\test\Nezam.Refahi.Domain.Tests\obj\Debug\net8.0\Nezam.Refahi.Domain.Tests.sourcelink.json

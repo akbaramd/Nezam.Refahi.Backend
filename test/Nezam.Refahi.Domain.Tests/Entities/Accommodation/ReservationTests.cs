@@ -273,8 +273,8 @@ public class ReservationTests
         reservation.RecordPayment(paymentId);
 
         // Assert
-        Assert.Equal(paymentId, reservation.PaymentId);
-        Assert.NotNull(reservation.PaymentDate);
+        Assert.Equal(paymentId, reservation.LastPaymentTransactionId);
+        Assert.NotNull(reservation.LastPaymentDate);
         Assert.Equal(ReservationStatus.Confirmed, reservation.Status);
     }
 
