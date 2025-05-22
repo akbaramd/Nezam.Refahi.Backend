@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Nezam.Refahi.Application.Common.Interfaces;
 using Nezam.Refahi.Infrastructure.Persistence;
 
 namespace Nezam.Refahi.Infrastructure.IoC;
@@ -30,7 +31,7 @@ public static class PersistenceExtensions
             
             options.UseSqlite(connectionString);
         });
-        
+        services.AddScoped<IUnitOfWork, EfUnitOfWork>();
         return services;
     }
-}
+} 

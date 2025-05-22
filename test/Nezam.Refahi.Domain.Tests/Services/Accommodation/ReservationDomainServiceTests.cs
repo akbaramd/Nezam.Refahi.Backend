@@ -156,11 +156,16 @@ public class ReservationDomainServiceTests
         _mockHotelRepository.Setup(r => r.IsHotelAvailableAsync(_hotel.Id, _dateRange))
             .ReturnsAsync(true);
         
-        _mockReservationRepository.Setup(r => r.AddAsync(It.IsAny<Reservation>()))
+        _mockReservationRepository.Setup(r => r.AddAsync(It.IsAny<Reservation>(),true))
             .Returns(Task.CompletedTask);
 
         // Act
-        var result = await _service.CreateReservationAsync(_hotel.Id, _guest, _dateRange, "Special request");
+        // Pass all parameters explicitly to avoid expression tree optional parameter issue
+        var result = await _service.CreateReservationAsync(
+            hotelId: _hotel.Id,
+            primaryGuest: _guest,
+            stayPeriod: _dateRange,
+            specialRequests: "Special request");
 
         // Assert
         Assert.NotNull(result);
@@ -172,7 +177,7 @@ public class ReservationDomainServiceTests
         // Remove this verification since IsHotelAvailableForReservationAsync calls GetByIdAsync internally
         // _mockHotelRepository.Verify(r => r.GetByIdAsync(_hotel.Id), Times.Once);
         _mockHotelRepository.Verify(r => r.IsHotelAvailableAsync(_hotel.Id, _dateRange), Times.Once);
-        _mockReservationRepository.Verify(r => r.AddAsync(It.IsAny<Reservation>()), Times.Once);
+        _mockReservationRepository.Verify(r => r.AddAsync(It.IsAny<Reservation>(),true), Times.Once);
     }
 
     // این تست بررسی می‌کند که آیا متد CreateReservationAsync زمانی که هتل وجود ندارد خطای مناسب پرتاب می‌کند
@@ -192,7 +197,7 @@ public class ReservationDomainServiceTests
         
         Assert.Contains("not found", exception.Message);
         _mockHotelRepository.Verify(r => r.GetByIdAsync(nonExistentHotelId), Times.Once);
-        _mockReservationRepository.Verify(r => r.AddAsync(It.IsAny<Reservation>()), Times.Never);
+        _mockReservationRepository.Verify(r => r.AddAsync(It.IsAny<Reservation>(),true), Times.Never);
     }
 
     // این تست بررسی می‌کند که آیا متد CreateReservationAsync زمانی که هتل غیرفعال است خطای مناسب پرتاب می‌کند
@@ -219,7 +224,7 @@ public class ReservationDomainServiceTests
         
         Assert.Contains("not available", exception.Message);
         _mockHotelRepository.Verify(r => r.GetByIdAsync(unavailableHotel.Id), Times.Once);
-        _mockReservationRepository.Verify(r => r.AddAsync(It.IsAny<Reservation>()), Times.Never);
+        _mockReservationRepository.Verify(r => r.AddAsync(It.IsAny<Reservation>(),true), Times.Never);
     }
 
     // این تست بررسی می‌کند که آیا متد CreateReservationAsync زمانی که بازه زمانی در دسترس نیست خطای مناسب پرتاب می‌کند
@@ -239,7 +244,7 @@ public class ReservationDomainServiceTests
         Assert.Contains("not available for the specified date range", exception.Message);
         _mockHotelRepository.Verify(r => r.GetByIdAsync(_hotel.Id), Times.Exactly(2));
         _mockHotelRepository.Verify(r => r.IsHotelAvailableAsync(_hotel.Id, _dateRange), Times.Once);
-        _mockReservationRepository.Verify(r => r.AddAsync(It.IsAny<Reservation>()), Times.Never);
+        _mockReservationRepository.Verify(r => r.AddAsync(It.IsAny<Reservation>(),true), Times.Never);
     }
 
     // این تست بررسی می‌کند که آیا متد CreateReservationAsync زمانی که مهمان null است خطای مناسب پرتاب می‌کند
@@ -252,7 +257,7 @@ public class ReservationDomainServiceTests
         await Assert.ThrowsAsync<ArgumentNullException>(() => 
             _service.CreateReservationAsync(_hotel.Id, null, _dateRange));
         
-        _mockReservationRepository.Verify(r => r.AddAsync(It.IsAny<Reservation>()), Times.Never);
+        _mockReservationRepository.Verify(r => r.AddAsync(It.IsAny<Reservation>(),true), Times.Never);
     }
 
     // این تست بررسی می‌کند که آیا متد CreateReservationAsync زمانی که بازه زمانی null است خطای مناسب پرتاب می‌کند
@@ -265,7 +270,7 @@ public class ReservationDomainServiceTests
         await Assert.ThrowsAsync<ArgumentNullException>(() => 
             _service.CreateReservationAsync(_hotel.Id, _guest, null));
         
-        _mockReservationRepository.Verify(r => r.AddAsync(It.IsAny<Reservation>()), Times.Never);
+        _mockReservationRepository.Verify(r => r.AddAsync(It.IsAny<Reservation>(),true), Times.Never);
     }
 
     #endregion
@@ -281,7 +286,7 @@ public class ReservationDomainServiceTests
         // Arrange
         var additionalGuest = new Guest("Ali", "Rezaei", "0741153671", 25);
         
-        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>()))
+        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>(),true))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -289,7 +294,7 @@ public class ReservationDomainServiceTests
 
         // Assert
         _mockReservationRepository.Verify(r => r.GetByIdAsync(_reservation.Id), Times.Once);
-        _mockReservationRepository.Verify(r => r.UpdateAsync(_reservation), Times.Once);
+        _mockReservationRepository.Verify(r => r.UpdateAsync(_reservation,true), Times.Once);
         Assert.Contains(additionalGuest, _reservation.Guests);
     }
 
@@ -312,7 +317,7 @@ public class ReservationDomainServiceTests
         
         Assert.Contains("not found", exception.Message);
         _mockReservationRepository.Verify(r => r.GetByIdAsync(nonExistentReservationId), Times.Once);
-        _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>()), Times.Never);
+        _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>(),true), Times.Never);
     }
 
     // این تست بررسی می‌کند که آیا متد AddGuestToReservationAsync زمانی که مهمان null است خطای مناسب پرتاب می‌کند
@@ -327,7 +332,7 @@ public class ReservationDomainServiceTests
         await Assert.ThrowsAsync<ArgumentNullException>(() => 
             _service.AddGuestToReservationAsync(_reservation.Id, null));
         
-        _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>()), Times.Never);
+        _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>(),true), Times.Never);
     }
 
     #endregion
@@ -343,7 +348,7 @@ public class ReservationDomainServiceTests
         // Arrange
         var paymentId = Guid.NewGuid();
         
-        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>()))
+        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>(),true))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -352,7 +357,7 @@ public class ReservationDomainServiceTests
         // Assert
         Assert.True(result);
         _mockReservationRepository.Verify(r => r.GetByIdAsync(_reservation.Id), Times.Once);
-        _mockReservationRepository.Verify(r => r.UpdateAsync(_reservation), Times.Once);
+        _mockReservationRepository.Verify(r => r.UpdateAsync(_reservation,true), Times.Once);
         Assert.Equal(paymentId, _reservation.LastPaymentTransactionId);
         Assert.Equal(ReservationStatus.Confirmed, _reservation.Status);
     }
@@ -377,7 +382,7 @@ public class ReservationDomainServiceTests
         _mockReservationRepository.Setup(r => r.GetByIdAsync(freeReservation.Id))
             .ReturnsAsync(freeReservation);
         
-        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>()))
+        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>(),true))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -386,7 +391,7 @@ public class ReservationDomainServiceTests
         // Assert
         Assert.True(result);
         _mockReservationRepository.Verify(r => r.GetByIdAsync(freeReservation.Id), Times.Once);
-        _mockReservationRepository.Verify(r => r.UpdateAsync(freeReservation), Times.Once);
+        _mockReservationRepository.Verify(r => r.UpdateAsync(freeReservation,true), Times.Once);
         Assert.Equal(ReservationStatus.Confirmed, freeReservation.Status);
     }
 
@@ -408,7 +413,7 @@ public class ReservationDomainServiceTests
         
         Assert.Contains("not found", exception.Message);
         _mockReservationRepository.Verify(r => r.GetByIdAsync(nonExistentReservationId), Times.Once);
-        _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>()), Times.Never);
+        _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>(),true), Times.Never);
     }
 
     #endregion
@@ -422,7 +427,7 @@ public class ReservationDomainServiceTests
     public async Task CancelReservationAsync_Cancels_Reservation()
     {
         // Arrange
-        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>()))
+        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>(),true))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -430,7 +435,7 @@ public class ReservationDomainServiceTests
 
         // Assert
         _mockReservationRepository.Verify(r => r.GetByIdAsync(_reservation.Id), Times.Once);
-        _mockReservationRepository.Verify(r => r.UpdateAsync(_reservation), Times.Once);
+        _mockReservationRepository.Verify(r => r.UpdateAsync(_reservation,true), Times.Once);
         Assert.Equal(ReservationStatus.Cancelled, _reservation.Status);
     }
 
@@ -452,7 +457,7 @@ public class ReservationDomainServiceTests
         
         Assert.Contains("not found", exception.Message);
         _mockReservationRepository.Verify(r => r.GetByIdAsync(nonExistentReservationId), Times.Once);
-        _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>()), Times.Never);
+        _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>(),true), Times.Never);
     }
 
     #endregion
@@ -469,7 +474,7 @@ public class ReservationDomainServiceTests
         // Set reservation status to Confirmed (required for completing)
         typeof(Reservation).GetProperty("Status").SetValue(_reservation, ReservationStatus.Confirmed);
         
-        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>()))
+        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>(),true))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -477,7 +482,7 @@ public class ReservationDomainServiceTests
 
         // Assert
         _mockReservationRepository.Verify(r => r.GetByIdAsync(_reservation.Id), Times.Once);
-        _mockReservationRepository.Verify(r => r.UpdateAsync(_reservation), Times.Once);
+        _mockReservationRepository.Verify(r => r.UpdateAsync(_reservation,true), Times.Once);
         Assert.Equal(ReservationStatus.Completed, _reservation.Status);
     }
 
@@ -499,7 +504,7 @@ public class ReservationDomainServiceTests
         
         Assert.Contains("not found", exception.Message);
         _mockReservationRepository.Verify(r => r.GetByIdAsync(nonExistentReservationId), Times.Once);
-        _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>()), Times.Never);
+        _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>(),true), Times.Never);
     }
 
     #endregion
@@ -524,7 +529,7 @@ public class ReservationDomainServiceTests
         _mockReservationRepository.Setup(r => r.GetExpiredReservationsAsync())
             .ReturnsAsync(expiredReservations);
         
-        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>()))
+        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>(),true))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -532,7 +537,7 @@ public class ReservationDomainServiceTests
 
         // Assert
         _mockReservationRepository.Verify(r => r.GetExpiredReservationsAsync(), Times.Once);
-        _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>()), Times.Exactly(2));
+        _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>(),true), Times.Exactly(2));
         Assert.Equal(ReservationStatus.Expired, expiredReservation1.Status);
         Assert.Equal(ReservationStatus.Expired, expiredReservation2.Status);
     }
@@ -554,7 +559,7 @@ public class ReservationDomainServiceTests
 
         // Assert
         _mockReservationRepository.Verify(r => r.GetExpiredReservationsAsync(), Times.Once);
-        _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>()), Times.Never);
+        _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>(),true), Times.Never);
         Assert.Equal(ReservationStatus.InProgress, validReservation.Status);
     }
 
@@ -570,7 +575,7 @@ public class ReservationDomainServiceTests
 
         // Assert
         _mockReservationRepository.Verify(r => r.GetExpiredReservationsAsync(), Times.Once);
-        _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>()), Times.Never);
+        _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>(),true), Times.Never);
     }
 
     #endregion
@@ -591,7 +596,7 @@ public class ReservationDomainServiceTests
         _mockHotelRepository.Setup(r => r.GetByIdAsync(_reservation.HotelId))
             .ReturnsAsync(_hotel);
             
-        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>()))
+        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>(),true))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -600,7 +605,7 @@ public class ReservationDomainServiceTests
         // Assert
         Assert.True(result);
         _mockHotelRepository.Verify(r => r.IsHotelAvailableAsync(_reservation.HotelId, newDateRange, _reservation.Id), Times.Once);
-        _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>()), Times.Once);
+        _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>(),true), Times.Once);
     }
 
     [Fact]
@@ -620,7 +625,7 @@ public class ReservationDomainServiceTests
         // Assert
         Assert.False(result);
         _mockHotelRepository.Verify(r => r.IsHotelAvailableAsync(_reservation.HotelId, newDateRange, _reservation.Id), Times.Once);
-        _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>()), Times.Never);
+        _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>(),true), Times.Never);
     }
 
     [Fact]
@@ -668,7 +673,7 @@ public class ReservationDomainServiceTests
     {
         // Arrange
         string newSpecialRequests = "Need extra pillows and late checkout";
-        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>()))
+        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>(),true))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -677,7 +682,7 @@ public class ReservationDomainServiceTests
         // Assert
         Assert.Equal(newSpecialRequests, _reservation.SpecialRequests);
         _mockReservationRepository.Verify(r => r.GetByIdAsync(_reservation.Id), Times.Once);
-        _mockReservationRepository.Verify(r => r.UpdateAsync(_reservation), Times.Once);
+        _mockReservationRepository.Verify(r => r.UpdateAsync(_reservation,true), Times.Once);
     }
 
     [Fact]
@@ -706,7 +711,7 @@ public class ReservationDomainServiceTests
         var additionalGuest = new Guest("Ali", "Rezaei", "0741153671", 25);
         _reservation.AddGuest(additionalGuest);
         
-        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>()))
+        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>(),true))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -715,14 +720,14 @@ public class ReservationDomainServiceTests
         // Assert
         Assert.DoesNotContain(_reservation.Guests, g => g.Id == additionalGuest.Id);
         _mockReservationRepository.Verify(r => r.GetByIdAsync(_reservation.Id), Times.Once);
-        _mockReservationRepository.Verify(r => r.UpdateAsync(_reservation), Times.Once);
+        _mockReservationRepository.Verify(r => r.UpdateAsync(_reservation,true), Times.Once);
     }
 
     [Fact]
     public async Task RemoveGuestFromReservationAsync_Throws_Exception_When_Removing_Primary_Guest()
     {
         // Arrange
-        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>()))
+        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>(),true))
             .Returns(Task.CompletedTask);
 
         // Act & Assert
@@ -737,7 +742,7 @@ public class ReservationDomainServiceTests
     {
         // Arrange
         var nonExistentGuestId = Guid.NewGuid();
-        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>()))
+        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>(),true))
             .Returns(Task.CompletedTask);
 
         // Act & Assert
@@ -758,7 +763,7 @@ public class ReservationDomainServiceTests
         var initialLockTime = _reservation.LockExpirationTime;
         int extensionMinutes = 15;
         
-        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>()))
+        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>(),true))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -768,7 +773,7 @@ public class ReservationDomainServiceTests
         Assert.True(result);
         Assert.True(_reservation.LockExpirationTime > initialLockTime);
         _mockReservationRepository.Verify(r => r.GetByIdAsync(_reservation.Id), Times.Once);
-        _mockReservationRepository.Verify(r => r.UpdateAsync(_reservation), Times.Once);
+        _mockReservationRepository.Verify(r => r.UpdateAsync(_reservation,true), Times.Once);
     }
 
     [Fact]
@@ -792,7 +797,7 @@ public class ReservationDomainServiceTests
         var paymentId = Guid.NewGuid();
         var paymentAmount = Money.FromDecimal(50m, "USD");
         
-        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>()))
+        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>(),true))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -801,7 +806,7 @@ public class ReservationDomainServiceTests
         // Assert
         Assert.True(result);
         _mockReservationRepository.Verify(r => r.GetByIdAsync(_reservation.Id), Times.Once);
-        _mockReservationRepository.Verify(r => r.UpdateAsync(_reservation), Times.Once);
+        _mockReservationRepository.Verify(r => r.UpdateAsync(_reservation,true), Times.Once);
     }
 
     [Fact]
@@ -952,7 +957,7 @@ public class ReservationDomainServiceTests
         // Arrange
         string cancellationReason = "Flight cancelled due to weather";
         
-        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>()))
+        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>(),true))
             .Returns(Task.CompletedTask);
 
         // Act
@@ -961,7 +966,7 @@ public class ReservationDomainServiceTests
         // Assert
         Assert.Equal(ReservationStatus.Cancelled, _reservation.Status);
         _mockReservationRepository.Verify(r => r.GetByIdAsync(_reservation.Id), Times.Once);
-        _mockReservationRepository.Verify(r => r.UpdateAsync(_reservation), Times.Once);
+        _mockReservationRepository.Verify(r => r.UpdateAsync(_reservation,true), Times.Once);
     }
 
     [Fact]
@@ -997,8 +1002,8 @@ public class ReservationDomainServiceTests
         
         _mockHotelRepository.Setup(r => r.GetByIdAsync(hotelId)).ReturnsAsync(hotel);
         _mockHotelRepository.Setup(r => r.IsHotelAvailableAsync(hotelId, dateRange)).ReturnsAsync(true);
-        _mockReservationRepository.Setup(r => r.AddAsync(It.IsAny<Reservation>())).Returns(Task.CompletedTask);
-        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>())).Returns(Task.CompletedTask);
+        _mockReservationRepository.Setup(r => r.AddAsync(It.IsAny<Reservation>(),true)).Returns(Task.CompletedTask);
+        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>(),true)).Returns(Task.CompletedTask);
         
         // Act - Create reservation
         var reservation = await _service.CreateReservationAsync(hotelId, guest, dateRange, "Early check-in requested");
@@ -1021,8 +1026,8 @@ public class ReservationDomainServiceTests
         
         // Verify all interactions
         _mockHotelRepository.Verify(r => r.IsHotelAvailableAsync(hotelId, dateRange), Times.Once);
-        _mockReservationRepository.Verify(r => r.AddAsync(It.IsAny<Reservation>()), Times.Once);
-        _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>()), Times.Exactly(2));
+        _mockReservationRepository.Verify(r => r.AddAsync(It.IsAny<Reservation>(),true), Times.Once);
+        _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>(),true), Times.Exactly(2));
     }
 
     [Fact]
@@ -1043,8 +1048,8 @@ public class ReservationDomainServiceTests
         
         _mockHotelRepository.Setup(r => r.GetByIdAsync(hotelId)).ReturnsAsync(hotel);
         _mockHotelRepository.Setup(r => r.IsHotelAvailableAsync(hotelId, dateRange)).ReturnsAsync(true);
-        _mockReservationRepository.Setup(r => r.AddAsync(It.IsAny<Reservation>())).Returns(Task.CompletedTask);
-        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>())).Returns(Task.CompletedTask);
+        _mockReservationRepository.Setup(r => r.AddAsync(It.IsAny<Reservation>(),true)).Returns(Task.CompletedTask);
+        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>(),true)).Returns(Task.CompletedTask);
         
         // Act - Create reservation
         var reservation = await _service.CreateReservationAsync(hotelId, guest, dateRange, "Early check-in requested");
@@ -1059,7 +1064,7 @@ public class ReservationDomainServiceTests
         Assert.Equal(ReservationStatus.Cancelled, reservation.Status);
         
         // Verify interactions
-        _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>()), Times.Once);
+        _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>(),true), Times.Once);
     }
 
     [Fact]
@@ -1080,8 +1085,8 @@ public class ReservationDomainServiceTests
         
         _mockHotelRepository.Setup(r => r.GetByIdAsync(hotelId)).ReturnsAsync(hotel);
         _mockHotelRepository.Setup(r => r.IsHotelAvailableAsync(hotelId, initialDateRange)).ReturnsAsync(true);
-        _mockReservationRepository.Setup(r => r.AddAsync(It.IsAny<Reservation>())).Returns(Task.CompletedTask);
-        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>())).Returns(Task.CompletedTask);
+        _mockReservationRepository.Setup(r => r.AddAsync(It.IsAny<Reservation>(),true)).Returns(Task.CompletedTask);
+        _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>(),true)).Returns(Task.CompletedTask);
         
         // Act - Create reservation
         var reservation = await _service.CreateReservationAsync(hotelId, guest, initialDateRange);
@@ -1108,7 +1113,7 @@ public class ReservationDomainServiceTests
         Assert.True(modifyResult);
         
         // Verify interactions
-        _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>()), Times.Exactly(2));
+        _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>(),true), Times.Exactly(2));
     }
 
   

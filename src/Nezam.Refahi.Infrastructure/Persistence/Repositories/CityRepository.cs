@@ -19,7 +19,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories;
 
       public async Task<IEnumerable<City>> GetByProvinceIdAsync(Guid provinceId)
       {
-          return await _dbSet
+          return await AsDbSet()
               .Where(c => c.ProvinceId == provinceId)
               .OrderBy(c => c.Name)
               .ToListAsync();
@@ -30,7 +30,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories;
           if (string.IsNullOrEmpty(name))
               return new List<City>();
 
-          return await _dbSet
+          return await AsDbSet()
               .Where(c => c.Name.Contains(name))
               .OrderBy(c => c.Name)
               .ToListAsync();
@@ -41,7 +41,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories;
           if (string.IsNullOrEmpty(postalCode))
               return new List<City>();
 
-          return await _dbSet
+          return await AsDbSet()
               .Where(c => c.PostalCode != null && c.PostalCode.StartsWith(postalCode))
               .OrderBy(c => c.Name)
               .ToListAsync();

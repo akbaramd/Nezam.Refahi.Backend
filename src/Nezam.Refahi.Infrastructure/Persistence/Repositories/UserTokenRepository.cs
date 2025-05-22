@@ -25,7 +25,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories
         /// <returns>The token if found, null otherwise</returns>
         public async Task<UserToken?> GetByTokenValueAsync(string tokenValue, string tokenType)
         {
-            return await _dbSet
+            return await AsDbSet()
                 .FirstOrDefaultAsync(t => t.TokenValue == tokenValue && t.TokenType == tokenType);
         }
 
@@ -37,7 +37,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories
         /// <returns>Collection of active tokens</returns>
         public async Task<IEnumerable<UserToken>> GetActiveTokensForUserAsync(Guid userId, string? tokenType = null)
         {
-            var query = _dbSet
+            var query = AsDbSet()
                 .Where(t => t.UserId == userId && !t.IsUsed && !t.IsRevoked && t.ExpiresAt > DateTime.UtcNow);
 
             if (!string.IsNullOrEmpty(tokenType))
@@ -54,18 +54,28 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories
         /// <param name="userId">The user's ID</param>
         /// <param name="tokenType">The token type to revoke</param>
         /// <returns>Number of tokens revoked</returns>
-        public async Task<int> RevokeAllUserTokensOfTypeAsync(Guid userId, string tokenType)
+        public async Task<int> RevokeAllUserTokensOfTypeAsync(Guid userId, string tokenType, bool isSoftDelete = true, bool savedChanges = false)
         {
-            var tokens = await _dbSet
+            var tokens = await AsDbSet()
                 .Where(t => t.UserId == userId && t.TokenType == tokenType && !t.IsRevoked)
                 .ToListAsync();
 
-            foreach (var token in tokens)
+            if (isSoftDelete)
             {
-                token.Revoke();
+                foreach (var token in tokens)
+                {
+                    token.Revoke();
+                }
+            }
+            else
+            {
+                AsDbSet().RemoveRange(tokens);
             }
 
-            await _dbContext.SaveChangesAsync();
+            if (savedChanges)
+            {
+                await AsDbContext().SaveChangesAsync();
+            }
             return tokens.Count;
         }
 
@@ -73,14 +83,17 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories
         /// Cleans up expired tokens
         /// </summary>
         /// <returns>Number of tokens removed</returns>
-        public async Task<int> CleanupExpiredTokensAsync()
+        public async Task<int> CleanupExpiredTokensAsync(bool savedChanges = false)
         {
-            var expiredTokens = await _dbSet
+            var expiredTokens = await AsDbSet()
                 .Where(t => t.ExpiresAt < DateTime.UtcNow.AddDays(-1)) // Keep tokens for 1 day after expiration for audit purposes
                 .ToListAsync();
 
-            _dbSet.RemoveRange(expiredTokens);
-            await _dbContext.SaveChangesAsync();
+            AsDbSet().RemoveRange(expiredTokens);
+            if (savedChanges)
+            {
+                await AsDbContext().SaveChangesAsync();
+            }   
             
             return expiredTokens.Count;
         }

@@ -24,7 +24,7 @@ public class SurveyAnswerRepository : GenericRepository<SurveyAnswer>, ISurveyAn
     /// <returns>Answers for the specified response</returns>
     public async Task<IEnumerable<SurveyAnswer>> GetByResponseIdAsync(Guid responseId)
     {
-        return await _dbSet
+        return await AsDbSet()
             .Where(a => a.ResponseId == responseId)
             .ToListAsync();
     }
@@ -36,7 +36,7 @@ public class SurveyAnswerRepository : GenericRepository<SurveyAnswer>, ISurveyAn
     /// <returns>Answers for the specified question</returns>
     public async Task<IEnumerable<SurveyAnswer>> GetByQuestionIdAsync(Guid questionId)
     {
-        return await _dbSet
+        return await AsDbSet()
             .Where(a => a.QuestionId == questionId)
             .ToListAsync();
     }
@@ -49,7 +49,7 @@ public class SurveyAnswerRepository : GenericRepository<SurveyAnswer>, ISurveyAn
     /// <returns>The answer if found, null otherwise</returns>
     public async Task<SurveyAnswer?> GetByResponseAndQuestionAsync(Guid responseId, Guid questionId)
     {
-        return await _dbSet
+        return await AsDbSet()
             .FirstOrDefaultAsync(a => a.ResponseId == responseId && a.QuestionId == questionId);
     }
     
@@ -60,7 +60,7 @@ public class SurveyAnswerRepository : GenericRepository<SurveyAnswer>, ISurveyAn
     /// <returns>All answers for the specified survey</returns>
     public async Task<IEnumerable<SurveyAnswer>> GetBySurveyIdAsync(Guid surveyId)
     {
-        return await _dbSet
+        return await AsDbSet()
             .Include(a => a.Response)
             .Where(a => a.Response.SurveyId == surveyId)
             .ToListAsync();
@@ -74,7 +74,7 @@ public class SurveyAnswerRepository : GenericRepository<SurveyAnswer>, ISurveyAn
     /// <returns>Answers that selected the specified option</returns>
     public async Task<IEnumerable<SurveyAnswer>> GetBySelectedOptionAsync(Guid questionId, Guid optionId)
     {
-        return await _dbSet
+        return await AsDbSet()
             .Where(a => a.QuestionId == questionId && a.OptionId == optionId)
             .ToListAsync();
     }

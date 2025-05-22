@@ -10,3 +10,15 @@ D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Domain\obj\Debug\
 D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Domain\obj\Debug\net8.0\refint\Nezam.Refahi.Domain.dll
 D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Domain\obj\Debug\net8.0\Nezam.Refahi.Domain.pdb
 D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Domain\obj\Debug\net8.0\ref\Nezam.Refahi.Domain.dll
+D:\Projects\Company\NM\Nezam.Refahi.Backend\src\Nezam.Refahi.Domain\bin\Debug\net8.0\Nezam.Refahi.Domain.deps.json
+D:\Projects\Company\NM\Nezam.Refahi.Backend\src\Nezam.Refahi.Domain\bin\Debug\net8.0\Nezam.Refahi.Domain.dll
+D:\Projects\Company\NM\Nezam.Refahi.Backend\src\Nezam.Refahi.Domain\bin\Debug\net8.0\Nezam.Refahi.Domain.pdb
+D:\Projects\Company\NM\Nezam.Refahi.Backend\src\Nezam.Refahi.Domain\obj\Debug\net8.0\Nezam.Refahi.Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\Projects\Company\NM\Nezam.Refahi.Backend\src\Nezam.Refahi.Domain\obj\Debug\net8.0\Nezam.Refahi.Domain.AssemblyInfoInputs.cache
+D:\Projects\Company\NM\Nezam.Refahi.Backend\src\Nezam.Refahi.Domain\obj\Debug\net8.0\Nezam.Refahi.Domain.AssemblyInfo.cs
+D:\Projects\Company\NM\Nezam.Refahi.Backend\src\Nezam.Refahi.Domain\obj\Debug\net8.0\Nezam.Refahi.Domain.csproj.CoreCompileInputs.cache
+D:\Projects\Company\NM\Nezam.Refahi.Backend\src\Nezam.Refahi.Domain\obj\Debug\net8.0\Nezam.Refahi.Domain.sourcelink.json
+D:\Projects\Company\NM\Nezam.Refahi.Backend\src\Nezam.Refahi.Domain\obj\Debug\net8.0\Nezam.Refahi.Domain.dll
+D:\Projects\Company\NM\Nezam.Refahi.Backend\src\Nezam.Refahi.Domain\obj\Debug\net8.0\refint\Nezam.Refahi.Domain.dll
+D:\Projects\Company\NM\Nezam.Refahi.Backend\src\Nezam.Refahi.Domain\obj\Debug\net8.0\Nezam.Refahi.Domain.pdb
+D:\Projects\Company\NM\Nezam.Refahi.Backend\src\Nezam.Refahi.Domain\obj\Debug\net8.0\ref\Nezam.Refahi.Domain.dll

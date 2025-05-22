@@ -27,10 +27,10 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Application
     private readonly ISurveyRepository _surveyRepository;
     private readonly ISurveyQuestionRepository _surveyQuestionRepository;
     private readonly IValidator<SendOtpCommand> _validator;
-    
-    // Constants for OTP settings
+    private readonly IUnitOfWork _unitOfWork;
+
     private const int ExpiryMinutes = 5;
-    
+
     public SendOtpCommandHandler(
         IOtpService otpService,
         INotificationService notificationService,
@@ -38,7 +38,8 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Application
         UserDomainService userDomainService,
         ISurveyRepository surveyRepository,
         ISurveyQuestionRepository surveyQuestionRepository,
-        IValidator<SendOtpCommand> validator)
+        IValidator<SendOtpCommand> validator,
+        IUnitOfWork unitOfWork)
     {
         _otpService = otpService ?? throw new ArgumentNullException(nameof(otpService));
         _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
@@ -47,87 +48,71 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Application
         _surveyRepository = surveyRepository ?? throw new ArgumentNullException(nameof(surveyRepository));
         _surveyQuestionRepository = surveyQuestionRepository ?? throw new ArgumentNullException(nameof(surveyQuestionRepository));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+        _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
     }
-    
+
     public async Task<ApplicationResult<SendOtpResponse>> Handle(SendOtpCommand request, CancellationToken cancellationToken)
     {
+        await _unitOfWork.BeginAsync(cancellationToken);
         try
         {
-            // Validate the request using FluentValidation
             var validationResult = await _validator.ValidateAsync(request, cancellationToken);
             if (!validationResult.IsValid)
             {
-                // Return validation errors
                 var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
                 return ApplicationResult<SendOtpResponse>.Failure(errors, "Validation failed");
             }
-            
-            // Check if the user exists
+
             var user = await _userRepository.GetByPhoneNumberAsync(request.PhoneNumber);
             bool userExists = user != null;
-            string otpCode;
-            Guid userId;
-            
+
             if (!userExists)
             {
-                // Create a new user with just the phone number and set as not registered
-                // Following DDD principles, we use the domain service to create the user
                 user = _userDomainService.CreateUser(request.PhoneNumber);
                 await _userRepository.AddAsync(user);
-                
-                userId = user.Id;
             }
-            else
-            {
-                // We've checked that user exists, so it's safe to use non-null assertion
-                userId = user!.Id;
-            }
-            
-            // Generate OTP for the user
-            otpCode = await _otpService.GenerateOtpAsync(request.PhoneNumber, request.Purpose, ExpiryMinutes);
-            
-            // Send the OTP via SMS
+
+            var otpCode = await _otpService.GenerateOtpAsync(request.PhoneNumber, request.Purpose, ExpiryMinutes);
+
             var message = $"Your verification code for Nezam Refahi is: {otpCode}. This code will expire in {ExpiryMinutes} minutes.";
             await _notificationService.SendSmsAsync(request.PhoneNumber, message);
-            
-            // Mask the phone number for the response
-            var maskedPhoneNumber = MaskPhoneNumber(request.PhoneNumber);
-            
-            // Create response data
+
+            await _unitOfWork.SaveAsync(cancellationToken);
+            await _unitOfWork.CommitAsync(cancellationToken);
+
             var response = new SendOtpResponse
             {
                 ExpiryMinutes = ExpiryMinutes,
-                MaskedPhoneNumber = maskedPhoneNumber,
+                MaskedPhoneNumber = MaskPhoneNumber(request.PhoneNumber),
                 IsRegistered = userExists
             };
-            
-            // Return successful result
-            return ApplicationResult<SendOtpResponse>.Success(
-                response,
-                userExists ? "Verification code sent successfully." : "Verification code sent. New account will be created upon verification."
-            );
+
+            var successMessage = userExists
+                ? "Verification code sent successfully."
+                : "Verification code sent. New account will be created upon verification.";
+
+            return ApplicationResult<SendOtpResponse>.Success(response, successMessage);
         }
         catch (Exception ex)
         {
-            // Create response data for error case
+            await _unitOfWork.RollbackAsync(cancellationToken);
+
             var response = new SendOtpResponse
             {
                 ExpiryMinutes = ExpiryMinutes,
                 MaskedPhoneNumber = MaskPhoneNumber(request.PhoneNumber),
                 IsRegistered = false
             };
-            
-            // Return failure result with exception
+
             return ApplicationResult<SendOtpResponse>.Failure($"Failed to send verification code: {ex.Message}", ex);
         }
     }
-    
+
     private static string MaskPhoneNumber(string phoneNumber)
     {
         if (string.IsNullOrEmpty(phoneNumber) || phoneNumber.Length < 7)
             return phoneNumber;
-            
-        // Keep the first 2 and last 4 digits visible, mask the rest
+
         return $"{phoneNumber[..2]}*****{phoneNumber[^4..]}";
     }
 }

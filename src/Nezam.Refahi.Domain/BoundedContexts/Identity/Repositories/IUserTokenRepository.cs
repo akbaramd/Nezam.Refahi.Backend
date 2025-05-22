@@ -33,11 +33,11 @@ public interface IUserTokenRepository : IGenericRepository<UserToken>
     /// <param name="userId">The user's ID</param>
     /// <param name="tokenType">The token type to revoke</param>
     /// <returns>Number of tokens revoked</returns>
-    Task<int> RevokeAllUserTokensOfTypeAsync(Guid userId, string tokenType);
+    Task<int> RevokeAllUserTokensOfTypeAsync(Guid userId, string tokenType, bool isSoftDelete = true,bool savedChanges = false);
     
     /// <summary>
     /// Cleans up expired tokens
     /// </summary>
     /// <returns>Number of tokens removed</returns>
-    Task<int> CleanupExpiredTokensAsync();
+    Task<int> CleanupExpiredTokensAsync(bool savedChanges = false);
 }

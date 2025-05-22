@@ -24,7 +24,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories;
       /// <returns>Responses for the specified survey</returns>
       public async Task<IEnumerable<SurveyResponse>> GetBySurveyIdAsync(Guid surveyId)
       {
-          return await _dbSet
+          return await AsDbSet()
               .Where(r => r.SurveyId == surveyId)
               .ToListAsync();
       } 
@@ -36,7 +36,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories;
       /// <returns>Responses submitted by the specified user</returns>
       public async Task<IEnumerable<SurveyResponse>> GetByResponderIdAsync(Guid responderId)
       {
-          return await _dbSet
+          return await AsDbSet()
               .Where(r => r.ResponderId == responderId)
               .ToListAsync();
       }
@@ -49,7 +49,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories;
       /// <returns>The user's response if found, null otherwise</returns>
       public async Task<SurveyResponse?> GetBySurveyAndResponderAsync(Guid surveyId, Guid responderId)
       {
-          return await _dbSet
+          return await AsDbSet()
               .FirstOrDefaultAsync(r => r.SurveyId == surveyId && r.ResponderId == responderId);
       }
 
@@ -60,7 +60,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories;
       /// <returns>Submitted responses for the specified survey</returns>
       public async Task<IEnumerable<SurveyResponse>> GetSubmittedResponsesAsync(Guid surveyId)
       {
-          return await _dbSet
+          return await AsDbSet()
               .Where(r => r.SurveyId == surveyId && r.SubmittedAtUtc != null)
               .ToListAsync();
       }
@@ -72,7 +72,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories;
       /// <returns>In-progress responses for the specified survey</returns>
       public async Task<IEnumerable<SurveyResponse>> GetInProgressResponsesAsync(Guid surveyId)
       {
-          return await _dbSet
+          return await AsDbSet()
               .Where(r => r.SurveyId == surveyId && r.SubmittedAtUtc == null)
               .ToListAsync();
       }

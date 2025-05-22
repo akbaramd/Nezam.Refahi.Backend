@@ -24,7 +24,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories
             DateRange? dateRange, 
             int? minCapacity)
         {
-            var query = _dbContext.Hotels.AsQueryable();
+            var query = AsDbSet().AsQueryable();
 
             // Apply filters based on provided parameters
             if (!string.IsNullOrEmpty(city))
@@ -50,7 +50,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories
             {
                 // Get all reservations for the selected hotels in the given date range
                 var hotelIds = hotels.Select(h => h.Id).ToList();
-                var reservations = await _dbContext.Reservations
+                var reservations = await AsDbContext().Reservations
                     .Where(r => hotelIds.Contains(r.HotelId) && 
                                (r.Status == ReservationStatus.Confirmed ||
                                 r.Status == ReservationStatus.PendingPayment) &&
@@ -74,9 +74,9 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories
         public async Task<IEnumerable<Hotel>> SearchHotelsAsync(string searchTerm)
         {
             if (string.IsNullOrEmpty(searchTerm))
-                return await _dbSet.ToListAsync();
+                return await AsDbSet().ToListAsync();
 
-            return await _dbSet
+            return await AsDbSet()
                 .Where(h => h.Name.Contains(searchTerm) || 
                             h.Description.Contains(searchTerm) ||
                             h.Location.Address.Contains(searchTerm) ||
@@ -91,13 +91,13 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories
 
         public async Task<bool> IsHotelAvailableAsync(Guid hotelId, DateRange dateRange, Guid excludeReservationId)
         {
-            var hotel = await _dbSet.FindAsync(hotelId);
+            var hotel = await AsDbSet().FindAsync(hotelId);
             if (hotel == null)
                 return false;
 
             // Count all confirmed and pending reservations for this hotel in the given date range
             // excluding the specified reservation (if any)
-            var reservationsCount = await _dbContext.Reservations
+            var reservationsCount = await AsDbContext().Reservations
                 .Where(r => r.HotelId == hotelId &&
                            (excludeReservationId == Guid.Empty || r.Id != excludeReservationId) &&
                            (r.Status == ReservationStatus.Confirmed || r.Status == ReservationStatus.PendingPayment) &&

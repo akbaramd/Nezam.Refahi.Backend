@@ -14,27 +14,33 @@ namespace Nezam.Refahi.Application.Features.Auth.Commands.CompleteRegistration;
 /// <summary>
 /// Handler for the CompleteRegistrationCommand
 /// </summary>
-public class CompleteRegistrationCommandHandler : IRequestHandler<CompleteRegistrationCommand, ApplicationResult<CompleteRegistrationResponse>>
+public class CompleteRegistrationCommandHandler 
+    : IRequestHandler<CompleteRegistrationCommand, ApplicationResult<CompleteRegistrationResponse>>
 {
     private readonly IUserRepository _userRepository;
     private readonly UserDomainService _userDomainService;
     private readonly IValidator<CompleteRegistrationCommand> _validator;
+    private readonly IUnitOfWork _unitOfWork;
 
     public CompleteRegistrationCommandHandler(
         IUserRepository userRepository,
         UserDomainService userDomainService,
-        IValidator<CompleteRegistrationCommand> validator)
+        IValidator<CompleteRegistrationCommand> validator,
+        IUnitOfWork unitOfWork)
     {
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         _userDomainService = userDomainService ?? throw new ArgumentNullException(nameof(userDomainService));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
+        _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
     }
 
-    public async Task<ApplicationResult<CompleteRegistrationResponse>> Handle(CompleteRegistrationCommand request, CancellationToken cancellationToken)
+    public async Task<ApplicationResult<CompleteRegistrationResponse>> Handle(
+        CompleteRegistrationCommand request, 
+        CancellationToken cancellationToken)
     {
+        await _unitOfWork.BeginAsync(cancellationToken);
         try
         {
-            // Validate the request
             var validationResult = await _validator.ValidateAsync(request, cancellationToken);
             if (!validationResult.IsValid)
             {
@@ -42,34 +48,30 @@ public class CompleteRegistrationCommandHandler : IRequestHandler<CompleteRegist
                 return ApplicationResult<CompleteRegistrationResponse>.Failure(errors, "Validation failed");
             }
 
-            // Check if the national ID is already in use by another user
             var nationalId = new NationalId(request.NationalId);
-            var existingUserWithNationalId = await _userRepository.GetByNationalIdAsync(nationalId);
-            
-            if (existingUserWithNationalId != null && existingUserWithNationalId.Id != request.UserId)
+            var existingUser = await _userRepository.GetByNationalIdAsync(nationalId);
+            if (existingUser != null && existingUser.Id != request.UserId)
             {
                 return ApplicationResult<CompleteRegistrationResponse>.Failure("This national ID is already registered with another account.");
             }
 
-            // Get the user from the repository
             var user = await _userRepository.GetByIdAsync(request.UserId);
-            if (user == null)
+            if (user is null)
             {
                 return ApplicationResult<CompleteRegistrationResponse>.Failure("User not found.");
             }
 
-            // Update user profile information
-            // Following DDD principles, we use the domain service to update the user
             user.UpdateProfile(
                 request.FirstName,
                 request.LastName,
                 nationalId
             );
 
-            // Save the updated user
-            await _userRepository.UpdateAsync(user);
+            await _userRepository.UpdateAsync(user); // SaveChanges inside UoW
 
-            // Create the response
+            await _unitOfWork.SaveAsync(cancellationToken);
+            await _unitOfWork.CommitAsync(cancellationToken);
+
             var response = new CompleteRegistrationResponse
             {
                 Id = user.Id,
@@ -88,19 +90,17 @@ public class CompleteRegistrationCommandHandler : IRequestHandler<CompleteRegist
         }
         catch (Exception ex)
         {
+            await _unitOfWork.RollbackAsync(cancellationToken);
             return ApplicationResult<CompleteRegistrationResponse>.Failure($"Failed to update profile: {ex.Message}", ex);
         }
     }
 
-    /// <summary>
-    /// Masks a national ID for security purposes
-    /// </summary>
     private static string MaskNationalId(string nationalId)
     {
         if (string.IsNullOrEmpty(nationalId) || nationalId.Length < 6)
             return nationalId;
 
-        // Show only first 2 and last 2 digits
         return $"{nationalId.Substring(0, 2)}******{nationalId.Substring(nationalId.Length - 2)}";
     }
 }
+

@@ -20,7 +20,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories
 
         public async Task<IEnumerable<Reservation>> GetByUserIdAsync(Guid userId)
         {
-            return await _dbSet
+            return await AsDbSet()
                 .Where(r => r.PrimaryGuestId == userId)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
@@ -28,7 +28,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories
 
         public async Task<IEnumerable<Reservation>> GetByGuestIdAsync(Guid guestId)
         {
-            return await _dbSet
+            return await AsDbSet()
                 .Where(r => r.Guests.Any(g => g.Id == guestId))
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
@@ -36,7 +36,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories
 
         public async Task<IEnumerable<Reservation>> GetByHotelIdAsync(Guid hotelId)
         {
-            return await _dbSet
+            return await AsDbSet()
                 .Where(r => r.HotelId == hotelId)
                 .OrderByDescending(r => r.StayPeriod.CheckIn)
                 .ToListAsync();
@@ -44,7 +44,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories
 
         public async Task<IEnumerable<Reservation>> GetByHotelAndDateRangeAsync(Guid hotelId, DateRange dateRange)
         {
-            return await _dbSet
+            return await AsDbSet()
                 .Where(r => r.HotelId == hotelId &&
                            r.StayPeriod.CheckIn <= dateRange.CheckOut &&
                            r.StayPeriod.CheckOut >= dateRange.CheckIn)
@@ -54,7 +54,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories
 
         public async Task<IEnumerable<Reservation>> GetByStatusAsync(ReservationStatus status)
         {
-            return await _dbSet
+            return await AsDbSet()
                 .Where(r => r.Status == status)
                 .OrderByDescending(r => r.ModifiedAt ?? r.CreatedAt)
                 .ToListAsync();
@@ -64,7 +64,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories
         {
             var now = DateTimeOffset.UtcNow;
             
-            return await _dbSet
+            return await AsDbSet()
                 .Where(r => (r.Status == ReservationStatus.InProgress || 
                             r.Status == ReservationStatus.PendingPayment) &&
                             r.LockExpirationTime < now)
@@ -73,7 +73,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories
 
         public async Task<IEnumerable<Reservation>> GetByCheckInDateAsync(DateOnly checkInDate)
         {
-            return await _dbSet
+            return await AsDbSet()
                 .Where(r => r.StayPeriod.CheckIn == checkInDate && 
                            r.Status == ReservationStatus.Confirmed)
                 .OrderBy(r => r.HotelId)
@@ -82,7 +82,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories
 
         public async Task<IEnumerable<Reservation>> GetByCheckOutDateAsync(DateOnly checkOutDate)
         {
-            return await _dbSet
+            return await AsDbSet()
                 .Where(r => r.StayPeriod.CheckOut == checkOutDate && 
                            r.Status == ReservationStatus.Confirmed)
                 .OrderBy(r => r.HotelId)

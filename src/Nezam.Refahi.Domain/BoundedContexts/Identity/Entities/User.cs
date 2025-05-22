@@ -15,7 +15,7 @@ public class User : BaseEntity
     public NationalId? NationalId { get; private set; }
     public string PhoneNumber { get; private set; } = string.Empty;
     public Role Role { get; private set; } = Role.User;
-    
+    public DateTime? LastLoginAt { get; private set; }
     // Private constructor for EF Core
     private User() : base() { }
     
@@ -160,5 +160,11 @@ public class User : BaseEntity
             }
         }
         return roles;
+    }
+
+    public void LoggedIn()
+    {
+        // create field and set lastLoginAt
+        LastLoginAt = DateTime.UtcNow;
     }
 }

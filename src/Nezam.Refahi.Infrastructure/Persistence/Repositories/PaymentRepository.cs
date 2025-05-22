@@ -23,13 +23,13 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories
             if (string.IsNullOrEmpty(transactionReference))
                 return null;
                 
-            return await _dbSet
+            return await AsDbSet()
                 .FirstOrDefaultAsync(pt => pt.TransactionReference == transactionReference);
         }
 
         public async Task<IEnumerable<PaymentTransaction>> GetByReservationIdAsync(Guid reservationId)
         {
-            return await _dbSet
+            return await AsDbSet()
                 .Where(pt => pt.ReservationId == reservationId)
                 .OrderByDescending(pt => pt.CreatedAt)
                 .ToListAsync();
@@ -37,7 +37,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories
 
         public async Task<IEnumerable<PaymentTransaction>> GetByCustomerIdAsync(Guid customerId)
         {
-            return await _dbSet
+            return await AsDbSet()
                 .Where(pt => pt.CustomerId == customerId)
                 .OrderByDescending(pt => pt.CreatedAt)
                 .ToListAsync();
@@ -45,7 +45,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories
 
         public async Task<IEnumerable<PaymentTransaction>> GetPendingTransactionsAsync()
         {
-            return await _dbSet
+            return await AsDbSet()
                 .Where(pt => pt.Status == PaymentStatus.Pending || pt.Status == PaymentStatus.Authorized)
                 .OrderBy(pt => pt.CreatedAt)
                 .ToListAsync();
@@ -55,7 +55,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories
             DateTimeOffset startDate, 
             DateTimeOffset endDate)
         {
-            return await _dbSet
+            return await AsDbSet()
                 .Where(pt => pt.Status == PaymentStatus.Completed && 
                             pt.CompletionDate >= startDate && 
                             pt.CompletionDate <= endDate)
@@ -66,7 +66,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories
         public async Task<decimal> GetTotalAmountByReservationIdAsync(Guid reservationId)
         {
             // Get only successful payments for this reservation
-            var successfulPayments = await _dbSet
+            var successfulPayments = await AsDbSet()
                 .Where(pt => pt.ReservationId == reservationId && 
                             pt.Status == PaymentStatus.Completed)
                 .ToListAsync();

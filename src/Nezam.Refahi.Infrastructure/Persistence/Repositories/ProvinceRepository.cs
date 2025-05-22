@@ -22,7 +22,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories
             if (string.IsNullOrEmpty(code))
                 return null;
 
-            return await _dbSet
+            return await AsDbSet()
                 .FirstOrDefaultAsync(p => p.Code == code);
         }
 
@@ -31,7 +31,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories
             if (string.IsNullOrEmpty(name))
                 return new List<Province>();
 
-            return await _dbSet
+            return await AsDbSet()
                 .Where(p => p.Name.Contains(name))
                 .OrderBy(p => p.Name)
                 .ToListAsync();

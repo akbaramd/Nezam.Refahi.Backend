@@ -24,7 +24,7 @@ public class SurveyOptionsRepository : GenericRepository<SurveyOptions>, ISurvey
     /// <returns>Options for the specified question</returns>
     public async Task<IEnumerable<SurveyOptions>> GetByQuestionIdAsync(Guid questionId)
     {
-        return await _dbSet
+        return await AsDbSet()
             .Where(o => o.QuestionId == questionId)
             .ToListAsync();
     }
@@ -36,7 +36,7 @@ public class SurveyOptionsRepository : GenericRepository<SurveyOptions>, ISurvey
     /// <returns>Ordered options for the specified question</returns>
     public async Task<IEnumerable<SurveyOptions>> GetOrderedByQuestionIdAsync(Guid questionId)
     {
-        return await _dbSet
+        return await AsDbSet()
             .Where(o => o.QuestionId == questionId)
             .OrderBy(o => o.DisplayOrder)
             .ToListAsync();
@@ -53,7 +53,7 @@ public class SurveyOptionsRepository : GenericRepository<SurveyOptions>, ISurvey
         // This implementation counts the occurrences of each option in answers
         // for the specified question
         
-        var optionSelectionCounts = await _dbContext.Set<SurveyAnswer>()
+        var optionSelectionCounts = await AsDbContext().Set<SurveyAnswer>()
             .Where(a => a.QuestionId == questionId && a.OptionId != null)
             .GroupBy(a => a.OptionId)
             .Select(g => new { OptionId = g.Key, Count = g.Count() })
@@ -67,7 +67,7 @@ public class SurveyOptionsRepository : GenericRepository<SurveyOptions>, ISurvey
         var optionIds = optionSelectionCounts.Select(x => x.OptionId!.Value).ToList();
         
         // Get the actual options in the same order as the counts
-        var options = await _dbSet
+        var options = await AsDbSet()
             .Where(o => optionIds.Contains(o.Id))
             .ToListAsync();
             

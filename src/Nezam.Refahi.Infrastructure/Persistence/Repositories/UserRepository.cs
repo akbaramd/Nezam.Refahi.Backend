@@ -19,13 +19,13 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories;
 
       public async Task<User?> GetByNationalIdAsync(NationalId nationalId)
       {
-          return await _dbSet
+          return await AsDbSet()
               .FirstOrDefaultAsync(u => u.NationalId != null && u.NationalId.Value == nationalId.Value);
       }
 
       public async Task<User?> GetByPhoneNumberAsync(string phoneNumber)
       {
-        return await _dbSet
+        return await AsDbSet()
           .FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
       }
   }

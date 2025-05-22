@@ -1,6 +1,9 @@
+using System.Runtime.CompilerServices;
 using MediatR;
 using Nezam.Refahi.Application.Common.Exceptions;
 using Nezam.Refahi.Application.Common.Interfaces;
+using Nezam.Refahi.Application.Common.Models;
+using Nezam.Refahi.Domain.BoundedContexts.Identity.Entities;
 using Nezam.Refahi.Domain.BoundedContexts.Identity.Repositories;
 
 namespace Nezam.Refahi.Application.Features.Auth.Queries.GetCurrentUser;
@@ -8,52 +11,55 @@ namespace Nezam.Refahi.Application.Features.Auth.Queries.GetCurrentUser;
 /// <summary>
 /// Handler for the GetCurrentUserQuery
 /// </summary>
-public class GetCurrentUserQueryHandler : IRequestHandler<GetCurrentUserQuery, CurrentUserResponse>
+public sealed class GetCurrentUserQueryHandler 
+    : IRequestHandler<GetCurrentUserQuery, ApplicationResult<CurrentUserResponse>>
 {
-    private readonly ICurrentUserService _currentUserService;
+    private readonly ICurrentUserService _currentUser;
     private readonly IUserRepository _userRepository;
-    
-    public GetCurrentUserQueryHandler(
-        ICurrentUserService currentUserService,
-        IUserRepository userRepository)
+
+    public GetCurrentUserQueryHandler(ICurrentUserService currentUser, IUserRepository userRepository)
     {
-        _currentUserService = currentUserService;
-        _userRepository = userRepository;
+        _currentUser = currentUser ?? throw new ArgumentNullException(nameof(currentUser));
+        _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
     }
-    
-    public async Task<CurrentUserResponse> Handle(GetCurrentUserQuery request, CancellationToken cancellationToken)
+
+    public async Task<ApplicationResult<CurrentUserResponse>> Handle(GetCurrentUserQuery request, CancellationToken ct)
     {
-        if (!_currentUserService.IsAuthenticated || _currentUserService.UserId == null)
-        {
-            throw new AuthenticationException("User is not authenticated.");
-        }
-        
-        var userId = _currentUserService.UserId.Value;
-        var user = await _userRepository.GetByIdAsync(userId);
-        
-        if (user == null)
-        {
-            throw new AuthenticationException("User not found.");
-        }
-        
-        return new CurrentUserResponse
+        if (!_currentUser.IsAuthenticated || !_currentUser.UserId.HasValue)
+            return ApplicationResult<CurrentUserResponse>.Failure("User is not authenticated.");
+
+        var user = await _userRepository.GetByIdAsync(_currentUser.UserId.Value);
+
+        if (user is null)
+            return ApplicationResult<CurrentUserResponse>.Failure("User not found.");
+
+        var response = new CurrentUserResponse
         {
             Id = user.Id,
             PhoneNumber = user.PhoneNumber,
-            FullName = $"{user.FirstName}  {user.LastName}",
-            Roles = _currentUserService.Roles,
+            FullName = string.Concat(user.FirstName, " ", user.LastName),
+            Roles = _currentUser.Roles,
             IsAuthenticated = true,
-            MaskedNationalId = MaskNationalId(user.NationalId?.Value ?? string.Empty),
-            IsProfileComplete = user.FirstName != null && user.LastName != null && user.NationalId != null
+            MaskedNationalId = Mask(user.NationalId),
+            IsProfileComplete = HasProfile(user)
         };
+
+        return ApplicationResult<CurrentUserResponse>.Success(response);
     }
 
-    private static string MaskNationalId(string nationalId)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static string Mask(string? nid)
     {
-        if (string.IsNullOrEmpty(nationalId) || nationalId.Length < 6)
-            return nationalId;  
+        if (string.IsNullOrWhiteSpace(nid) || nid.Length < 6)
+            return nid ?? string.Empty;
 
-        // Show only first 2 and last 2 digits
-        return $"{nationalId.Substring(0, 2)}******{nationalId.Substring(nationalId.Length - 2)}";
+        return $"{nid[..2]}******{nid[^2..]}";
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool HasProfile(User user) =>
+        user.NationalId != null &&
+        !string.IsNullOrWhiteSpace(user.FirstName) &&
+        !string.IsNullOrWhiteSpace(user.LastName) &&
+        !string.IsNullOrWhiteSpace(user.NationalId);
 }

@@ -24,7 +24,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories;
       /// <returns>Surveys with the specified status</returns>
       public async Task<IEnumerable<Survey>> GetByStatusAsync(SurveyStatus status)
       {
-          return await _dbSet
+          return await AsDbSet()
               .Where(s => s.Status == status)
               .ToListAsync();
       }
@@ -36,7 +36,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories;
       /// <returns>Surveys created by the specified user</returns>
       public async Task<IEnumerable<Survey>> GetByCreatorAsync(Guid creatorId)
       {
-          return await _dbSet
+          return await AsDbSet()
               .Where(s => s.CreatorId == creatorId)
               .ToListAsync();
       }
@@ -48,7 +48,7 @@ namespace Nezam.Refahi.Infrastructure.Persistence.Repositories;
       /// <returns>Active surveys</returns>
       public async Task<IEnumerable<Survey>> GetActiveAsync(DateTimeOffset currentTimeUtc)
       {
-          return await _dbSet
+          return await AsDbSet()
               .Where(s => s.Status == SurveyStatus.Published &&
                          s.OpensAtUtc <= currentTimeUtc &&
                          (s.ClosesAtUtc == null || s.ClosesAtUtc >= currentTimeUtc))

@@ -24,7 +24,7 @@ public class SurveyQuestionRepository : GenericRepository<SurveyQuestion>, ISurv
     /// <returns>Questions for the specified survey</returns>
     public async Task<IEnumerable<SurveyQuestion>> GetBySurveyIdAsync(Guid surveyId)
     {
-        return await _dbSet
+        return await AsDbSet()
             .Where(q => q.SurveyId == surveyId)
             .ToListAsync();
     }
@@ -36,7 +36,7 @@ public class SurveyQuestionRepository : GenericRepository<SurveyQuestion>, ISurv
     /// <returns>Ordered questions for the specified survey</returns>
     public async Task<IEnumerable<SurveyQuestion>> GetOrderedBySurveyIdAsync(Guid surveyId)
     {
-        return await _dbSet
+        return await AsDbSet()
             .Where(q => q.SurveyId == surveyId)
             .OrderBy(q => q.Order)
             .ToListAsync();
@@ -50,7 +50,7 @@ public class SurveyQuestionRepository : GenericRepository<SurveyQuestion>, ISurv
     /// <returns>Questions of the specified type for the survey</returns>
     public async Task<IEnumerable<SurveyQuestion>> GetByTypeAsync(Guid surveyId, QuestionType questionType)
     {
-        return await _dbSet
+        return await AsDbSet()
             .Where(q => q.SurveyId == surveyId && q.Type == questionType)
             .OrderBy(q => q.Order)
             .ToListAsync();
@@ -63,7 +63,7 @@ public class SurveyQuestionRepository : GenericRepository<SurveyQuestion>, ISurv
     /// <returns>Required questions for the specified survey</returns>
     public async Task<IEnumerable<SurveyQuestion>> GetRequiredQuestionsAsync(Guid surveyId)
     {
-        return await _dbSet
+        return await AsDbSet()
             .Where(q => q.SurveyId == surveyId && q.IsRequired)
             .OrderBy(q => q.Order)
             .ToListAsync();

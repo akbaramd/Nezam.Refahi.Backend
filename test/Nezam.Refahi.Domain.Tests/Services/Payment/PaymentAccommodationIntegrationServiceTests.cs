@@ -82,13 +82,13 @@ namespace Nezam.Refahi.Domain.Tests.Services.Payment
             _mockPaymentRepository.Setup(p => p.GetByIdAsync(_paymentId))
                 .ReturnsAsync(_paymentTransaction);
                 
-            _mockPaymentRepository.Setup(p => p.AddAsync(It.IsAny<PaymentTransaction>()))
+            _mockPaymentRepository.Setup(p => p.AddAsync(It.IsAny<PaymentTransaction>(),true))
                 .Returns(Task.CompletedTask);
                 
-            _mockPaymentRepository.Setup(p => p.UpdateAsync(It.IsAny<PaymentTransaction>()))
+            _mockPaymentRepository.Setup(p => p.UpdateAsync(It.IsAny<PaymentTransaction>(),true))
                 .Returns(Task.CompletedTask);
                 
-            _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>()))
+            _mockReservationRepository.Setup(r => r.UpdateAsync(It.IsAny<Reservation>(),true))
                 .Returns(Task.CompletedTask);
                 
             // Setup for total amount calculations
@@ -166,7 +166,7 @@ namespace Nezam.Refahi.Domain.Tests.Services.Payment
                 null
             );
             
-            _mockPaymentRepository.Setup(p => p.AddAsync(It.IsAny<PaymentTransaction>()))
+            _mockPaymentRepository.Setup(p => p.AddAsync(It.IsAny<PaymentTransaction>(),true))
                 .Callback<PaymentTransaction>(t => {
                     typeof(PaymentTransaction).GetProperty("Id")?.SetValue(t, newTransactionId);
                 })
@@ -181,7 +181,7 @@ namespace Nezam.Refahi.Domain.Tests.Services.Payment
             
             // Assert
             Assert.NotNull(result);
-            _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>()), Times.Once);
+            _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>(),true), Times.Once);
         }
         
         /// <summary>
@@ -214,7 +214,7 @@ namespace Nezam.Refahi.Domain.Tests.Services.Payment
         public async Task ProcessReservationPaymentAsync_Handles_Payment_Initiation_Failure()
         {
             // Setup mocks to simulate a payment failure
-            _mockPaymentRepository.Setup(p => p.AddAsync(It.IsAny<PaymentTransaction>()))
+            _mockPaymentRepository.Setup(p => p.AddAsync(It.IsAny<PaymentTransaction>(),true))
                 .ThrowsAsync(new InvalidOperationException("Payment gateway error"));
             
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
@@ -224,7 +224,7 @@ namespace Nezam.Refahi.Domain.Tests.Services.Payment
             
             Assert.Contains("Payment gateway error", ex.Message);
             
-            _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>()), Times.Never);
+            _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>(),true), Times.Never);
         }
         
         /// <summary>
@@ -257,7 +257,7 @@ namespace Nezam.Refahi.Domain.Tests.Services.Payment
             );
             
             // Setup the repository to return the refund transaction
-            _mockPaymentRepository.Setup(p => p.AddAsync(It.IsAny<PaymentTransaction>()))
+            _mockPaymentRepository.Setup(p => p.AddAsync(It.IsAny<PaymentTransaction>(),true))
                 .Callback<PaymentTransaction>(t => {
                     typeof(PaymentTransaction).GetProperty("Id")?.SetValue(t, refundTransactionId);
                 })
@@ -272,7 +272,7 @@ namespace Nezam.Refahi.Domain.Tests.Services.Payment
             
             // Assert
             Assert.NotNull(result);
-            _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>()), Times.Once);
+            _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>(),true), Times.Once);
         }
         
         /// <summary>
@@ -323,7 +323,7 @@ namespace Nezam.Refahi.Domain.Tests.Services.Payment
             
             await _integrationService.HandlePaymentCompletedAsync(_paymentId);
             
-            _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>()), Times.Once);
+            _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>(),true), Times.Once);
         }
         
         /// <summary>
@@ -402,7 +402,7 @@ namespace Nezam.Refahi.Domain.Tests.Services.Payment
             
             await _integrationService.HandlePaymentFailedAsync(paymentEvent.PaymentId);
             
-            _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>()), Times.Once);
+            _mockReservationRepository.Verify(r => r.UpdateAsync(It.IsAny<Reservation>(),true), Times.Once);
         }
         
         /// <summary>
