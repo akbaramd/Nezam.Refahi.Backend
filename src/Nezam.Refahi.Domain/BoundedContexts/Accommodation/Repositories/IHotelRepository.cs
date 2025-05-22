@@ -3,17 +3,15 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Nezam.Refahi.Domain.BoundedContexts.Accommodation.Entities;
 using Nezam.Refahi.Domain.BoundedContexts.Accommodation.ValueObjects;
+using Nezam.Refahi.Domain.BoundedContexts.Shared.Repositories;
 
 namespace Nezam.Refahi.Domain.BoundedContexts.Accommodation.Repositories;
 
 /// <summary>
 /// Repository interface for Hotel entity
 /// </summary>
-public interface IHotelRepository
+public interface IHotelRepository : IGenericRepository<Hotel>
 {
-    Task<Hotel?> GetByIdAsync(Guid id);
-    Task<IEnumerable<Hotel>> GetAllAsync();
-    
     /// <summary>
     /// Finds hotels based on location, available dates, and capacity
     /// </summary>
@@ -41,8 +39,4 @@ public interface IHotelRepository
     /// <param name="excludeReservationId">The ID of a reservation to exclude from availability check (useful when modifying an existing reservation)</param>
     /// <returns>True if the hotel is available for the specified date range, false otherwise</returns>
     Task<bool> IsHotelAvailableAsync(Guid hotelId, DateRange dateRange, Guid excludeReservationId);
-    
-    Task AddAsync(Hotel hotel);
-    Task UpdateAsync(Hotel hotel);
-    Task DeleteAsync(Guid id);
 }

@@ -1,4 +1,4 @@
-﻿D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Infrastructure\obj\Debug\net8.0\Nezam.Refahi.Infrastructure.csproj.AssemblyReference.cache
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Infrastructure\obj\Debug\net8.0\Nezam.Refahi.Infrastructure.csproj.AssemblyReference.cache
 D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Infrastructure\obj\Debug\net8.0\Nezam.Refahi.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
 D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Infrastructure\obj\Debug\net8.0\Nezam.Refahi.Infrastructure.AssemblyInfoInputs.cache
 D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Infrastructure\obj\Debug\net8.0\Nezam.Refahi.Infrastructure.AssemblyInfo.cs
@@ -16,3 +16,5 @@ D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Infrastructure\ob
 D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Infrastructure\obj\Debug\net8.0\Nezam.Refahi.Infrastructure.pdb
 D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Infrastructure\obj\Debug\net8.0\Nezam.Refahi.Infrastructure.genruntimeconfig.cache
 D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Infrastructure\obj\Debug\net8.0\ref\Nezam.Refahi.Infrastructure.dll
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Infrastructure\bin\Debug\net8.0\Nezam.Refahi.Application.dll
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Infrastructure\bin\Debug\net8.0\Nezam.Refahi.Application.pdb

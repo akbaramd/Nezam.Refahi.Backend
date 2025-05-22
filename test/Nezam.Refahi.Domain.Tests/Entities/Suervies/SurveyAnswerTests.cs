@@ -18,7 +18,7 @@ public class SurveyAnswerTests
     {
         // Create standard test objects
         var creator = new User("علی", "محمدی", "2741153671", "09123456789");
-        var responder = new User("رضا", "احمدی", "0074125678", "09187654321");
+        var responder = new User("رضا", "احمدی", "0741153671", "09187654321");
         
         _survey = new Survey("نظرسنجی آزمایشی", "توضیحات نظرسنجی", SurveyMode.QnA, creator, DateTimeOffset.UtcNow);
         _response = new SurveyResponse(_survey, responder);

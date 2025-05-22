@@ -3,16 +3,15 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Nezam.Refahi.Domain.BoundedContexts.Accommodation.Aggregates;
 using Nezam.Refahi.Domain.BoundedContexts.Accommodation.ValueObjects;
+using Nezam.Refahi.Domain.BoundedContexts.Shared.Repositories;
 
 namespace Nezam.Refahi.Domain.BoundedContexts.Accommodation.Repositories;
 
 /// <summary>
 /// Repository interface for Reservation aggregate
 /// </summary>
-public interface IReservationRepository
+public interface IReservationRepository : IGenericRepository<Reservation>
 {
-    Task<Reservation?> GetByIdAsync(Guid id);
-    
     /// <summary>
     /// Gets all reservations for a specific user
     /// </summary>
@@ -52,8 +51,4 @@ public interface IReservationRepository
     /// Gets all reservations checking out on a specific date
     /// </summary>
     Task<IEnumerable<Reservation>> GetByCheckOutDateAsync(DateOnly checkOutDate);
-    
-    Task AddAsync(Reservation reservation);
-    Task UpdateAsync(Reservation reservation);
-    Task DeleteAsync(Guid id);
 }

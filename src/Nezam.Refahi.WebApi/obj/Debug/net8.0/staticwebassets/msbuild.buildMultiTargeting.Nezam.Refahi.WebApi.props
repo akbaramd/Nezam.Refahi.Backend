@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\Nezam.Refahi.WebApi.props" />
+</Project>

@@ -28,10 +28,11 @@ public class LocationReferenceFactoryTests
         // Arrange
         var province = new Province("Tehran Province", "THR");
         var city = new City("Tehran");
+        var address = "address";
         city.SetProvince(province);
 
         // Act
-        var result = _factory.CreateFromEntities(city, province);
+        var result = _factory.CreateFromEntities(city, province,address);
 
         // Assert
         Assert.Equal(city.Id, result.CityId);
@@ -45,9 +46,9 @@ public class LocationReferenceFactoryTests
     {
         // Arrange
         var province = new Province("Tehran Province", "THR");
-
+        var address = "address";
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => _factory.CreateFromEntities(null, province));
+        Assert.Throws<ArgumentNullException>(() => _factory.CreateFromEntities(null, province,address));
     }
 
     [Fact]
@@ -55,9 +56,9 @@ public class LocationReferenceFactoryTests
     {
         // Arrange
         var city = new City("Tehran");
-
+        var address = "address";
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => _factory.CreateFromEntities(city, null));
+        Assert.Throws<ArgumentNullException>(() => _factory.CreateFromEntities(city, null,address));
     }
 
     [Fact]
@@ -66,7 +67,7 @@ public class LocationReferenceFactoryTests
         // Arrange
         var provinceId = Guid.NewGuid();
         var cityId = Guid.NewGuid();
-        
+        var address = "address";
         var province = new Province("Tehran Province", "THR");
         var city = new City("Tehran");
         city.SetProvince(province);
@@ -79,7 +80,7 @@ public class LocationReferenceFactoryTests
         _mockProvinceRepository.Setup(r => r.GetByIdAsync(provinceId)).ReturnsAsync(province);
 
         // Act
-        var result = await _factory.CreateFromIdsAsync(cityId, provinceId);
+        var result = await _factory.CreateFromIdsAsync(cityId, provinceId,address);
 
         // Assert
         Assert.Equal(cityId, result.CityId);
@@ -94,7 +95,7 @@ public class LocationReferenceFactoryTests
         // Arrange
         var provinceId = Guid.NewGuid();
         var cityId = Guid.NewGuid();
-        
+        var address = "address";
         var province = new Province("Tehran Province", "THR");
         
         _mockCityRepository.Setup(r => r.GetByIdAsync(cityId)).ReturnsAsync((City)null);
@@ -102,7 +103,7 @@ public class LocationReferenceFactoryTests
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<ArgumentException>(() => 
-            _factory.CreateFromIdsAsync(cityId, provinceId));
+            _factory.CreateFromIdsAsync(cityId, provinceId,address));
         Assert.Contains("City", exception.Message);
     }
 
@@ -117,10 +118,10 @@ public class LocationReferenceFactoryTests
         
         _mockCityRepository.Setup(r => r.GetByIdAsync(cityId)).ReturnsAsync(city);
         _mockProvinceRepository.Setup(r => r.GetByIdAsync(provinceId)).ReturnsAsync((Province)null);
-
+        var address = "address";
         // Act & Assert
         var exception = await Assert.ThrowsAsync<ArgumentException>(() => 
-            _factory.CreateFromIdsAsync(cityId, provinceId));
+            _factory.CreateFromIdsAsync(cityId, provinceId,address));
         Assert.Contains("Province", exception.Message);
     }
 
@@ -130,7 +131,7 @@ public class LocationReferenceFactoryTests
         // Arrange
         string cityName = "Tehran";
         string provinceName = "Tehran Province";
-        
+        var address = "address";
         var province = new Province(provinceName, "THR");
         var city = new City(cityName);
         city.SetProvince(province);
@@ -141,7 +142,7 @@ public class LocationReferenceFactoryTests
             .ReturnsAsync(new List<City> { city });
 
         // Act
-        var result = await _factory.CreateFromLegacyLocationAsync(cityName, provinceName);
+        var result = await _factory.CreateFromLegacyLocationAsync(cityName, provinceName,address);
 
         // Assert
         Assert.Equal(city.Id, result.CityId);
@@ -156,13 +157,13 @@ public class LocationReferenceFactoryTests
         // Arrange
         string cityName = "Tehran";
         string provinceName = "Tehran Province";
-        
+        var address = "address";
         _mockProvinceRepository.Setup(r => r.FindByNameAsync(provinceName))
             .ReturnsAsync(new List<Province>());
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => 
-            _factory.CreateFromLegacyLocationAsync(cityName, provinceName));
+            _factory.CreateFromLegacyLocationAsync(cityName, provinceName,address));
         Assert.Contains("Province", exception.Message);
     }
 
@@ -174,7 +175,7 @@ public class LocationReferenceFactoryTests
         string provinceName = "Tehran Province";
         
         var province = new Province(provinceName, "THR");
-        
+        var address = "address";        
         _mockProvinceRepository.Setup(r => r.FindByNameAsync(provinceName))
             .ReturnsAsync(new List<Province> { province });
         _mockCityRepository.Setup(r => r.FindByNameAsync(cityName))
@@ -182,7 +183,7 @@ public class LocationReferenceFactoryTests
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => 
-            _factory.CreateFromLegacyLocationAsync(cityName, provinceName));
+            _factory.CreateFromLegacyLocationAsync(cityName, provinceName,address));
         Assert.Contains("City", exception.Message);
     }
 }

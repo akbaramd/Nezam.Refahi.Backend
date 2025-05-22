@@ -15,7 +15,7 @@ public class SurveyResponseTests
         // Create a standard survey and responder for use in tests
         var creator = new User("علی", "محمدی", "2741153671", "09123456789");
         _survey = new Survey("نظرسنجی آزمایشی", "توضیحات نظرسنجی", SurveyMode.QnA, creator, DateTimeOffset.UtcNow);
-        _responder = new User("رضا", "احمدی", "0074125678", "09187654321");
+        _responder = new User("رضا", "احمدی", "0741153671", "09187654321");
     }
     
     [Fact]
@@ -56,7 +56,7 @@ public class SurveyResponseTests
     public void SurveyResponse_Creation_With_Null_Survey_Throws_ArgumentNullException()
     {
         // Arrange
-        Survey? nullSurvey = null;
+        Survey nullSurvey = null;
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => new SurveyResponse(nullSurvey!));

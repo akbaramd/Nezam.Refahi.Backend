@@ -91,7 +91,7 @@ public class SurveyTests
         string description = "نظرسنجی کیفیت غذای رستوران";
         SurveyMode mode = SurveyMode.QnA;
         var opensAt = DateTimeOffset.UtcNow;
-        User? nullCreator = null;
+        User nullCreator = null;
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => new Survey(title, description, mode, nullCreator!, opensAt));

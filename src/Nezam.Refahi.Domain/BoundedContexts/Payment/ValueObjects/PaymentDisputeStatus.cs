@@ -14,7 +14,7 @@ namespace Nezam.Refahi.Domain.BoundedContexts.Payment.ValueObjects
     Open,
 
     /// <summary>
-    /// Dispute has been resolved in the merchant's favor
+    /// Dispute has been resolved in merchant's favor
     /// </summary>
     ResolvedMerchantFavor,
 

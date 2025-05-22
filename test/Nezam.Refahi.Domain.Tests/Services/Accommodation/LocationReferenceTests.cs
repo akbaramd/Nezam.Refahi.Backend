@@ -16,7 +16,7 @@ public class LocationReferenceTests
     string provinceName = "Tehran Province";
 
     // Act
-    var locationRef = new LocationReference(cityId, provinceId, cityName, provinceName);
+    var locationRef = new LocationReference(cityId, provinceId, cityName, provinceName,"Iran - Urmia");
 
     // Assert
     Assert.Equal(cityId, locationRef.CityId);
@@ -36,7 +36,7 @@ public class LocationReferenceTests
 
     // Act & Assert
     var exception = Assert.Throws<ArgumentException>(
-      () => new LocationReference(cityId, provinceId, cityName, provinceName)
+      () => new LocationReference(cityId, provinceId, cityName, provinceName,"Iran - Urmia")
     );
     Assert.Contains("city", exception.Message, StringComparison.OrdinalIgnoreCase);
   }
@@ -52,7 +52,7 @@ public class LocationReferenceTests
 
     // Act & Assert
     var exception = Assert.Throws<ArgumentException>(
-      () => new LocationReference(cityId, provinceId, cityName, provinceName)
+      () => new LocationReference(cityId, provinceId, cityName, provinceName,"Iran - Urmia")
     );
     Assert.Contains("province", exception.Message, StringComparison.OrdinalIgnoreCase);
   }
@@ -70,7 +70,7 @@ public class LocationReferenceTests
 
     // Act & Assert
     var exception = Assert.Throws<ArgumentException>(
-      () => new LocationReference(cityId, provinceId, cityName, provinceName)
+      () => new LocationReference(cityId, provinceId, cityName, provinceName,"Iran - Urmia")
     );
     Assert.Contains("city name", exception.Message, StringComparison.OrdinalIgnoreCase);
   }
@@ -90,7 +90,7 @@ public class LocationReferenceTests
 
     // Act & Assert
     var exception = Assert.Throws<ArgumentException>(
-      () => new LocationReference(cityId, provinceId, cityName, provinceName)
+      () => new LocationReference(cityId, provinceId, cityName, provinceName,"Iran - Urmia")
     );
     Assert.Contains("province name", exception.Message, StringComparison.OrdinalIgnoreCase);
   }
@@ -103,8 +103,8 @@ public class LocationReferenceTests
     Guid provinceId = Guid.NewGuid();
     string cityName = "Tehran";
     string provinceName = "Tehran Province";
-    var locationRef = new LocationReference(cityId, provinceId, cityName, provinceName);
-    string expected = $"{cityName}, {provinceName}";
+    var locationRef = new LocationReference(cityId, provinceId, cityName, provinceName,"Iran - Urmia");
+    string expected = $"Iran - Urmia, {cityName}, {provinceName}";
 
     // Act
     var result = locationRef.ToString();
@@ -119,8 +119,8 @@ public class LocationReferenceTests
     // Arrange
     Guid cityId = Guid.NewGuid();
     Guid provinceId = Guid.NewGuid();
-    var location1 = new LocationReference(cityId, provinceId, "Tehran", "Tehran Province");
-    var location2 = new LocationReference(cityId, provinceId, "Tehran City", "Tehran State");
+    var location1 = new LocationReference(cityId, provinceId, "Tehran", "Tehran Province","Iran - Urmia");
+    var location2 = new LocationReference(cityId, provinceId, "Tehran City", "Tehran State","Iran - Urmia");
 
     // Act & Assert
     Assert.True(location1.Equals(location2));
@@ -137,13 +137,13 @@ public class LocationReferenceTests
       Guid.NewGuid(),
       Guid.NewGuid(),
       "Tehran",
-      "Tehran Province"
+      "Tehran Province","Iran - Urmia"
     );
     var location2 = new LocationReference(
       Guid.NewGuid(),
       Guid.NewGuid(),
       "Tehran",
-      "Tehran Province"
+      "Tehran Province","Iran - Urmia"
     );
 
     // Act & Assert
@@ -159,8 +159,8 @@ public class LocationReferenceTests
     // Arrange
     Guid cityId = Guid.NewGuid();
     Guid provinceId = Guid.NewGuid();
-    var location1 = new LocationReference(cityId, provinceId, "Tehran", "Tehran Province");
-    var location2 = new LocationReference(cityId, provinceId, "Tehran City", "Tehran State");
+    var location1 = new LocationReference(cityId, provinceId, "Tehran", "Tehran Province","Iran - Urmia");
+    var location2 = new LocationReference(cityId, provinceId, "Tehran City", "Tehran State","Iran - Urmia");
 
     // Act & Assert
     Assert.Equal(location1.GetHashCode(), location2.GetHashCode());

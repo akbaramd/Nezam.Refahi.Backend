@@ -78,7 +78,7 @@ public class HotelFeatureTests
     {
         // Arrange
         var locationReference = new LocationReference(
-            Guid.NewGuid(), Guid.NewGuid(), "Tehran", "Tehran Province");
+            Guid.NewGuid(), Guid.NewGuid(), "Tehran", "Tehran Province","Iran - Urmia");
         var money = Money.FromDecimal(100m, "USD");
         var hotel = new Hotel(Guid.NewGuid(),"Grand Hotel", "A luxury hotel", locationReference, money, 100);
         var feature = new HotelFeature("WiFi", "Available");

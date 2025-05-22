@@ -5,97 +5,96 @@ using Nezam.Refahi.Domain.BoundedContexts.Accommodation.Entities;
 using Nezam.Refahi.Domain.BoundedContexts.Accommodation.ValueObjects;
 using System;
 
-namespace Nezam.Refahi.Infrastructure.Persistence.Configurations
-{
-    public class ReservationConfiguration : IEntityTypeConfiguration<Reservation>
-    {
-        public void Configure(EntityTypeBuilder<Reservation> builder)
-        {
-            // Primary key
-            builder.HasKey(r => r.Id);
+namespace Nezam.Refahi.Infrastructure.Persistence.Configurations;
 
-            // Properties
-            builder.Property(r => r.HotelId)
-                .IsRequired();
+  public class ReservationConfiguration : IEntityTypeConfiguration<Reservation>
+  {
+      public void Configure(EntityTypeBuilder<Reservation> builder)
+      {
+          // Primary key
+          builder.HasKey(r => r.Id);
 
-            builder.Property(r => r.PrimaryGuestId)
-                .IsRequired();
-                
-            builder.Property(r => r.SpecialRequests)
-                .HasMaxLength(1000);
-                
-            builder.Property(r => r.LastPaymentTransactionId);
-            builder.Property(r => r.LastPaymentDate);
-            builder.Property(r => r.PaidAmount)
-                .HasColumnType("decimal(18,2)")
-                .IsRequired();
+          // Properties
+          builder.Property(r => r.HotelId)
+              .IsRequired();
 
-            builder.Property(r => r.LockExpirationTime)
-                .IsRequired();
+          builder.Property(r => r.PrimaryGuestId)
+              .IsRequired();
+              
+          builder.Property(r => r.SpecialRequests)
+              .HasMaxLength(1000);
+              
+          builder.Property(r => r.LastPaymentTransactionId);
+          builder.Property(r => r.LastPaymentDate);
+          builder.Property(r => r.PaidAmount)
+              .HasColumnType("decimal(18,2)")
+              .IsRequired();
 
-            // Value objects - DateRange (mapped as owned entity)
-            builder.OwnsOne(r => r.StayPeriod, period =>
-            {
-                period.Property(p => p.CheckIn)
-                    .HasColumnName("CheckInDate")
-                    .IsRequired();
-                    
-                period.Property(p => p.CheckOut)
-                    .HasColumnName("CheckOutDate")
-                    .IsRequired();
-                    
-                // Note: NightCount is calculated, not stored
-            });
-            
-            // Value objects - Status (enum)
-            builder.Property(r => r.Status)
-                .HasConversion(
-                    v => v.ToString(),
-                    v => (ReservationStatus)Enum.Parse(typeof(ReservationStatus), v))
-                .HasMaxLength(50) // Protection against future enum name changes
-                .IsRequired();
-            
-            // Value objects - Money
-            builder.OwnsOne(r => r.TotalPrice, money =>
-            {
-                money.Property(m => m.Amount)
-                    .HasColumnName("TotalPriceAmount")
-                    .HasColumnType("decimal(18,2)") // Proper decimal handling
-                    .IsRequired();
-                
-                money.Property(m => m.Currency)
-                    .HasColumnName("TotalPriceCurrency")
-                    .HasMaxLength(3)
-                    .IsRequired();
-            });
+          builder.Property(r => r.LockExpirationTime)
+              .IsRequired();
 
-            // Configure Guests collection - part of the Reservation aggregate
-            builder.HasMany(r => r.Guests)
-                .WithOne() // No navigation property on Guest pointing back to Reservation
-                .HasForeignKey("ReservationId")
-                .OnDelete(DeleteBehavior.Cascade); // Within aggregate boundary
-                
-            // Configure backing field for Guests collection
-            builder.Metadata.FindNavigation(nameof(Reservation.Guests))?
-                .SetPropertyAccessMode(PropertyAccessMode.Field);
+          // Value objects - DateRange (mapped as owned entity)
+          builder.OwnsOne(r => r.StayPeriod, period =>
+          {
+              period.Property(p => p.CheckIn)
+                  .HasColumnName("CheckInDate")
+                  .IsRequired();
+                  
+              period.Property(p => p.CheckOut)
+                  .HasColumnName("CheckOutDate")
+                  .IsRequired();
+                  
+              // Note: NightCount is calculated, not stored
+          });
+          
+          // Value objects - Status (enum)
+          builder.Property(r => r.Status)
+              .HasConversion(
+                  v => v.ToString(),
+                  v => (ReservationStatus)Enum.Parse(typeof(ReservationStatus), v))
+              .HasMaxLength(50) // Protection against future enum name changes
+              .IsRequired();
+          
+          // Value objects - Money
+          builder.OwnsOne(r => r.TotalPrice, money =>
+          {
+              money.Property(m => m.Amount)
+                  .HasColumnName("TotalPriceAmount")
+                  .HasColumnType("decimal(18,2)") // Proper decimal handling
+                  .IsRequired();
+              
+              money.Property(m => m.Currency)
+                  .HasColumnName("TotalPriceCurrency")
+                  .HasMaxLength(3)
+                  .IsRequired();
+          });
 
-            // Relationships with other aggregates
-            builder.HasOne(r => r.Hotel)
-                .WithMany(h => h.Reservations)
-                .HasForeignKey(r => r.HotelId)
-                .OnDelete(DeleteBehavior.Restrict); // Cross-aggregate boundary
-                
-            builder.HasOne(r => r.PrimaryGuest) 
-                .WithMany()
-                .HasForeignKey(r => r.PrimaryGuestId)
-                .OnDelete(DeleteBehavior.Restrict); // Cross-aggregate boundary
+          // Configure Guests collection - part of the Reservation aggregate
+          builder.HasMany(r => r.Guests)
+              .WithOne() // No navigation property on Guest pointing back to Reservation
+              .HasForeignKey("ReservationId")
+              .OnDelete(DeleteBehavior.Cascade); // Within aggregate boundary
+              
+          // Configure backing field for Guests collection
+          builder.Metadata.FindNavigation(nameof(Reservation.Guests))?
+              .SetPropertyAccessMode(PropertyAccessMode.Field);
 
-            // Create indexes for commonly queried fields
-            builder.HasIndex(r => r.Status);
-            builder.HasIndex(r => new { r.HotelId, r.Status });
-            builder.HasIndex(r => r.PrimaryGuestId);
-            builder.HasIndex(r => r.LastPaymentTransactionId)
-                .HasFilter("[LastPaymentTransactionId] IS NOT NULL"); // Filtered index for nullable field
-        }
-    }
-}
+          // Relationships with other aggregates
+          builder.HasOne(r => r.Hotel)
+              .WithMany(h => h.Reservations)
+              .HasForeignKey(r => r.HotelId)
+              .OnDelete(DeleteBehavior.Restrict); // Cross-aggregate boundary
+              
+          builder.HasOne(r => r.PrimaryGuest) 
+              .WithMany()
+              .HasForeignKey(r => r.PrimaryGuestId)
+              .OnDelete(DeleteBehavior.Restrict); // Cross-aggregate boundary
+
+          // Create indexes for commonly queried fields
+          builder.HasIndex(r => r.Status);
+          builder.HasIndex(r => new { r.HotelId, r.Status });
+          builder.HasIndex(r => r.PrimaryGuestId);
+          builder.HasIndex(r => r.LastPaymentTransactionId)
+              .HasFilter("[LastPaymentTransactionId] IS NOT NULL"); // Filtered index for nullable field
+      }
+  }

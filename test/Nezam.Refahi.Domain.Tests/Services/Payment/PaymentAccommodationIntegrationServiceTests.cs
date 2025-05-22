@@ -128,7 +128,7 @@ namespace Nezam.Refahi.Domain.Tests.Services.Payment
         /// </summary>
         private Hotel CreateTestHotel()
         {
-            var location = new LocationReference(_cityId, _provinceId, "Test City", "Test Province");
+            var location = new LocationReference(_cityId, _provinceId, "Test City", "Test Province","Iran - Urmia");
             var hotel = new Hotel(_hotelId, "Test Hotel", "A test hotel description", 
                                  location, new Money(100, "USD"), 4);
             return hotel;
@@ -267,7 +267,7 @@ namespace Nezam.Refahi.Domain.Tests.Services.Payment
                 .ReturnsAsync(refundTransaction);
             
             // Act
-            var result = await _integrationService.ProcessRefundAsync(
+            var result = await _integrationService.ProcessReservationRefundAsync (
                 _paymentId, refundAmount, "Test Gateway");
             
             // Assert
@@ -292,7 +292,7 @@ namespace Nezam.Refahi.Domain.Tests.Services.Payment
             
             // Act & Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => 
-                _integrationService.ProcessRefundAsync(
+                _integrationService.ProcessReservationRefundAsync(
                     nonExistentPaymentId, refundAmount, "Test Gateway"));
             
             Assert.Contains($"Original payment transaction with ID {nonExistentPaymentId} not found", ex.Message);
@@ -335,8 +335,8 @@ namespace Nezam.Refahi.Domain.Tests.Services.Payment
         public async Task HandlePaymentCompletedAsync_Throws_When_Reservation_Not_Found()
         {
             // Arrange
-            var completionDate = DateTimeOffset.UtcNow;
             var nonExistentReservationId = Guid.NewGuid();
+            var completionDate = DateTimeOffset.UtcNow;
             
             var paymentEvent = new PaymentCompletedEvent(
                 _paymentId,
@@ -351,6 +351,24 @@ namespace Nezam.Refahi.Domain.Tests.Services.Payment
                 false,                 
                 null                   
             );
+            
+            // Create a special transaction with non-existent reservation ID
+            var specialTransaction = new PaymentTransaction(
+                _paymentId,
+                nonExistentReservationId,
+                _customerId,
+                new Money(100, "USD"),
+                PaymentMethod.CreditCard,
+                "Test Gateway",
+                false,
+                null
+            );
+            specialTransaction.SetTransactionReference("TX12345");
+            specialTransaction.MarkAsCompleted("RN12345");
+            
+            // Setup to return our special transaction with non-existent reservation ID
+            _mockPaymentRepository.Setup(p => p.GetByIdAsync(_paymentId))
+                .ReturnsAsync(specialTransaction);
             
             // This is crucial - mock should return null for this specific reservation ID
             _mockReservationRepository.Setup(r => r.GetByIdAsync(nonExistentReservationId))
@@ -407,6 +425,24 @@ namespace Nezam.Refahi.Domain.Tests.Services.Payment
                 "Insufficient funds",
                 DateTimeOffset.UtcNow
             );
+            
+            // Create a special transaction with non-existent reservation ID
+            var specialTransaction = new PaymentTransaction(
+                _paymentId,
+                nonExistentReservationId,
+                _customerId,
+                new Money(100, "USD"),
+                PaymentMethod.CreditCard,
+                "Test Gateway",
+                false,
+                null
+            );
+            specialTransaction.SetTransactionReference("TX12345");
+            specialTransaction.MarkAsFailed("Insufficient funds");
+            
+            // Setup to return our special transaction with non-existent reservation ID
+            _mockPaymentRepository.Setup(p => p.GetByIdAsync(_paymentId))
+                .ReturnsAsync(specialTransaction);
             
             // Ensure the reservation repository returns null for this specific ID
             _mockReservationRepository.Setup(r => r.GetByIdAsync(nonExistentReservationId))

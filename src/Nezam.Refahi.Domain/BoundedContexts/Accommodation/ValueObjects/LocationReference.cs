@@ -16,10 +16,13 @@ public class LocationReference
     public string CityName { get; private set; } = null!;
     public string ProvinceName { get; private set; } = null!;
     
+    // Detailed address information
+    public string Address { get; private set; } = null!;
+    
     // Required parameterless constructor for EF Core
     protected LocationReference() { }
     
-    public LocationReference(Guid cityId, Guid provinceId, string cityName, string provinceName)
+    public LocationReference(Guid cityId, Guid provinceId, string cityName, string provinceName, string address)
     {
         if (cityId == Guid.Empty)
             throw new ArgumentException("City ID cannot be empty", nameof(cityId));
@@ -33,13 +36,17 @@ public class LocationReference
         if (string.IsNullOrWhiteSpace(provinceName))
             throw new ArgumentException("Province name cannot be empty", nameof(provinceName));
             
+        if (string.IsNullOrWhiteSpace(address))
+            throw new ArgumentException("Address cannot be empty", nameof(address));
+            
         CityId = cityId;
         ProvinceId = provinceId;
         CityName = cityName;
         ProvinceName = provinceName;
+        Address = address;
     }
     
-    public override string ToString() => $"{CityName}, {ProvinceName}";
+    public override string ToString() => $"{Address}, {CityName}, {ProvinceName}";
     
     public override bool Equals(object? obj)
     {
@@ -47,22 +54,22 @@ public class LocationReference
         if (ReferenceEquals(this, obj)) return true;
         return obj is LocationReference other && 
                CityId.Equals(other.CityId) && 
-               ProvinceId.Equals(other.ProvinceId);
+               ProvinceId.Equals(other.ProvinceId) &&
+               Address.Equals(other.Address);
     }
     
     public override int GetHashCode()
     {
-        return HashCode.Combine(CityId, ProvinceId);
+        return HashCode.Combine(CityId, ProvinceId, Address);
     }
     
     public static bool operator ==(LocationReference? left, LocationReference? right)
     {
-        if (left is null) return right is null;
-        return left.Equals(right);
+        return Equals(left, right);
     }
     
     public static bool operator !=(LocationReference? left, LocationReference? right)
     {
-        return !(left == right);
+        return !Equals(left, right);
     }
 }

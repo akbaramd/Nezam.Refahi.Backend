@@ -25,7 +25,7 @@ public class ReservationDomainServiceTests
     {
         // Setup common test objects
         var locationReference = new LocationReference(
-            Guid.NewGuid(), Guid.NewGuid(), "Tehran", "Tehran Province");
+            Guid.NewGuid(), Guid.NewGuid(), "Tehran", "Tehran Province","Iran - Urmia");
         var pricePerNight = Money.FromDecimal(100.50m, "USD");
         _hotel = new Hotel(Guid.NewGuid(),"Grand Hotel", "A luxury hotel", locationReference, pricePerNight, 100);
         _guest = new Guest("Mohammad", "Ahmadi", "2741153671", 30);
@@ -98,7 +98,7 @@ public class ReservationDomainServiceTests
         var unavailableHotel = new Hotel(Guid.NewGuid(),
             "Unavailable Hotel", 
             "Description", 
-            new LocationReference(Guid.NewGuid(), Guid.NewGuid(), "City", "Province"),
+            new LocationReference(Guid.NewGuid(), Guid.NewGuid(), "City", "Province","Iran - Urmia"),
             Money.FromDecimal(100m, "USD"),
             50);
         unavailableHotel.SetAvailability(false);
@@ -205,7 +205,7 @@ public class ReservationDomainServiceTests
         var unavailableHotel = new Hotel(Guid.NewGuid(),
             "Unavailable Hotel", 
             "Description", 
-            new LocationReference(Guid.NewGuid(), Guid.NewGuid(), "City", "Province"),
+            new LocationReference(Guid.NewGuid(), Guid.NewGuid(), "City", "Province","Iran - Urmia"),
             Money.FromDecimal(100m, "USD"),
             50);
         unavailableHotel.SetAvailability(false);
@@ -367,7 +367,7 @@ public class ReservationDomainServiceTests
         var freeHotel = new Hotel(Guid.NewGuid(),
             "Free Hotel", 
             "A free hotel", 
-            new LocationReference(Guid.NewGuid(), Guid.NewGuid(), "City", "Province"),
+            new LocationReference(Guid.NewGuid(), Guid.NewGuid(), "City", "Province","Iran - Urmia"),
             Money.FromDecimal(0m, "USD"),
             50);
         
@@ -811,7 +811,7 @@ public class ReservationDomainServiceTests
         var freeHotel = new Hotel(Guid.NewGuid(),
             "Free Hotel", 
             "A free hotel", 
-            new LocationReference(Guid.NewGuid(), Guid.NewGuid(), "City", "Province"),
+            new LocationReference(Guid.NewGuid(), Guid.NewGuid(), "City", "Province","Iran - Urmia"),
             Money.FromDecimal(0m, "USD"),
             50);
         
@@ -990,7 +990,7 @@ public class ReservationDomainServiceTests
         var hotel = new Hotel(hotelId,
             "Grand Hotel", 
             "A luxury hotel", 
-            new LocationReference(Guid.NewGuid(), Guid.NewGuid(), "Tehran", "Tehran Province"),
+            new LocationReference(Guid.NewGuid(), Guid.NewGuid(), "Tehran", "Tehran Province","Iran - Urmia"),
             Money.FromDecimal(100.50m, "USD"),
             100);
         var paymentId = Guid.NewGuid();
@@ -1037,7 +1037,7 @@ public class ReservationDomainServiceTests
         var hotel = new Hotel(hotelId,
             "Grand Hotel", 
             "A luxury hotel", 
-            new LocationReference(Guid.NewGuid(), Guid.NewGuid(), "Tehran", "Tehran Province"),
+            new LocationReference(Guid.NewGuid(), Guid.NewGuid(), "Tehran", "Tehran Province","Iran - Urmia"),
             Money.FromDecimal(100.50m, "USD"),
             100);
         
@@ -1074,7 +1074,7 @@ public class ReservationDomainServiceTests
         var hotel = new Hotel(hotelId,
             "Grand Hotel", 
             "A luxury hotel", 
-            new LocationReference(Guid.NewGuid(), Guid.NewGuid(), "Tehran", "Tehran Province"),
+            new LocationReference(Guid.NewGuid(), Guid.NewGuid(), "Tehran", "Tehran Province","Iran - Urmia"),
             Money.FromDecimal(100.50m, "USD"),
             100);
         

@@ -2,20 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Nezam.Refahi.Domain.BoundedContexts.Location.Entities;
+using Nezam.Refahi.Domain.BoundedContexts.Shared.Repositories;
 
 namespace Nezam.Refahi.Domain.BoundedContexts.Location.Repositories;
 
 /// <summary>
 /// Repository interface for City entity
 /// </summary>
-public interface ICityRepository
+public interface ICityRepository : IGenericRepository<City>
 {
-    Task<City?> GetByIdAsync(Guid id);
-    Task<IEnumerable<City>> GetAllAsync();
     Task<IEnumerable<City>> GetByProvinceIdAsync(Guid provinceId);
     Task<IEnumerable<City>> FindByNameAsync(string name);
     Task<IEnumerable<City>> FindByPostalCodeAsync(string postalCode);
-    Task AddAsync(City city);
-    Task UpdateAsync(City city);
-    Task DeleteAsync(City city);
 }

@@ -26,7 +26,7 @@ public class LocationReferenceFactory
     /// <summary>
     /// Creates a LocationReference from City and Province entities
     /// </summary>
-    public LocationReference CreateFromEntities(City city, Province province)
+    public LocationReference CreateFromEntities(City city, Province province,string address)
     {
         if (city == null) throw new ArgumentNullException(nameof(city));
         if (province == null) throw new ArgumentNullException(nameof(province));
@@ -35,14 +35,15 @@ public class LocationReferenceFactory
             city.Id,
             province.Id,
             city.Name,
-            province.Name
+            province.Name,
+          address
         );
     }
     
     /// <summary>
     /// Asynchronously creates a LocationReference from City and Province IDs
     /// </summary>
-    public async Task<LocationReference> CreateFromIdsAsync(Guid cityId, Guid provinceId)
+    public async Task<LocationReference> CreateFromIdsAsync(Guid cityId, Guid provinceId,string address)
     {
         var city = await _cityRepository.GetByIdAsync(cityId);
         if (city == null) throw new ArgumentException($"City with ID {cityId} not found", nameof(cityId));
@@ -50,14 +51,14 @@ public class LocationReferenceFactory
         var province = await _provinceRepository.GetByIdAsync(provinceId);
         if (province == null) throw new ArgumentException($"Province with ID {provinceId} not found", nameof(provinceId));
         
-        return CreateFromEntities(city, province);
+        return CreateFromEntities(city, province,address);
     }
     
     /// <summary>
     /// Converts the legacy Location value object to a LocationReference
     /// This is a helper method for data migration and should be used cautiously
     /// </summary>
-    public async Task<LocationReference> CreateFromLegacyLocationAsync(string cityName, string provinceName)
+    public async Task<LocationReference> CreateFromLegacyLocationAsync(string cityName, string provinceName,string address)
     {
         var provinces = await _provinceRepository.FindByNameAsync(provinceName);
         var province = provinces.FirstOrDefault();
@@ -69,6 +70,6 @@ public class LocationReferenceFactory
         if (city == null)
             throw new InvalidOperationException($"City '{cityName}' not found in province '{provinceName}'");
             
-        return CreateFromEntities(city, province);
+        return CreateFromEntities(city, province,address);
     }
 }

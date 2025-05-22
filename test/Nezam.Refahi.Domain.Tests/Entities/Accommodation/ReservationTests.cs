@@ -19,7 +19,7 @@ public class ReservationTests
     {
         // Set up common test objects
         var locationReference = new LocationReference(
-            Guid.NewGuid(), Guid.NewGuid(), "Tehran", "Tehran Province");
+            Guid.NewGuid(), Guid.NewGuid(), "Tehran", "Tehran Province","Iran - Urmia");
         var pricePerNight = new Money(100.50m, "USD");
         _hotel = new Hotel(Guid.NewGuid(),"Grand Hotel", "A luxury hotel", locationReference, pricePerNight, 100);
         _primaryGuest = new Guest("Mohammad", "Ahmadi", "2741153671", 30);
@@ -54,7 +54,7 @@ public class ReservationTests
         var freeHotel = new Hotel(Guid.NewGuid(),
             "Free Hotel", 
             "A free hotel", 
-            new LocationReference(Guid.NewGuid(), Guid.NewGuid(), "Tehran", "Tehran Province"),
+            new LocationReference(Guid.NewGuid(), Guid.NewGuid(), "Tehran", "Tehran Province","Iran - Urmia"),
             new Money(0m, "USD"), 
             100);
 
@@ -240,7 +240,7 @@ public class ReservationTests
         var freeHotel = new Hotel(Guid.NewGuid(),
             "Free Hotel", 
             "A free hotel", 
-            new LocationReference(Guid.NewGuid(), Guid.NewGuid(), "Tehran", "Tehran Province"),
+            new LocationReference(Guid.NewGuid(), Guid.NewGuid(), "Tehran", "Tehran Province","Iran - Urmia"),
             new Money(0m, "USD"), 
             100);
         var reservation = new Reservation(freeHotel, _primaryGuest, _stayPeriod);
@@ -296,7 +296,7 @@ public class ReservationTests
         var freeHotel = new Hotel(Guid.NewGuid(),
             "Free Hotel", 
             "A free hotel", 
-            new LocationReference(Guid.NewGuid(), Guid.NewGuid(), "Tehran", "Tehran Province"),
+            new LocationReference(Guid.NewGuid(), Guid.NewGuid(), "Tehran", "Tehran Province","Iran - Urmia"),
             new Money(0m, "USD"), 
             100);
         var reservation = new Reservation(freeHotel, _primaryGuest, _stayPeriod);

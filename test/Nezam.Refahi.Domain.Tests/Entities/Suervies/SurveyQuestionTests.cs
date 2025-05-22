@@ -95,7 +95,7 @@ public class SurveyQuestionTests
         string text = "آیا از کیفیت غذا راضی هستید؟";
         QuestionType type = QuestionType.SingleChoice;
         int order = 0;
-        Survey? nullSurvey = null;
+        Survey nullSurvey = null;
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => new SurveyQuestion(nullSurvey!, text, type, order));

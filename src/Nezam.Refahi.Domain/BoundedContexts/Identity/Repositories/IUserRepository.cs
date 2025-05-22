@@ -1,5 +1,6 @@
 using Nezam.Refahi.Domain.BoundedContexts.Identity.Entities;
 using Nezam.Refahi.Domain.BoundedContexts.Identity.ValueObjects;
+using Nezam.Refahi.Domain.BoundedContexts.Shared.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -9,15 +10,8 @@ namespace Nezam.Refahi.Domain.BoundedContexts.Identity.Repositories;
 /// <summary>
 /// Repository interface for User entity operations
 /// </summary>
-public interface IUserRepository
+public interface IUserRepository : IGenericRepository<User>
 {
-    /// <summary>
-    /// Gets a user by their ID
-    /// </summary>
-    /// <param name="id">The user's unique identifier</param>
-    /// <returns>The user if found, null otherwise</returns>
-    Task<User?> GetByIdAsync(Guid id);
-    
     /// <summary>
     /// Gets a user by their national ID
     /// </summary>
@@ -26,20 +20,9 @@ public interface IUserRepository
     Task<User?> GetByNationalIdAsync(NationalId nationalId);
     
     /// <summary>
-    /// Adds a new user to the repository
+    /// Gets a user by their phone number
     /// </summary>
-    /// <param name="user">The user to add</param>
-    Task AddAsync(User user);
-    
-    /// <summary>
-    /// Updates an existing user in the repository
-    /// </summary>
-    /// <param name="user">The user to update</param>
-    Task UpdateAsync(User user);
-    
-    /// <summary>
-    /// Gets all users
-    /// </summary>
-    /// <returns>A collection of all users</returns>
-    Task<IEnumerable<User>> GetAllAsync();
+    /// <param name="phoneNumber">The user's phone number</param>
+    /// <returns>The user if found, null otherwise</returns>
+    Task<User?> GetByPhoneNumberAsync(string phoneNumber);
 }

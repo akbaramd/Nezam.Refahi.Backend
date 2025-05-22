@@ -1,0 +1,16 @@
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Application\bin\Debug\net8.0\Nezam.Refahi.Application.deps.json
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Application\bin\Debug\net8.0\Nezam.Refahi.Application.dll
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Application\bin\Debug\net8.0\Nezam.Refahi.Application.pdb
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Application\bin\Debug\net8.0\Nezam.Refahi.Domain.dll
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Application\bin\Debug\net8.0\Nezam.Refahi.Domain.pdb
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Application\obj\Debug\net8.0\Nezam.Refahi.Application.csproj.AssemblyReference.cache
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Application\obj\Debug\net8.0\Nezam.Refahi.Application.GeneratedMSBuildEditorConfig.editorconfig
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Application\obj\Debug\net8.0\Nezam.Refahi.Application.AssemblyInfoInputs.cache
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Application\obj\Debug\net8.0\Nezam.Refahi.Application.AssemblyInfo.cs
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Application\obj\Debug\net8.0\Nezam.Refahi.Application.csproj.CoreCompileInputs.cache
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Application\obj\Debug\net8.0\Nezam.Refahi.Application.sourcelink.json
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Application\obj\Debug\net8.0\Nezam.Re.389633E0.Up2Date
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Application\obj\Debug\net8.0\Nezam.Refahi.Application.dll
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Application\obj\Debug\net8.0\refint\Nezam.Refahi.Application.dll
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Application\obj\Debug\net8.0\Nezam.Refahi.Application.pdb
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.Application\obj\Debug\net8.0\ref\Nezam.Refahi.Application.dll

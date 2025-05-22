@@ -25,7 +25,7 @@ public class ReservationDomainServiceExtendedTests
     {
         // Setup common test objects
         var locationReference = new LocationReference(
-            Guid.NewGuid(), Guid.NewGuid(), "Tehran", "Tehran Province");
+            Guid.NewGuid(), Guid.NewGuid(), "Tehran", "Tehran Province","Iran - Urmia");
         var pricePerNight = Money.FromDecimal(100.50m, "USD");
         _hotel = new Hotel(Guid.NewGuid(),"Grand Hotel", "A luxury hotel", locationReference, pricePerNight, 100);
         _primaryGuest = new Guest("Mohammad", "Ahmadi", "2741153671", 30);

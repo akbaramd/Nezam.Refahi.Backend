@@ -62,7 +62,7 @@ public class HotelPhotoTests
     {
         // Arrange
         var locationReference = new LocationReference(
-            Guid.NewGuid(), Guid.NewGuid(), "Tehran", "Tehran Province");
+            Guid.NewGuid(), Guid.NewGuid(), "Tehran", "Tehran Province","Iran - Urmia");
         var money = Money.FromDecimal(100m, "USD");
         var hotel = new Hotel(Guid.NewGuid(),"Grand Hotel", "A luxury hotel", locationReference, money, 100);
         var photo = new HotelPhoto("https://example.com/photos/hotel1.jpg");
@@ -175,7 +175,7 @@ public class HotelPhotoTests
     {
         // Arrange
         var locationReference = new LocationReference(
-            Guid.NewGuid(), Guid.NewGuid(), "Tehran", "Tehran Province");
+            Guid.NewGuid(), Guid.NewGuid(), "Tehran", "Tehran Province","Iran - Urmia");
         var money = Money.FromDecimal(100m, "USD");
         var hotel = new Hotel(Guid.NewGuid(),"Grand Hotel", "A luxury hotel", locationReference, money, 100);
         var photo = new HotelPhoto("https://example.com/photos/hotel1.jpg");
@@ -194,7 +194,7 @@ public class HotelPhotoTests
     {
         // Arrange
         var locationReference = new LocationReference(
-            Guid.NewGuid(), Guid.NewGuid(), "Tehran", "Tehran Province");
+            Guid.NewGuid(), Guid.NewGuid(), "Tehran", "Tehran Province","Iran - Urmia");
         var money = Money.FromDecimal(100m, "USD");
         var hotel = new Hotel(Guid.NewGuid(),"Grand Hotel", "A luxury hotel", locationReference, money, 100);
         var photo = new HotelPhoto("https://example.com/photos/hotel1.jpg");

@@ -18,7 +18,7 @@ public class HotelTests
 
     public HotelTests()
     {
-        _locationReference = new LocationReference(_cityId, _provinceId, _cityName, _provinceName);
+        _locationReference = new LocationReference(_cityId, _provinceId, _cityName, _provinceName,"Iran - Urmia");
         _pricePerNight = new Money(100.50m, "USD");
     }
 
@@ -212,7 +212,7 @@ public class HotelTests
         // Arrange
         var hotel = new Hotel(Guid.NewGuid(),"Grand Hotel", "A luxury hotel", _locationReference, _pricePerNight, 100);
         var newLocationReference = new LocationReference(
-            Guid.NewGuid(), Guid.NewGuid(), "Istanbul", "Istanbul Province");
+            Guid.NewGuid(), Guid.NewGuid(), "Istanbul", "Istanbul Province","Iran - Urmia");
 
         // Act
         hotel.UpdateLocation(newLocationReference);

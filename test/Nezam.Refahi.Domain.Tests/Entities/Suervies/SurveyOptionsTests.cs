@@ -68,7 +68,7 @@ public class SurveyOptionsTests
         // Arrange
         string text = "گزینه اول";
         int displayOrder = 0;
-        SurveyQuestion? nullQuestion = null;
+        SurveyQuestion nullQuestion = null;
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => new SurveyOptions(nullQuestion!, text, displayOrder));
