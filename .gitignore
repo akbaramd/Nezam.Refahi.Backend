@@ -1,1 +1,7 @@
-/.idea
+.idea
+# exclude all bin and obj in any fodlers wihin the project
+**/bin
+**/obj
+
+# exclude all net core dont need items
+
