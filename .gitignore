@@ -3,5 +3,7 @@
 **/bin
 **/obj
 
+/bin
+/obj
 # exclude all net core dont need items
 
