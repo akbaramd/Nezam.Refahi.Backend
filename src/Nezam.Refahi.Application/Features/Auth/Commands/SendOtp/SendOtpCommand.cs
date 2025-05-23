@@ -11,7 +11,7 @@ public record SendOtpCommand : IRequest<ApplicationResult<SendOtpResponse>>
     /// <summary>
     /// The phone number to send the OTP to
     /// </summary>
-    public string PhoneNumber { get; init; } = string.Empty;
+    public string NationalCode { get; init; } = string.Empty;
     
     /// <summary>
     /// The purpose of the OTP (e.g., "login", "reset-password")

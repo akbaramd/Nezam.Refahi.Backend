@@ -5,6 +5,8 @@ using Microsoft.IdentityModel.Tokens;
 using Nezam.Refahi.Application.Common.Interfaces;
 using Nezam.Refahi.Infrastructure.Services;
 using System.Text;
+using Nezam.Refahi.Application.Ports;
+using Nezam.Refahi.Infrastructure.Adapters;
 
 namespace Nezam.Refahi.Infrastructure.IoC;
 
@@ -29,6 +31,7 @@ public static class ServiceExtensions
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IOtpService, OtpService>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddSingleton<IEngineerHttpClient, EngineerHttpClientAdapter>();
         
         // Add memory cache for OTP service
         services.AddMemoryCache();

@@ -11,7 +11,7 @@ public record VerifyOtpCommand : IRequest<ApplicationResult<VerifyOtpResponse>>
     /// <summary>
     /// The phone number that received the OTP
     /// </summary>
-    public string PhoneNumber { get; init; } = string.Empty;
+    public string NationalCode { get; init; } = string.Empty;
     
     /// <summary>
     /// The OTP code to verify

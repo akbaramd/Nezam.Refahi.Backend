@@ -40,7 +40,7 @@ public sealed class GetCurrentUserQueryHandler
             FullName = string.Concat(user.FirstName, " ", user.LastName),
             Roles = _currentUser.Roles,
             IsAuthenticated = true,
-            MaskedNationalId = Mask(user.NationalId),
+            MaskedNationalId = Mask(user.NationalId?.Value),
             IsProfileComplete = HasProfile(user)
         };
 

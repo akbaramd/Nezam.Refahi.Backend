@@ -35,7 +35,7 @@ public static class AuthEndpoints
                 // Create the command from the request
                 var command = new SendOtpCommand
                 {
-                    PhoneNumber = request.PhoneNumber,
+                    NationalCode = request.NationalCode,
                     Purpose = request.Purpose ?? "login"
                 };
                 
@@ -63,7 +63,7 @@ public static class AuthEndpoints
                 // Create the command from the request
                 var command = new VerifyOtpCommand
                 {
-                    PhoneNumber = request.PhoneNumber,
+                  NationalCode = request.NationalCode,
                     OtpCode = request.OtpCode,
                     Purpose = request.Purpose ?? "login"
                 };
@@ -157,8 +157,8 @@ public static class AuthEndpoints
 }
 
 // Request DTOs
-public record SendOtpRequest(string PhoneNumber, string? Purpose = null, string? DeviceId = null);
-public record VerifyOtpRequest(string PhoneNumber, string OtpCode, string? Purpose = null);
+public record SendOtpRequest(string NationalCode, string? Purpose = null, string? DeviceId = null);
+public record VerifyOtpRequest(string NationalCode, string OtpCode, string? Purpose = null);
 public record CompleteRegistrationRequest(
     string FirstName,
     string LastName,

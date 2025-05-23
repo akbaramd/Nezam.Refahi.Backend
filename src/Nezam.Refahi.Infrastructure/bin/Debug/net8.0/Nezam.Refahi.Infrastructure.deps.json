@@ -1136,7 +1136,7 @@
         },
         "runtime": {
           "Nezam.Refahi.Application.dll": {
-            "assemblyVersion": "1.0.0.0",
+            "assemblyVersion": "1.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1144,7 +1144,7 @@
       "Nezam.Refahi.Domain/1.0.0": {
         "runtime": {
           "Nezam.Refahi.Domain.dll": {
-            "assemblyVersion": "1.0.0.0",
+            "assemblyVersion": "1.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
