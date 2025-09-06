@@ -7,17 +7,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.9" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="8.0.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Nezam.Refahi.Infrastructure\Nezam.Refahi.Infrastructure.csproj" />
-    <ProjectReference Include="..\Nezam.Refahi.Application\Nezam.Refahi.Application.csproj" />
+    <ProjectReference Include="..\Modules\Identity\Nezam.Refahi.Identity.Presentation\Nezam.Refahi.Identity.Presentation.csproj" />
+    <ProjectReference Include="..\Modules\Settings\Nezam.Refahi.Settings.Presentation\Nezam.Refahi.Settings.Presentation.csproj" />
   </ItemGroup>
+
 
 </Project>

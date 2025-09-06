@@ -15,7 +15,7 @@ param (
     [switch]$Help
 )
 
-$infrastructureProject = "src\Nezam.Refahi.Infrastructure"
+$infrastructureProject = "src\Modules\Identity\Nezam.Refahi.Identity.Infrastructure"
 $startupProject = "src\Nezam.Refahi.WebApi"
 $migrationsDir = "Migrations"
 

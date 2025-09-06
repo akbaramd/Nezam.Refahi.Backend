@@ -1770,16 +1770,6 @@
         "build": {
           "build/netcoreapp3.1/xunit.runner.visualstudio.props": {}
         }
-      },
-      "Nezam.Refahi.Domain/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v8.0",
-        "compile": {
-          "bin/placeholder/Nezam.Refahi.Domain.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/Nezam.Refahi.Domain.dll": {}
-        }
       }
     }
   },
@@ -5649,25 +5639,19 @@
         "xunit.runner.visualstudio.2.4.5.nupkg.sha512",
         "xunit.runner.visualstudio.nuspec"
       ]
-    },
-    "Nezam.Refahi.Domain/1.0.0": {
-      "type": "project",
-      "path": "../../src/Nezam.Refahi.Domain/Nezam.Refahi.Domain.csproj",
-      "msbuildProject": "../../src/Nezam.Refahi.Domain/Nezam.Refahi.Domain.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net8.0": [
       "Microsoft.NET.Test.Sdk >= 17.5.0",
       "Moq >= 4.18.4",
-      "Nezam.Refahi.Domain >= 1.0.0",
       "coverlet.collector >= 3.2.0",
       "xunit >= 2.4.2",
       "xunit.runner.visualstudio >= 2.4.5"
     ]
   },
   "packageFolders": {
-    "C:\\Users\\ahmadi.UR-NEZAM\\.nuget\\packages\\": {},
+    "C:\\Users\\akbar\\.nuget\\packages\\": {},
     "C:\\Program Files\\DevExpress 24.2\\Components\\Offline Packages": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
@@ -5677,16 +5661,15 @@
       "projectUniqueName": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\test\\Nezam.Refahi.Domain.Tests\\Nezam.Refahi.Domain.Tests.csproj",
       "projectName": "Nezam.Refahi.Domain.Tests",
       "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\test\\Nezam.Refahi.Domain.Tests\\Nezam.Refahi.Domain.Tests.csproj",
-      "packagesPath": "C:\\Users\\ahmadi.UR-NEZAM\\.nuget\\packages\\",
+      "packagesPath": "C:\\Users\\akbar\\.nuget\\packages\\",
       "outputPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\test\\Nezam.Refahi.Domain.Tests\\obj\\",
       "projectStyle": "PackageReference",
-      "UsingMicrosoftNETSdk": false,
       "fallbackFolders": [
         "C:\\Program Files\\DevExpress 24.2\\Components\\Offline Packages",
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\ahmadi.UR-NEZAM\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\akbar\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.1.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.2.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
@@ -5704,11 +5687,7 @@
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
-          "projectReferences": {
-            "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Domain\\Nezam.Refahi.Domain.csproj": {
-              "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Domain\\Nezam.Refahi.Domain.csproj"
-            }
-          }
+          "projectReferences": {}
         }
       },
       "warningProperties": {
@@ -5721,7 +5700,8 @@
         "enableAudit": "true",
         "auditLevel": "low",
         "auditMode": "direct"
-      }
+      },
+      "SdkAnalysisLevel": "9.0.300"
     },
     "frameworks": {
       "net8.0": {
@@ -5752,62 +5732,6 @@
             "version": "[2.4.5, )"
           }
         },
-        "centralPackageVersions": {
-          "Ardalis.GuardClauses": "4.5.0",
-          "Ardalis.HttpClientTestExtensions": "4.2.0",
-          "Ardalis.ListStartupServices": "1.1.4",
-          "Ardalis.Result": "8.0.0",
-          "Ardalis.Result.AspNetCore": "8.0.0",
-          "Ardalis.SharedKernel": "1.4.0",
-          "Ardalis.SmartEnum": "8.0.0",
-          "Ardalis.Specification": "8.0.0",
-          "Ardalis.Specification.EntityFrameworkCore": "8.0.0",
-          "AspNetCore.Unobtrusive.Ajax": "2.0.0",
-          "coverlet.collector": "6.0.1",
-          "FastEndpoints": "5.24.0",
-          "FastEndpoints.ApiExplorer": "2.2.0",
-          "FastEndpoints.Security": "5.24.0",
-          "FastEndpoints.Swagger": "5.23.0",
-          "FastEndpoints.Swagger.Swashbuckle": "2.2.0",
-          "FluentAssertions": "6.12.0",
-          "MailKit": "4.4.0",
-          "MediatR": "12.2.0",
-          "Microsoft.AspNetCore.Components.Web": "8.0.0",
-          "Microsoft.AspNetCore.Components.WebAssembly": "8.0.0",
-          "Microsoft.AspNetCore.Components.WebAssembly.DevServer": "8.0.0",
-          "Microsoft.AspNetCore.Mvc.Testing": "8.0.2",
-          "Microsoft.AspNetCore.OData": "8.2.5",
-          "Microsoft.EntityFrameworkCore": "8.0.4",
-          "Microsoft.EntityFrameworkCore.Design": "8.0.2",
-          "Microsoft.EntityFrameworkCore.InMemory": "8.0.2",
-          "Microsoft.EntityFrameworkCore.Relational": "8.0.2",
-          "Microsoft.EntityFrameworkCore.Sqlite": "8.0.2",
-          "Microsoft.EntityFrameworkCore.SqlServer": "8.0.4",
-          "Microsoft.EntityFrameworkCore.Tools": "8.0.2",
-          "Microsoft.Extensions.Configuration": "8.0.0",
-          "Microsoft.Extensions.Hosting": "8.0.0",
-          "Microsoft.Extensions.Http": "8.0.0",
-          "Microsoft.Extensions.Logging": "8.0.0",
-          "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
-          "Microsoft.Extensions.Options.ConfigurationExtensions": "8.0.0",
-          "Microsoft.jQuery.Unobtrusive.Ajax": "3.2.6",
-          "Microsoft.jQuery.Unobtrusive.Validation": "4.0.0",
-          "Microsoft.NET.Test.Sdk": "17.9.0",
-          "Microsoft.Orleans.Clustering.Consul": "8.0.0",
-          "Microsoft.VisualStudio.Web.CodeGeneration.Design": "8.0.1",
-          "Novin": "1.0.8",
-          "NSubstitute": "5.1.0",
-          "Ocelot.Provider.Consul": "23.1.0",
-          "Ocelot.Provider.Consul.Extensions": "17.2.0",
-          "ReportGenerator": "5.2.2",
-          "Scrutor": "4.2.2",
-          "Serilog.AspNetCore": "8.0.1",
-          "SQLite": "3.13.0",
-          "Swashbuckle.AspNetCore": "6.5.0",
-          "Swashbuckle.AspNetCore.Annotations": "6.5.0",
-          "xunit": "2.7.0",
-          "xunit.runner.visualstudio": "2.5.7"
-        },
         "imports": [
           "net461",
           "net462",
@@ -5824,7 +5748,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.102/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

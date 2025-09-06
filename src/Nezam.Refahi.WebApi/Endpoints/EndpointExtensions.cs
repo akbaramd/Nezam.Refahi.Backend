@@ -12,8 +12,8 @@ public static class EndpointExtensions
     /// <returns>The web application for chaining</returns>
     public static WebApplication MapApiEndpoints(this WebApplication app)
     {
-        // Map authentication endpoints
-        app.MapAuthEndpoints();
+        // Authentication endpoints are now handled by Identity.Presentation module
+        // Settings endpoints are now handled by Settings.Presentation module
         
         // Add other endpoint mappings here as the application grows
         // app.MapUserEndpoints();

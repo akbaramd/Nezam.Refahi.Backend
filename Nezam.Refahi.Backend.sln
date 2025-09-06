@@ -6,15 +6,41 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A5F1D2C1-0A0
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{B6F1D2C2-0A0B-4F0A-8E6E-D89C99B1F354}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.Domain", "src\Nezam.Refahi.Domain\Nezam.Refahi.Domain.csproj", "{C7F1D2C3-0A0B-4F0A-8E6E-D89C99B1F355}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.Shared.Domain", "src\Nezam.Refahi.Shared.Domain\Nezam.Refahi.Shared.Domain.csproj", "{C7F1D2C3-0A0B-4F0A-8E6E-D89C99B1F355}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.Domain.Tests", "test\Nezam.Refahi.Domain.Tests\Nezam.Refahi.Domain.Tests.csproj", "{D8F1D2C4-0A0B-4F0A-8E6E-D89C99B1F356}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.Infrastructure", "src\Nezam.Refahi.Infrastructure\Nezam.Refahi.Infrastructure.csproj", "{CBBA3DBC-B972-4065-9311-E6ADA157D967}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.Shared.Infrastructure", "src\Nezam.Refahi.Shared.Infrastructure\Nezam.Refahi.Shared.Infrastructure.csproj", "{CBBA3DBC-B972-4065-9311-E6ADA157D967}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.Application", "src\Nezam.Refahi.Application\Nezam.Refahi.Application.csproj", "{D5B2820C-A773-40D8-B18B-37153A048172}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.Shared.Application", "src\Nezam.Refahi.Shared.Application\Nezam.Refahi.Shared.Application.csproj", "{D5B2820C-A773-40D8-B18B-37153A048172}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.WebApi", "src\Nezam.Refahi.WebApi\Nezam.Refahi.WebApi.csproj", "{5F5C6210-9EFE-4F53-B3EF-A751C2B935F6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{286C3AE0-ACCA-455B-819F-9D19E8486035}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Settings", "Settings", "{B4C11D64-24C4-442B-9E58-0F01300707C7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.Settings.Domain", "src\Modules\Settings\Nezam.Refahi.Settings.Domain\Nezam.Refahi.Settings.Domain.csproj", "{6C8D7378-F2F7-4074-9543-E5856C4680BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.Settings.Application", "src\Modules\Settings\Nezam.Refahi.Settings.Application\Nezam.Refahi.Settings.Application.csproj", "{B759A1E8-168F-4B79-AEB6-E651D9AAEB88}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.Settings.Infrastructure", "src\Modules\Settings\Nezam.Refahi.Settings.Infrastructure\Nezam.Refahi.Settings.Infrastructure.csproj", "{74CD0B85-6C89-43D2-BCB6-9ED0ADD2AE6E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Identity", "Identity", "{19578C6A-F061-4B93-9A86-3FD2F5563C9C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.Identity.Application", "src\Modules\Identity\Nezam.Refahi.Identity.Application\Nezam.Refahi.Identity.Application.csproj", "{15C71CD9-1CA1-47F6-ABB8-86C2819E562A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.Identity.Infrastructure", "src\Modules\Identity\Nezam.Refahi.Identity.Infrastructure\Nezam.Refahi.Identity.Infrastructure.csproj", "{AE1B103A-2A7F-4329-9018-A6B747479479}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.Identity.Domain", "src\Modules\Identity\Nezam.Refahi.Identity.Domain\Nezam.Refahi.Identity.Domain.csproj", "{DDCD60FF-E34D-4A25-A5FB-8338F9460ABC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shareds", "Shareds", "{8A9D6589-4729-4DBF-830F-DB1CFAE5CCD7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.Identity.Presentation", "src\Modules\Identity\Nezam.Refahi.Identity.Presentation\Nezam.Refahi.Identity.Presentation.csproj", "{22761E27-4462-4E1F-806F-84A8867C33A8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.Settings.Presentation", "src\Modules\Settings\Nezam.Refahi.Settings.Presentation\Nezam.Refahi.Settings.Presentation.csproj", "{F5CE01F6-3685-422B-9BD5-C98D4AD88E85}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.Settings.Contracts", "src\Modules\Settings\Nezam.Refahi.Settings.Contracts\Nezam.Refahi.Settings.Contracts.csproj", "{26E05827-52D5-4D08-8876-6F5202E0E17F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -42,16 +68,65 @@ Global
 		{5F5C6210-9EFE-4F53-B3EF-A751C2B935F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5F5C6210-9EFE-4F53-B3EF-A751C2B935F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5F5C6210-9EFE-4F53-B3EF-A751C2B935F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C8D7378-F2F7-4074-9543-E5856C4680BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C8D7378-F2F7-4074-9543-E5856C4680BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C8D7378-F2F7-4074-9543-E5856C4680BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C8D7378-F2F7-4074-9543-E5856C4680BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B759A1E8-168F-4B79-AEB6-E651D9AAEB88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B759A1E8-168F-4B79-AEB6-E651D9AAEB88}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B759A1E8-168F-4B79-AEB6-E651D9AAEB88}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B759A1E8-168F-4B79-AEB6-E651D9AAEB88}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74CD0B85-6C89-43D2-BCB6-9ED0ADD2AE6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74CD0B85-6C89-43D2-BCB6-9ED0ADD2AE6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74CD0B85-6C89-43D2-BCB6-9ED0ADD2AE6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74CD0B85-6C89-43D2-BCB6-9ED0ADD2AE6E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15C71CD9-1CA1-47F6-ABB8-86C2819E562A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15C71CD9-1CA1-47F6-ABB8-86C2819E562A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15C71CD9-1CA1-47F6-ABB8-86C2819E562A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15C71CD9-1CA1-47F6-ABB8-86C2819E562A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE1B103A-2A7F-4329-9018-A6B747479479}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE1B103A-2A7F-4329-9018-A6B747479479}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE1B103A-2A7F-4329-9018-A6B747479479}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE1B103A-2A7F-4329-9018-A6B747479479}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DDCD60FF-E34D-4A25-A5FB-8338F9460ABC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDCD60FF-E34D-4A25-A5FB-8338F9460ABC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDCD60FF-E34D-4A25-A5FB-8338F9460ABC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDCD60FF-E34D-4A25-A5FB-8338F9460ABC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22761E27-4462-4E1F-806F-84A8867C33A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22761E27-4462-4E1F-806F-84A8867C33A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22761E27-4462-4E1F-806F-84A8867C33A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22761E27-4462-4E1F-806F-84A8867C33A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5CE01F6-3685-422B-9BD5-C98D4AD88E85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5CE01F6-3685-422B-9BD5-C98D4AD88E85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5CE01F6-3685-422B-9BD5-C98D4AD88E85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5CE01F6-3685-422B-9BD5-C98D4AD88E85}.Release|Any CPU.Build.0 = Release|Any CPU
+		{26E05827-52D5-4D08-8876-6F5202E0E17F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26E05827-52D5-4D08-8876-6F5202E0E17F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26E05827-52D5-4D08-8876-6F5202E0E17F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26E05827-52D5-4D08-8876-6F5202E0E17F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{C7F1D2C3-0A0B-4F0A-8E6E-D89C99B1F355} = {A5F1D2C1-0A0B-4F0A-8E6E-D89C99B1F353}
 		{D8F1D2C4-0A0B-4F0A-8E6E-D89C99B1F356} = {B6F1D2C2-0A0B-4F0A-8E6E-D89C99B1F354}
-		{CBBA3DBC-B972-4065-9311-E6ADA157D967} = {A5F1D2C1-0A0B-4F0A-8E6E-D89C99B1F353}
-		{D5B2820C-A773-40D8-B18B-37153A048172} = {A5F1D2C1-0A0B-4F0A-8E6E-D89C99B1F353}
 		{5F5C6210-9EFE-4F53-B3EF-A751C2B935F6} = {A5F1D2C1-0A0B-4F0A-8E6E-D89C99B1F353}
+		{286C3AE0-ACCA-455B-819F-9D19E8486035} = {A5F1D2C1-0A0B-4F0A-8E6E-D89C99B1F353}
+		{B4C11D64-24C4-442B-9E58-0F01300707C7} = {286C3AE0-ACCA-455B-819F-9D19E8486035}
+		{6C8D7378-F2F7-4074-9543-E5856C4680BA} = {B4C11D64-24C4-442B-9E58-0F01300707C7}
+		{B759A1E8-168F-4B79-AEB6-E651D9AAEB88} = {B4C11D64-24C4-442B-9E58-0F01300707C7}
+		{74CD0B85-6C89-43D2-BCB6-9ED0ADD2AE6E} = {B4C11D64-24C4-442B-9E58-0F01300707C7}
+		{19578C6A-F061-4B93-9A86-3FD2F5563C9C} = {286C3AE0-ACCA-455B-819F-9D19E8486035}
+		{15C71CD9-1CA1-47F6-ABB8-86C2819E562A} = {19578C6A-F061-4B93-9A86-3FD2F5563C9C}
+		{AE1B103A-2A7F-4329-9018-A6B747479479} = {19578C6A-F061-4B93-9A86-3FD2F5563C9C}
+		{DDCD60FF-E34D-4A25-A5FB-8338F9460ABC} = {19578C6A-F061-4B93-9A86-3FD2F5563C9C}
+		{22761E27-4462-4E1F-806F-84A8867C33A8} = {19578C6A-F061-4B93-9A86-3FD2F5563C9C}
+		{F5CE01F6-3685-422B-9BD5-C98D4AD88E85} = {B4C11D64-24C4-442B-9E58-0F01300707C7}
+		{8A9D6589-4729-4DBF-830F-DB1CFAE5CCD7} = {286C3AE0-ACCA-455B-819F-9D19E8486035}
+		{C7F1D2C3-0A0B-4F0A-8E6E-D89C99B1F355} = {8A9D6589-4729-4DBF-830F-DB1CFAE5CCD7}
+		{D5B2820C-A773-40D8-B18B-37153A048172} = {8A9D6589-4729-4DBF-830F-DB1CFAE5CCD7}
+		{CBBA3DBC-B972-4065-9311-E6ADA157D967} = {8A9D6589-4729-4DBF-830F-DB1CFAE5CCD7}
+		{26E05827-52D5-4D08-8876-6F5202E0E17F} = {B4C11D64-24C4-442B-9E58-0F01300707C7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E9F1D2C5-0A0B-4F0A-8E6E-D89C99B1F357}

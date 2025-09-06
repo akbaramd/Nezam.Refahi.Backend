@@ -4,14 +4,14 @@
     "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\Nezam.Refahi.WebApi.csproj": {}
   },
   "projects": {
-    "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Application\\Nezam.Refahi.Application.csproj": {
+    "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Nezam.Refahi.Identity.Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Application\\Nezam.Refahi.Application.csproj",
-        "projectName": "Nezam.Refahi.Application",
-        "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Application\\Nezam.Refahi.Application.csproj",
-        "packagesPath": "C:\\Users\\ahmadi.UR-NEZAM\\.nuget\\packages\\",
-        "outputPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Application\\obj\\",
+        "projectUniqueName": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Nezam.Refahi.Identity.Application.csproj",
+        "projectName": "Nezam.Refahi.Identity.Application",
+        "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Nezam.Refahi.Identity.Application.csproj",
+        "packagesPath": "C:\\Users\\akbar\\.nuget\\packages\\",
+        "outputPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\obj\\",
         "projectStyle": "PackageReference",
         "UsingMicrosoftNETSdk": false,
         "fallbackFolders": [
@@ -19,7 +19,7 @@
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\ahmadi.UR-NEZAM\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\akbar\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.1.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.2.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
@@ -38,8 +38,14 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Domain\\Nezam.Refahi.Domain.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Domain\\Nezam.Refahi.Domain.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Domain\\Nezam.Refahi.Identity.Domain.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Domain\\Nezam.Refahi.Identity.Domain.csproj"
+              },
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Contracts\\Nezam.Refahi.Settings.Contracts.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Contracts\\Nezam.Refahi.Settings.Contracts.csproj"
+              },
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
               }
             }
           }
@@ -60,19 +66,19 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "AkbarAmd.SharedKernel.Application": {
+              "target": "Package",
+              "version": "[1.0.11, )"
+            },
             "FluentValidation": {
               "target": "Package",
-              "version": "[11.8.0, )"
+              "version": "[11.8.1, )"
             },
             "FluentValidation.DependencyInjectionExtensions": {
               "target": "Package",
-              "version": "[11.8.0, )"
+              "version": "[11.8.1, )"
             },
-            "MediatR": {
-              "target": "Package",
-              "version": "[12.1.1, )"
-            },
-            "Microsoft.Extensions.DependencyInjection.Abstractions": {
+            "Microsoft.Extensions.Http": {
               "target": "Package",
               "version": "[8.0.0, )"
             }
@@ -149,18 +155,18 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.102/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Domain\\Nezam.Refahi.Domain.csproj": {
+    "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Domain\\Nezam.Refahi.Identity.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Domain\\Nezam.Refahi.Domain.csproj",
-        "projectName": "Nezam.Refahi.Domain",
-        "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Domain\\Nezam.Refahi.Domain.csproj",
-        "packagesPath": "C:\\Users\\ahmadi.UR-NEZAM\\.nuget\\packages\\",
-        "outputPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Domain\\obj\\",
+        "projectUniqueName": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Domain\\Nezam.Refahi.Identity.Domain.csproj",
+        "projectName": "Nezam.Refahi.Identity.Domain",
+        "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Domain\\Nezam.Refahi.Identity.Domain.csproj",
+        "packagesPath": "C:\\Users\\akbar\\.nuget\\packages\\",
+        "outputPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "UsingMicrosoftNETSdk": false,
         "fallbackFolders": [
@@ -168,7 +174,7 @@
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\ahmadi.UR-NEZAM\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\akbar\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.1.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.2.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
@@ -186,7 +192,11 @@
         "frameworks": {
           "net8.0": {
             "targetAlias": "net8.0",
-            "projectReferences": {}
+            "projectReferences": {
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
+              }
+            }
           }
         },
         "warningProperties": {
@@ -204,6 +214,12 @@
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
+          "dependencies": {
+            "AkbarAmd.SharedKernel.Domain": {
+              "target": "Package",
+              "version": "[1.0.11, )"
+            }
+          },
           "centralPackageVersions": {
             "Ardalis.GuardClauses": "4.5.0",
             "Ardalis.HttpClientTestExtensions": "4.2.0",
@@ -276,18 +292,18 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.102/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Infrastructure\\Nezam.Refahi.Infrastructure.csproj": {
+    "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Infrastructure\\Nezam.Refahi.Identity.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Infrastructure\\Nezam.Refahi.Infrastructure.csproj",
-        "projectName": "Nezam.Refahi.Infrastructure",
-        "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Infrastructure\\Nezam.Refahi.Infrastructure.csproj",
-        "packagesPath": "C:\\Users\\ahmadi.UR-NEZAM\\.nuget\\packages\\",
-        "outputPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Infrastructure\\obj\\",
+        "projectUniqueName": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Infrastructure\\Nezam.Refahi.Identity.Infrastructure.csproj",
+        "projectName": "Nezam.Refahi.Identity.Infrastructure",
+        "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Infrastructure\\Nezam.Refahi.Identity.Infrastructure.csproj",
+        "packagesPath": "C:\\Users\\akbar\\.nuget\\packages\\",
+        "outputPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "UsingMicrosoftNETSdk": false,
         "fallbackFolders": [
@@ -295,7 +311,7 @@
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\ahmadi.UR-NEZAM\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\akbar\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.1.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.2.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
@@ -314,11 +330,14 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Application\\Nezam.Refahi.Application.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Application\\Nezam.Refahi.Application.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Nezam.Refahi.Identity.Application.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Nezam.Refahi.Identity.Application.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Domain\\Nezam.Refahi.Domain.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Domain\\Nezam.Refahi.Domain.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Domain\\Nezam.Refahi.Identity.Domain.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Domain\\Nezam.Refahi.Identity.Domain.csproj"
+              },
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
               }
             }
           }
@@ -339,65 +358,41 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
-            "FluentValidation": {
+            "AkbarAmd.SharedKernel.Infrastructure": {
               "target": "Package",
-              "version": "[11.8.0, )"
-            },
-            "FluentValidation.DependencyInjectionExtensions": {
-              "target": "Package",
-              "version": "[11.8.0, )"
-            },
-            "MediatR": {
-              "target": "Package",
-              "version": "[12.1.1, )"
+              "version": "[1.0.11, )"
             },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
-              "version": "[8.0.0, )"
+              "version": "[8.0.18, )"
             },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
-              "version": "[8.0.0, )"
+              "version": "[8.0.18, )"
             },
             "Microsoft.EntityFrameworkCore.Design": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
-              "version": "[8.0.0, )"
+              "version": "[8.0.18, )"
             },
             "Microsoft.EntityFrameworkCore.Relational": {
               "target": "Package",
-              "version": "[8.0.0, )"
+              "version": "[8.0.18, )"
             },
             "Microsoft.EntityFrameworkCore.SqlServer": {
               "target": "Package",
-              "version": "[8.0.0, )"
+              "version": "[8.0.18, )"
             },
             "Microsoft.EntityFrameworkCore.Sqlite": {
               "target": "Package",
-              "version": "[8.0.0, )"
+              "version": "[8.0.18, )"
             },
             "Microsoft.EntityFrameworkCore.Tools": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
-              "version": "[8.0.0, )"
-            },
-            "Microsoft.Extensions.Caching.Memory": {
-              "target": "Package",
-              "version": "[8.0.1, )"
-            },
-            "Microsoft.Extensions.DependencyInjection": {
-              "target": "Package",
-              "version": "[8.0.0, )"
-            },
-            "Microsoft.Extensions.Http": {
-              "target": "Package",
-              "version": "[8.0.0, )"
-            },
-            "System.IdentityModel.Tokens.Jwt": {
-              "target": "Package",
-              "version": "[7.1.2, )"
+              "version": "[8.0.18, )"
             }
           },
           "centralPackageVersions": {
@@ -468,25 +463,22 @@
           "assetTargetFallback": true,
           "warn": true,
           "frameworkReferences": {
-            "Microsoft.AspNetCore.App": {
-              "privateAssets": "none"
-            },
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.102/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\Nezam.Refahi.WebApi.csproj": {
+    "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Presentation\\Nezam.Refahi.Identity.Presentation.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\Nezam.Refahi.WebApi.csproj",
-        "projectName": "Nezam.Refahi.WebApi",
-        "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\Nezam.Refahi.WebApi.csproj",
-        "packagesPath": "C:\\Users\\ahmadi.UR-NEZAM\\.nuget\\packages\\",
-        "outputPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\obj\\",
+        "projectUniqueName": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Presentation\\Nezam.Refahi.Identity.Presentation.csproj",
+        "projectName": "Nezam.Refahi.Identity.Presentation",
+        "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Presentation\\Nezam.Refahi.Identity.Presentation.csproj",
+        "packagesPath": "C:\\Users\\akbar\\.nuget\\packages\\",
+        "outputPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Presentation\\obj\\",
         "projectStyle": "PackageReference",
         "UsingMicrosoftNETSdk": false,
         "fallbackFolders": [
@@ -494,7 +486,7 @@
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\ahmadi.UR-NEZAM\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\akbar\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.1.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.2.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
@@ -513,11 +505,11 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Application\\Nezam.Refahi.Application.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Application\\Nezam.Refahi.Application.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Infrastructure\\Nezam.Refahi.Identity.Infrastructure.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Infrastructure\\Nezam.Refahi.Identity.Infrastructure.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Infrastructure\\Nezam.Refahi.Infrastructure.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Infrastructure\\Nezam.Refahi.Infrastructure.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
               }
             }
           }
@@ -538,13 +530,15 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
-            "Microsoft.AspNetCore.OpenApi": {
+            "Bonyan.AspNetCore": {
               "target": "Package",
-              "version": "[7.0.9, )"
+              "version": "[1.5.7, )"
             },
-            "Microsoft.EntityFrameworkCore.Design": {
-              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
-              "suppressParent": "All",
+            "MediatR": {
+              "target": "Package",
+              "version": "[12.5.0, )"
+            },
+            "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
               "version": "[8.0.0, )"
             },
@@ -628,7 +622,1410 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.102/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Application\\Nezam.Refahi.Settings.Application.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Application\\Nezam.Refahi.Settings.Application.csproj",
+        "projectName": "Nezam.Refahi.Settings.Application",
+        "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Application\\Nezam.Refahi.Settings.Application.csproj",
+        "packagesPath": "C:\\Users\\akbar\\.nuget\\packages\\",
+        "outputPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Application\\obj\\",
+        "projectStyle": "PackageReference",
+        "UsingMicrosoftNETSdk": false,
+        "fallbackFolders": [
+          "C:\\Program Files\\DevExpress 24.2\\Components\\Offline Packages",
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\akbar\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.1.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.2.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\DevExpress 24.2\\Components\\System\\Components\\Packages": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Contracts\\Nezam.Refahi.Settings.Contracts.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Contracts\\Nezam.Refahi.Settings.Contracts.csproj"
+              },
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Domain\\Nezam.Refahi.Settings.Domain.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Domain\\Nezam.Refahi.Settings.Domain.csproj"
+              },
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
+              },
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "allWarningsAsErrors": true,
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "AkbarAmd.SharedKernel.Application": {
+              "target": "Package",
+              "version": "[1.0.11, )"
+            },
+            "Microsoft.Extensions.Http": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            }
+          },
+          "centralPackageVersions": {
+            "Ardalis.GuardClauses": "4.5.0",
+            "Ardalis.HttpClientTestExtensions": "4.2.0",
+            "Ardalis.ListStartupServices": "1.1.4",
+            "Ardalis.Result": "8.0.0",
+            "Ardalis.Result.AspNetCore": "8.0.0",
+            "Ardalis.SharedKernel": "1.4.0",
+            "Ardalis.SmartEnum": "8.0.0",
+            "Ardalis.Specification": "8.0.0",
+            "Ardalis.Specification.EntityFrameworkCore": "8.0.0",
+            "AspNetCore.Unobtrusive.Ajax": "2.0.0",
+            "coverlet.collector": "6.0.1",
+            "FastEndpoints": "5.24.0",
+            "FastEndpoints.ApiExplorer": "2.2.0",
+            "FastEndpoints.Security": "5.24.0",
+            "FastEndpoints.Swagger": "5.23.0",
+            "FastEndpoints.Swagger.Swashbuckle": "2.2.0",
+            "FluentAssertions": "6.12.0",
+            "MailKit": "4.4.0",
+            "MediatR": "12.2.0",
+            "Microsoft.AspNetCore.Components.Web": "8.0.0",
+            "Microsoft.AspNetCore.Components.WebAssembly": "8.0.0",
+            "Microsoft.AspNetCore.Components.WebAssembly.DevServer": "8.0.0",
+            "Microsoft.AspNetCore.Mvc.Testing": "8.0.2",
+            "Microsoft.AspNetCore.OData": "8.2.5",
+            "Microsoft.EntityFrameworkCore": "8.0.4",
+            "Microsoft.EntityFrameworkCore.Design": "8.0.2",
+            "Microsoft.EntityFrameworkCore.InMemory": "8.0.2",
+            "Microsoft.EntityFrameworkCore.Relational": "8.0.2",
+            "Microsoft.EntityFrameworkCore.Sqlite": "8.0.2",
+            "Microsoft.EntityFrameworkCore.SqlServer": "8.0.4",
+            "Microsoft.EntityFrameworkCore.Tools": "8.0.2",
+            "Microsoft.Extensions.Configuration": "8.0.0",
+            "Microsoft.Extensions.Hosting": "8.0.0",
+            "Microsoft.Extensions.Http": "8.0.0",
+            "Microsoft.Extensions.Logging": "8.0.0",
+            "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
+            "Microsoft.Extensions.Options.ConfigurationExtensions": "8.0.0",
+            "Microsoft.jQuery.Unobtrusive.Ajax": "3.2.6",
+            "Microsoft.jQuery.Unobtrusive.Validation": "4.0.0",
+            "Microsoft.NET.Test.Sdk": "17.9.0",
+            "Microsoft.Orleans.Clustering.Consul": "8.0.0",
+            "Microsoft.VisualStudio.Web.CodeGeneration.Design": "8.0.1",
+            "Novin": "1.0.8",
+            "NSubstitute": "5.1.0",
+            "Ocelot.Provider.Consul": "23.1.0",
+            "Ocelot.Provider.Consul.Extensions": "17.2.0",
+            "ReportGenerator": "5.2.2",
+            "Scrutor": "4.2.2",
+            "Serilog.AspNetCore": "8.0.1",
+            "SQLite": "3.13.0",
+            "Swashbuckle.AspNetCore": "6.5.0",
+            "Swashbuckle.AspNetCore.Annotations": "6.5.0",
+            "xunit": "2.7.0",
+            "xunit.runner.visualstudio": "2.5.7"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Contracts\\Nezam.Refahi.Settings.Contracts.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Contracts\\Nezam.Refahi.Settings.Contracts.csproj",
+        "projectName": "Nezam.Refahi.Settings.Contracts",
+        "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Contracts\\Nezam.Refahi.Settings.Contracts.csproj",
+        "packagesPath": "C:\\Users\\akbar\\.nuget\\packages\\",
+        "outputPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Contracts\\obj\\",
+        "projectStyle": "PackageReference",
+        "UsingMicrosoftNETSdk": false,
+        "fallbackFolders": [
+          "C:\\Program Files\\DevExpress 24.2\\Components\\Offline Packages",
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\akbar\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.1.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.2.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\DevExpress 24.2\\Components\\System\\Components\\Packages": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Domain\\Nezam.Refahi.Settings.Domain.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Domain\\Nezam.Refahi.Settings.Domain.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "allWarningsAsErrors": true,
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "centralPackageVersions": {
+            "Ardalis.GuardClauses": "4.5.0",
+            "Ardalis.HttpClientTestExtensions": "4.2.0",
+            "Ardalis.ListStartupServices": "1.1.4",
+            "Ardalis.Result": "8.0.0",
+            "Ardalis.Result.AspNetCore": "8.0.0",
+            "Ardalis.SharedKernel": "1.4.0",
+            "Ardalis.SmartEnum": "8.0.0",
+            "Ardalis.Specification": "8.0.0",
+            "Ardalis.Specification.EntityFrameworkCore": "8.0.0",
+            "AspNetCore.Unobtrusive.Ajax": "2.0.0",
+            "coverlet.collector": "6.0.1",
+            "FastEndpoints": "5.24.0",
+            "FastEndpoints.ApiExplorer": "2.2.0",
+            "FastEndpoints.Security": "5.24.0",
+            "FastEndpoints.Swagger": "5.23.0",
+            "FastEndpoints.Swagger.Swashbuckle": "2.2.0",
+            "FluentAssertions": "6.12.0",
+            "MailKit": "4.4.0",
+            "MediatR": "12.2.0",
+            "Microsoft.AspNetCore.Components.Web": "8.0.0",
+            "Microsoft.AspNetCore.Components.WebAssembly": "8.0.0",
+            "Microsoft.AspNetCore.Components.WebAssembly.DevServer": "8.0.0",
+            "Microsoft.AspNetCore.Mvc.Testing": "8.0.2",
+            "Microsoft.AspNetCore.OData": "8.2.5",
+            "Microsoft.EntityFrameworkCore": "8.0.4",
+            "Microsoft.EntityFrameworkCore.Design": "8.0.2",
+            "Microsoft.EntityFrameworkCore.InMemory": "8.0.2",
+            "Microsoft.EntityFrameworkCore.Relational": "8.0.2",
+            "Microsoft.EntityFrameworkCore.Sqlite": "8.0.2",
+            "Microsoft.EntityFrameworkCore.SqlServer": "8.0.4",
+            "Microsoft.EntityFrameworkCore.Tools": "8.0.2",
+            "Microsoft.Extensions.Configuration": "8.0.0",
+            "Microsoft.Extensions.Hosting": "8.0.0",
+            "Microsoft.Extensions.Http": "8.0.0",
+            "Microsoft.Extensions.Logging": "8.0.0",
+            "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
+            "Microsoft.Extensions.Options.ConfigurationExtensions": "8.0.0",
+            "Microsoft.jQuery.Unobtrusive.Ajax": "3.2.6",
+            "Microsoft.jQuery.Unobtrusive.Validation": "4.0.0",
+            "Microsoft.NET.Test.Sdk": "17.9.0",
+            "Microsoft.Orleans.Clustering.Consul": "8.0.0",
+            "Microsoft.VisualStudio.Web.CodeGeneration.Design": "8.0.1",
+            "Novin": "1.0.8",
+            "NSubstitute": "5.1.0",
+            "Ocelot.Provider.Consul": "23.1.0",
+            "Ocelot.Provider.Consul.Extensions": "17.2.0",
+            "ReportGenerator": "5.2.2",
+            "Scrutor": "4.2.2",
+            "Serilog.AspNetCore": "8.0.1",
+            "SQLite": "3.13.0",
+            "Swashbuckle.AspNetCore": "6.5.0",
+            "Swashbuckle.AspNetCore.Annotations": "6.5.0",
+            "xunit": "2.7.0",
+            "xunit.runner.visualstudio": "2.5.7"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Domain\\Nezam.Refahi.Settings.Domain.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Domain\\Nezam.Refahi.Settings.Domain.csproj",
+        "projectName": "Nezam.Refahi.Settings.Domain",
+        "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Domain\\Nezam.Refahi.Settings.Domain.csproj",
+        "packagesPath": "C:\\Users\\akbar\\.nuget\\packages\\",
+        "outputPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Domain\\obj\\",
+        "projectStyle": "PackageReference",
+        "UsingMicrosoftNETSdk": false,
+        "fallbackFolders": [
+          "C:\\Program Files\\DevExpress 24.2\\Components\\Offline Packages",
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\akbar\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.1.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.2.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\DevExpress 24.2\\Components\\System\\Components\\Packages": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "allWarningsAsErrors": true,
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "AkbarAmd.SharedKernel.Domain": {
+              "target": "Package",
+              "version": "[1.0.11, )"
+            }
+          },
+          "centralPackageVersions": {
+            "Ardalis.GuardClauses": "4.5.0",
+            "Ardalis.HttpClientTestExtensions": "4.2.0",
+            "Ardalis.ListStartupServices": "1.1.4",
+            "Ardalis.Result": "8.0.0",
+            "Ardalis.Result.AspNetCore": "8.0.0",
+            "Ardalis.SharedKernel": "1.4.0",
+            "Ardalis.SmartEnum": "8.0.0",
+            "Ardalis.Specification": "8.0.0",
+            "Ardalis.Specification.EntityFrameworkCore": "8.0.0",
+            "AspNetCore.Unobtrusive.Ajax": "2.0.0",
+            "coverlet.collector": "6.0.1",
+            "FastEndpoints": "5.24.0",
+            "FastEndpoints.ApiExplorer": "2.2.0",
+            "FastEndpoints.Security": "5.24.0",
+            "FastEndpoints.Swagger": "5.23.0",
+            "FastEndpoints.Swagger.Swashbuckle": "2.2.0",
+            "FluentAssertions": "6.12.0",
+            "MailKit": "4.4.0",
+            "MediatR": "12.2.0",
+            "Microsoft.AspNetCore.Components.Web": "8.0.0",
+            "Microsoft.AspNetCore.Components.WebAssembly": "8.0.0",
+            "Microsoft.AspNetCore.Components.WebAssembly.DevServer": "8.0.0",
+            "Microsoft.AspNetCore.Mvc.Testing": "8.0.2",
+            "Microsoft.AspNetCore.OData": "8.2.5",
+            "Microsoft.EntityFrameworkCore": "8.0.4",
+            "Microsoft.EntityFrameworkCore.Design": "8.0.2",
+            "Microsoft.EntityFrameworkCore.InMemory": "8.0.2",
+            "Microsoft.EntityFrameworkCore.Relational": "8.0.2",
+            "Microsoft.EntityFrameworkCore.Sqlite": "8.0.2",
+            "Microsoft.EntityFrameworkCore.SqlServer": "8.0.4",
+            "Microsoft.EntityFrameworkCore.Tools": "8.0.2",
+            "Microsoft.Extensions.Configuration": "8.0.0",
+            "Microsoft.Extensions.Hosting": "8.0.0",
+            "Microsoft.Extensions.Http": "8.0.0",
+            "Microsoft.Extensions.Logging": "8.0.0",
+            "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
+            "Microsoft.Extensions.Options.ConfigurationExtensions": "8.0.0",
+            "Microsoft.jQuery.Unobtrusive.Ajax": "3.2.6",
+            "Microsoft.jQuery.Unobtrusive.Validation": "4.0.0",
+            "Microsoft.NET.Test.Sdk": "17.9.0",
+            "Microsoft.Orleans.Clustering.Consul": "8.0.0",
+            "Microsoft.VisualStudio.Web.CodeGeneration.Design": "8.0.1",
+            "Novin": "1.0.8",
+            "NSubstitute": "5.1.0",
+            "Ocelot.Provider.Consul": "23.1.0",
+            "Ocelot.Provider.Consul.Extensions": "17.2.0",
+            "ReportGenerator": "5.2.2",
+            "Scrutor": "4.2.2",
+            "Serilog.AspNetCore": "8.0.1",
+            "SQLite": "3.13.0",
+            "Swashbuckle.AspNetCore": "6.5.0",
+            "Swashbuckle.AspNetCore.Annotations": "6.5.0",
+            "xunit": "2.7.0",
+            "xunit.runner.visualstudio": "2.5.7"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Infrastructure\\Nezam.Refahi.Settings.Infrastructure.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Infrastructure\\Nezam.Refahi.Settings.Infrastructure.csproj",
+        "projectName": "Nezam.Refahi.Settings.Infrastructure",
+        "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Infrastructure\\Nezam.Refahi.Settings.Infrastructure.csproj",
+        "packagesPath": "C:\\Users\\akbar\\.nuget\\packages\\",
+        "outputPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Infrastructure\\obj\\",
+        "projectStyle": "PackageReference",
+        "UsingMicrosoftNETSdk": false,
+        "fallbackFolders": [
+          "C:\\Program Files\\DevExpress 24.2\\Components\\Offline Packages",
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\akbar\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.1.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.2.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\DevExpress 24.2\\Components\\System\\Components\\Packages": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Application\\Nezam.Refahi.Settings.Application.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Application\\Nezam.Refahi.Settings.Application.csproj"
+              },
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "allWarningsAsErrors": true,
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "AkbarAmd.SharedKernel.Infrastructure": {
+              "target": "Package",
+              "version": "[1.0.11, )"
+            },
+            "Microsoft.AspNetCore.Authentication.JwtBearer": {
+              "target": "Package",
+              "version": "[8.0.18, )"
+            },
+            "Microsoft.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[8.0.18, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.18, )"
+            },
+            "Microsoft.EntityFrameworkCore.Relational": {
+              "target": "Package",
+              "version": "[8.0.18, )"
+            },
+            "Microsoft.EntityFrameworkCore.SqlServer": {
+              "target": "Package",
+              "version": "[8.0.18, )"
+            },
+            "Microsoft.EntityFrameworkCore.Sqlite": {
+              "target": "Package",
+              "version": "[8.0.18, )"
+            },
+            "Microsoft.EntityFrameworkCore.Tools": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.18, )"
+            }
+          },
+          "centralPackageVersions": {
+            "Ardalis.GuardClauses": "4.5.0",
+            "Ardalis.HttpClientTestExtensions": "4.2.0",
+            "Ardalis.ListStartupServices": "1.1.4",
+            "Ardalis.Result": "8.0.0",
+            "Ardalis.Result.AspNetCore": "8.0.0",
+            "Ardalis.SharedKernel": "1.4.0",
+            "Ardalis.SmartEnum": "8.0.0",
+            "Ardalis.Specification": "8.0.0",
+            "Ardalis.Specification.EntityFrameworkCore": "8.0.0",
+            "AspNetCore.Unobtrusive.Ajax": "2.0.0",
+            "coverlet.collector": "6.0.1",
+            "FastEndpoints": "5.24.0",
+            "FastEndpoints.ApiExplorer": "2.2.0",
+            "FastEndpoints.Security": "5.24.0",
+            "FastEndpoints.Swagger": "5.23.0",
+            "FastEndpoints.Swagger.Swashbuckle": "2.2.0",
+            "FluentAssertions": "6.12.0",
+            "MailKit": "4.4.0",
+            "MediatR": "12.2.0",
+            "Microsoft.AspNetCore.Components.Web": "8.0.0",
+            "Microsoft.AspNetCore.Components.WebAssembly": "8.0.0",
+            "Microsoft.AspNetCore.Components.WebAssembly.DevServer": "8.0.0",
+            "Microsoft.AspNetCore.Mvc.Testing": "8.0.2",
+            "Microsoft.AspNetCore.OData": "8.2.5",
+            "Microsoft.EntityFrameworkCore": "8.0.4",
+            "Microsoft.EntityFrameworkCore.Design": "8.0.2",
+            "Microsoft.EntityFrameworkCore.InMemory": "8.0.2",
+            "Microsoft.EntityFrameworkCore.Relational": "8.0.2",
+            "Microsoft.EntityFrameworkCore.Sqlite": "8.0.2",
+            "Microsoft.EntityFrameworkCore.SqlServer": "8.0.4",
+            "Microsoft.EntityFrameworkCore.Tools": "8.0.2",
+            "Microsoft.Extensions.Configuration": "8.0.0",
+            "Microsoft.Extensions.Hosting": "8.0.0",
+            "Microsoft.Extensions.Http": "8.0.0",
+            "Microsoft.Extensions.Logging": "8.0.0",
+            "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
+            "Microsoft.Extensions.Options.ConfigurationExtensions": "8.0.0",
+            "Microsoft.jQuery.Unobtrusive.Ajax": "3.2.6",
+            "Microsoft.jQuery.Unobtrusive.Validation": "4.0.0",
+            "Microsoft.NET.Test.Sdk": "17.9.0",
+            "Microsoft.Orleans.Clustering.Consul": "8.0.0",
+            "Microsoft.VisualStudio.Web.CodeGeneration.Design": "8.0.1",
+            "Novin": "1.0.8",
+            "NSubstitute": "5.1.0",
+            "Ocelot.Provider.Consul": "23.1.0",
+            "Ocelot.Provider.Consul.Extensions": "17.2.0",
+            "ReportGenerator": "5.2.2",
+            "Scrutor": "4.2.2",
+            "Serilog.AspNetCore": "8.0.1",
+            "SQLite": "3.13.0",
+            "Swashbuckle.AspNetCore": "6.5.0",
+            "Swashbuckle.AspNetCore.Annotations": "6.5.0",
+            "xunit": "2.7.0",
+            "xunit.runner.visualstudio": "2.5.7"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Presentation\\Nezam.Refahi.Settings.Presentation.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Presentation\\Nezam.Refahi.Settings.Presentation.csproj",
+        "projectName": "Nezam.Refahi.Settings.Presentation",
+        "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Presentation\\Nezam.Refahi.Settings.Presentation.csproj",
+        "packagesPath": "C:\\Users\\akbar\\.nuget\\packages\\",
+        "outputPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Presentation\\obj\\",
+        "projectStyle": "PackageReference",
+        "UsingMicrosoftNETSdk": false,
+        "fallbackFolders": [
+          "C:\\Program Files\\DevExpress 24.2\\Components\\Offline Packages",
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\akbar\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.1.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.2.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\DevExpress 24.2\\Components\\System\\Components\\Packages": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Infrastructure\\Nezam.Refahi.Settings.Infrastructure.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Infrastructure\\Nezam.Refahi.Settings.Infrastructure.csproj"
+              },
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "allWarningsAsErrors": true,
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Bonyan.AspNetCore": {
+              "target": "Package",
+              "version": "[1.5.7, )"
+            },
+            "MediatR": {
+              "target": "Package",
+              "version": "[12.5.0, )"
+            },
+            "Microsoft.AspNetCore.OpenApi": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[6.5.0, )"
+            }
+          },
+          "centralPackageVersions": {
+            "Ardalis.GuardClauses": "4.5.0",
+            "Ardalis.HttpClientTestExtensions": "4.2.0",
+            "Ardalis.ListStartupServices": "1.1.4",
+            "Ardalis.Result": "8.0.0",
+            "Ardalis.Result.AspNetCore": "8.0.0",
+            "Ardalis.SharedKernel": "1.4.0",
+            "Ardalis.SmartEnum": "8.0.0",
+            "Ardalis.Specification": "8.0.0",
+            "Ardalis.Specification.EntityFrameworkCore": "8.0.0",
+            "AspNetCore.Unobtrusive.Ajax": "2.0.0",
+            "coverlet.collector": "6.0.1",
+            "FastEndpoints": "5.24.0",
+            "FastEndpoints.ApiExplorer": "2.2.0",
+            "FastEndpoints.Security": "5.24.0",
+            "FastEndpoints.Swagger": "5.23.0",
+            "FastEndpoints.Swagger.Swashbuckle": "2.2.0",
+            "FluentAssertions": "6.12.0",
+            "MailKit": "4.4.0",
+            "MediatR": "12.2.0",
+            "Microsoft.AspNetCore.Components.Web": "8.0.0",
+            "Microsoft.AspNetCore.Components.WebAssembly": "8.0.0",
+            "Microsoft.AspNetCore.Components.WebAssembly.DevServer": "8.0.0",
+            "Microsoft.AspNetCore.Mvc.Testing": "8.0.2",
+            "Microsoft.AspNetCore.OData": "8.2.5",
+            "Microsoft.EntityFrameworkCore": "8.0.4",
+            "Microsoft.EntityFrameworkCore.Design": "8.0.2",
+            "Microsoft.EntityFrameworkCore.InMemory": "8.0.2",
+            "Microsoft.EntityFrameworkCore.Relational": "8.0.2",
+            "Microsoft.EntityFrameworkCore.Sqlite": "8.0.2",
+            "Microsoft.EntityFrameworkCore.SqlServer": "8.0.4",
+            "Microsoft.EntityFrameworkCore.Tools": "8.0.2",
+            "Microsoft.Extensions.Configuration": "8.0.0",
+            "Microsoft.Extensions.Hosting": "8.0.0",
+            "Microsoft.Extensions.Http": "8.0.0",
+            "Microsoft.Extensions.Logging": "8.0.0",
+            "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
+            "Microsoft.Extensions.Options.ConfigurationExtensions": "8.0.0",
+            "Microsoft.jQuery.Unobtrusive.Ajax": "3.2.6",
+            "Microsoft.jQuery.Unobtrusive.Validation": "4.0.0",
+            "Microsoft.NET.Test.Sdk": "17.9.0",
+            "Microsoft.Orleans.Clustering.Consul": "8.0.0",
+            "Microsoft.VisualStudio.Web.CodeGeneration.Design": "8.0.1",
+            "Novin": "1.0.8",
+            "NSubstitute": "5.1.0",
+            "Ocelot.Provider.Consul": "23.1.0",
+            "Ocelot.Provider.Consul.Extensions": "17.2.0",
+            "ReportGenerator": "5.2.2",
+            "Scrutor": "4.2.2",
+            "Serilog.AspNetCore": "8.0.1",
+            "SQLite": "3.13.0",
+            "Swashbuckle.AspNetCore": "6.5.0",
+            "Swashbuckle.AspNetCore.Annotations": "6.5.0",
+            "xunit": "2.7.0",
+            "xunit.runner.visualstudio": "2.5.7"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj",
+        "projectName": "Nezam.Refahi.Shared.Application",
+        "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj",
+        "packagesPath": "C:\\Users\\akbar\\.nuget\\packages\\",
+        "outputPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\obj\\",
+        "projectStyle": "PackageReference",
+        "UsingMicrosoftNETSdk": false,
+        "fallbackFolders": [
+          "C:\\Program Files\\DevExpress 24.2\\Components\\Offline Packages",
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\akbar\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.1.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.2.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\DevExpress 24.2\\Components\\System\\Components\\Packages": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "allWarningsAsErrors": true,
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "AkbarAmd.SharedKernel.Application": {
+              "target": "Package",
+              "version": "[1.0.11, )"
+            },
+            "FluentValidation": {
+              "target": "Package",
+              "version": "[11.8.0, )"
+            },
+            "FluentValidation.DependencyInjectionExtensions": {
+              "target": "Package",
+              "version": "[11.8.0, )"
+            },
+            "MediatR": {
+              "target": "Package",
+              "version": "[12.5.0, )"
+            },
+            "Microsoft.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[8.0.2, )"
+            },
+            "Microsoft.Extensions.DependencyInjection.Abstractions": {
+              "target": "Package",
+              "version": "[8.0.2, )"
+            }
+          },
+          "centralPackageVersions": {
+            "Ardalis.GuardClauses": "4.5.0",
+            "Ardalis.HttpClientTestExtensions": "4.2.0",
+            "Ardalis.ListStartupServices": "1.1.4",
+            "Ardalis.Result": "8.0.0",
+            "Ardalis.Result.AspNetCore": "8.0.0",
+            "Ardalis.SharedKernel": "1.4.0",
+            "Ardalis.SmartEnum": "8.0.0",
+            "Ardalis.Specification": "8.0.0",
+            "Ardalis.Specification.EntityFrameworkCore": "8.0.0",
+            "AspNetCore.Unobtrusive.Ajax": "2.0.0",
+            "coverlet.collector": "6.0.1",
+            "FastEndpoints": "5.24.0",
+            "FastEndpoints.ApiExplorer": "2.2.0",
+            "FastEndpoints.Security": "5.24.0",
+            "FastEndpoints.Swagger": "5.23.0",
+            "FastEndpoints.Swagger.Swashbuckle": "2.2.0",
+            "FluentAssertions": "6.12.0",
+            "MailKit": "4.4.0",
+            "MediatR": "12.2.0",
+            "Microsoft.AspNetCore.Components.Web": "8.0.0",
+            "Microsoft.AspNetCore.Components.WebAssembly": "8.0.0",
+            "Microsoft.AspNetCore.Components.WebAssembly.DevServer": "8.0.0",
+            "Microsoft.AspNetCore.Mvc.Testing": "8.0.2",
+            "Microsoft.AspNetCore.OData": "8.2.5",
+            "Microsoft.EntityFrameworkCore": "8.0.4",
+            "Microsoft.EntityFrameworkCore.Design": "8.0.2",
+            "Microsoft.EntityFrameworkCore.InMemory": "8.0.2",
+            "Microsoft.EntityFrameworkCore.Relational": "8.0.2",
+            "Microsoft.EntityFrameworkCore.Sqlite": "8.0.2",
+            "Microsoft.EntityFrameworkCore.SqlServer": "8.0.4",
+            "Microsoft.EntityFrameworkCore.Tools": "8.0.2",
+            "Microsoft.Extensions.Configuration": "8.0.0",
+            "Microsoft.Extensions.Hosting": "8.0.0",
+            "Microsoft.Extensions.Http": "8.0.0",
+            "Microsoft.Extensions.Logging": "8.0.0",
+            "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
+            "Microsoft.Extensions.Options.ConfigurationExtensions": "8.0.0",
+            "Microsoft.jQuery.Unobtrusive.Ajax": "3.2.6",
+            "Microsoft.jQuery.Unobtrusive.Validation": "4.0.0",
+            "Microsoft.NET.Test.Sdk": "17.9.0",
+            "Microsoft.Orleans.Clustering.Consul": "8.0.0",
+            "Microsoft.VisualStudio.Web.CodeGeneration.Design": "8.0.1",
+            "Novin": "1.0.8",
+            "NSubstitute": "5.1.0",
+            "Ocelot.Provider.Consul": "23.1.0",
+            "Ocelot.Provider.Consul.Extensions": "17.2.0",
+            "ReportGenerator": "5.2.2",
+            "Scrutor": "4.2.2",
+            "Serilog.AspNetCore": "8.0.1",
+            "SQLite": "3.13.0",
+            "Swashbuckle.AspNetCore": "6.5.0",
+            "Swashbuckle.AspNetCore.Annotations": "6.5.0",
+            "xunit": "2.7.0",
+            "xunit.runner.visualstudio": "2.5.7"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj",
+        "projectName": "Nezam.Refahi.Shared.Domain",
+        "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj",
+        "packagesPath": "C:\\Users\\akbar\\.nuget\\packages\\",
+        "outputPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\obj\\",
+        "projectStyle": "PackageReference",
+        "UsingMicrosoftNETSdk": false,
+        "fallbackFolders": [
+          "C:\\Program Files\\DevExpress 24.2\\Components\\Offline Packages",
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\akbar\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.1.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.2.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\DevExpress 24.2\\Components\\System\\Components\\Packages": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "allWarningsAsErrors": true,
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "AkbarAmd.SharedKernel.Domain": {
+              "target": "Package",
+              "version": "[1.0.11, )"
+            }
+          },
+          "centralPackageVersions": {
+            "Ardalis.GuardClauses": "4.5.0",
+            "Ardalis.HttpClientTestExtensions": "4.2.0",
+            "Ardalis.ListStartupServices": "1.1.4",
+            "Ardalis.Result": "8.0.0",
+            "Ardalis.Result.AspNetCore": "8.0.0",
+            "Ardalis.SharedKernel": "1.4.0",
+            "Ardalis.SmartEnum": "8.0.0",
+            "Ardalis.Specification": "8.0.0",
+            "Ardalis.Specification.EntityFrameworkCore": "8.0.0",
+            "AspNetCore.Unobtrusive.Ajax": "2.0.0",
+            "coverlet.collector": "6.0.1",
+            "FastEndpoints": "5.24.0",
+            "FastEndpoints.ApiExplorer": "2.2.0",
+            "FastEndpoints.Security": "5.24.0",
+            "FastEndpoints.Swagger": "5.23.0",
+            "FastEndpoints.Swagger.Swashbuckle": "2.2.0",
+            "FluentAssertions": "6.12.0",
+            "MailKit": "4.4.0",
+            "MediatR": "12.2.0",
+            "Microsoft.AspNetCore.Components.Web": "8.0.0",
+            "Microsoft.AspNetCore.Components.WebAssembly": "8.0.0",
+            "Microsoft.AspNetCore.Components.WebAssembly.DevServer": "8.0.0",
+            "Microsoft.AspNetCore.Mvc.Testing": "8.0.2",
+            "Microsoft.AspNetCore.OData": "8.2.5",
+            "Microsoft.EntityFrameworkCore": "8.0.4",
+            "Microsoft.EntityFrameworkCore.Design": "8.0.2",
+            "Microsoft.EntityFrameworkCore.InMemory": "8.0.2",
+            "Microsoft.EntityFrameworkCore.Relational": "8.0.2",
+            "Microsoft.EntityFrameworkCore.Sqlite": "8.0.2",
+            "Microsoft.EntityFrameworkCore.SqlServer": "8.0.4",
+            "Microsoft.EntityFrameworkCore.Tools": "8.0.2",
+            "Microsoft.Extensions.Configuration": "8.0.0",
+            "Microsoft.Extensions.Hosting": "8.0.0",
+            "Microsoft.Extensions.Http": "8.0.0",
+            "Microsoft.Extensions.Logging": "8.0.0",
+            "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
+            "Microsoft.Extensions.Options.ConfigurationExtensions": "8.0.0",
+            "Microsoft.jQuery.Unobtrusive.Ajax": "3.2.6",
+            "Microsoft.jQuery.Unobtrusive.Validation": "4.0.0",
+            "Microsoft.NET.Test.Sdk": "17.9.0",
+            "Microsoft.Orleans.Clustering.Consul": "8.0.0",
+            "Microsoft.VisualStudio.Web.CodeGeneration.Design": "8.0.1",
+            "Novin": "1.0.8",
+            "NSubstitute": "5.1.0",
+            "Ocelot.Provider.Consul": "23.1.0",
+            "Ocelot.Provider.Consul.Extensions": "17.2.0",
+            "ReportGenerator": "5.2.2",
+            "Scrutor": "4.2.2",
+            "Serilog.AspNetCore": "8.0.1",
+            "SQLite": "3.13.0",
+            "Swashbuckle.AspNetCore": "6.5.0",
+            "Swashbuckle.AspNetCore.Annotations": "6.5.0",
+            "xunit": "2.7.0",
+            "xunit.runner.visualstudio": "2.5.7"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj",
+        "projectName": "Nezam.Refahi.Shared.Infrastructure",
+        "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj",
+        "packagesPath": "C:\\Users\\akbar\\.nuget\\packages\\",
+        "outputPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\obj\\",
+        "projectStyle": "PackageReference",
+        "UsingMicrosoftNETSdk": false,
+        "fallbackFolders": [
+          "C:\\Program Files\\DevExpress 24.2\\Components\\Offline Packages",
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\akbar\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.1.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.2.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\DevExpress 24.2\\Components\\System\\Components\\Packages": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
+              },
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "allWarningsAsErrors": true,
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "AkbarAmd.SharedKernel.Infrastructure": {
+              "target": "Package",
+              "version": "[1.0.11, )"
+            },
+            "Bonyan.AspNetCore": {
+              "target": "Package",
+              "version": "[1.5.7, )"
+            },
+            "FluentValidation": {
+              "target": "Package",
+              "version": "[11.8.0, )"
+            },
+            "FluentValidation.DependencyInjectionExtensions": {
+              "target": "Package",
+              "version": "[11.8.0, )"
+            },
+            "MediatR": {
+              "target": "Package",
+              "version": "[12.5.0, )"
+            },
+            "Microsoft.AspNetCore.Authentication.JwtBearer": {
+              "target": "Package",
+              "version": "[8.0.18, )"
+            },
+            "Microsoft.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[8.0.18, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.18, )"
+            },
+            "Microsoft.EntityFrameworkCore.Relational": {
+              "target": "Package",
+              "version": "[8.0.18, )"
+            },
+            "Microsoft.EntityFrameworkCore.SqlServer": {
+              "target": "Package",
+              "version": "[8.0.18, )"
+            },
+            "Microsoft.EntityFrameworkCore.Sqlite": {
+              "target": "Package",
+              "version": "[8.0.18, )"
+            },
+            "Microsoft.EntityFrameworkCore.Tools": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.18, )"
+            },
+            "Microsoft.Extensions.Caching.Memory": {
+              "target": "Package",
+              "version": "[8.0.1, )"
+            },
+            "Microsoft.Extensions.DependencyInjection": {
+              "target": "Package",
+              "version": "[8.0.1, )"
+            },
+            "Microsoft.Extensions.Http": {
+              "target": "Package",
+              "version": "[8.0.1, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[6.5.0, )"
+            },
+            "System.IdentityModel.Tokens.Jwt": {
+              "target": "Package",
+              "version": "[7.1.2, )"
+            }
+          },
+          "centralPackageVersions": {
+            "Ardalis.GuardClauses": "4.5.0",
+            "Ardalis.HttpClientTestExtensions": "4.2.0",
+            "Ardalis.ListStartupServices": "1.1.4",
+            "Ardalis.Result": "8.0.0",
+            "Ardalis.Result.AspNetCore": "8.0.0",
+            "Ardalis.SharedKernel": "1.4.0",
+            "Ardalis.SmartEnum": "8.0.0",
+            "Ardalis.Specification": "8.0.0",
+            "Ardalis.Specification.EntityFrameworkCore": "8.0.0",
+            "AspNetCore.Unobtrusive.Ajax": "2.0.0",
+            "coverlet.collector": "6.0.1",
+            "FastEndpoints": "5.24.0",
+            "FastEndpoints.ApiExplorer": "2.2.0",
+            "FastEndpoints.Security": "5.24.0",
+            "FastEndpoints.Swagger": "5.23.0",
+            "FastEndpoints.Swagger.Swashbuckle": "2.2.0",
+            "FluentAssertions": "6.12.0",
+            "MailKit": "4.4.0",
+            "MediatR": "12.2.0",
+            "Microsoft.AspNetCore.Components.Web": "8.0.0",
+            "Microsoft.AspNetCore.Components.WebAssembly": "8.0.0",
+            "Microsoft.AspNetCore.Components.WebAssembly.DevServer": "8.0.0",
+            "Microsoft.AspNetCore.Mvc.Testing": "8.0.2",
+            "Microsoft.AspNetCore.OData": "8.2.5",
+            "Microsoft.EntityFrameworkCore": "8.0.4",
+            "Microsoft.EntityFrameworkCore.Design": "8.0.2",
+            "Microsoft.EntityFrameworkCore.InMemory": "8.0.2",
+            "Microsoft.EntityFrameworkCore.Relational": "8.0.2",
+            "Microsoft.EntityFrameworkCore.Sqlite": "8.0.2",
+            "Microsoft.EntityFrameworkCore.SqlServer": "8.0.4",
+            "Microsoft.EntityFrameworkCore.Tools": "8.0.2",
+            "Microsoft.Extensions.Configuration": "8.0.0",
+            "Microsoft.Extensions.Hosting": "8.0.0",
+            "Microsoft.Extensions.Http": "8.0.0",
+            "Microsoft.Extensions.Logging": "8.0.0",
+            "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
+            "Microsoft.Extensions.Options.ConfigurationExtensions": "8.0.0",
+            "Microsoft.jQuery.Unobtrusive.Ajax": "3.2.6",
+            "Microsoft.jQuery.Unobtrusive.Validation": "4.0.0",
+            "Microsoft.NET.Test.Sdk": "17.9.0",
+            "Microsoft.Orleans.Clustering.Consul": "8.0.0",
+            "Microsoft.VisualStudio.Web.CodeGeneration.Design": "8.0.1",
+            "Novin": "1.0.8",
+            "NSubstitute": "5.1.0",
+            "Ocelot.Provider.Consul": "23.1.0",
+            "Ocelot.Provider.Consul.Extensions": "17.2.0",
+            "ReportGenerator": "5.2.2",
+            "Scrutor": "4.2.2",
+            "Serilog.AspNetCore": "8.0.1",
+            "SQLite": "3.13.0",
+            "Swashbuckle.AspNetCore": "6.5.0",
+            "Swashbuckle.AspNetCore.Annotations": "6.5.0",
+            "xunit": "2.7.0",
+            "xunit.runner.visualstudio": "2.5.7"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\Nezam.Refahi.WebApi.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\Nezam.Refahi.WebApi.csproj",
+        "projectName": "Nezam.Refahi.WebApi",
+        "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\Nezam.Refahi.WebApi.csproj",
+        "packagesPath": "C:\\Users\\akbar\\.nuget\\packages\\",
+        "outputPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\obj\\",
+        "projectStyle": "PackageReference",
+        "UsingMicrosoftNETSdk": false,
+        "fallbackFolders": [
+          "C:\\Program Files\\DevExpress 24.2\\Components\\Offline Packages",
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\akbar\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.1.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.2.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\DevExpress 24.2\\Components\\System\\Components\\Packages": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Presentation\\Nezam.Refahi.Identity.Presentation.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Presentation\\Nezam.Refahi.Identity.Presentation.csproj"
+              },
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Presentation\\Nezam.Refahi.Settings.Presentation.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Presentation\\Nezam.Refahi.Settings.Presentation.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "allWarningsAsErrors": true,
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Microsoft.AspNetCore.OpenApi": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[6.5.0, )"
+            },
+            "Swashbuckle.AspNetCore.Filters": {
+              "target": "Package",
+              "version": "[8.0.3, )"
+            }
+          },
+          "centralPackageVersions": {
+            "Ardalis.GuardClauses": "4.5.0",
+            "Ardalis.HttpClientTestExtensions": "4.2.0",
+            "Ardalis.ListStartupServices": "1.1.4",
+            "Ardalis.Result": "8.0.0",
+            "Ardalis.Result.AspNetCore": "8.0.0",
+            "Ardalis.SharedKernel": "1.4.0",
+            "Ardalis.SmartEnum": "8.0.0",
+            "Ardalis.Specification": "8.0.0",
+            "Ardalis.Specification.EntityFrameworkCore": "8.0.0",
+            "AspNetCore.Unobtrusive.Ajax": "2.0.0",
+            "coverlet.collector": "6.0.1",
+            "FastEndpoints": "5.24.0",
+            "FastEndpoints.ApiExplorer": "2.2.0",
+            "FastEndpoints.Security": "5.24.0",
+            "FastEndpoints.Swagger": "5.23.0",
+            "FastEndpoints.Swagger.Swashbuckle": "2.2.0",
+            "FluentAssertions": "6.12.0",
+            "MailKit": "4.4.0",
+            "MediatR": "12.2.0",
+            "Microsoft.AspNetCore.Components.Web": "8.0.0",
+            "Microsoft.AspNetCore.Components.WebAssembly": "8.0.0",
+            "Microsoft.AspNetCore.Components.WebAssembly.DevServer": "8.0.0",
+            "Microsoft.AspNetCore.Mvc.Testing": "8.0.2",
+            "Microsoft.AspNetCore.OData": "8.2.5",
+            "Microsoft.EntityFrameworkCore": "8.0.4",
+            "Microsoft.EntityFrameworkCore.Design": "8.0.2",
+            "Microsoft.EntityFrameworkCore.InMemory": "8.0.2",
+            "Microsoft.EntityFrameworkCore.Relational": "8.0.2",
+            "Microsoft.EntityFrameworkCore.Sqlite": "8.0.2",
+            "Microsoft.EntityFrameworkCore.SqlServer": "8.0.4",
+            "Microsoft.EntityFrameworkCore.Tools": "8.0.2",
+            "Microsoft.Extensions.Configuration": "8.0.0",
+            "Microsoft.Extensions.Hosting": "8.0.0",
+            "Microsoft.Extensions.Http": "8.0.0",
+            "Microsoft.Extensions.Logging": "8.0.0",
+            "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
+            "Microsoft.Extensions.Options.ConfigurationExtensions": "8.0.0",
+            "Microsoft.jQuery.Unobtrusive.Ajax": "3.2.6",
+            "Microsoft.jQuery.Unobtrusive.Validation": "4.0.0",
+            "Microsoft.NET.Test.Sdk": "17.9.0",
+            "Microsoft.Orleans.Clustering.Consul": "8.0.0",
+            "Microsoft.VisualStudio.Web.CodeGeneration.Design": "8.0.1",
+            "Novin": "1.0.8",
+            "NSubstitute": "5.1.0",
+            "Ocelot.Provider.Consul": "23.1.0",
+            "Ocelot.Provider.Consul.Extensions": "17.2.0",
+            "ReportGenerator": "5.2.2",
+            "Scrutor": "4.2.2",
+            "Serilog.AspNetCore": "8.0.1",
+            "SQLite": "3.13.0",
+            "Swashbuckle.AspNetCore": "6.5.0",
+            "Swashbuckle.AspNetCore.Annotations": "6.5.0",
+            "xunit": "2.7.0",
+            "xunit.runner.visualstudio": "2.5.7"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.302/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
