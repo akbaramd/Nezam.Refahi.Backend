@@ -3,7 +3,6 @@ using Bonyan.Modularity;
 using Bonyan.Modularity.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
-using Nezam.Refahi.Shared.Application.Ports;
 using Nezam.Refahi.Shared.Domain;
 
 namespace Nezam.Refahi.Shared.Application;

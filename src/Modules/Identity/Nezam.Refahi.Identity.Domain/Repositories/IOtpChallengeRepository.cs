@@ -2,6 +2,7 @@ using MCA.SharedKernel.Domain.Contracts;
 using Nezam.Refahi.Identity.Domain.Entities;
 using Nezam.Refahi.Identity.Domain.Enums;
 using Nezam.Refahi.Identity.Domain.ValueObjects;
+using Nezam.Refahi.Shared.Domain.ValueObjects;
 
 namespace Nezam.Refahi.Identity.Domain.Repositories;
 
@@ -10,13 +11,7 @@ namespace Nezam.Refahi.Identity.Domain.Repositories;
 /// </summary>
 public interface IOtpChallengeRepository : IRepository<OtpChallenge, Guid>
 {
-    /// <summary>
-    /// Gets an OTP challenge by its challenge ID
-    /// </summary>
-    /// <param name="challengeId">The challenge ID</param>
-    /// <returns>The challenge if found, null otherwise</returns>
-    Task<OtpChallenge?> GetByChallengeIdAsync(string challengeId);
-    
+
     /// <summary>
     /// Gets active OTP challenges for a phone number
     /// </summary>
@@ -104,4 +99,28 @@ public interface IOtpChallengeRepository : IRepository<OtpChallenge, Guid>
     /// <param name="daysOld">Minimum age in days</param>
     /// <returns>Number of deleted challenges</returns>
     Task<int> DeleteOldChallengesAsync(int daysOld);
+    
+    /// <summary>
+    /// Deletes all challenges for a specific phone number
+    /// </summary>
+    /// <param name="phoneNumber">The phone number</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Number of deleted challenges</returns>
+    Task<int> DeleteChallengesForPhoneAsync(PhoneNumber phoneNumber, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Batch delete challenges by IDs for performance optimization
+    /// </summary>
+    /// <param name="challengeIds">Collection of challenge IDs to delete</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Number of deleted challenges</returns>
+    Task<int> BatchDeleteChallengesByIdsAsync(List<Guid> challengeIds, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Batch cleanup consumed and successful challenges (big data optimization)
+    /// </summary>
+    /// <param name="batchSize">Number of records to process per batch</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Total number of deleted challenges</returns>
+    Task<int> BatchCleanupConsumedChallengesAsync(int batchSize = 1000, CancellationToken cancellationToken = default);
 }

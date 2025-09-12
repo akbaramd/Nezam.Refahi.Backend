@@ -165,38 +165,3 @@ public static class UserPreferenceDefaultsService
         return DefaultPreferences.Where(kvp => kvp.Value.Category == category);
     }
 }
-
-/// <summary>
-/// Information about a default preference
-/// </summary>
-public class DefaultPreferenceInfo
-{
-    public string Value { get; }
-    public PreferenceType Type { get; }
-    public string Description { get; }
-    public int DisplayOrder { get; }
-    public PreferenceCategory Category { get; }
-
-    public DefaultPreferenceInfo(string value, PreferenceType type, string description, int displayOrder, PreferenceCategory category = PreferenceCategory.General)
-    {
-        Value = value;
-        Type = type;
-        Description = description;
-        DisplayOrder = displayOrder;
-        Category = category;
-    }
-}
-
-/// <summary>
-/// Categories for organizing preferences
-/// </summary>
-public enum PreferenceCategory
-{
-    General = 1,
-    UI = 2,
-    Notifications = 3,
-    Privacy = 4,
-    Security = 5,
-    Display = 6,
-    Application = 7
-}

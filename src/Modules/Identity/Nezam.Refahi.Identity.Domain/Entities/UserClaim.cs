@@ -1,5 +1,6 @@
 using MCA.SharedKernel.Domain;
 using Nezam.Refahi.Identity.Domain.ValueObjects;
+using Nezam.Refahi.Shared.Domain.ValueObjects;
 
 namespace Nezam.Refahi.Identity.Domain.Entities;
 

@@ -1,7 +1,9 @@
 using MCA.SharedKernel.Domain.AggregateRoots;
+using Nezam.Refahi.Identity.Contracts.Events;
 using Nezam.Refahi.Identity.Domain.Enums;
 using Nezam.Refahi.Identity.Domain.ValueObjects;
 using Nezam.Refahi.Identity.Domain.Services;
+using Nezam.Refahi.Shared.Domain.ValueObjects;
 
 namespace Nezam.Refahi.Identity.Domain.Entities;
 
@@ -73,7 +75,10 @@ public class User : FullyAuditableAggregateRoot<Guid>
         
         // Note: Default preferences will be initialized after the user is saved to database
         // and has a valid ID via EnsureDefaultPreferences() method
-    }
+        
+        // Raise domain event
+        AddDomainEvent(new UserCreatedEvent(Id, PhoneNumber.Value, nationalId));
+    } 
 
     /// <summary>
     /// Creates a new user with just a phone number (for OTP authentication)
@@ -94,6 +99,9 @@ public class User : FullyAuditableAggregateRoot<Guid>
         
         // Note: Default preferences will be initialized after the user is saved to database
         // and has a valid ID via EnsureDefaultPreferences() method
+        
+        // Raise domain event
+        AddDomainEvent(new UserCreatedEvent(Id, phoneNumber));
     }
 
     public void UpdateName(string firstName, string lastName)
@@ -116,6 +124,7 @@ public class User : FullyAuditableAggregateRoot<Guid>
         if (phoneNumber == PhoneNumber)
             return; // No change
 
+        var oldPhoneNumber = PhoneNumber.Value;
         PhoneNumber = new PhoneNumber(phoneNumber);
         IsPhoneVerified = false;
         PhoneVerifiedAt = null;
@@ -125,6 +134,9 @@ public class User : FullyAuditableAggregateRoot<Guid>
         LockedAt = null;
         LockReason = null;
         UnlockAt = null;
+        
+        // Raise domain event
+        AddDomainEvent(new UserPhoneUpdatedEvent(Id, oldPhoneNumber, phoneNumber));
     }
 
     /// <summary>
@@ -185,6 +197,9 @@ public class User : FullyAuditableAggregateRoot<Guid>
         FirstName = firstName;
         LastName = lastName;
         NationalId = nationalId;
+        
+        // Raise domain event
+        AddDomainEvent(new UserProfileUpdatedEvent(Id, firstName, lastName, nationalId.Value));
     }
 
     /// <summary>
@@ -664,5 +679,184 @@ public class User : FullyAuditableAggregateRoot<Guid>
     {
         var userRoleIds = _userRoles.Where(ur => ur.IsValid()).Select(ur => ur.RoleId);
         return roleIds.All(roleId => userRoleIds.Contains(roleId));
+    }
+
+    public void RevokeAllUserRefreshTokens(bool isSoftDelete = true)
+    {
+
+      var tokens = _tokens
+        .Where(t => t is { TokenType: "RefreshToken", IsRevoked: false });
+
+      if (isSoftDelete)
+      {
+        foreach (var token in tokens)
+        {
+          token.Revoke();
+        }
+      }
+      else
+      {
+        foreach (var token in tokens)
+        {
+          _tokens.Remove(token);
+        }
+      }
+
+
+    }
+
+    public  IEnumerable<UserToken> GetActiveTokensForUserAsync(Guid userId, string? tokenType = null)
+    {
+      var query = _tokens
+        .Where(t => t.UserId == userId && !t.IsUsed && !t.IsRevoked && t.ExpiresAt > DateTime.UtcNow);
+
+      if (!string.IsNullOrEmpty(tokenType))
+      {
+        query = query.Where(t => t.TokenType == tokenType);
+      }
+
+      return  query;
+    }
+
+    public void AssignToken(UserToken jwtToken)
+    {
+      _tokens.Add(jwtToken);
+    }
+
+    // Scope Management Methods
+
+    /// <summary>
+    /// Gets all scopes available to the user based on their active roles
+    /// </summary>
+    /// <returns>Collection of scope values the user has access to</returns>
+    public IEnumerable<string> GetUserScopes()
+    {
+        var scopes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var userRole in UserRoles.Where(ur => ur.IsValid()))
+        {
+            var role = userRole.Role;
+            if (role != null && role.IsActive)
+            {
+                var roleScopeClaims = role.GetScopeClaims();
+                foreach (var scopeClaim in roleScopeClaims)
+                {
+                    scopes.Add(scopeClaim.Value);
+                }
+            }
+        }
+
+        return scopes;
+    }
+
+    /// <summary>
+    /// Validates if the user has access to a specific scope
+    /// </summary>
+    /// <param name="requestedScope">The scope to validate</param>
+    /// <returns>True if user has access to the scope, false otherwise</returns>
+    public bool ValidateScope(string requestedScope)
+    {
+        if (string.IsNullOrWhiteSpace(requestedScope))
+            return false;
+
+        var userScopes = GetUserScopes();
+        return userScopes.Contains(requestedScope, StringComparer.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Validates if the user has access to any of the specified scopes
+    /// </summary>
+    /// <param name="requestedScopes">Collection of scopes to validate</param>
+    /// <returns>True if user has access to any of the scopes, false otherwise</returns>
+    public bool ValidateAnyScope(IEnumerable<string> requestedScopes)
+    {
+        if (requestedScopes == null || !requestedScopes.Any())
+            return false;
+
+        var userScopes = GetUserScopes();
+        return requestedScopes.Any(scope => userScopes.Contains(scope, StringComparer.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Validates if the user has access to all of the specified scopes
+    /// </summary>
+    /// <param name="requestedScopes">Collection of scopes to validate</param>
+    /// <returns>True if user has access to all of the scopes, false otherwise</returns>
+    public bool ValidateAllScopes(IEnumerable<string> requestedScopes)
+    {
+        if (requestedScopes == null || !requestedScopes.Any())
+            return false;
+
+        var userScopes = GetUserScopes();
+        return requestedScopes.All(scope => userScopes.Contains(scope, StringComparer.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Gets the scopes that the user is missing from a requested collection
+    /// </summary>
+    /// <param name="requestedScopes">Collection of requested scopes</param>
+    /// <returns>Collection of scopes the user doesn't have access to</returns>
+    public IEnumerable<string> GetMissingScopes(IEnumerable<string> requestedScopes)
+    {
+        if (requestedScopes == null || !requestedScopes.Any())
+            return Enumerable.Empty<string>();
+
+        var userScopes = GetUserScopes();
+        return requestedScopes.Where(scope => !userScopes.Contains(scope, StringComparer.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Gets scope claims from all active user roles
+    /// </summary>
+    /// <returns>Collection of scope claims</returns>
+    public IEnumerable<Shared.Domain.ValueObjects.Claim> GetScopeClaims()
+    {
+        var scopeClaims = new List<Shared.Domain.ValueObjects.Claim>();
+
+        foreach (var userRole in UserRoles.Where(ur => ur.IsValid()))
+        {
+            var role = userRole.Role;
+            if (role != null && role.IsActive)
+            {
+                scopeClaims.AddRange(role.GetScopeClaims());
+            }
+        }
+
+        return scopeClaims.Distinct();
+    }
+
+    /// <summary>
+    /// Checks if the user has access to a scope with specific claim type
+    /// </summary>
+    /// <param name="claimType">The claim type to check</param>
+    /// <param name="claimValue">The claim value to check</param>
+    /// <returns>True if user has the specific claim, false otherwise</returns>
+    public bool HasScopeClaim(string claimType, string claimValue)
+    {
+        if (string.IsNullOrWhiteSpace(claimType) || string.IsNullOrWhiteSpace(claimValue))
+            return false;
+
+        var scopeClaims = GetScopeClaims();
+        return scopeClaims.Any(claim => 
+            claim.Type.Equals(claimType, StringComparison.OrdinalIgnoreCase) &&
+            claim.Value.Equals(claimValue, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Gets the count of available scopes for the user
+    /// </summary>
+    /// <returns>Number of scopes available to the user</returns>
+    public int GetScopeCount()
+    {
+        return GetUserScopes().Count();
+    }
+
+    /// <summary>
+    /// Checks if the user has any scopes available
+    /// </summary>
+    /// <returns>True if user has at least one scope, false otherwise</returns>
+    public bool HasAnyScopes()
+    {
+        return GetUserScopes().Any();
     }
 }

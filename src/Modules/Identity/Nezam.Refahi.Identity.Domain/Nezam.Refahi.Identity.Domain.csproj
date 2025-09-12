@@ -10,5 +10,6 @@
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\..\..\Nezam.Refahi.Shared.Domain\Nezam.Refahi.Shared.Domain.csproj" />
+      <ProjectReference Include="..\Nezam.Refahi.Identity.Contracts\Nezam.Refahi.Identity.Contracts.csproj" />
     </ItemGroup>
 </Project>

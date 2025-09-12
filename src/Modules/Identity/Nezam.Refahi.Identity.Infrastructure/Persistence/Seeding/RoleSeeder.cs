@@ -1,8 +1,10 @@
 using Microsoft.Extensions.Logging;
 using Nezam.Refahi.Identity.Application.Services;
+using Nezam.Refahi.Identity.Application.Services.Contracts;
 using Nezam.Refahi.Identity.Domain.Entities;
 using Nezam.Refahi.Identity.Domain.ValueObjects;
 using Nezam.Refahi.Identity.Domain.Repositories;
+using Nezam.Refahi.Shared.Domain.ValueObjects;
 
 namespace Nezam.Refahi.Identity.Infrastructure.Persistence.Seeding;
 
@@ -104,23 +106,39 @@ public class RoleSeeder
                     ("permission", "roles.update"),
                     ("permission", "roles.delete"),
                     ("permission", "system.restore"),
-                    ("scope", "admin"),
-                    ("scope", "system")
+                    ("scope", "panel"),
+                    ("scope", "app")
                 }
             ),
 
-          
-            // User Role
+            // Employer Role
             (
-                "User",
-                "Standard user with basic access to the system",
+                "Employer",
+                "Employer with access to panel features",
                 true,
                 2,
                 new List<(string, string)>
                 {
+                    ("permission", "panel.access"),
+                    ("permission", "members.read"),
+                    ("permission", "members.manage"),
+                    ("permission", "reports.view"),
+                    ("scope", "panel")
+                }
+            ),
+          
+            // Member Role
+            (
+                "Member",
+                "Member with access to app features",
+                true,
+                3,
+                new List<(string, string)>
+                {
                     ("permission", "profile.read"),
                     ("permission", "profile.update"),
-                    ("scope", "user")
+                    ("permission", "services.access"),
+                    ("scope", "app")
                 }
             ),
 
@@ -129,11 +147,11 @@ public class RoleSeeder
                 "Guest",
                 "Guest user with read-only access",
                 true,
-                3,
+                4,
                 new List<(string, string)>
                 {
                     ("permission", "profile.read"),
-                    ("scope", "guest")
+                    ("scope", "app")
                 }
             )
         };

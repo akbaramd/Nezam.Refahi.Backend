@@ -64,7 +64,7 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
             .HasForeignKey(rc => rc.RoleId)
             .OnDelete(DeleteBehavior.Cascade); // Within aggregate
 
-        // Between Aggregates: Restrict (UserRole is a join entity between User and Role aggregates)
+        // Between Aggregates: Restrict (UserRole is a join entity between UserDetail and Role aggregates)
         builder.HasMany(r => r.UserRoles)
             .WithOne(ur => ur.Role)
             .HasForeignKey(ur => ur.RoleId)

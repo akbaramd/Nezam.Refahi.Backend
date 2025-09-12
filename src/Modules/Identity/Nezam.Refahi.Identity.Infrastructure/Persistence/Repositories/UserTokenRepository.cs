@@ -60,6 +60,16 @@ public class UserTokenRepository : EfRepository<IdentityDbContext, UserToken, Gu
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<UserToken>> GetAllActiveTokensByTypeAsync(string tokenType)
+    {
+        return await _dbContext.UserTokens
+            .Where(t => t.TokenType == tokenType && 
+                       !t.IsUsed && 
+                       !t.IsRevoked && 
+                       t.ExpiresAt > DateTime.UtcNow)
+            .ToListAsync();
+    }
+
     // ========================================================================
     // Token Revocation Operations
     // ========================================================================

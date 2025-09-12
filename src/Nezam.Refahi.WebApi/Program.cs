@@ -1,6 +1,10 @@
+using Bonyan.Plugins;
 using Nezam.Refahi.WebApi;
 
-var builder = BonyanApplication.CreateModularBuilder<NezamWebApiModule>("web-api");
+var builder = BonyanApplication.CreateModularBuilder<NezamWebApiModule>("web-api", c =>
+{
+  c.PlugInSources.AddFolder("./Plugins");
+});
 
 // Configure logging
 builder.Logging.ClearProviders();

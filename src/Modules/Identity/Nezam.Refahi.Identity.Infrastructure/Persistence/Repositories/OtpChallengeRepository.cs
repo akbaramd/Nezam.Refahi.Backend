@@ -4,6 +4,7 @@ using Nezam.Refahi.Identity.Domain.Entities;
 using Nezam.Refahi.Identity.Domain.Enums;
 using Nezam.Refahi.Identity.Domain.Repositories;
 using Nezam.Refahi.Identity.Domain.ValueObjects;
+using Nezam.Refahi.Shared.Domain.ValueObjects;
 
 namespace Nezam.Refahi.Identity.Infrastructure.Persistence.Repositories;
 
@@ -16,14 +17,7 @@ public class OtpChallengeRepository : EfRepository<IdentityDbContext, OtpChallen
     {
     }
 
-    public async Task<OtpChallenge?> GetByChallengeIdAsync(string challengeId)
-    {
-        if (string.IsNullOrWhiteSpace(challengeId))
-            return null;
 
-        return await _dbContext.OtpChallenges
-            .FirstOrDefaultAsync(c => c.ChallengeId == challengeId);
-    }
 
     public async Task<IEnumerable<OtpChallenge>> GetActiveChallengesByPhoneAsync(PhoneNumber phoneNumber)
     {
@@ -158,7 +152,8 @@ public class OtpChallengeRepository : EfRepository<IdentityDbContext, OtpChallen
         {
             _dbContext.OtpChallenges.RemoveRange(expiredChallenges);
         }
-        
+
+        await _dbContext.SaveChangesAsync();
         return count;
     }
 
@@ -169,17 +164,69 @@ public class OtpChallengeRepository : EfRepository<IdentityDbContext, OtpChallen
 
         var cutoffDate = DateTime.UtcNow.AddDays(-daysOld);
         
-        var oldChallenges = await _dbContext.OtpChallenges
+        var count = await _dbContext.OtpChallenges
             .Where(c => c.CreatedAt < cutoffDate)
-            .ToListAsync();
+            .ExecuteDeleteAsync();
         
-        var count = oldChallenges.Count();
-        
-        if (count > 0)
-        {
-            _dbContext.OtpChallenges.RemoveRange(oldChallenges);
-        }
+    
         
         return count;
+    }
+
+    public async Task<int> DeleteChallengesForPhoneAsync(PhoneNumber phoneNumber, CancellationToken cancellationToken = default)
+    {
+        if (phoneNumber == null)
+            return 0;
+
+        var count = await _dbContext.OtpChallenges
+            .Where(c => c.PhoneNumber.Value == phoneNumber.Value)
+            .ExecuteDeleteAsync(cancellationToken);
+        
+      
+        return count;
+    }
+
+    public async Task<int> BatchDeleteChallengesByIdsAsync(List<Guid> challengeIds, CancellationToken cancellationToken = default)
+    {
+        if (!challengeIds?.Any() == true)
+            return 0;
+
+        var deletedCount = await _dbContext.OtpChallenges
+            .Where(c => challengeIds != null && challengeIds.Contains(c.Id))
+            .ExecuteDeleteAsync(cancellationToken);
+            
+        return deletedCount;
+    }
+
+    public async Task<int> BatchCleanupConsumedChallengesAsync(int batchSize = 1000, CancellationToken cancellationToken = default)
+    {
+        if (batchSize <= 0)
+            batchSize = 1000;
+
+        var totalDeleted = 0;
+        
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            var batch = await _dbContext.OtpChallenges
+                .Where(c => c.Status == ChallengeStatus.Consumed || 
+                           c.Status == ChallengeStatus.Verified ||
+                           (c.Status == ChallengeStatus.Expired && c.CreatedAt < DateTime.UtcNow.AddDays(-7)))
+                .OrderBy(c => c.CreatedAt)
+                .Take(batchSize)
+                .ToListAsync(cancellationToken);
+                
+            if (!batch.Any())
+                break;
+                
+            _dbContext.OtpChallenges.RemoveRange(batch);
+            totalDeleted += batch.Count;
+            
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            
+            if (batch.Count < batchSize)
+                break;
+        }
+        
+        return totalDeleted;
     }
 }

@@ -95,10 +95,10 @@ public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TReques
                     // If we can't find a suitable constructor, throw an exception
                     throw new InvalidOperationException($"Cannot create validation error response for type {typeof(TResponse).Name}. Please use ApplicationResult<T> as your return type.");
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // If we can't create a response, throw an exception with details
-                    throw new InvalidOperationException($"Validation failed but could not create response of type {typeof(TResponse).Name}. Please use ApplicationResult<T> as your return type.", ex);
+                    throw new InvalidOperationException($"Validation failed but could not create response of type {typeof(TResponse).Name}. Please use ApplicationResult<T> as your return type.");
                 }
             }
         }

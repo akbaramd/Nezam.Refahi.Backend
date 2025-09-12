@@ -1,5 +1,4 @@
 using MCA.SharedKernel.Domain;
-using Nezam.Refahi.Identity.Domain.Events;
 
 namespace Nezam.Refahi.Identity.Domain.Entities;
 

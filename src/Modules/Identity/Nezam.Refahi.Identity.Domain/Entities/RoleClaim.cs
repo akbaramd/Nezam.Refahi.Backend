@@ -1,5 +1,6 @@
 using MCA.SharedKernel.Domain;
 using Nezam.Refahi.Identity.Domain.ValueObjects;
+using Nezam.Refahi.Shared.Domain.ValueObjects;
 
 namespace Nezam.Refahi.Identity.Domain.Entities;
 
@@ -17,7 +18,7 @@ public class RoleClaim : Entity<Guid>
     // Private constructor for EF Core
     public RoleClaim() : base() { }
 
-    public RoleClaim(Guid roleId, Claim claim) : base()
+    public RoleClaim(Guid roleId, Claim claim) : base(Guid.NewGuid())
     {
         if (roleId == Guid.Empty)
             throw new ArgumentException("Role ID cannot be empty", nameof(roleId));

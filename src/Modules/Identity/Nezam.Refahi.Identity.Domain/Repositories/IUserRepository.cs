@@ -1,6 +1,7 @@
 using MCA.SharedKernel.Domain.Contracts;
 using Nezam.Refahi.Identity.Domain.Entities;
 using Nezam.Refahi.Identity.Domain.ValueObjects;
+using Nezam.Refahi.Shared.Domain.ValueObjects;
 
 namespace Nezam.Refahi.Identity.Domain.Repositories;
 

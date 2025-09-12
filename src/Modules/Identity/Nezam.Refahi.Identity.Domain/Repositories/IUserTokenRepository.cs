@@ -44,6 +44,13 @@ public interface IUserTokenRepository : IRepository<UserToken,Guid>
     /// <returns>Collection of tokens for the device</returns>
     Task<IEnumerable<UserToken>> GetRefreshTokensByDeviceAsync(Guid userId, string deviceFingerprint);
     
+    /// <summary>
+    /// Gets all active tokens of a specific type across all users (for token lookup)
+    /// </summary>
+    /// <param name="tokenType">Token type to filter by</param>
+    /// <returns>Collection of active tokens of the specified type</returns>
+    Task<IEnumerable<UserToken>> GetAllActiveTokensByTypeAsync(string tokenType);
+    
     // ========================================================================
     // Token Revocation Operations
     // ========================================================================
@@ -127,17 +134,4 @@ public interface IUserTokenRepository : IRepository<UserToken,Guid>
     /// <param name="userId">User ID</param>
     /// <returns>Number of active sessions</returns>
     Task<int> GetActiveSessionCountAsync(Guid userId);
-}
-
-/// <summary>
-/// Token statistics for monitoring and analytics
-/// </summary>
-public record TokenStatistics
-{
-    public int TotalActiveTokens { get; init; }
-    public int ActiveRefreshTokens { get; init; }
-    public int ActiveAccessTokens { get; init; }
-    public int RevokedTokens { get; init; }
-    public int ExpiredTokens { get; init; }
-    public int IdleTokens { get; init; }
 }

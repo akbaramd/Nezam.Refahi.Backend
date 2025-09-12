@@ -6,11 +6,13 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Azure.Core;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Nezam.Refahi.Identity.Application.Services;
+using Nezam.Refahi.Identity.Application.Services.Contracts;
 using Nezam.Refahi.Identity.Domain.Entities;
 using Nezam.Refahi.Identity.Domain.Repositories;
 
@@ -63,7 +65,12 @@ public class TokenService : ITokenService
     // JWT Access Token Operations (Stateless, 5-15 min TTL)
     // ========================================================================
     
-    public string GenerateAccessToken(User user, out string jwtId, int expiryMinutes = 15)
+    public async Task<(string AccessToken, int ExpiryMinutes, string JwtId)> GenerateAccessTokenAsync(
+        User user, 
+        string? deviceFingerprint = null, 
+        string? ipAddress = null, 
+        string? userAgent = null, 
+        int expiryMinutes = 15)
     {
         if (expiryMinutes <= 0 || expiryMinutes > 60)
             throw new ArgumentException("Access token expiry must be between 1-60 minutes", nameof(expiryMinutes));
@@ -74,7 +81,7 @@ public class TokenService : ITokenService
         var exp = now.AddMinutes(expiryMinutes);
         
         // Generate unique JWT ID
-        jwtId = Guid.NewGuid().ToString("N");
+        var jwtId = Guid.NewGuid().ToString("N");
         
         // Build claims
         var claims = new List<Claim>
@@ -112,16 +119,26 @@ public class TokenService : ITokenService
         _logger.LogDebug("Generated access token for user {UserId} with jti {JwtId}, expires in {ExpiryMinutes} minutes", 
             user.Id, jwtId, expiryMinutes);
         
-        return tokenString;
+        // Create refresh token entity
+        var refreshToken = UserToken.CreateAccessToken(
+          user.Id, 
+          tokenString, 
+          expiresInMinutes:expiryMinutes, 
+          deviceFingerprint: deviceFingerprint,
+          ipAddress: ipAddress,
+          userAgent: userAgent);
+        
+        // Save to database
+        await _userTokenRepository.AddAsync(refreshToken);
+        await _userTokenRepository.SaveChangesAsync();
+        
+        return (tokenString ,  expiryMinutes,jwtId);
     }
     
-    public bool ValidateAccessToken(string token, out string? jwtId, out Guid? userId)
+    public (bool IsValid, string? JwtId, Guid? UserId) ValidateAccessToken(string token)
     {
-        jwtId = null;
-        userId = null;
-        
         if (string.IsNullOrWhiteSpace(token))
-            return false;
+            return (false, null, null);
         
         try
         {
@@ -147,30 +164,28 @@ public class TokenService : ITokenService
             var principal = _tokenHandler.ValidateToken(token, parameters, out _);
             
             // Extract claims
-            jwtId = principal.FindFirstValue(JwtRegisteredClaimNames.Jti);
+            var jwtId = principal.FindFirstValue(JwtRegisteredClaimNames.Jti);
             var userIdClaim = principal.FindFirstValue(JwtRegisteredClaimNames.Sub) ?? principal.FindFirstValue("user_id");
             
             if (string.IsNullOrEmpty(jwtId) || string.IsNullOrEmpty(userIdClaim))
-                return false;
+                return (false, null, null);
                 
             if (!Guid.TryParse(userIdClaim, out var parsedUserId))
-                return false;
-                
-            userId = parsedUserId;
+                return (false, null, null);
             
             // Check if token is in deny list (for emergency revocation)
-            if ( IsJwtRevoked(jwtId))
+            if (IsJwtRevoked(jwtId))
             {
                 _logger.LogWarning("Access token {JwtId} is in deny list", jwtId);
-                return false;
+                return (false, null, null);
             }
             
-            return true;
+            return (true, jwtId, parsedUserId);
         }
         catch (Exception ex)
         {
             _logger.LogDebug(ex, "Access token validation failed");
-            return false;
+            return (false, null, null);
         }
     }
     
@@ -204,6 +219,7 @@ public class TokenService : ITokenService
         
         // Save to database
         await _userTokenRepository.AddAsync(refreshToken);
+        await _userTokenRepository.SaveChangesAsync();
         
         _logger.LogDebug("Generated refresh token for user {UserId}, expires in {ExpiryDays} days", 
             userId, expiryDays);
@@ -228,8 +244,9 @@ public class TokenService : ITokenService
         
         try
         {
-            // Find the refresh token by trying to match against all stored hashes
-            var refreshTokens = await _userTokenRepository.GetActiveTokensForUserAsync(Guid.Empty, "RefreshToken");
+            // Find the refresh token by trying to match against all active refresh tokens
+            // We need to search across all users since we don't know the user ID yet
+            var refreshTokens = await _userTokenRepository.GetAllActiveTokensByTypeAsync("RefreshToken");
             UserToken? matchingToken = null;
             
             var pepper = _configuration[PEPPER_CONFIG_KEY] ?? "";
@@ -304,12 +321,12 @@ public class TokenService : ITokenService
                 return new RefreshTokenValidationResult
                 {
                     IsValid = false,
-                    ErrorMessage = "User not found"
+                    ErrorMessage = "UserDetail not found"
                 };
             }
             
             // Generate new access token
-            var newAccessToken = GenerateAccessToken(user, out var newJwtId);
+            var (newAccessToken,newExpiryMinutes,jwtId) =  await GenerateAccessTokenAsync(user);
             
             // Generate new refresh token (rotation)
             var (newRawToken, newHashedToken, newTokenId) = await GenerateRefreshTokenAsync(
@@ -336,7 +353,7 @@ public class TokenService : ITokenService
                 UserId = user.Id,
                 NewAccessToken = newAccessToken,
                 NewRefreshToken = newRawToken,
-                NewJwtId = newJwtId
+                NewJwtId = jwtId
             };
         }
         catch (Exception ex)

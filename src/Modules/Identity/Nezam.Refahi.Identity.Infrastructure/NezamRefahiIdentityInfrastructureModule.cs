@@ -7,13 +7,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Nezam.Refahi.Identity.Application;
 using Nezam.Refahi.Identity.Application.Services;
+using Nezam.Refahi.Identity.Application.Services.Contracts;
 using Nezam.Refahi.Identity.Domain.Repositories;
 using Nezam.Refahi.Identity.Infrastructure.Persistence;
 using Nezam.Refahi.Identity.Infrastructure.Persistence.Repositories;
 using Nezam.Refahi.Identity.Infrastructure.Persistence.Seeding;
+using Nezam.Refahi.Identity.Infrastructure.Providers;
 using Nezam.Refahi.Identity.Infrastructure.Services;
-using Nezam.Refahi.Shared.Application.Common.Services;
 using Nezam.Refahi.Shared.Infrastructure;
+using Nezam.Refahi.Shared.Infrastructure.Providers;
 
 namespace Nezam.Refahi.Identity.Infrastructure;
 
@@ -23,7 +25,7 @@ public class NezamRefahiIdentityInfrastructureModule : BonModule
   public NezamRefahiIdentityInfrastructureModule()
   {
     DependOn<NezamRefahiIdentityApplicationModule>();
-    DependOn<NezamRefahiSharedInfrastructureModule<IdentityDbContext>>();
+    DependOn<NezamRefahiSharedInfrastructureModule>();
   }
   
   public override Task OnConfigureAsync(BonConfigurationContext context)
@@ -51,6 +53,15 @@ public class NezamRefahiIdentityInfrastructureModule : BonModule
     context.Services.AddSingleton<IOtpHasherService, OtpHasherService>();
     context.Services.AddSingleton<IOtpGeneratorService, OtpGeneratorService>();
     
+    // OTP cleanup service for big data management
+    context.Services.AddScoped<IOtpCleanupService, OtpCleanupService>();
+    
+    // Claims aggregator service
+    context.Services.AddScoped<IClaimsAggregatorService, ClaimsAggregatorService>();
+    
+    // Register Identity Claims Provider
+    context.Services.AddScoped<IIdentityClaimsPermissionProvider, IdentityClaimsProvider>();
+    
     // ========================================================================
     // Background Services
     // ========================================================================
@@ -59,7 +70,8 @@ public class NezamRefahiIdentityInfrastructureModule : BonModule
     context.Services.AddHostedService<TokenCleanupService>();
     
      context.Services.AddDbContext<IdentityDbContext>(options =>
-        {
+     {
+       options.EnableSensitiveDataLogging(true);
             var configuration = context.GetRequireService<IConfiguration>();
             var connectionString = configuration.GetConnectionString("DefaultConnection");
             
@@ -87,7 +99,7 @@ public class NezamRefahiIdentityInfrastructureModule : BonModule
         
         // Register Unit of Work
         context.Services.AddScoped<IIdentityUnitOfWork, IdentityUnitOfWork>();
-        
+         context.Services.AddScoped<IScopeAuthorizationService,ScopeAuthorizationService>();
         // Register seeding services
         context.Services.AddScoped<RoleSeeder>();
         context.Services.AddScoped<UserSeeder>();
@@ -95,6 +107,9 @@ public class NezamRefahiIdentityInfrastructureModule : BonModule
         
         // Register hosted service for automatic seeding
         context.Services.AddHostedService<IdentitySeedingService>();
+        
+        // Register user validation service
+        context.Services.AddScoped<IUserValidationService, UserValidationService>();
         
     return base.OnConfigureAsync(context);
   }

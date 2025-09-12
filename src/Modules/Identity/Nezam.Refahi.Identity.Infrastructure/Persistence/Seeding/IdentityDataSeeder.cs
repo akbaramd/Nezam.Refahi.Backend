@@ -168,7 +168,7 @@ public class IdentityDataSeeder
             // Seeding is needed if no system roles or no admin users exist
             var needsSeeding = roleCount == 0 || adminUserCount == 0;
 
-            _logger.LogInformation("Seeding check: Role Count: {RoleCount}, Admin User Count: {AdminUserCount}, Needs Seeding: {NeedsSeeding}", 
+            _logger.LogInformation("Seeding check: Role Count: {RoleCount}, Admin UserDetail Count: {AdminUserCount}, Needs Seeding: {NeedsSeeding}", 
                 roleCount, adminUserCount, needsSeeding);
 
             return needsSeeding;
@@ -179,29 +179,4 @@ public class IdentityDataSeeder
             return true; // Assume seeding is needed if we can't check
         }
     }
-}
-
-/// <summary>
-/// Result of seeding validation
-/// </summary>
-public class IdentitySeedingValidationResult
-{
-    public bool IsValid { get; set; }
-    public bool RolesValid { get; set; }
-    public bool UsersValid { get; set; }
-    public int RoleCount { get; set; }
-    public int AdminUserCount { get; set; }
-    public int VerifiedUserCount { get; set; }
-    public string? ValidationError { get; set; }
-}
-
-/// <summary>
-/// Seeding statistics
-/// </summary>
-public class IdentitySeedingStatistics
-{
-    public int RoleCount { get; set; }
-    public int AdminUserCount { get; set; }
-    public int VerifiedUserCount { get; set; }
-    public DateTime Timestamp { get; set; }
 }

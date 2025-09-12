@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Nezam.Refahi.Identity.Application.Services;
+using Nezam.Refahi.Identity.Application.Services.Contracts;
 
 namespace Nezam.Refahi.Identity.Infrastructure.Services;
 

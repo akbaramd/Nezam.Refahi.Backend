@@ -32,12 +32,6 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                         .HasColumnType("int")
                         .HasDefaultValue(3);
 
-                    b.Property<string>("ChallengeId")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(100)");
-
                     b.Property<DateTime?>("ConsumedAt")
                         .HasColumnType("datetime2");
 
@@ -81,6 +75,7 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
+                        .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
@@ -97,10 +92,6 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ChallengeId")
-                        .IsUnique()
-                        .HasDatabaseName("IX_OtpChallenges_ChallengeId");
 
                     b.HasIndex("CreatedAt")
                         .HasDatabaseName("IX_OtpChallenges_CreatedAt");
@@ -302,7 +293,7 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                     b.ToTable("RoleClaims", "identity");
                 });
 
-            modelBuilder.Entity("Nezam.Refahi.Identity.Domain.Entities.User", b =>
+            modelBuilder.Entity("Nezam.Refahi.Identity.Domain.Entities.UserDetail", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
@@ -728,7 +719,7 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                                 .HasForeignKey("OtpChallengeId");
                         });
 
-                    b.OwnsOne("Nezam.Refahi.Identity.Domain.ValueObjects.PhoneNumber", "PhoneNumber", b1 =>
+                    b.OwnsOne("Nezam.Refahi.Shared.Domain.ValueObjects.PhoneNumber", "PhoneNumber", b1 =>
                         {
                             b1.Property<Guid>("OtpChallengeId")
                                 .HasColumnType("uniqueidentifier");
@@ -743,46 +734,6 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
 
                             b1.HasIndex("Value")
                                 .HasDatabaseName("IX_OtpChallenges_PhoneNumber");
-
-                            b1.ToTable("OtpChallenges", "identity");
-
-                            b1.WithOwner()
-                                .HasForeignKey("OtpChallengeId");
-                        });
-
-                    b.OwnsOne("Nezam.Refahi.Identity.Domain.ValueObjects.ClientId", "ClientId", b1 =>
-                        {
-                            b1.Property<Guid>("OtpChallengeId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<string>("Value")
-                                .IsRequired()
-                                .HasMaxLength(50)
-                                .HasColumnType("nvarchar(50)")
-                                .HasColumnName("ClientId");
-
-                            b1.HasKey("OtpChallengeId");
-
-                            b1.HasIndex("Value")
-                                .HasDatabaseName("IX_OtpChallenges_ClientId");
-
-                            b1.ToTable("OtpChallenges", "identity");
-
-                            b1.WithOwner()
-                                .HasForeignKey("OtpChallengeId");
-                        });
-
-                    b.OwnsOne("Nezam.Refahi.Identity.Domain.ValueObjects.IpAddress", "IpAddress", b1 =>
-                        {
-                            b1.Property<Guid>("OtpChallengeId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<string>("Value")
-                                .HasMaxLength(45)
-                                .HasColumnType("nvarchar(45)")
-                                .HasColumnName("IpAddress");
-
-                            b1.HasKey("OtpChallengeId");
 
                             b1.ToTable("OtpChallenges", "identity");
 
@@ -827,6 +778,46 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                                 .HasForeignKey("OtpChallengeId");
                         });
 
+                    b.OwnsOne("Nezam.Refahi.Shared.Domain.ValueObjects.ClientId", "ClientId", b1 =>
+                        {
+                            b1.Property<Guid>("OtpChallengeId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("nvarchar(50)")
+                                .HasColumnName("ClientId");
+
+                            b1.HasKey("OtpChallengeId");
+
+                            b1.HasIndex("Value")
+                                .HasDatabaseName("IX_OtpChallenges_ClientId");
+
+                            b1.ToTable("OtpChallenges", "identity");
+
+                            b1.WithOwner()
+                                .HasForeignKey("OtpChallengeId");
+                        });
+
+                    b.OwnsOne("Nezam.Refahi.Shared.Domain.ValueObjects.IpAddress", "IpAddress", b1 =>
+                        {
+                            b1.Property<Guid>("OtpChallengeId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<string>("Value")
+                                .HasMaxLength(45)
+                                .HasColumnType("nvarchar(45)")
+                                .HasColumnName("IpAddress");
+
+                            b1.HasKey("OtpChallengeId");
+
+                            b1.ToTable("OtpChallenges", "identity");
+
+                            b1.WithOwner()
+                                .HasForeignKey("OtpChallengeId");
+                        });
+
                     b.Navigation("ClientId")
                         .IsRequired();
 
@@ -843,7 +834,7 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
 
             modelBuilder.Entity("Nezam.Refahi.Identity.Domain.Entities.RefreshSession", b =>
                 {
-                    b.HasOne("Nezam.Refahi.Identity.Domain.Entities.User", null)
+                    b.HasOne("Nezam.Refahi.Identity.Domain.Entities.UserDetail", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -912,7 +903,7 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("Nezam.Refahi.Identity.Domain.ValueObjects.Claim", "Claim", b1 =>
+                    b.OwnsOne("Nezam.Refahi.Shared.Domain.ValueObjects.Claim", "Claim", b1 =>
                         {
                             b1.Property<Guid>("RoleClaimId")
                                 .HasColumnType("uniqueidentifier");
@@ -954,7 +945,7 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("Nezam.Refahi.Identity.Domain.Entities.User", b =>
+            modelBuilder.Entity("Nezam.Refahi.Identity.Domain.Entities.UserDetail", b =>
                 {
                     b.OwnsOne("Nezam.Refahi.Identity.Domain.ValueObjects.DeviceFingerprint", "LastDeviceFingerprint", b1 =>
                         {
@@ -974,7 +965,7 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                                 .HasForeignKey("UserId");
                         });
 
-                    b.OwnsOne("Nezam.Refahi.Identity.Domain.ValueObjects.PhoneNumber", "PhoneNumber", b1 =>
+                    b.OwnsOne("Nezam.Refahi.Shared.Domain.ValueObjects.PhoneNumber", "PhoneNumber", b1 =>
                         {
                             b1.Property<Guid>("UserId")
                                 .HasColumnType("uniqueidentifier");
@@ -996,7 +987,7 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                                 .HasForeignKey("UserId");
                         });
 
-                    b.OwnsOne("Nezam.Refahi.Identity.Domain.ValueObjects.NationalId", "NationalId", b1 =>
+                    b.OwnsOne("Nezam.Refahi.Shared.Domain.ValueObjects.NationalId", "NationalId", b1 =>
                         {
                             b1.Property<Guid>("UserId")
                                 .HasColumnType("uniqueidentifier");
@@ -1028,13 +1019,13 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
 
             modelBuilder.Entity("Nezam.Refahi.Identity.Domain.Entities.UserClaim", b =>
                 {
-                    b.HasOne("Nezam.Refahi.Identity.Domain.Entities.User", "User")
+                    b.HasOne("Nezam.Refahi.Identity.Domain.Entities.UserDetail", "UserDetail")
                         .WithMany("UserClaims")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("Nezam.Refahi.Identity.Domain.ValueObjects.Claim", "Claim", b1 =>
+                    b.OwnsOne("Nezam.Refahi.Shared.Domain.ValueObjects.Claim", "Claim", b1 =>
                         {
                             b1.Property<Guid>("UserClaimId")
                                 .HasColumnType("uniqueidentifier");
@@ -1073,12 +1064,12 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                     b.Navigation("Claim")
                         .IsRequired();
 
-                    b.Navigation("User");
+                    b.Navigation("UserDetail");
                 });
 
             modelBuilder.Entity("Nezam.Refahi.Identity.Domain.Entities.UserPreference", b =>
                 {
-                    b.HasOne("Nezam.Refahi.Identity.Domain.Entities.User", "User")
+                    b.HasOne("Nezam.Refahi.Identity.Domain.Entities.UserDetail", "UserDetail")
                         .WithMany("Preferences")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1134,7 +1125,7 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                     b.Navigation("Key")
                         .IsRequired();
 
-                    b.Navigation("User");
+                    b.Navigation("UserDetail");
 
                     b.Navigation("Value")
                         .IsRequired();
@@ -1148,7 +1139,7 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Nezam.Refahi.Identity.Domain.Entities.User", "User")
+                    b.HasOne("Nezam.Refahi.Identity.Domain.Entities.UserDetail", "UserDetail")
                         .WithMany("UserRoles")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1156,18 +1147,18 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
 
                     b.Navigation("Role");
 
-                    b.Navigation("User");
+                    b.Navigation("UserDetail");
                 });
 
             modelBuilder.Entity("Nezam.Refahi.Identity.Domain.Entities.UserToken", b =>
                 {
-                    b.HasOne("Nezam.Refahi.Identity.Domain.Entities.User", "User")
+                    b.HasOne("Nezam.Refahi.Identity.Domain.Entities.UserDetail", "UserDetail")
                         .WithMany("Tokens")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("User");
+                    b.Navigation("UserDetail");
                 });
 
             modelBuilder.Entity("Nezam.Refahi.Identity.Domain.Entities.Role", b =>
@@ -1177,7 +1168,7 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                     b.Navigation("UserRoles");
                 });
 
-            modelBuilder.Entity("Nezam.Refahi.Identity.Domain.Entities.User", b =>
+            modelBuilder.Entity("Nezam.Refahi.Identity.Domain.Entities.UserDetail", b =>
                 {
                     b.Navigation("Preferences");
 

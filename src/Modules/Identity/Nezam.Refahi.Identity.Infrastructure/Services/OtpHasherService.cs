@@ -1,7 +1,9 @@
 using System.Security.Cryptography;
 using System.Text;
+using Nezam.Refahi.Identity.Application.Services;
+using Nezam.Refahi.Identity.Application.Services.Contracts;
 
-namespace Nezam.Refahi.Shared.Application.Common.Services;
+namespace Nezam.Refahi.Identity.Infrastructure.Services;
 
 
 public class OtpHasherService : IOtpHasherService
@@ -22,10 +24,9 @@ public class OtpHasherService : IOtpHasherService
     /// <param name="otpCode">OTP code to hash</param>
     /// <param name="nonce">Nonce for additional security</param>
     /// <returns>Hashed OTP code</returns>
-    public Task<string> HashAsync(string challengeId, string phoneNumber, string otpCode, string nonce)
+    public Task<string> HashAsync( string phoneNumber, string otpCode, string nonce)
     {
-        if (string.IsNullOrEmpty(challengeId))
-            throw new ArgumentException("Challenge ID cannot be empty", nameof(challengeId));
+       
             
         if (string.IsNullOrEmpty(phoneNumber))
             throw new ArgumentException("Phone number cannot be empty", nameof(phoneNumber));
@@ -36,7 +37,7 @@ public class OtpHasherService : IOtpHasherService
         if (string.IsNullOrEmpty(nonce))
             throw new ArgumentException("Nonce cannot be empty", nameof(nonce));
 
-        var input = $"{challengeId}|{phoneNumber}|{otpCode}|{nonce}";
+        var input = $"{phoneNumber}|{otpCode}|{nonce}";
         var inputBytes = Encoding.UTF8.GetBytes(input);
         var secretBytes = Encoding.UTF8.GetBytes(_secretKey);
 
@@ -56,12 +57,12 @@ public class OtpHasherService : IOtpHasherService
     /// <param name="nonce">Nonce used in hash generation</param>
     /// <param name="expectedHash">Expected hash value</param>
     /// <returns>True if verification succeeds, false otherwise</returns>
-    public async Task<bool> VerifyAsync(string challengeId, string phoneNumber, string otpCode, string nonce, string expectedHash)
+    public async Task<bool> VerifyAsync(string phoneNumber, string otpCode, string nonce, string expectedHash)
     {
         if (string.IsNullOrEmpty(expectedHash))
             return false;
 
-        var computedHash = await HashAsync(challengeId, phoneNumber, otpCode, nonce);
+        var computedHash = await HashAsync(phoneNumber, otpCode, nonce);
         return string.Equals(computedHash, expectedHash, StringComparison.Ordinal);
     }
 

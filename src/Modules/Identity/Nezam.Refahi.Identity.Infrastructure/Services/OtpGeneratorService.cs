@@ -1,6 +1,8 @@
 using System.Security.Cryptography;
+using Nezam.Refahi.Identity.Application.Services;
+using Nezam.Refahi.Identity.Application.Services.Contracts;
 
-namespace Nezam.Refahi.Shared.Application.Common.Services;
+namespace Nezam.Refahi.Identity.Infrastructure.Services;
 
 public class OtpGeneratorService : IOtpGeneratorService
 {

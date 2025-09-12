@@ -20,10 +20,6 @@ namespace Nezam.Refahi.Shared.Application.Common.Models
         /// </summary>
         public IEnumerable<string> Errors { get; set; } = new List<string>();
         
-        /// <summary>
-        /// Exception that occurred during the operation
-        /// </summary>
-        public Exception? Exception { get; set; }
         
         /// <summary>
         /// Creates a new successful result
@@ -45,13 +41,12 @@ namespace Nezam.Refahi.Shared.Application.Common.Models
         /// <param name="message">Error message</param>
         /// <param name="exception">Optional exception</param>
         /// <returns>A failed result</returns>
-        public static ApplicationResult Failure(string message, Exception? exception = null)
+        public static ApplicationResult Failure(string message)
         {
             return new ApplicationResult
             {
                 IsSuccess = false,
                 Message = message,
-                Exception = exception
             };
         }
         
@@ -62,14 +57,13 @@ namespace Nezam.Refahi.Shared.Application.Common.Models
         /// <param name="message">Optional error message</param>
         /// <param name="exception">Optional exception</param>
         /// <returns>A failed result with multiple errors</returns>
-        public static ApplicationResult Failure(IEnumerable<string> errors, string message = "One or more errors occurred", Exception? exception = null)
+        public static ApplicationResult Failure(IEnumerable<string> errors, string message = "One or more errors occurred")
         {
             return new ApplicationResult
             {
                 IsSuccess = false,
                 Message = message,
                 Errors = errors,
-                Exception = exception
             };
         }
     }
@@ -107,13 +101,12 @@ namespace Nezam.Refahi.Shared.Application.Common.Models
         /// <param name="message">Error message</param>
         /// <param name="exception">Optional exception</param>
         /// <returns>A failed result</returns>
-        public static new ApplicationResult<T> Failure(string message, Exception? exception = null)
+        public static new ApplicationResult<T> Failure(string message)
         {
             return new ApplicationResult<T>
             {
                 IsSuccess = false,
                 Message = message,
-                Exception = exception
             };
         }
         
@@ -124,14 +117,13 @@ namespace Nezam.Refahi.Shared.Application.Common.Models
         /// <param name="message">Optional error message</param>
         /// <param name="exception">Optional exception</param>
         /// <returns>A failed result with multiple errors</returns>
-        public static new ApplicationResult<T> Failure(IEnumerable<string> errors, string message = "One or more errors occurred", Exception? exception = null)
+        public static new ApplicationResult<T> Failure(IEnumerable<string> errors, string message = "One or more errors occurred")
         {
             return new ApplicationResult<T>
             {
                 IsSuccess = false,
                 Message = message,
                 Errors = errors,
-                Exception = exception
             };
         }
     }

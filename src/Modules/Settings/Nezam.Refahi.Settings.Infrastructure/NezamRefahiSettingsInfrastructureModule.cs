@@ -17,7 +17,7 @@ public class NezamRefahiSettingsInfrastructureModule : BonModule
 {
   public NezamRefahiSettingsInfrastructureModule()
   {
-    DependOn<NezamRefahiSharedInfrastructureModule<SettingsDbContext>>();
+    DependOn<NezamRefahiSharedInfrastructureModule>();
     DependOn<NezamRefahiSettingsApplicationModule>();
   }
 

@@ -2,6 +2,7 @@ using MCA.SharedKernel.Domain;
 using MCA.SharedKernel.Domain.AggregateRoots;
 using Nezam.Refahi.Identity.Domain.Enums;
 using Nezam.Refahi.Identity.Domain.ValueObjects;
+using Nezam.Refahi.Shared.Domain.ValueObjects;
 
 namespace Nezam.Refahi.Identity.Domain.Entities;
 
@@ -10,10 +11,7 @@ namespace Nezam.Refahi.Identity.Domain.Entities;
 /// </summary>
 public class OtpChallenge : Entity<Guid>
 {
-    /// <summary>
-    /// Unique identifier for the challenge
-    /// </summary>
-    public string ChallengeId { get; private set; } = string.Empty;
+   
     
     /// <summary>
     /// Phone number for which OTP is requested
@@ -110,6 +108,11 @@ public class OtpChallenge : Entity<Guid>
     /// </summary>
     public Guid? UserId { get; private set; }
 
+    /// <summary>
+    /// Row version for optimistic concurrency control
+    /// </summary>
+    public byte[] RowVersion { get; private set; } = Array.Empty<byte>();
+
     // Private constructor for EF Core
     private OtpChallenge() : base() { }
 
@@ -117,7 +120,6 @@ public class OtpChallenge : Entity<Guid>
     /// Creates a new OTP challenge
     /// </summary>
     public OtpChallenge(
-        string challengeId,
         PhoneNumber phoneNumber,
         ClientId clientId,
         string otpHash,
@@ -126,8 +128,6 @@ public class OtpChallenge : Entity<Guid>
         DeviceFingerprint? deviceFingerprint = null,
         IpAddress? ipAddress = null) : base(Guid.NewGuid())
     {
-        if (string.IsNullOrWhiteSpace(challengeId))
-            throw new ArgumentException("Challenge ID cannot be empty", nameof(challengeId));
             
         if (phoneNumber == null)
             throw new ArgumentNullException(nameof(phoneNumber));
@@ -144,7 +144,6 @@ public class OtpChallenge : Entity<Guid>
         if (policy == null)
             throw new ArgumentNullException(nameof(policy));
 
-        ChallengeId = challengeId;
         PhoneNumber = phoneNumber;
         ClientId = clientId;
         OtpHash = otpHash;

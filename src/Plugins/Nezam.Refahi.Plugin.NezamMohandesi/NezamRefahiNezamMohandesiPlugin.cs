@@ -1,0 +1,34 @@
+using Bonyan.Modularity;
+using Bonyan.Modularity.Abstractions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Nezam.Refahi.Membership.Contracts.Services;
+using Nezam.Refahi.Plugin.NezamMohandesi.Cedo;
+using Nezam.Refahi.Plugin.NezamMohandesi.Seeding;
+using Nezam.Refahi.Plugin.NezamMohandesi.Services;
+
+namespace Nezam.Refahi.Plugin.NezamMohandesi;
+
+public class NezamRefahiNezamMohandesiPlugin : BonModule
+{
+  public override Task OnConfigureAsync(BonConfigurationContext context)
+  {
+    var configuration = context.GetRequireService<IConfiguration>();
+    
+    context.Services
+      .AddDbContext<CedoContext>(opt => opt.UseSqlServer(configuration.GetConnectionString("CedoConnection")));
+    
+    // Register repositories
+
+    // Register services
+    context.Services.AddScoped<IExternalMemberStorage, ExternalMemberStorage>();
+    
+    // Register seed contributors
+    context.Services.AddScoped<IMembershipSeedContributor, NezamMohandesiSeedContributor>();
+    
+    // Register hosted services
+    
+    return base.OnConfigureAsync(context);
+  }
+}

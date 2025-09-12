@@ -13,7 +13,7 @@ using Nezam.Refahi.Shared.Infrastructure.Services;
 
 namespace Nezam.Refahi.Shared.Infrastructure;
 
-public class NezamRefahiSharedInfrastructureModule<TDbContext> : BonWebModule where TDbContext : DbContext
+public class NezamRefahiSharedInfrastructureModule : BonWebModule
 {
   public NezamRefahiSharedInfrastructureModule()
   {

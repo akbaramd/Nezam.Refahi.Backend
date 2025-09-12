@@ -20,11 +20,7 @@ public class OtpChallengeConfiguration : IEntityTypeConfiguration<OtpChallenge>
         builder.Property(o => o.Id)
             .ValueGeneratedNever(); // MUST: Client generates ID in constructor
         
-        // Basic properties
-        builder.Property(o => o.ChallengeId)
-            .IsRequired()
-            .HasMaxLength(100)
-            .IsUnicode(false);
+    
             
         builder.Property(o => o.OtpHash)
             .IsRequired()
@@ -189,10 +185,7 @@ public class OtpChallengeConfiguration : IEntityTypeConfiguration<OtpChallenge>
         builder.Property(o => o.CreatedAt).IsRequired();
      
         
-        // Create basic indexes
-        builder.HasIndex(o => o.ChallengeId)
-            .IsUnique()
-            .HasDatabaseName("IX_OtpChallenges_ChallengeId");
+
             
         builder.HasIndex(o => o.Status)
             .HasDatabaseName("IX_OtpChallenges_Status");
@@ -208,7 +201,7 @@ public class OtpChallengeConfiguration : IEntityTypeConfiguration<OtpChallenge>
             .HasDatabaseName("IX_OtpChallenges_Status_ExpiresAt");
             
         // Concurrency control - MUST: Rowversion for critical clusters
-        builder.Property<byte[]>("RowVersion")
+        builder.Property(o => o.RowVersion)
             .IsRowVersion();
 
     }

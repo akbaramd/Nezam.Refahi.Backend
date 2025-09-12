@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Caching.Memory;
 using Nezam.Refahi.Identity.Application.Services;
+using Nezam.Refahi.Identity.Application.Services.Contracts;
 
 namespace Nezam.Refahi.Identity.Infrastructure.Services;
 

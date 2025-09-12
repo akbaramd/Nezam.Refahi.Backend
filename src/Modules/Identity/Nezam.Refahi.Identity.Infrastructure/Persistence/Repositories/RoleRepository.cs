@@ -147,4 +147,10 @@ public class RoleRepository : EfRepository<IdentityDbContext, Role, Guid>, IRole
             .ThenBy(r => r.Name)
             .ToListAsync(cancellationToken);
     }
+
+    protected override IQueryable<Role> PrepareQuery(IQueryable<Role> query)
+    {
+      query = query.OrderBy(r => r.Name).Include(x=>x.Claims).Include(x=>x.UserRoles);
+      return base.PrepareQuery(query);
+    }
 }

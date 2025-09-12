@@ -88,7 +88,7 @@ public class RefreshSessionConfiguration : IEntityTypeConfiguration<RefreshSessi
         builder.Property<byte[]>("RowVersion")
             .IsRowVersion();
 
-        // Relationships - Within aggregate (User owns RefreshSession)
+        // Relationships - Within aggregate (UserDetail owns RefreshSession)
         builder.HasOne<User>()
             .WithMany()
             .HasForeignKey(rs => rs.UserId)

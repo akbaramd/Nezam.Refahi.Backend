@@ -2,15 +2,17 @@
 // Identity.Presentation/Endpoints/IdentityEndpoints.cs
 // -----------------------------------------------------------------------------
 
-using System.Text.Json.Serialization;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Nezam.Refahi.Identity.Application.Commands.CompleteRegistration;
-using Nezam.Refahi.Identity.Application.Commands.Logout;
-using Nezam.Refahi.Identity.Application.Commands.SendOtp;
-using Nezam.Refahi.Identity.Application.Commands.VerifyOtp;
-using Nezam.Refahi.Identity.Application.Queries.GetCurrentUser;
+using Microsoft.OpenApi.Models;
+using Nezam.Refahi.Identity.Application.Features.Authentication.Commands.Logout;
+using Nezam.Refahi.Identity.Application.Features.Authentication.Commands.RefreshToken;
+using Nezam.Refahi.Identity.Application.Features.Authentication.Commands.SendOtp;
+using Nezam.Refahi.Identity.Application.Features.Authentication.Commands.VerifyOtp;
+using Nezam.Refahi.Identity.Application.Features.Authentication.Queries.GetCurrentUser;
+using Nezam.Refahi.Identity.Presentation.Models;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
+using Nezam.Refahi.Shared.Application.Common.Models;
 
 namespace Nezam.Refahi.Identity.Presentation.Endpoints;
 
@@ -30,18 +32,31 @@ public static class IdentityEndpoints
             var deviceId = request.DeviceId ??
                           httpContext.Request.Headers["X-Device-Id"].FirstOrDefault() ?? "unknown";
 
+            // Validate scope
+            var scope = request.Scope ?? "app";
+            if (!IsValidScope(scope))
+                return Results.BadRequest("Invalid scope. Allowed values: panel, app");
+
             var cmd = new SendOtpCommand
             {
                 NationalCode = request.NationalCode,
                 Purpose = request.Purpose ?? "login",
                 DeviceId = deviceId,
-                IpAddress = ipAddress
+                IpAddress = ipAddress,
+                Scope = scope
             };
-            return Results.Ok(await mediator.Send(cmd));
+            var res = await mediator.Send(cmd);
+            return Results.Ok(res);
         })
         .WithName("SendOtp")
-        .WithOpenApi()
-        .WithDescription("Sends an OTP code to the provided phone number");
+        .WithOpenApi(operation => new(operation)
+        {
+            Summary = "Send OTP Code",
+            Description = "Sends an OTP (One-Time Password) code to the user's phone number for authentication purposes",
+            Tags = new List<OpenApiTag> { new() { Name = "Authentication" } }
+        })
+        .Produces<ApplicationResult<SendOtpResponse>>(StatusCodes.Status200OK, "application/json")
+        ;
 
         // ───────────────────── 2) OTP Verification ───────────
         authGroup.MapPost("/otp/verify", async (
@@ -53,44 +68,61 @@ public static class IdentityEndpoints
             var deviceId  = request.DeviceId ??
                             httpContext.Request.Headers["X-Device-Id"].FirstOrDefault() ?? "unknown";
 
+            // Validate scope
+            var scope = request.Scope ?? "app";
+            if (!IsValidScope(scope))
+                return Results.BadRequest("Invalid scope. Allowed values: panel, app");
+
             var cmd = new VerifyOtpCommand
             {
-                NationalCode = request.NationalCode,
+                ChallengeId = Guid.Parse(request.ChallengeId),
                 OtpCode      = request.OtpCode,
                 Purpose      = request.Purpose ?? "login",
                 DeviceId     = deviceId,
-                IpAddress    = ipAddress
+                IpAddress    = ipAddress,
+                Scope        = scope
             };
             return Results.Ok(await mediator.Send(cmd));
         })
         .WithName("VerifyOtp")
-        .WithOpenApi()
-        .WithDescription("Verifies an OTP code for a user");
-
-        // ───────────────────── 3) User Registration ─────────────────
-        authGroup.MapPost("/registration", async (
-            [FromBody] CompleteRegistrationRequest request,
-            [FromServices] IMediator mediator,
-            [FromServices] ICurrentUserService current) =>
+        .WithOpenApi(operation => new(operation)
         {
-            if (!current.IsAuthenticated || !current.UserId.HasValue)
-                return Results.Unauthorized();
+            Summary = "Verify OTP Code",
+            Description = "Verifies an OTP code and returns authentication tokens if successful",
+            Tags = new List<OpenApiTag> { new() { Name = "Authentication" } }
+        })
+        .Produces<ApplicationResult<VerifyOtpResponse>>(StatusCodes.Status200OK, "application/json");
 
-            var cmd = new CompleteRegistrationCommand
+       
+// ───────────────────── 2) OTP Verification ───────────
+        authGroup.MapPost("/refresh", async (
+            [FromBody] RefreshTokenRequest request,
+            [FromServices] IMediator mediator,
+            HttpContext httpContext) =>
+          {
+           
+            var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString();
+            var deviceId  = request.DeviceId ??
+                            httpContext.Request.Headers["X-Device-Id"].FirstOrDefault() ?? "unknown";
+            var cmd = new RefreshTokenCommand()
             {
-                UserId     = current.UserId.Value,
-                FirstName  = request.FirstName,
-                LastName   = request.LastName,
-                NationalId = request.NationalId
+              RefreshToken = request.RefreshToken,
+              IpAddress = ipAddress,
+              UserAgent = "",
+              DeviceFingerprint = deviceId,
             };
             return Results.Ok(await mediator.Send(cmd));
-        })
-        .RequireAuthorization()
-        .WithName("CompleteRegistration")
-        .WithOpenApi()
-        .WithDescription("Completes user registration with profile information");
+          })
+          .WithName("RefreshToken")
+          .WithOpenApi(operation => new(operation)
+          {
+            Summary = "RefreshToken ",
+            Description = "RefreshToken an OTP code and returns authentication tokens if successful",
+            Tags = new List<OpenApiTag> { new() { Name = "Authentication" } }
+          })
+          .Produces<ApplicationResult<RefreshTokenResponse>>(StatusCodes.Status200OK, "application/json");
 
-        // ───────────────────── 4) Current User Profile ─────────────────────
+        // ───────────────────── 4) Current UserDetail Profile ─────────────────────
         authGroup.MapGet("/profile", async (
             [FromServices] IMediator mediator,
             [FromServices] ICurrentUserService current) =>
@@ -100,10 +132,15 @@ public static class IdentityEndpoints
         })
         .RequireAuthorization()
         .WithName("GetCurrentUser")
-        .WithOpenApi()
-        .WithDescription("Gets the current authenticated user's profile");
+        .WithOpenApi(operation => new(operation)
+        {
+            Summary = "Get Current UserDetail Profile",
+            Description = "Retrieves the profile information of the currently authenticated user",
+            Tags = new List<OpenApiTag> { new() { Name = "Authentication" } }
+        })
+        .Produces<ApplicationResult<CurrentUserResponse>>(StatusCodes.Status200OK, "application/json");
 
-        // ───────────────────── 5) User Session Management ─────
+        // ───────────────────── 5) UserDetail Session Management ─────
         authGroup.MapPost("/logout", async (
             [FromBody] LogoutRequest body,
             [FromServices] IMediator mediator,
@@ -129,27 +166,26 @@ public static class IdentityEndpoints
         })
         .RequireAuthorization()
         .WithName("Logout")
-        .WithOpenApi()
-        .WithDescription("Logs the user out and revokes tokens");
+        .WithOpenApi(operation => new(operation)
+        {
+            Summary = "UserDetail Logout",
+            Description = "Logs out the user and revokes both access and refresh tokens",
+            Tags = new List<OpenApiTag> { new() { Name = "Authentication" } }
+        })
+        .Produces<ApplicationResult<LogoutResponse>>(StatusCodes.Status200OK, "application/json");
 
         return app;
+    }
+
+    /// <summary>
+    /// Validates if the provided scope is valid
+    /// </summary>
+    private static bool IsValidScope(string scope)
+    {
+        return scope.ToLowerInvariant() is "panel" or "app";
     }
 }
 
 // ─────────────────────────── DTOs ───────────────────────────
-public record SendOtpRequest(string NationalCode, string? Purpose = null, string? DeviceId = null);
 
-public record VerifyOtpRequest(
-    string NationalCode,
-    string OtpCode,
-    [property: JsonIgnore]
-    string? Purpose  = null,
-    [property: JsonIgnore]
-    string? DeviceId = null); // IpAddress از HttpContext استخراج می‌شود
-
-public record CompleteRegistrationRequest(
-    string FirstName,
-    string LastName,
-    string NationalId);
-
-public record LogoutRequest(string? RefreshToken);  // اختیاری؛ Access از هدر خوانده می‌شود
+// اختیاری؛ Access از هدر خوانده می‌شود

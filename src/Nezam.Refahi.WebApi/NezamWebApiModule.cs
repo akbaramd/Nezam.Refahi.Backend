@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Text.Json.Serialization;
 using Bonyan.AspNetCore;
 using Bonyan.Modularity;
@@ -8,10 +8,13 @@ using Microsoft.AspNetCore.Http.Json;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Nezam.Refahi.Identity.Presentation;
+using Nezam.Refahi.Membership.Presentation;
 using Nezam.Refahi.Settings.Presentation;
 using Nezam.Refahi.WebApi.Endpoints;
+using Nezam.Refahi.WebApi.Services;
 using Nezam.Refahi.WebApi.Swagger;
 using Swashbuckle.AspNetCore.Filters;
+using System.Reflection;
 
 namespace Nezam.Refahi.WebApi;
 
@@ -21,6 +24,7 @@ public class NezamWebApiModule : BonWebModule
   {
     DependOn<NezamRefahiIdentityPresentationModule>();
     DependOn<NezamRefahiSettingsPresentationModule>();
+    DependOn<NezamRefahiMembershipPresentationModule>();
   }
 
   public override Task OnConfigureAsync(BonConfigurationContext context)
@@ -56,22 +60,27 @@ public class NezamWebApiModule : BonWebModule
       
       // Add custom operation filter for selective authorization display
       options.OperationFilter<AuthorizationOperationFilter>();
+      
+      // Add example operation filter
+      options.OperationFilter<ExampleOperationFilter>();
+      
+      // Enable examples
+      options.ExampleFilters();
+      
+      // Add XML documentation (if available)
+      var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+      var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFilename);
+      if (File.Exists(xmlPath))
+      {
+        options.IncludeXmlComments(xmlPath);
+      }
     });
+    
+    // Add example filters
+    context.Services.AddSwaggerExamplesFromAssemblyOf<NezamWebApiModule>();
 
   // Configure CORS
-    context.Services.AddCors(options =>
-    {
-      options.AddPolicy("CorsPolicy", policy =>
-      {
-        policy
-          .WithOrigins(configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? new[] { "*" })
-          .WithMethods(configuration.GetSection("Cors:AllowedMethods").Get<string[]>() ??
-                       new[] { "GET", "POST", "PUT", "DELETE" })
-          .WithHeaders(configuration.GetSection("Cors:AllowedHeaders").Get<string[]>() ??
-                       new[] { "Content-Type", "Authorization" })
-          .AllowCredentials();
-      });
-    });
+    context.Services.AddCors();
     ConfigureJwtAuthentication(context);
   // Configure JSON serialization
     context.Services.AddControllers()
@@ -91,6 +100,9 @@ public class NezamWebApiModule : BonWebModule
       options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
+    // Register membership seeding hosted service
+    context.Services.AddHostedService<MembershipSeedingHostedService>();
+
     return base.OnConfigureAsync(context);
   }
 
@@ -106,12 +118,27 @@ public class NezamWebApiModule : BonWebModule
     
     
       app.UseSwagger();
-      app.UseSwaggerUI();
+      app.UseSwaggerUI(options =>
+      {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Nezam Refahi API v1");
+        options.DocumentTitle = "Nezam Refahi API Documentation";
+        options.DisplayRequestDuration();
+        options.EnableTryItOutByDefault();
+        options.DefaultModelsExpandDepth(2);
+        options.DefaultModelExpandDepth(2);
+        options.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.List);
+        options.EnableDeepLinking();
+        options.EnableFilter();
+        options.ShowExtensions();
+      });
 
     app.UseHttpsRedirection();
 
     // Use CORS before authorization
-    app.UseCors("CorsPolicy");
+    app.UseCors(c =>
+    {
+      c.AllowAnyMethod().AllowAnyOrigin().AllowAnyHeader();
+    });
 
     // Add authentication middleware before authorization
     app.UseAuthentication();

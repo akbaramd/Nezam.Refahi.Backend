@@ -18,7 +18,7 @@ public class UserPreferenceConfiguration : IEntityTypeConfiguration<UserPreferen
         builder.Property(up => up.Id)
             .ValueGeneratedNever(); // MUST: Client generates ID in constructor
         
-        // Foreign key to User
+        // Foreign key to UserDetail
         builder.Property(up => up.UserId)
             .IsRequired();
             
@@ -90,7 +90,7 @@ public class UserPreferenceConfiguration : IEntityTypeConfiguration<UserPreferen
             
  
             
-        // Configure navigation property to User
+        // Configure navigation property to UserDetail
         builder.HasOne(up => up.User)
             .WithMany(u => u.Preferences)
             .HasForeignKey(up => up.UserId)

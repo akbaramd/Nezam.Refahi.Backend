@@ -64,9 +64,9 @@ public static class SettingsSeedingExtensions
             var seedingService = new SettingsSeedingService(serviceProvider, logger);
             await seedingService.StartAsync(cancellationToken);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            throw new InvalidOperationException("Error occurred during settings seeding", ex);
+            throw new InvalidOperationException("Error occurred during settings seeding");
         }
     }
 
@@ -124,16 +124,4 @@ public static class SettingsSeedingExtensions
             };
         }
     }
-}
-
-/// <summary>
-/// Seeding status information
-/// </summary>
-public class SeedingStatus
-{
-    public bool IsSeeded { get; set; }
-    public int SectionsCount { get; set; }
-    public int CategoriesCount { get; set; }
-    public int SettingsCount { get; set; }
-    public string? Error { get; set; }
 }

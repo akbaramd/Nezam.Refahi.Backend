@@ -18,6 +18,9 @@ public class NezamRefahiIdentityPresentationModule : BonWebModule
         
         // Map Identity endpoints
         app.MapIdentityEndpoints();
+        app.MapUsersEndpoints();
+        app.MapRoleEndpoints();
+        app.MapClaimsEndpoints();
         
         return base.OnPostApplicationAsync(context);
     }

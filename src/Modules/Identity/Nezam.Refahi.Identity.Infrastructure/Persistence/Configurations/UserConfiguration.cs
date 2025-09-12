@@ -114,7 +114,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired(false);
             
         // Configure navigation properties - DDD Cascade Rules
-        // Within Aggregate: Cascade (User owns these entities)
+        // Within Aggregate: Cascade (UserDetail owns these entities)
         builder.HasMany(u => u.Tokens)
             .WithOne(t => t.User)
             .HasForeignKey(t => t.UserId)
@@ -126,7 +126,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasForeignKey(up => up.UserId)
             .OnDelete(DeleteBehavior.Cascade); // Within aggregate
             
-        // Between Aggregates: Restrict (UserRole is a join entity between User and Role aggregates)
+        // Between Aggregates: Restrict (UserRole is a join entity between UserDetail and Role aggregates)
         builder.HasMany(u => u.UserRoles)
             .WithOne(ur => ur.User)
             .HasForeignKey(ur => ur.UserId)

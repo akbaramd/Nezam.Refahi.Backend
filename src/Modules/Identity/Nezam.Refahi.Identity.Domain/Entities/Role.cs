@@ -1,6 +1,8 @@
 using MCA.SharedKernel.Domain.AggregateRoots;
+using MCA.SharedKernel.Domain.Contracts;
+using Nezam.Refahi.Identity.Contracts.Events;
 using Nezam.Refahi.Identity.Domain.ValueObjects;
-using Nezam.Refahi.Identity.Domain.Events;
+using Nezam.Refahi.Shared.Domain.ValueObjects;
 
 namespace Nezam.Refahi.Identity.Domain.Entities;
 
@@ -27,6 +29,7 @@ public class Role : FullyAuditableAggregateRoot<Guid>
 
     public Role(string name, string? description = null, bool isSystemRole = false, int displayOrder = 0) : base()
     {
+        
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Role name cannot be empty", nameof(name));
 

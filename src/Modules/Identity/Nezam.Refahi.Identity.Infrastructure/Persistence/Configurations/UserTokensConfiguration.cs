@@ -8,7 +8,7 @@ using Nezam.Refahi.Identity.Domain.Entities;
 
 namespace Nezam.Refahi.Identity.Infrastructure.Persistence.Configurations;
 
-public sealed class UserTokensConfiguration : IEntityTypeConfiguration<UserToken>
+public class UserTokensConfiguration : IEntityTypeConfiguration<UserToken>
 {
     public void Configure(EntityTypeBuilder<UserToken> builder)
     {
@@ -38,7 +38,7 @@ public sealed class UserTokensConfiguration : IEntityTypeConfiguration<UserToken
                .IsUnicode(false);
 
         builder.Property(t => t.UserAgent)
-               .HasMaxLength(512)           // User agent can be quite long
+               .HasMaxLength(512)           // UserDetail agent can be quite long
                .IsUnicode(false);
 
         builder.Property(t => t.SessionFamilyId)

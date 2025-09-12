@@ -4,6 +4,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,8 +20,18 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Modules\Identity\Nezam.Refahi.Identity.Presentation\Nezam.Refahi.Identity.Presentation.csproj" />
+    <ProjectReference Include="..\Modules\Membership\Nezam.Refahi.Membership.Presentation\Nezam.Refahi.Membership.Presentation.csproj" />
     <ProjectReference Include="..\Modules\Settings\Nezam.Refahi.Settings.Presentation\Nezam.Refahi.Settings.Presentation.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Plugins\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\plugin.json" />
+  </ItemGroup>
+
+ 
 
 </Project>

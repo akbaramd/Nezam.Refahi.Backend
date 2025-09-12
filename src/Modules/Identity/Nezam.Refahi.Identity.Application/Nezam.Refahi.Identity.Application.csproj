@@ -17,7 +17,15 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\Nezam.Refahi.Shared.Application\Nezam.Refahi.Shared.Application.csproj" />
+      <ProjectReference Include="..\..\Membership\Nezam.Refahi.Membership.Contracts\Nezam.Refahi.Membership.Contracts.csproj" />
       <ProjectReference Include="..\..\Settings\Nezam.Refahi.Settings.Contracts\Nezam.Refahi.Settings.Contracts.csproj" />
+      <ProjectReference Include="..\Nezam.Refahi.Identity.Contracts\Nezam.Refahi.Identity.Contracts.csproj" />
       <ProjectReference Include="..\Nezam.Refahi.Identity.Domain\Nezam.Refahi.Identity.Domain.csproj" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+      <Folder Include="Features\Authentication\Commands\" />
+      <Folder Include="Features\Roles\" />
     </ItemGroup>
 </Project>

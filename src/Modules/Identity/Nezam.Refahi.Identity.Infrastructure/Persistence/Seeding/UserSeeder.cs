@@ -1,8 +1,10 @@
 using Microsoft.Extensions.Logging;
 using Nezam.Refahi.Identity.Application.Services;
+using Nezam.Refahi.Identity.Application.Services.Contracts;
 using Nezam.Refahi.Identity.Domain.Entities;
 using Nezam.Refahi.Identity.Domain.ValueObjects;
 using Nezam.Refahi.Identity.Domain.Repositories;
+using Nezam.Refahi.Shared.Domain.ValueObjects;
 
 namespace Nezam.Refahi.Identity.Infrastructure.Persistence.Seeding;
 

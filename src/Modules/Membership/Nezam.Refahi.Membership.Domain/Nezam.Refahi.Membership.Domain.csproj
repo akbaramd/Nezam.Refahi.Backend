@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="AkbarAmd.SharedKernel.Domain" Version="1.0.11" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\Nezam.Refahi.Shared.Domain\Nezam.Refahi.Shared.Domain.csproj" />
+    </ItemGroup>
+</Project>
