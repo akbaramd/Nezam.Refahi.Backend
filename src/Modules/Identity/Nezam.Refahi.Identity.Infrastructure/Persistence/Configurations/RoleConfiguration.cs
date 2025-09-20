@@ -36,21 +36,18 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
             .IsRequired()
             .HasDefaultValue(0);
 
-        // Concurrency control - MUST: Rowversion for critical clusters
-        builder.Property<byte[]>("RowVersion")
-            .IsRowVersion();
             
         // Base aggregate root properties
         builder.Property(r => r.CreatedAt)
             .IsRequired()
             .HasDefaultValueSql("GETUTCDATE()");
-        builder.Property(r => r.ModifiedAt)
+        builder.Property(r => r.LastModifiedAt)
             .IsRequired(false)
             .HasDefaultValueSql("GETUTCDATE()");
         builder.Property(r => r.CreatedBy)
             .IsRequired(false)
             .HasDefaultValue("00000000-0000-0000-0000-000000000001");
-        builder.Property(r => r.ModifiedBy)
+        builder.Property(r => r.LastModifiedBy)
             .IsRequired(false)
             .HasDefaultValue("00000000-0000-0000-0000-000000000001");
             

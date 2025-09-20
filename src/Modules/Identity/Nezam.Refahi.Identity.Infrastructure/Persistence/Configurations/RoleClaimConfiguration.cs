@@ -20,10 +20,7 @@ public class RoleClaimConfiguration : IEntityTypeConfiguration<RoleClaim>
         builder.Property(rc => rc.RoleId)
             .IsRequired();
 
-        // Concurrency control - MUST: Rowversion for critical clusters
-        builder.Property<byte[]>("RowVersion")
-            .IsRowVersion();
-            
+  
 
         // Configure Claim as owned type
         builder.OwnsOne(rc => rc.Claim, claim =>

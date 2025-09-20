@@ -194,7 +194,7 @@ public class UserSeeder
         if (adminRole == null)
             return 0;
 
-        var allUsers = await _userRepository.GetAllAsync();
+        var allUsers = await _userRepository.FindAsync(x=>true);
         var adminUsers = allUsers.Count(u => u.HasRole(adminRole.Id));
         return adminUsers;
     }

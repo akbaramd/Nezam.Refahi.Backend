@@ -22,146 +22,79 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.ClaimType", b =>
+            modelBuilder.Entity("CapabilityFeatures", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("CapabilityId")
+                        .HasColumnType("nvarchar(450)");
 
-                    b.Property<long>("AccessCount")
-                        .HasColumnType("bigint");
+                    b.Property<string>("ClaimTypeId")
+                        .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                    b.HasKey("CapabilityId", "ClaimTypeId");
 
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("datetimeoffset");
+                    b.HasIndex("ClaimTypeId");
 
-                    b.Property<string>("CreatedBy")
+                    b.ToTable("CapabilityFeatures", "membership");
+                });
+
+            modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.Capability", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DeletedBy")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<bool>("IsMultiValue")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<bool>("IsRequired")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<bool>("IsSystemManaged")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("Key")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime?>("LastAccessedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LastAccessedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("LastArchivedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("LastBackupAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTimeOffset>("LastModifiedUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("Metadata")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ModifiedBy")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<long>("SnapshotVersion")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("ValidationRule")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
-                    b.Property<int>("ValueKind")
-                        .HasColumnType("int");
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("ValidFrom")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ValidTo")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("IsRequired")
-                        .HasDatabaseName("IX_ClaimTypes_IsRequired");
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("IX_Capabilities_IsActive");
 
-                    b.HasIndex("IsSystemManaged")
-                        .HasDatabaseName("IX_ClaimTypes_IsSystemManaged");
-
-                    b.HasIndex("Key")
+                    b.HasIndex("Name")
                         .IsUnique()
-                        .HasDatabaseName("IX_ClaimTypes_Key");
+                        .HasDatabaseName("IX_Capabilities_Name");
 
-                    b.HasIndex("ValueKind")
-                        .HasDatabaseName("IX_ClaimTypes_ValueKind");
+                    b.HasIndex("ValidFrom", "ValidTo")
+                        .HasDatabaseName("IX_Capabilities_ValidityPeriod");
 
-                    b.ToTable("ClaimTypes", "membership");
+                    b.ToTable("Capabilities", "membership");
                 });
 
-            modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.ClaimTypeOption", b =>
+            modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.Features", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ClaimTypeId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("Value")
+                    b.Property<string>("Type")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClaimTypeId")
-                        .HasDatabaseName("IX_ClaimTypeOptions_ClaimTypeId");
-
-                    b.HasIndex("Value")
-                        .HasDatabaseName("IX_ClaimTypeOptions_Value");
-
-                    b.HasIndex("ClaimTypeId", "Value")
-                        .IsUnique()
-                        .HasDatabaseName("IX_ClaimTypeOptions_ClaimType_Value");
-
-                    b.ToTable("ClaimTypeOptions", "membership");
+                    b.ToTable("Features", "membership");
                 });
 
             modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.Member", b =>
@@ -169,71 +102,83 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<long>("AccessCount")
-                        .HasColumnType("bigint");
-
                     b.Property<DateOnly?>("BirthDate")
                         .HasColumnType("date");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("datetimeoffset");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("DeletedBy")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
-                    b.Property<DateTime?>("LastAccessedAt")
+                    b.Property<DateTime?>("LastModifiedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("LastAccessedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("LastArchivedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("LastBackupAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTimeOffset>("LastModifiedUtc")
-                        .HasColumnType("datetimeoffset");
+                    b.Property<string>("LastModifiedBy")
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<string>("MembershipNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Metadata")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ModifiedBy")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<long>("SnapshotVersion")
-                        .HasColumnType("bigint");
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.Property<Guid?>("UserId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<long>("Version")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_Member_CreatedAt");
+
+                    b.HasIndex("CreatedBy")
+                        .HasDatabaseName("IX_Member_CreatedBy");
+
+                    b.HasIndex("DeletedAt")
+                        .HasDatabaseName("IX_Member_DeletedAt")
+                        .HasFilter("[DeletedAt] IS NOT NULL");
+
+                    b.HasIndex("DeletedBy")
+                        .HasDatabaseName("IX_Member_DeletedBy")
+                        .HasFilter("[DeletedBy] IS NOT NULL");
+
+                    b.HasIndex("IsDeleted")
+                        .HasDatabaseName("IX_Member_IsDeleted");
+
+                    b.HasIndex("LastModifiedAt")
+                        .HasDatabaseName("IX_Member_LastModifiedAt")
+                        .HasFilter("[LastModifiedAt] IS NOT NULL");
+
+                    b.HasIndex("LastModifiedBy")
+                        .HasDatabaseName("IX_Member_LastModifiedBy")
+                        .HasFilter("[LastModifiedBy] IS NOT NULL");
 
                     b.HasIndex("UserId")
                         .IsUnique()
@@ -243,26 +188,33 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
                     b.ToTable("Members", "membership");
                 });
 
-            modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.MemberClaim", b =>
+            modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.MemberCapability", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ClaimTypeId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<DateTime>("AssignedAt")
+                        .HasColumnType("datetime2");
 
-                    b.Property<bool>("IsSensitive")
+                    b.Property<string>("AssignedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("CapabilityId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<bool>("IsSystemManaged")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
+                        .HasDefaultValue(true);
 
                     b.Property<Guid>("MemberId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<DateTime?>("ValidFrom")
                         .HasColumnType("datetime2");
@@ -270,38 +222,29 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
                     b.Property<DateTime?>("ValidTo")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("ClaimTypeId")
-                        .HasDatabaseName("IX_MemberClaims_ClaimTypeId");
+                    b.HasIndex("AssignedAt")
+                        .HasDatabaseName("IX_MemberCapabilities_AssignedAt");
 
-                    b.HasIndex("IsSensitive")
-                        .HasDatabaseName("IX_MemberClaims_IsSensitive");
+                    b.HasIndex("CapabilityId")
+                        .HasDatabaseName("IX_MemberCapabilities_CapabilityId");
 
-                    b.HasIndex("IsSystemManaged")
-                        .HasDatabaseName("IX_MemberClaims_IsSystemManaged");
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("IX_MemberCapabilities_IsActive");
 
                     b.HasIndex("MemberId")
-                        .HasDatabaseName("IX_MemberClaims_MemberId");
+                        .HasDatabaseName("IX_MemberCapabilities_MemberId");
 
-                    b.HasIndex("ValidTo")
-                        .HasDatabaseName("IX_MemberClaims_ValidTo");
+                    b.HasIndex("MemberId", "CapabilityId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_MemberCapabilities_Member_Capability_Active")
+                        .HasFilter("[IsActive] = 1");
 
-                    b.HasIndex("ClaimTypeId", "Value")
-                        .HasDatabaseName("IX_MemberClaims_ClaimType_Value");
+                    b.HasIndex("ValidFrom", "ValidTo")
+                        .HasDatabaseName("IX_MemberCapabilities_ValidityPeriod");
 
-                    b.HasIndex("MemberId", "ClaimTypeId")
-                        .HasDatabaseName("IX_MemberClaims_Member_ClaimType");
-
-                    b.HasIndex("MemberId", "ValidTo")
-                        .HasDatabaseName("IX_MemberClaims_Member_ValidTo");
-
-                    b.ToTable("MemberClaims", "membership");
+                    b.ToTable("MemberCapabilities", "membership");
                 });
 
             modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.MemberRole", b =>
@@ -371,27 +314,6 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<long>("AccessCount")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DeletedBy")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<string>("Description")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
@@ -409,43 +331,10 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
 
-                    b.Property<bool>("IsDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
                     b.Property<string>("Key")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime?>("LastAccessedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LastAccessedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("LastArchivedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("LastBackupAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTimeOffset>("LastModifiedUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("Metadata")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ModifiedBy")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<long>("SnapshotVersion")
-                        .HasColumnType("bigint");
 
                     b.Property<int?>("SortOrder")
                         .HasColumnType("int");
@@ -476,15 +365,19 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
                     b.ToTable("Roles", "membership");
                 });
 
-            modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.ClaimTypeOption", b =>
+            modelBuilder.Entity("CapabilityFeatures", b =>
                 {
-                    b.HasOne("Nezam.Refahi.Membership.Domain.Entities.ClaimType", "ClaimType")
-                        .WithMany("Options")
-                        .HasForeignKey("ClaimTypeId")
+                    b.HasOne("Nezam.Refahi.Membership.Domain.Entities.Capability", null)
+                        .WithMany()
+                        .HasForeignKey("CapabilityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("ClaimType");
+                    b.HasOne("Nezam.Refahi.Membership.Domain.Entities.Features", null)
+                        .WithMany()
+                        .HasForeignKey("ClaimTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.Member", b =>
@@ -598,21 +491,21 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.MemberClaim", b =>
+            modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.MemberCapability", b =>
                 {
-                    b.HasOne("Nezam.Refahi.Membership.Domain.Entities.ClaimType", "ClaimType")
+                    b.HasOne("Nezam.Refahi.Membership.Domain.Entities.Capability", "Capability")
                         .WithMany()
-                        .HasForeignKey("ClaimTypeId")
+                        .HasForeignKey("CapabilityId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Nezam.Refahi.Membership.Domain.Entities.Member", "Member")
-                        .WithMany("Claims")
+                        .WithMany("Capabilities")
                         .HasForeignKey("MemberId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("ClaimType");
+                    b.Navigation("Capability");
 
                     b.Navigation("Member");
                 });
@@ -636,14 +529,9 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.ClaimType", b =>
-                {
-                    b.Navigation("Options");
-                });
-
             modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.Member", b =>
                 {
-                    b.Navigation("Claims");
+                    b.Navigation("Capabilities");
 
                     b.Navigation("Roles");
                 });

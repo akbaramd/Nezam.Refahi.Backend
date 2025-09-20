@@ -6,7 +6,7 @@ namespace Nezam.Refahi.Settings.Domain.Entities;
 /// <summary>
 /// Represents a change event for a setting, providing full audit trail
 /// </summary>
-public class SettingChangeEvent : DeletableAggregateRoot<Guid>
+public class SettingChangeEvent : SoftDeletableAggregateRoot<Guid>
 {
     public Guid SettingId { get; private set; }
     public SettingKey SettingKey { get; private set; } = null!;

@@ -1,5 +1,7 @@
 using MCA.SharedKernel.Domain.AggregateRoots;
 using MCA.SharedKernel.Domain.Contracts;
+using MCA.SharedKernel.Domain.Contracts.AggregateRoots;
+using MCA.SharedKernel.Domain.Contracts.Repositories;
 using MCA.SharedKernel.Domain.Events;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -210,7 +212,7 @@ public abstract class BaseUnitOfWork<TContext> : IUnitOfWork where TContext : Db
         {
             try
             {
-                await _mediator.Publish(domainEvent, cancellationToken);
+                await _mediator.Publish(domainEvent, cancellationToken:cancellationToken);
                 _logger.LogDebug("Published domain event: {EventType}", domainEvent.GetType().Name);
             }
             catch (Exception ex)

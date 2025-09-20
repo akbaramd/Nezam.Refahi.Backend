@@ -1,0 +1,112 @@
+﻿using MediatR;
+using Microsoft.Extensions.Logging;
+using Nezam.Refahi.Identity.Application.Services;
+using Nezam.Refahi.Identity.Application.Services.Contracts;
+using Nezam.Refahi.Identity.Domain.Repositories;
+using Nezam.Refahi.Shared.Application.Common.Models;
+
+namespace Nezam.Refahi.Identity.Application.Features.Users.Commands.DeleteClaims;
+
+/// <summary>
+/// Handler for removing claims from a user by claim values/keys
+/// </summary>
+public class DeleteClaimsFromUserCommandHandler : IRequestHandler<DeleteClaimsFromUserCommand, ApplicationResult>
+{
+    private readonly IUserRepository _userRepository;
+    private readonly IUserClaimRepository _userClaimRepository;
+    private readonly IIdentityUnitOfWork _unitOfWork;
+    private readonly ILogger<DeleteClaimsFromUserCommandHandler> _logger;
+
+    public DeleteClaimsFromUserCommandHandler(
+        IUserRepository userRepository,
+        IUserClaimRepository userClaimRepository,
+        IIdentityUnitOfWork unitOfWork,
+        ILogger<DeleteClaimsFromUserCommandHandler> logger)
+    {
+        _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+        _userClaimRepository = userClaimRepository ?? throw new ArgumentNullException(nameof(userClaimRepository));
+        _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    public async Task<ApplicationResult> Handle(DeleteClaimsFromUserCommand request, CancellationToken cancellationToken)
+    {
+        if (request.ClaimValues?.Any() != true)
+        {
+            return ApplicationResult.Failure("No claim values provided");
+        }
+
+        await _unitOfWork.BeginAsync(cancellationToken);
+
+        try
+        {
+            // 1. Verify user exists
+            var user = await _userRepository.FindOneAsync(x=>x.Id==request.UserId);
+            if (user == null)
+            {
+                await _unitOfWork.RollbackAsync(cancellationToken);
+                return ApplicationResult.Failure("User not found");
+            }
+
+            // 2. Get user's current active claims
+            var userClaims = await _userClaimRepository.GetActiveByUserIdAsync(request.UserId, cancellationToken:cancellationToken);
+            var userClaimsDict = userClaims.ToDictionary(uc => uc.Claim.Value, uc => uc, StringComparer.OrdinalIgnoreCase);
+
+            _logger.LogDebug("User {UserId} has {ClaimCount} active claims", request.UserId, userClaimsDict.Count);
+
+            // 3. Find claims to remove (only existing ones)
+            var claimsToRemove = request.ClaimValues
+                .Where(cv => userClaimsDict.ContainsKey(cv))
+                .Select(cv => userClaimsDict[cv])
+                .ToList();
+
+            if (!claimsToRemove.Any())
+            {
+                await _unitOfWork.RollbackAsync(cancellationToken);
+                return ApplicationResult.Failure("User does not have any of the specified claims");
+            }
+
+            // 4. Deactivate the claims (soft delete approach)
+            var removedClaimValues = new List<string>();
+            foreach (var userClaim in claimsToRemove)
+            {
+                userClaim.Deactivate();
+                if (!string.IsNullOrWhiteSpace(request.Notes))
+                {
+                    userClaim.UpdateNotes($"{userClaim.Notes}; Removed: {request.Notes}".Trim(';', ' '));
+                }
+                
+                await _userClaimRepository.UpdateAsync(userClaim, cancellationToken:cancellationToken);
+                removedClaimValues.Add(userClaim.Claim.Value);
+            }
+
+            // 5. Save changes
+            await _unitOfWork.SaveAsync(cancellationToken);
+            await _unitOfWork.CommitAsync(cancellationToken);
+
+            _logger.LogInformation("Successfully removed {ClaimCount} claims from user {UserId}: {ClaimValues}", 
+                removedClaimValues.Count, request.UserId, string.Join(", ", removedClaimValues));
+
+            var notFoundCount = request.ClaimValues.Count - removedClaimValues.Count;
+            var message = $"Successfully removed {removedClaimValues.Count} claims from user";
+            if (notFoundCount > 0)
+            {
+                message += $" ({notFoundCount} claims were not found or already inactive)";
+            }
+
+            return ApplicationResult.Success(message);
+        }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException ex)
+        {
+            await _unitOfWork.RollbackAsync(cancellationToken);
+            _logger.LogError(ex, "Concurrency error while removing claims from user {UserId}", request.UserId);
+            return ApplicationResult.Failure("Concurrency error: The user or claims were modified by another process. Please try again.");
+        }
+        catch (Exception ex)
+        {
+            await _unitOfWork.RollbackAsync(cancellationToken);
+            _logger.LogError(ex, "Failed to remove claims from user {UserId}", request.UserId);
+            return ApplicationResult.Failure("Failed to remove claims from user. Please try again.");
+        }
+    }
+}

@@ -10,9 +10,13 @@
       "Bash(dotnet ef migrations remove:*)",
       "Bash(dotnet build:*)",
       "Bash(dotnet ef migrations add:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(sed:*)",
+      "Read(//d/Projects/Nezam.Refahi/Nezam.Refahi.Recreation.Domain/Entities/**)",
+      "Bash(dotnet ef dbcontext:*)"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "outputStyle": "default"
 }

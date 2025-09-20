@@ -39,9 +39,7 @@ public class SettingsCategoryConfiguration : IEntityTypeConfiguration<SettingsCa
         builder.Property(c => c.SectionId)
             .IsRequired();
             
-        // Concurrency control - MUST: Rowversion for critical clusters
-        builder.Property<byte[]>("RowVersion")
-            .IsRowVersion();
+  
             
         // Relationships
         builder.HasOne(c => c.Section)

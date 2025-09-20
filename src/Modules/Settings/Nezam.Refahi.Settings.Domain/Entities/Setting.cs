@@ -6,7 +6,7 @@ namespace Nezam.Refahi.Settings.Domain.Entities;
 /// <summary>
 /// Represents an individual system setting with event sourcing capabilities
 /// </summary>
-public class Setting : FullyAuditableAggregateRoot<Guid>
+public class Setting : FullAggregateRoot<Guid>
 {
     public SettingKey Key { get; private set; } = null!;
     public SettingValue Value { get; private set; } = null!;

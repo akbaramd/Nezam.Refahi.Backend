@@ -129,8 +129,8 @@ public class TokenService : ITokenService
           userAgent: userAgent);
         
         // Save to database
-        await _userTokenRepository.AddAsync(refreshToken);
-        await _userTokenRepository.SaveChangesAsync();
+        await _userTokenRepository.AddAsync(refreshToken,true);
+      
         
         return (tokenString ,  expiryMinutes,jwtId);
     }
@@ -218,8 +218,8 @@ public class TokenService : ITokenService
             pepper: pepper);
         
         // Save to database
-        await _userTokenRepository.AddAsync(refreshToken);
-        await _userTokenRepository.SaveChangesAsync();
+        await _userTokenRepository.AddAsync(refreshToken,true);
+        
         
         _logger.LogDebug("Generated refresh token for user {UserId}, expires in {ExpiryDays} days", 
             userId, expiryDays);
@@ -315,7 +315,7 @@ public class TokenService : ITokenService
             await _userTokenRepository.UpdateAsync(matchingToken);
             
             // Get user for new token generation
-            var user = await _userRepository.GetByIdAsync(matchingToken.UserId);
+            var user = await _userRepository.FindOneAsync(x=>x.Id==matchingToken.UserId);
             if (user == null)
             {
                 return new RefreshTokenValidationResult
@@ -337,7 +337,7 @@ public class TokenService : ITokenService
                 30); // 30 days expiry
             
             // Update the new refresh token to be in the same session family
-            var newRefreshToken = await _userTokenRepository.GetByIdAsync(newTokenId);
+            var newRefreshToken = await _userTokenRepository.FindOneAsync(x=>x.Id==newTokenId);
             if (newRefreshToken != null)
             {
                 // This would require updating the entity, but for now we'll work with what we have

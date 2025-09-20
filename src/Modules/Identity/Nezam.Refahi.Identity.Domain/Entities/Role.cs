@@ -1,5 +1,5 @@
 using MCA.SharedKernel.Domain.AggregateRoots;
-using MCA.SharedKernel.Domain.Contracts;
+using MCA.SharedKernel.Domain.Contracts.Repositories;
 using Nezam.Refahi.Identity.Contracts.Events;
 using Nezam.Refahi.Identity.Domain.ValueObjects;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
@@ -9,7 +9,7 @@ namespace Nezam.Refahi.Identity.Domain.Entities;
 /// <summary>
 /// Represents a role in the system with associated claims
 /// </summary>
-public class Role : FullyAuditableAggregateRoot<Guid>
+public class Role : FullAggregateRoot<Guid>
 {
     public string Name { get; private set; } = null!;
     public string? Description { get; private set; }
@@ -27,7 +27,7 @@ public class Role : FullyAuditableAggregateRoot<Guid>
     // Private constructor for EF Core
     public Role() : base() { }
 
-    public Role(string name, string? description = null, bool isSystemRole = false, int displayOrder = 0) : base()
+    public Role(string name, string? description = null, bool isSystemRole = false, int displayOrder = 0) : base(Guid.NewGuid())
     {
         
         if (string.IsNullOrWhiteSpace(name))

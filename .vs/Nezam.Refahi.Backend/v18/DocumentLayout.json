@@ -1,0 +1,136 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{15C71CD9-1CA1-47F6-ABB8-86C2819E562A}|src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Nezam.Refahi.Identity.Application.csproj|d:\\projects\\nezam.refahi\\nezam.refahi.backend\\src\\modules\\identity\\nezam.refahi.identity.application\\features\\authentication\\commands\\sendotp\\sendotpcommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{15C71CD9-1CA1-47F6-ABB8-86C2819E562A}|src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Nezam.Refahi.Identity.Application.csproj|solutionrelative:src\\modules\\identity\\nezam.refahi.identity.application\\features\\authentication\\commands\\sendotp\\sendotpcommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{15C71CD9-1CA1-47F6-ABB8-86C2819E562A}|src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Nezam.Refahi.Identity.Application.csproj|d:\\projects\\nezam.refahi\\nezam.refahi.backend\\src\\modules\\identity\\nezam.refahi.identity.application\\features\\users\\commands\\createuser\\createusercommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{15C71CD9-1CA1-47F6-ABB8-86C2819E562A}|src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Nezam.Refahi.Identity.Application.csproj|solutionrelative:src\\modules\\identity\\nezam.refahi.identity.application\\features\\users\\commands\\createuser\\createusercommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{15C71CD9-1CA1-47F6-ABB8-86C2819E562A}|src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Nezam.Refahi.Identity.Application.csproj|d:\\projects\\nezam.refahi\\nezam.refahi.backend\\src\\modules\\identity\\nezam.refahi.identity.application\\features\\users\\commands\\addrole\\addroletousercommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{15C71CD9-1CA1-47F6-ABB8-86C2819E562A}|src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Nezam.Refahi.Identity.Application.csproj|solutionrelative:src\\modules\\identity\\nezam.refahi.identity.application\\features\\users\\commands\\addrole\\addroletousercommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{15C71CD9-1CA1-47F6-ABB8-86C2819E562A}|src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Nezam.Refahi.Identity.Application.csproj|d:\\projects\\nezam.refahi\\nezam.refahi.backend\\src\\modules\\identity\\nezam.refahi.identity.application\\features\\users\\commands\\addclaims\\addclaimstousercommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{15C71CD9-1CA1-47F6-ABB8-86C2819E562A}|src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Nezam.Refahi.Identity.Application.csproj|solutionrelative:src\\modules\\identity\\nezam.refahi.identity.application\\features\\users\\commands\\addclaims\\addclaimstousercommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{15C71CD9-1CA1-47F6-ABB8-86C2819E562A}|src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Nezam.Refahi.Identity.Application.csproj|d:\\projects\\nezam.refahi\\nezam.refahi.backend\\src\\modules\\identity\\nezam.refahi.identity.application\\features\\users\\commands\\addclaims\\addclaimstousercommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{15C71CD9-1CA1-47F6-ABB8-86C2819E562A}|src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Nezam.Refahi.Identity.Application.csproj|solutionrelative:src\\modules\\identity\\nezam.refahi.identity.application\\features\\users\\commands\\addclaims\\addclaimstousercommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{15C71CD9-1CA1-47F6-ABB8-86C2819E562A}|src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Nezam.Refahi.Identity.Application.csproj|d:\\projects\\nezam.refahi\\nezam.refahi.backend\\src\\modules\\identity\\nezam.refahi.identity.application\\features\\users\\commands\\deleteclaims\\deleteclaimsfromusercommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{15C71CD9-1CA1-47F6-ABB8-86C2819E562A}|src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Nezam.Refahi.Identity.Application.csproj|solutionrelative:src\\modules\\identity\\nezam.refahi.identity.application\\features\\users\\commands\\deleteclaims\\deleteclaimsfromusercommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{15C71CD9-1CA1-47F6-ABB8-86C2819E562A}|src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Nezam.Refahi.Identity.Application.csproj|d:\\projects\\nezam.refahi\\nezam.refahi.backend\\src\\modules\\identity\\nezam.refahi.identity.application\\features\\users\\commands\\removerole\\removerolefromusercommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{15C71CD9-1CA1-47F6-ABB8-86C2819E562A}|src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Nezam.Refahi.Identity.Application.csproj|solutionrelative:src\\modules\\identity\\nezam.refahi.identity.application\\features\\users\\commands\\removerole\\removerolefromusercommandhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "SendOtpCommandHandler.cs",
+              "DocumentMoniker": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Authentication\\Commands\\SendOtp\\SendOtpCommandHandler.cs",
+              "RelativeDocumentMoniker": "src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Authentication\\Commands\\SendOtp\\SendOtpCommandHandler.cs",
+              "ToolTip": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Authentication\\Commands\\SendOtp\\SendOtpCommandHandler.cs",
+              "RelativeToolTip": "src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Authentication\\Commands\\SendOtp\\SendOtpCommandHandler.cs",
+              "ViewState": "AgIAAGgAAAAAAAAAAAAAAHUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-12T10:18:58.435Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "CreateUserCommandHandler.cs",
+              "DocumentMoniker": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Users\\Commands\\CreateUser\\CreateUserCommandHandler.cs",
+              "RelativeDocumentMoniker": "src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Users\\Commands\\CreateUser\\CreateUserCommandHandler.cs",
+              "ToolTip": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Users\\Commands\\CreateUser\\CreateUserCommandHandler.cs",
+              "RelativeToolTip": "src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Users\\Commands\\CreateUser\\CreateUserCommandHandler.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-12T10:18:52.767Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "RemoveRoleFromUserCommandHandler.cs",
+              "DocumentMoniker": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Users\\Commands\\RemoveRole\\RemoveRoleFromUserCommandHandler.cs",
+              "RelativeDocumentMoniker": "src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Users\\Commands\\RemoveRole\\RemoveRoleFromUserCommandHandler.cs",
+              "ToolTip": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Users\\Commands\\RemoveRole\\RemoveRoleFromUserCommandHandler.cs",
+              "RelativeToolTip": "src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Users\\Commands\\RemoveRole\\RemoveRoleFromUserCommandHandler.cs",
+              "ViewState": "AgIAAF4AAAAAAAAAAABWwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-12T09:00:02.894Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "AddRoleToUserCommandHandler.cs",
+              "DocumentMoniker": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Users\\Commands\\AddRole\\AddRoleToUserCommandHandler.cs",
+              "RelativeDocumentMoniker": "src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Users\\Commands\\AddRole\\AddRoleToUserCommandHandler.cs",
+              "ToolTip": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Users\\Commands\\AddRole\\AddRoleToUserCommandHandler.cs",
+              "RelativeToolTip": "src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Users\\Commands\\AddRole\\AddRoleToUserCommandHandler.cs",
+              "ViewState": "AgIAAFYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-12T08:56:41.998Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "DeleteClaimsFromUserCommandHandler.cs",
+              "DocumentMoniker": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Users\\Commands\\DeleteClaims\\DeleteClaimsFromUserCommandHandler.cs",
+              "RelativeDocumentMoniker": "src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Users\\Commands\\DeleteClaims\\DeleteClaimsFromUserCommandHandler.cs",
+              "ToolTip": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Users\\Commands\\DeleteClaims\\DeleteClaimsFromUserCommandHandler.cs",
+              "RelativeToolTip": "src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Users\\Commands\\DeleteClaims\\DeleteClaimsFromUserCommandHandler.cs",
+              "ViewState": "AgIAAGsAAAAAAAAAAIBbwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-12T08:42:59.741Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "AddClaimsToUserCommandHandler.cs",
+              "DocumentMoniker": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Users\\Commands\\AddClaims\\AddClaimsToUserCommandHandler.cs",
+              "RelativeDocumentMoniker": "src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Users\\Commands\\AddClaims\\AddClaimsToUserCommandHandler.cs",
+              "ToolTip": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Users\\Commands\\AddClaims\\AddClaimsToUserCommandHandler.cs",
+              "RelativeToolTip": "src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Users\\Commands\\AddClaims\\AddClaimsToUserCommandHandler.cs",
+              "ViewState": "AgIAAHUAAAAAAAAAAAAAAIEAAAAkAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-12T08:42:09.027Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "AddClaimsToUserCommand.cs",
+              "DocumentMoniker": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Users\\Commands\\AddClaims\\AddClaimsToUserCommand.cs",
+              "RelativeDocumentMoniker": "src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Users\\Commands\\AddClaims\\AddClaimsToUserCommand.cs",
+              "ToolTip": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Users\\Commands\\AddClaims\\AddClaimsToUserCommand.cs",
+              "RelativeToolTip": "src\\Modules\\Identity\\Nezam.Refahi.Identity.Application\\Features\\Users\\Commands\\AddClaims\\AddClaimsToUserCommand.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-12T08:42:08.449Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.18" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.18">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.18" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.18" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.18" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.18"/>
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\..\Modules\Membership\Nezam.Refahi.Membership.Contracts\Nezam.Refahi.Membership.Contracts.csproj" />
+    </ItemGroup>
+
+    <!-- Generate plugin.json manifest file -->
+    <Target Name="GeneratePluginJson" AfterTargets="Build">
+        <PropertyGroup>
+            <PluginJsonPath>$(MSBuildProjectDirectory)\plugin.json</PluginJsonPath>
+            <PluginJsonContent>{
+  "name": "$(MSBuildProjectName)",
+  "version": "1.0.0",
+  "description": "Nezam Mohandesi external member storage plugin",
+  "authors": ["Nezam Refahi Team"],
+  "entryPoint": "$(MSBuildProjectName).dll",
+  "additionalFiles": [
+    "Nezam.Refahi.Membership.Contracts.dll",
+    "Nezam.Refahi.Membership.Domain.dll",
+    "Nezam.Refahi.Shared.Domain.dll"
+  ],
+  "tags": ["membership", "external-storage", "nezam-mohandesi"]
+}</PluginJsonContent>
+        </PropertyGroup>
+        
+        <!-- Generate plugin.json if it doesn't exist or update it -->
+        <Message Text="Generating plugin.json at: $(PluginJsonPath)" Importance="normal" />
+        <WriteLinesToFile 
+            File="$(PluginJsonPath)" 
+            Lines="$(PluginJsonContent)" 
+            Overwrite="true" />
+        <Message Text="Generated plugin.json for $(MSBuildProjectName)" Importance="high" />
+    </Target>
+
+    <!-- Copy plugin files to WebApi Plugins directory -->
+    <Target Name="CopyPluginToWebApi" AfterTargets="Build" DependsOnTargets="GeneratePluginJson">
+        <PropertyGroup>
+            <PluginOutputDir>..\..\Nezam.Refahi.WebApi\Plugins\$(AssemblyName)</PluginOutputDir>
+            <PluginJsonPath>$(MSBuildProjectDirectory)\plugin.json</PluginJsonPath>
+        </PropertyGroup>
+        
+        <!-- Remove old plugin files -->
+        <ItemGroup>
+            <OldPluginFiles Include="$(PluginOutputDir)\**\*.*" />
+        </ItemGroup>
+        <Delete Files="@(OldPluginFiles)" ContinueOnError="true" />
+        <RemoveDir Directories="$(PluginOutputDir)" ContinueOnError="true" />
+        
+        <!-- Create plugin directory -->
+        <MakeDir Directories="$(PluginOutputDir)" />
+        
+        <!-- Copy plugin.json manifest -->
+        <Copy SourceFiles="$(PluginJsonPath)" DestinationFolder="$(PluginOutputDir)" Condition="Exists('$(PluginJsonPath)')" />
+        
+        <!-- Copy all DLL files from output directory -->
+        <ItemGroup>
+            <DllFiles Include="$(OutputPath)*.dll" />
+        </ItemGroup>
+        <Copy SourceFiles="@(DllFiles)" DestinationFolder="$(PluginOutputDir)" />
+        
+        <!-- Copy PDB files for debugging -->
+        <ItemGroup>
+            <PdbFiles Include="$(OutputPath)*.pdb" />
+        </ItemGroup>
+        <Copy SourceFiles="@(PdbFiles)" DestinationFolder="$(PluginOutputDir)" ContinueOnError="true" />
+        
+        <!-- Copy any additional files -->
+        <ItemGroup>
+            <AdditionalFiles Include="$(OutputPath)*.json" Exclude="$(OutputPath)*plugin.json" />
+            <AdditionalFiles Include="$(OutputPath)*.xml" />
+        </ItemGroup>
+        <Copy SourceFiles="@(AdditionalFiles)" DestinationFolder="$(PluginOutputDir)" ContinueOnError="true" />
+        
+        <Message Text="Plugin files copied to: $(PluginOutputDir)" Importance="high" />
+        <Message Text="Plugin manifest copied: plugin.json" Importance="high" />
+    </Target>
+
+</Project>

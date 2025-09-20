@@ -1,12 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "b7QWPVZC8ak=",
+  "dgSpecHash": "oe93vzRBKjM=",
   "success": true,
   "projectFilePath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\Nezam.Refahi.WebApi.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\akbar\\.nuget\\packages\\akbaramd.sharedkernel.application\\1.0.11\\akbaramd.sharedkernel.application.1.0.11.nupkg.sha512",
-    "C:\\Users\\akbar\\.nuget\\packages\\akbaramd.sharedkernel.domain\\1.0.11\\akbaramd.sharedkernel.domain.1.0.11.nupkg.sha512",
-    "C:\\Users\\akbar\\.nuget\\packages\\akbaramd.sharedkernel.infrastructure\\1.0.11\\akbaramd.sharedkernel.infrastructure.1.0.11.nupkg.sha512",
+    "C:\\Users\\akbar\\.nuget\\packages\\akbaramd.sharedkernel.application\\1.0.13\\akbaramd.sharedkernel.application.1.0.13.nupkg.sha512",
+    "C:\\Users\\akbar\\.nuget\\packages\\akbaramd.sharedkernel.domain\\1.0.13\\akbaramd.sharedkernel.domain.1.0.13.nupkg.sha512",
+    "C:\\Users\\akbar\\.nuget\\packages\\akbaramd.sharedkernel.infrastructure\\1.0.13\\akbaramd.sharedkernel.infrastructure.1.0.13.nupkg.sha512",
     "C:\\Users\\akbar\\.nuget\\packages\\autofac\\8.1.1\\autofac.8.1.1.nupkg.sha512",
     "C:\\Users\\akbar\\.nuget\\packages\\autofac.extensions.dependencyinjection\\10.0.0\\autofac.extensions.dependencyinjection.10.0.0.nupkg.sha512",
     "C:\\Users\\akbar\\.nuget\\packages\\autofac.extras.dynamicproxy\\7.1.0\\autofac.extras.dynamicproxy.7.1.0.nupkg.sha512",

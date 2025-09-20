@@ -1,3 +1,4 @@
+using MCA.SharedKernel.Infrastructure.Configurations.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Nezam.Refahi.Membership.Domain.Entities;
@@ -94,32 +95,8 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
             .HasFilter("[UserId] IS NOT NULL")
             .HasDatabaseName("IX_Members_UserId");
  
-        // Audit properties (inherited from FullyAuditableAggregateRoot)
-        builder.Property(m => m.CreatedAt)
-            .IsRequired()
-            .HasColumnType("datetime2");
-            
-        builder.Property(m => m.CreatedBy)
-            .HasMaxLength(100);
-            
-        builder.Property(m => m.ModifiedAt)
-            .HasColumnType("datetime2");
-            
-        builder.Property(m => m.ModifiedBy)
-            .HasMaxLength(100);
-            
-        builder.Property(m => m.DeletedAt)
-            .HasColumnType("datetime2");
-            
-        builder.Property(m => m.DeletedBy)
-            .HasMaxLength(100);
-            
-        builder.Property(m => m.IsDeleted)
-            .IsRequired()
-            .HasDefaultValue(false);
-        
-        // Soft delete filter
-        builder.HasQueryFilter(m => !m.IsDeleted);
+        // Audit properties (inherited from FullAggregateRoot)
+        builder.ConfigureFullAuditableEntity();
         
         // Configure relationship with MemberRole
         builder.HasMany(m => m.Roles)
@@ -127,8 +104,8 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
             .HasForeignKey(mr => mr.MemberId)
             .OnDelete(DeleteBehavior.Cascade);
             
-        // Configure relationship with MemberClaim
-        builder.HasMany(m => m.Claims)
+        // Configure relationship with MemberCapability
+        builder.HasMany(m => m.Capabilities)
             .WithOne(mc => mc.Member)
             .HasForeignKey(mc => mc.MemberId)
             .OnDelete(DeleteBehavior.Cascade);

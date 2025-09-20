@@ -27,9 +27,6 @@ namespace Nezam.Refahi.Settings.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<long>("AccessCount")
-                        .HasColumnType("bigint");
-
                     b.Property<Guid>("CategoryId")
                         .HasColumnType("uniqueidentifier");
 
@@ -37,9 +34,6 @@ namespace Nezam.Refahi.Settings.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("CreatedBy")
                         .ValueGeneratedOnAdd()
@@ -75,40 +69,21 @@ namespace Nezam.Refahi.Settings.Infrastructure.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
-                    b.Property<DateTime?>("LastAccessedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LastAccessedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("LastArchivedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("LastBackupAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTimeOffset>("LastModifiedUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("Metadata")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ModifiedAt")
+                    b.Property<DateTime?>("LastModifiedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
 
-                    b.Property<string>("ModifiedBy")
+                    b.Property<string>("LastModifiedBy")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(max)")
                         .HasDefaultValue("00000000-0000-0000-0000-000000000001");
 
                     b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
 
-                    b.Property<long>("SnapshotVersion")
+                    b.Property<long>("Version")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
@@ -131,9 +106,6 @@ namespace Nezam.Refahi.Settings.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<long>("AccessCount")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("ChangeReason")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -145,9 +117,6 @@ namespace Nezam.Refahi.Settings.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("CreatedBy")
                         .ValueGeneratedOnAdd()
@@ -163,43 +132,24 @@ namespace Nezam.Refahi.Settings.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime?>("LastAccessedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LastAccessedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("LastArchivedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("LastBackupAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTimeOffset>("LastModifiedUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("Metadata")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ModifiedAt")
+                    b.Property<DateTime?>("LastModifiedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
 
-                    b.Property<string>("ModifiedBy")
+                    b.Property<string>("LastModifiedBy")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(max)")
                         .HasDefaultValue("00000000-0000-0000-0000-000000000001");
 
                     b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<Guid>("SettingId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<long>("SnapshotVersion")
+                    b.Property<long>("Version")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
@@ -244,11 +194,6 @@ namespace Nezam.Refahi.Settings.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
                     b.Property<Guid>("SectionId")
                         .HasColumnType("uniqueidentifier");
 
@@ -290,11 +235,6 @@ namespace Nezam.Refahi.Settings.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
 
                     b.HasKey("Id");
 

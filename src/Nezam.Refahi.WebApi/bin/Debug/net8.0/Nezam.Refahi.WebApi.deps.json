@@ -10,8 +10,10 @@
         "dependencies": {
           "Microsoft.AspNetCore.OpenApi": "8.0.0",
           "Microsoft.EntityFrameworkCore.Design": "8.0.0",
+          "Nezam.Refahi.Finance.Presentation": "1.0.0",
           "Nezam.Refahi.Identity.Presentation": "1.0.0",
           "Nezam.Refahi.Membership.Presentation": "1.0.0",
+          "Nezam.Refahi.Recreation.Presentation": "1.0.0",
           "Nezam.Refahi.Settings.Presentation": "1.0.0",
           "Swashbuckle.AspNetCore": "6.5.0",
           "Swashbuckle.AspNetCore.Filters": "8.0.3"
@@ -20,9 +22,9 @@
           "Nezam.Refahi.WebApi.dll": {}
         }
       },
-      "AkbarAmd.SharedKernel.Application/1.0.11": {
+      "AkbarAmd.SharedKernel.Application/1.0.13": {
         "dependencies": {
-          "AkbarAmd.SharedKernel.Domain": "1.0.11",
+          "AkbarAmd.SharedKernel.Domain": "1.0.13",
           "AutoMapper": "13.0.1",
           "Bonyan": "1.5.7",
           "FluentValidation": "11.8.1",
@@ -31,26 +33,26 @@
         },
         "runtime": {
           "lib/net8.0/MCA.SharedKernel.Application.dll": {
-            "assemblyVersion": "1.0.11.0",
-            "fileVersion": "1.0.11.0"
+            "assemblyVersion": "1.0.13.0",
+            "fileVersion": "1.0.13.0"
           }
         }
       },
-      "AkbarAmd.SharedKernel.Domain/1.0.11": {
+      "AkbarAmd.SharedKernel.Domain/1.0.13": {
         "dependencies": {
           "Bonyan": "1.5.7",
           "MediatR": "12.5.0"
         },
         "runtime": {
           "lib/net8.0/MCA.SharedKernel.Domain.dll": {
-            "assemblyVersion": "1.0.11.0",
-            "fileVersion": "1.0.11.0"
+            "assemblyVersion": "1.0.13.0",
+            "fileVersion": "1.0.13.0"
           }
         }
       },
-      "AkbarAmd.SharedKernel.Infrastructure/1.0.11": {
+      "AkbarAmd.SharedKernel.Infrastructure/1.0.13": {
         "dependencies": {
-          "AkbarAmd.SharedKernel.Domain": "1.0.11",
+          "AkbarAmd.SharedKernel.Domain": "1.0.13",
           "Bonyan": "1.5.7",
           "Microsoft.AspNetCore.Authorization": "8.0.18",
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "8.0.18",
@@ -61,8 +63,8 @@
         },
         "runtime": {
           "lib/net8.0/MCA.SharedKernel.Infrastructure.dll": {
-            "assemblyVersion": "1.0.11.0",
-            "fileVersion": "1.0.11.0"
+            "assemblyVersion": "1.0.13.0",
+            "fileVersion": "1.0.13.0"
           }
         }
       },
@@ -1799,9 +1801,80 @@
           }
         }
       },
+      "Nezam.Refahi.Finance.Application/1.0.0": {
+        "dependencies": {
+          "AkbarAmd.SharedKernel.Application": "1.0.13",
+          "FluentValidation": "11.8.1",
+          "FluentValidation.DependencyInjectionExtensions": "11.8.1",
+          "Nezam.Refahi.Finance.Contracts": "1.0.0",
+          "Nezam.Refahi.Finance.Domain": "1.0.0",
+          "Nezam.Refahi.Shared.Application": "1.0.0"
+        },
+        "runtime": {
+          "Nezam.Refahi.Finance.Application.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Nezam.Refahi.Finance.Contracts/1.0.0": {
+        "dependencies": {
+          "AkbarAmd.SharedKernel.Application": "1.0.13",
+          "Nezam.Refahi.Finance.Domain": "1.0.0",
+          "Nezam.Refahi.Shared.Application": "1.0.0"
+        },
+        "runtime": {
+          "Nezam.Refahi.Finance.Contracts.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Nezam.Refahi.Finance.Domain/1.0.0": {
+        "dependencies": {
+          "AkbarAmd.SharedKernel.Domain": "1.0.13",
+          "Nezam.Refahi.Shared.Domain": "1.0.0"
+        },
+        "runtime": {
+          "Nezam.Refahi.Finance.Domain.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Nezam.Refahi.Finance.Infrastructure/1.0.0": {
+        "dependencies": {
+          "AkbarAmd.SharedKernel.Infrastructure": "1.0.13",
+          "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.18",
+          "Microsoft.EntityFrameworkCore": "8.0.18",
+          "Microsoft.EntityFrameworkCore.Relational": "8.0.18",
+          "Microsoft.EntityFrameworkCore.SqlServer": "8.0.18",
+          "Microsoft.EntityFrameworkCore.Sqlite": "8.0.18",
+          "Nezam.Refahi.Finance.Application": "1.0.0",
+          "Nezam.Refahi.Finance.Domain": "1.0.0",
+          "Nezam.Refahi.Shared.Infrastructure": "1.0.0"
+        },
+        "runtime": {
+          "Nezam.Refahi.Finance.Infrastructure.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Nezam.Refahi.Finance.Presentation/1.0.0": {
+        "dependencies": {
+          "Nezam.Refahi.Finance.Infrastructure": "1.0.0"
+        },
+        "runtime": {
+          "Nezam.Refahi.Finance.Presentation.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
       "Nezam.Refahi.Identity.Application/1.0.0": {
         "dependencies": {
-          "AkbarAmd.SharedKernel.Application": "1.0.11",
+          "AkbarAmd.SharedKernel.Application": "1.0.13",
           "FluentValidation": "11.8.1",
           "FluentValidation.DependencyInjectionExtensions": "11.8.1",
           "Microsoft.Extensions.Http": "8.0.1",
@@ -1820,7 +1893,7 @@
       },
       "Nezam.Refahi.Identity.Contracts/1.0.0": {
         "dependencies": {
-          "AkbarAmd.SharedKernel.Domain": "1.0.11",
+          "AkbarAmd.SharedKernel.Domain": "1.0.13",
           "Nezam.Refahi.Shared.Domain": "1.0.0"
         },
         "runtime": {
@@ -1832,7 +1905,7 @@
       },
       "Nezam.Refahi.Identity.Domain/1.0.0": {
         "dependencies": {
-          "AkbarAmd.SharedKernel.Domain": "1.0.11",
+          "AkbarAmd.SharedKernel.Domain": "1.0.13",
           "Nezam.Refahi.Identity.Contracts": "1.0.0",
           "Nezam.Refahi.Shared.Domain": "1.0.0"
         },
@@ -1845,7 +1918,7 @@
       },
       "Nezam.Refahi.Identity.Infrastructure/1.0.0": {
         "dependencies": {
-          "AkbarAmd.SharedKernel.Infrastructure": "1.0.11",
+          "AkbarAmd.SharedKernel.Infrastructure": "1.0.13",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.18",
           "Microsoft.EntityFrameworkCore": "8.0.18",
           "Microsoft.EntityFrameworkCore.Relational": "8.0.18",
@@ -1880,7 +1953,7 @@
       },
       "Nezam.Refahi.Membership.Application/1.0.0": {
         "dependencies": {
-          "AkbarAmd.SharedKernel.Application": "1.0.11",
+          "AkbarAmd.SharedKernel.Application": "1.0.13",
           "FluentValidation": "11.8.1",
           "FluentValidation.DependencyInjectionExtensions": "11.8.1",
           "Microsoft.Extensions.Http": "8.0.1",
@@ -1910,7 +1983,7 @@
       },
       "Nezam.Refahi.Membership.Domain/1.0.0": {
         "dependencies": {
-          "AkbarAmd.SharedKernel.Domain": "1.0.11",
+          "AkbarAmd.SharedKernel.Domain": "1.0.13",
           "Nezam.Refahi.Shared.Domain": "1.0.0"
         },
         "runtime": {
@@ -1922,7 +1995,7 @@
       },
       "Nezam.Refahi.Membership.Infrastructure/1.0.0": {
         "dependencies": {
-          "AkbarAmd.SharedKernel.Infrastructure": "1.0.11",
+          "AkbarAmd.SharedKernel.Infrastructure": "1.0.13",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.18",
           "Microsoft.EntityFrameworkCore": "8.0.18",
           "Microsoft.EntityFrameworkCore.Relational": "8.0.18",
@@ -1955,9 +2028,89 @@
           }
         }
       },
+      "Nezam.Refahi.Recreation.Application/1.0.0": {
+        "dependencies": {
+          "AkbarAmd.SharedKernel.Application": "1.0.13",
+          "FluentValidation": "11.8.1",
+          "FluentValidation.DependencyInjectionExtensions": "11.8.1",
+          "Microsoft.Extensions.Http": "8.0.1",
+          "Nezam.Refahi.Finance.Contracts": "1.0.0",
+          "Nezam.Refahi.Identity.Contracts": "1.0.0",
+          "Nezam.Refahi.Membership.Contracts": "1.0.0",
+          "Nezam.Refahi.Recreation.Contracts": "1.0.0",
+          "Nezam.Refahi.Recreation.Domain": "1.0.0",
+          "Nezam.Refahi.Settings.Contracts": "1.0.0",
+          "Nezam.Refahi.Shared.Application": "1.0.0"
+        },
+        "runtime": {
+          "Nezam.Refahi.Recreation.Application.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Nezam.Refahi.Recreation.Contracts/1.0.0": {
+        "dependencies": {
+          "Nezam.Refahi.Recreation.Domain": "1.0.0",
+          "Nezam.Refahi.Shared.Application": "1.0.0"
+        },
+        "runtime": {
+          "Nezam.Refahi.Recreation.Contracts.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Nezam.Refahi.Recreation.Domain/1.0.0": {
+        "dependencies": {
+          "AkbarAmd.SharedKernel.Domain": "1.0.13",
+          "Nezam.Refahi.Shared.Domain": "1.0.0"
+        },
+        "runtime": {
+          "Nezam.Refahi.Recreation.Domain.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Nezam.Refahi.Recreation.Infrastructure/1.0.0": {
+        "dependencies": {
+          "AkbarAmd.SharedKernel.Infrastructure": "1.0.13",
+          "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.18",
+          "Microsoft.EntityFrameworkCore": "8.0.18",
+          "Microsoft.EntityFrameworkCore.Relational": "8.0.18",
+          "Microsoft.EntityFrameworkCore.SqlServer": "8.0.18",
+          "Microsoft.EntityFrameworkCore.Sqlite": "8.0.18",
+          "Nezam.Refahi.Recreation.Application": "1.0.0",
+          "Nezam.Refahi.Recreation.Domain": "1.0.0",
+          "Nezam.Refahi.Shared.Infrastructure": "1.0.0"
+        },
+        "runtime": {
+          "Nezam.Refahi.Recreation.Infrastructure.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Nezam.Refahi.Recreation.Presentation/1.0.0": {
+        "dependencies": {
+          "Bonyan.AspNetCore": "1.5.7",
+          "MediatR": "12.5.0",
+          "Microsoft.AspNetCore.OpenApi": "8.0.0",
+          "Nezam.Refahi.Recreation.Infrastructure": "1.0.0",
+          "Nezam.Refahi.Shared.Application": "1.0.0",
+          "Swashbuckle.AspNetCore": "6.5.0"
+        },
+        "runtime": {
+          "Nezam.Refahi.Recreation.Presentation.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
       "Nezam.Refahi.Settings.Application/1.0.0": {
         "dependencies": {
-          "AkbarAmd.SharedKernel.Application": "1.0.11",
+          "AkbarAmd.SharedKernel.Application": "1.0.13",
           "Microsoft.Extensions.Http": "8.0.1",
           "Nezam.Refahi.Settings.Contracts": "1.0.0",
           "Nezam.Refahi.Settings.Domain": "1.0.0",
@@ -1984,7 +2137,7 @@
       },
       "Nezam.Refahi.Settings.Domain/1.0.0": {
         "dependencies": {
-          "AkbarAmd.SharedKernel.Domain": "1.0.11",
+          "AkbarAmd.SharedKernel.Domain": "1.0.13",
           "Nezam.Refahi.Shared.Domain": "1.0.0"
         },
         "runtime": {
@@ -1996,7 +2149,7 @@
       },
       "Nezam.Refahi.Settings.Infrastructure/1.0.0": {
         "dependencies": {
-          "AkbarAmd.SharedKernel.Infrastructure": "1.0.11",
+          "AkbarAmd.SharedKernel.Infrastructure": "1.0.13",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.18",
           "Microsoft.EntityFrameworkCore": "8.0.18",
           "Microsoft.EntityFrameworkCore.Relational": "8.0.18",
@@ -2030,7 +2183,7 @@
       },
       "Nezam.Refahi.Shared.Application/1.0.0": {
         "dependencies": {
-          "AkbarAmd.SharedKernel.Application": "1.0.11",
+          "AkbarAmd.SharedKernel.Application": "1.0.13",
           "FluentValidation": "11.8.1",
           "FluentValidation.DependencyInjectionExtensions": "11.8.1",
           "MediatR": "12.5.0",
@@ -2047,7 +2200,7 @@
       },
       "Nezam.Refahi.Shared.Domain/1.0.0": {
         "dependencies": {
-          "AkbarAmd.SharedKernel.Domain": "1.0.11"
+          "AkbarAmd.SharedKernel.Domain": "1.0.13"
         },
         "runtime": {
           "Nezam.Refahi.Shared.Domain.dll": {
@@ -2058,7 +2211,7 @@
       },
       "Nezam.Refahi.Shared.Infrastructure/1.0.0": {
         "dependencies": {
-          "AkbarAmd.SharedKernel.Infrastructure": "1.0.11",
+          "AkbarAmd.SharedKernel.Infrastructure": "1.0.13",
           "Bonyan.AspNetCore": "1.5.7",
           "FluentValidation": "11.8.1",
           "FluentValidation.DependencyInjectionExtensions": "11.8.1",
@@ -2091,26 +2244,26 @@
       "serviceable": false,
       "sha512": ""
     },
-    "AkbarAmd.SharedKernel.Application/1.0.11": {
+    "AkbarAmd.SharedKernel.Application/1.0.13": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-aRPCz65771GTe7G9ox3WvYZaF0ENFsrbKGzfHEp3y7//vQiyLGMJ5FZnoWXZP0dLRuM2oas4qv64ykAKiOW7cw==",
-      "path": "akbaramd.sharedkernel.application/1.0.11",
-      "hashPath": "akbaramd.sharedkernel.application.1.0.11.nupkg.sha512"
+      "sha512": "sha512-AYnQP6Z3gQkhirpE0lXS+VAPtHpJ8hi34etxl4fF1DA7tcE5L90zonKyRdgMBs7Gt1LNAznTXOlICLNMBQ8s0g==",
+      "path": "akbaramd.sharedkernel.application/1.0.13",
+      "hashPath": "akbaramd.sharedkernel.application.1.0.13.nupkg.sha512"
     },
-    "AkbarAmd.SharedKernel.Domain/1.0.11": {
+    "AkbarAmd.SharedKernel.Domain/1.0.13": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-AYZz/4sWurx5U0jVg2fKu3i7d0pZ6E+Fky7tzU8dqV21Hhu9bxV78/3+HF3qH+9gdpFt/N5UbgdQ8sKUhbkUwg==",
-      "path": "akbaramd.sharedkernel.domain/1.0.11",
-      "hashPath": "akbaramd.sharedkernel.domain.1.0.11.nupkg.sha512"
+      "sha512": "sha512-E6RGyT0CVjEmp486Alp0Ds9NoAnvT4CVoHRF2Nhxbtjmg+o+JhsbR6S0lmtrF5j7qHHue34eOnxKaGFG5xnl6w==",
+      "path": "akbaramd.sharedkernel.domain/1.0.13",
+      "hashPath": "akbaramd.sharedkernel.domain.1.0.13.nupkg.sha512"
     },
-    "AkbarAmd.SharedKernel.Infrastructure/1.0.11": {
+    "AkbarAmd.SharedKernel.Infrastructure/1.0.13": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-9mwyitVAdhPnu+DUrcSe5F8P59t3VamPzk2Ujo5ofsOQROv06Gts8NvsD8aGBnFCkbqN9lMM65uyQIrumvbNzA==",
-      "path": "akbaramd.sharedkernel.infrastructure/1.0.11",
-      "hashPath": "akbaramd.sharedkernel.infrastructure.1.0.11.nupkg.sha512"
+      "sha512": "sha512-SX1FF1vcPf7Zqd6Qt6u8IMgu/W9x/cygw0wywA1lokU0uMGZ+5e534Kp7PxzxnvRgtwalgS85OcJE7QwK4PvSA==",
+      "path": "akbaramd.sharedkernel.infrastructure/1.0.13",
+      "hashPath": "akbaramd.sharedkernel.infrastructure.1.0.13.nupkg.sha512"
     },
     "Autofac/8.1.1": {
       "type": "package",
@@ -2987,6 +3140,31 @@
       "path": "system.windows.extensions/6.0.0",
       "hashPath": "system.windows.extensions.6.0.0.nupkg.sha512"
     },
+    "Nezam.Refahi.Finance.Application/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Nezam.Refahi.Finance.Contracts/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Nezam.Refahi.Finance.Domain/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Nezam.Refahi.Finance.Infrastructure/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Nezam.Refahi.Finance.Presentation/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
     "Nezam.Refahi.Identity.Application/1.0.0": {
       "type": "project",
       "serviceable": false,
@@ -3033,6 +3211,31 @@
       "sha512": ""
     },
     "Nezam.Refahi.Membership.Presentation/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Nezam.Refahi.Recreation.Application/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Nezam.Refahi.Recreation.Contracts/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Nezam.Refahi.Recreation.Domain/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Nezam.Refahi.Recreation.Infrastructure/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Nezam.Refahi.Recreation.Presentation/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

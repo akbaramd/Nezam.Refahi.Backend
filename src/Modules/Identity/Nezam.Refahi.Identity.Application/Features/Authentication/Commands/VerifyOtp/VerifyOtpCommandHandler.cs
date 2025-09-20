@@ -113,7 +113,7 @@ public class VerifyOtpCommandHandler
             // 3) Get OTP Challenge First
             // ========================================================================
             
-            var challenge = await _otpChallengeRepository.GetByIdAsync(request.ChallengeId, ct);
+            var challenge = await _otpChallengeRepository.FindOneAsync(x=>x.Id==request.ChallengeId, ct);
             
             if (challenge == null || !challenge.CanBeVerified)
                 return await FailAndRollbackAsync("No active OTP challenge found. Please request a new OTP.");
@@ -137,7 +137,7 @@ public class VerifyOtpCommandHandler
                 // Handle concurrency exception for failed verification attempts
                 try
                 {
-                    await _otpChallengeRepository.UpdateAsync(challenge, ct);
+                    await _otpChallengeRepository.UpdateAsync(challenge, cancellationToken:ct);
                     await _uow.SaveAsync(ct);
                 }
                 catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException ex)
@@ -145,7 +145,7 @@ public class VerifyOtpCommandHandler
                     _logger.LogWarning(ex, "Concurrency conflict updating OTP challenge {ChallengeId}, reloading to check status", request.ChallengeId);
                     
                     // Another request already updated this challenge, reload and check current status
-                    challenge = await _otpChallengeRepository.GetByIdAsync(request.ChallengeId, ct);
+                    challenge = await _otpChallengeRepository.FindOneAsync(x=>x.Id==request.ChallengeId, ct);
                     if (challenge?.Status == Identity.Domain.Enums.ChallengeStatus.Locked)
                     {
                         return await FailAndRollbackAsync("Challenge has been locked due to too many attempts.");
@@ -163,11 +163,11 @@ public class VerifyOtpCommandHandler
             try
             {
                 // CRITICAL FIX: Use original challenge entity, not reloaded one from concurrency handling
-                var originalChallenge = await _otpChallengeRepository.GetByIdAsync(request.ChallengeId, ct);
+                var originalChallenge = await _otpChallengeRepository.FindOneAsync(x=>x.Id == request.ChallengeId, ct);
                 if (originalChallenge != null)
                 {
                     originalChallenge.Consume();
-                    await _otpChallengeRepository.DeleteAsync(originalChallenge, ct);
+                    await _otpChallengeRepository.DeleteAsync(originalChallenge, cancellationToken:ct);
                 }
             }
             catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException ex)
@@ -202,7 +202,7 @@ public class VerifyOtpCommandHandler
             foreach (var token in existingAccessTokens)
             {
                 token.Revoke();
-                await _userTokenRepository.UpdateAsync(token, ct);
+                await _userTokenRepository.UpdateAsync(token, cancellationToken:ct);
             }
 
             // ========================================================================
@@ -210,17 +210,17 @@ public class VerifyOtpCommandHandler
             // ========================================================================
             
             user.LoggedIn();
-            
-            // CRITICAL FIX: Ensure Engineer role is assigned for users with national ID
-            if (user.NationalId is not null && !user.HasRole("Engineer"))
+
+            // Ensure all users have Member role as default
+            if (!user.HasRole("Member"))
             {
-                var engineerRole = await _roleRepository.GetByNameAsync("Engineer", ct);
-                if (engineerRole != null)
+                var memberRole = await _roleRepository.GetByNameAsync("Member", ct);
+                if (memberRole != null)
                 {
-                    // Use role ID to avoid tracking conflicts with potentially loaded Role entities
-                    user.AssignRole(engineerRole.Id);
+                    user.AssignRole(memberRole.Id);
                 }
             }
+
 
      
 
@@ -266,7 +266,7 @@ public class VerifyOtpCommandHandler
             {
                 // CRITICAL FIX: Save in specific order to minimize tracking conflicts
                 // 1. Save user changes first (most important entity)
-                await _userRepository.UpdateAsync(user, ct);
+                await _userRepository.UpdateAsync(user, cancellationToken:ct);
                 
                 // 2. Save all changes atomically
                 await _uow.SaveChangesAsync(ct);

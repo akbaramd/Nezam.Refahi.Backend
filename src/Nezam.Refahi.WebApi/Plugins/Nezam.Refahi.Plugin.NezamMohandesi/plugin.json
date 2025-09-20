@@ -1,0 +1,13 @@
+{
+  "name": "Nezam.Refahi.Plugin.NezamMohandesi",
+  "version": "1.0.0",
+  "description": "Nezam Mohandesi external member storage plugin",
+  "authors": ["Nezam Refahi Team"],
+  "entryPoint": "Nezam.Refahi.Plugin.NezamMohandesi.dll",
+  "additionalFiles": [
+    "Nezam.Refahi.Membership.Contracts.dll",
+    "Nezam.Refahi.Membership.Domain.dll",
+    "Nezam.Refahi.Shared.Domain.dll"
+  ],
+  "tags": ["membership", "external-storage", "nezam-mohandesi"]
+}

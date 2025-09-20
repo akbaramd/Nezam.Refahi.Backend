@@ -36,10 +36,7 @@ public class SettingsSectionConfiguration : IEntityTypeConfiguration<SettingsSec
         builder.Property(s => s.DisplayOrder)
             .IsRequired()
             .HasDefaultValue(0);
-            
-        // Concurrency control - MUST: Rowversion for critical clusters
-        builder.Property<byte[]>("RowVersion")
-            .IsRowVersion();
+
             
         // Relationships
         builder.HasMany(s => s.Categories)

@@ -39,9 +39,6 @@ public class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
         builder.Property(ur => ur.Notes)
             .HasMaxLength(500);
 
-        // Concurrency control - MUST: Rowversion for critical clusters
-        builder.Property<byte[]>("RowVersion")
-            .IsRowVersion();
    
 
         // Join entity relationships - Both sides are Restrict (between aggregates)

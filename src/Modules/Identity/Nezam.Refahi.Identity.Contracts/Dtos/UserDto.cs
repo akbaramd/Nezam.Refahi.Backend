@@ -30,7 +30,7 @@ public  class UserDto
 
        
 
-  // Audit (از FullyAuditableAggregateRoot<Guid>)
+  // Audit (از FullAggregateRoot<Guid>)
   public DateTimeOffset CreatedAtUtc { get; set; }
   public string? CreatedBy { get; set; }
   public DateTimeOffset? UpdatedAtUtc { get; set; }

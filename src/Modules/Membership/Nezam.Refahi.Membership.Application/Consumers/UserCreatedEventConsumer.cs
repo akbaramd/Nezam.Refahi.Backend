@@ -30,8 +30,7 @@ public class UserCreatedEventConsumer : INotificationHandler<UserCreatedEvent>
         return;
 
       existingMember.SetUserId(notification.UserId);
-      await _memberRepository.UpdateAsync(existingMember, cancellationToken);
-      await _membershipUnitOfWork.SaveChangesAsync(cancellationToken);
+      await _memberRepository.UpdateAsync(existingMember,true,cancellationToken: cancellationToken);
     }
     catch (Exception ex)
     {

@@ -18,7 +18,7 @@ public class City : Entity<Guid>
     // Private constructor for EF Core
     private City() : base() { }
     
-    public City(string name) : base()
+    public City(string name) : base(Guid.NewGuid())
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("City name cannot be empty", nameof(name));

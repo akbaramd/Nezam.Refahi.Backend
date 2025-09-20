@@ -3,6 +3,7 @@ using Bonyan.Modularity;
 using Bonyan.Modularity.Abstractions;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Nezam.Refahi.Membership.Application.HostedServices;
 using Nezam.Refahi.Membership.Application.Services;
 using Nezam.Refahi.Membership.Contracts;
 using Nezam.Refahi.Membership.Contracts.Services;
@@ -33,7 +34,8 @@ public class NezamRefahiMembershipApplicationModule : BonModule
     // Register Membership service for inter-context communication
     context.Services.AddScoped<IMemberService, MemberService>();
 
-
+    // Register membership seeding hosted service
+    context.Services.AddHostedService<MembershipSeedingHostedService>();
     return base.OnConfigureAsync(context);
   }
 }

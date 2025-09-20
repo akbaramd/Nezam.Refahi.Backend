@@ -10,7 +10,7 @@ namespace Nezam.Refahi.Identity.Domain.Entities;
 /// <summary>
 /// Represents a user in the system with OTP authentication capabilities
 /// </summary>
-public class User : FullyAuditableAggregateRoot<Guid>
+public class User : FullAggregateRoot<Guid>
 {
     public string FirstName { get; private set; } = string.Empty;
     public string LastName { get; private set; } = string.Empty;

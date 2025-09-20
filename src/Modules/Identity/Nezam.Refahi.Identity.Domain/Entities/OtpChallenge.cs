@@ -108,10 +108,6 @@ public class OtpChallenge : Entity<Guid>
     /// </summary>
     public Guid? UserId { get; private set; }
 
-    /// <summary>
-    /// Row version for optimistic concurrency control
-    /// </summary>
-    public byte[] RowVersion { get; private set; } = Array.Empty<byte>();
 
     // Private constructor for EF Core
     private OtpChallenge() : base() { }

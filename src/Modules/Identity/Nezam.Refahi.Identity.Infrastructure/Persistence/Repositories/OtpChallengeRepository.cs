@@ -26,7 +26,7 @@ public class OtpChallengeRepository : EfRepository<IdentityDbContext, OtpChallen
 
         var oneHourAgo = DateTime.UtcNow.AddHours(-1);
         
-        return await _dbContext.OtpChallenges
+        return await PrepareQuery(_dbSet)
             .Where(c => c.PhoneNumber.Value == phoneNumber.Value && 
                        c.CreatedAt >= oneHourAgo &&
                        (c.Status == ChallengeStatus.Created || c.Status == ChallengeStatus.Sent))
@@ -39,7 +39,7 @@ public class OtpChallengeRepository : EfRepository<IdentityDbContext, OtpChallen
         if (phoneNumber == null)
             return Enumerable.Empty<OtpChallenge>();
 
-        return await _dbContext.OtpChallenges
+        return await PrepareQuery(_dbSet)
             .Where(c => c.PhoneNumber.Value == phoneNumber.Value && c.Status == status)
             .OrderByDescending(c => c.CreatedAt)
             .ToListAsync();
@@ -50,7 +50,7 @@ public class OtpChallengeRepository : EfRepository<IdentityDbContext, OtpChallen
         if (phoneNumber == null)
             return Enumerable.Empty<OtpChallenge>();
 
-        return await _dbContext.OtpChallenges
+        return await PrepareQuery(_dbSet)
             .Where(c => c.PhoneNumber.Value == phoneNumber.Value && 
                        c.CreatedAt >= fromDate && c.CreatedAt <= toDate)
             .OrderByDescending(c => c.CreatedAt)
@@ -62,7 +62,7 @@ public class OtpChallengeRepository : EfRepository<IdentityDbContext, OtpChallen
         if (string.IsNullOrWhiteSpace(ipAddress))
             return Enumerable.Empty<OtpChallenge>();
 
-        return await _dbContext.OtpChallenges
+        return await PrepareQuery(_dbSet)
             .Where(c => c.IpAddress != null && 
                        c.IpAddress.Value == ipAddress &&
                        c.CreatedAt >= fromDate && c.CreatedAt <= toDate)
@@ -75,7 +75,7 @@ public class OtpChallengeRepository : EfRepository<IdentityDbContext, OtpChallen
         if (string.IsNullOrWhiteSpace(deviceFingerprint))
             return Enumerable.Empty<OtpChallenge>();
 
-        return await _dbContext.OtpChallenges
+        return await PrepareQuery(_dbSet)
             .Where(c => c.DeviceFingerprint != null && 
                        c.DeviceFingerprint.Value == deviceFingerprint &&
                        c.CreatedAt >= fromDate && c.CreatedAt <= toDate)
@@ -85,7 +85,7 @@ public class OtpChallengeRepository : EfRepository<IdentityDbContext, OtpChallen
 
     public async Task<IEnumerable<OtpChallenge>> GetExpiredChallengesAsync()
     {
-        return await _dbContext.OtpChallenges
+        return await PrepareQuery(_dbSet)
             .Where(c => c.Status == ChallengeStatus.Expired || 
                        (c.ExpiresAt < DateTime.UtcNow && 
                         c.Status != ChallengeStatus.Verified && 
@@ -96,7 +96,7 @@ public class OtpChallengeRepository : EfRepository<IdentityDbContext, OtpChallen
 
     public async Task<IEnumerable<OtpChallenge>> GetLockedChallengesAsync()
     {
-        return await _dbContext.OtpChallenges
+        return await PrepareQuery(_dbSet)
             .Where(c => c.Status == ChallengeStatus.Locked)
             .OrderByDescending(c => c.LockedAt)
             .ToListAsync();
@@ -109,7 +109,7 @@ public class OtpChallengeRepository : EfRepository<IdentityDbContext, OtpChallen
 
         var oneHourAgo = DateTime.UtcNow.AddHours(-1);
         
-        return await _dbContext.OtpChallenges
+        return await PrepareQuery(_dbSet)
             .CountAsync(c => c.PhoneNumber.Value == phoneNumber.Value && 
                             c.CreatedAt >= oneHourAgo &&
                             (c.Status == ChallengeStatus.Created || c.Status == ChallengeStatus.Sent));
@@ -122,7 +122,7 @@ public class OtpChallengeRepository : EfRepository<IdentityDbContext, OtpChallen
 
         var oneHourAgo = DateTime.UtcNow.AddHours(-1);
         
-        return await _dbContext.OtpChallenges
+        return await PrepareQuery(_dbSet)
             .CountAsync(c => c.IpAddress != null && 
                             c.IpAddress.Value == ipAddress &&
                             c.CreatedAt >= oneHourAgo &&
@@ -136,7 +136,7 @@ public class OtpChallengeRepository : EfRepository<IdentityDbContext, OtpChallen
 
         var oneHourAgo = DateTime.UtcNow.AddHours(-1);
         
-        return await _dbContext.OtpChallenges
+        return await PrepareQuery(_dbSet)
             .CountAsync(c => c.DeviceFingerprint != null && 
                             c.DeviceFingerprint.Value == deviceFingerprint &&
                             c.CreatedAt >= oneHourAgo &&
@@ -150,7 +150,7 @@ public class OtpChallengeRepository : EfRepository<IdentityDbContext, OtpChallen
         
         if (count > 0)
         {
-            _dbContext.OtpChallenges.RemoveRange(expiredChallenges);
+            _dbSet.RemoveRange(expiredChallenges);
         }
 
         await _dbContext.SaveChangesAsync();
@@ -164,7 +164,7 @@ public class OtpChallengeRepository : EfRepository<IdentityDbContext, OtpChallen
 
         var cutoffDate = DateTime.UtcNow.AddDays(-daysOld);
         
-        var count = await _dbContext.OtpChallenges
+        var count = await PrepareQuery(_dbSet)
             .Where(c => c.CreatedAt < cutoffDate)
             .ExecuteDeleteAsync();
         
@@ -178,7 +178,7 @@ public class OtpChallengeRepository : EfRepository<IdentityDbContext, OtpChallen
         if (phoneNumber == null)
             return 0;
 
-        var count = await _dbContext.OtpChallenges
+        var count = await PrepareQuery(_dbSet)
             .Where(c => c.PhoneNumber.Value == phoneNumber.Value)
             .ExecuteDeleteAsync(cancellationToken);
         
@@ -191,7 +191,7 @@ public class OtpChallengeRepository : EfRepository<IdentityDbContext, OtpChallen
         if (!challengeIds?.Any() == true)
             return 0;
 
-        var deletedCount = await _dbContext.OtpChallenges
+        var deletedCount = await PrepareQuery(_dbSet)
             .Where(c => challengeIds != null && challengeIds.Contains(c.Id))
             .ExecuteDeleteAsync(cancellationToken);
             
@@ -207,7 +207,7 @@ public class OtpChallengeRepository : EfRepository<IdentityDbContext, OtpChallen
         
         while (!cancellationToken.IsCancellationRequested)
         {
-            var batch = await _dbContext.OtpChallenges
+            var batch = await PrepareQuery(_dbSet)
                 .Where(c => c.Status == ChallengeStatus.Consumed || 
                            c.Status == ChallengeStatus.Verified ||
                            (c.Status == ChallengeStatus.Expired && c.CreatedAt < DateTime.UtcNow.AddDays(-7)))
@@ -218,7 +218,7 @@ public class OtpChallengeRepository : EfRepository<IdentityDbContext, OtpChallen
             if (!batch.Any())
                 break;
                 
-            _dbContext.OtpChallenges.RemoveRange(batch);
+            _dbSet.RemoveRange(batch);
             totalDeleted += batch.Count;
             
             await _dbContext.SaveChangesAsync(cancellationToken);
@@ -226,7 +226,12 @@ public class OtpChallengeRepository : EfRepository<IdentityDbContext, OtpChallen
             if (batch.Count < batchSize)
                 break;
         }
-        
+
         return totalDeleted;
+    }
+
+    protected override IQueryable<OtpChallenge> PrepareQuery(IQueryable<OtpChallenge> query)
+    {
+        return base.PrepareQuery(query);
     }
 }

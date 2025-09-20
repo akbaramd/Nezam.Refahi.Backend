@@ -36,10 +36,7 @@ public class UserClaimConfiguration : IEntityTypeConfiguration<UserClaim>
         builder.Property(uc => uc.Notes)
             .HasMaxLength(500);
 
-        // Concurrency control - MUST: Rowversion for critical clusters
-        builder.Property<byte[]>("RowVersion")
-            .IsRowVersion();
-            
+  
 
 
         // Configure Claim as owned type

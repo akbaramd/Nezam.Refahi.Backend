@@ -1,4 +1,5 @@
 ﻿using MCA.SharedKernel.Domain.Contracts;
+using MCA.SharedKernel.Domain.Contracts.Repositories;
 
 namespace Nezam.Refahi.Shared.Application.Common.Interfaces;
 

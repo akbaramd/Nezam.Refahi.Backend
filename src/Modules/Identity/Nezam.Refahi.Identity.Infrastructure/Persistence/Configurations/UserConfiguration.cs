@@ -1,3 +1,4 @@
+using MCA.SharedKernel.Infrastructure.Configurations.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Nezam.Refahi.Identity.Domain.Entities;
@@ -138,27 +139,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasForeignKey(uc => uc.UserId)
             .OnDelete(DeleteBehavior.Cascade); // Within aggregate
             
-        // Concurrency control - MUST: Rowversion for critical clusters
-        builder.Property<byte[]>("RowVersion")
-            .IsRowVersion();
+        
             
         // Base aggregate root properties
-        builder.Property(u => u.CreatedAt)
-            .IsRequired()
-            .HasDefaultValueSql("GETUTCDATE()");
-        builder.Property(u => u.ModifiedAt)
-            .IsRequired(false)
-            .HasDefaultValueSql("GETUTCDATE()");
-        builder.Property(u => u.CreatedBy)
-            .IsRequired(false)
-            .HasDefaultValue("00000000-0000-0000-0000-000000000001");
-        builder.Property(u => u.ModifiedBy)
-            .IsRequired(false)
-            .HasDefaultValue("00000000-0000-0000-0000-000000000001");
-            
-        // Soft delete - SHOULD: Global query filter
-        builder.HasQueryFilter(u => !u.IsDeleted);
-        
+        builder.ConfigureFullAuditableEntity();
         // Create indexes for commonly queried fields
         // The following indexes are now handled within OwnsOne blocks
         // builder.HasIndex("PhoneNumber")

@@ -109,9 +109,7 @@ public class UserTokensConfiguration : IEntityTypeConfiguration<UserToken>
 
    
 
-        // 5) Concurrency-Token (Optimistic Locking) - MUST: Rowversion for critical clusters
-        builder.Property<byte[]>("RowVersion")
-            .IsRowVersion();
+     
             
  
     }

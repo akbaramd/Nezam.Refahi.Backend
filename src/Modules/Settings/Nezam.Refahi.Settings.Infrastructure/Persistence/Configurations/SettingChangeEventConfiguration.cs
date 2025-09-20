@@ -24,19 +24,17 @@ public class SettingChangeEventConfiguration : IEntityTypeConfiguration<SettingC
         builder.Property(e => e.CreatedAt)
             .IsRequired()
             .HasDefaultValueSql("GETUTCDATE()");
-        builder.Property(e => e.ModifiedAt)
+        builder.Property(e => e.LastModifiedAt)
             .IsRequired(false)
             .HasDefaultValueSql("GETUTCDATE()");
         builder.Property(e => e.CreatedBy)
             .IsRequired(false)
             .HasDefaultValue("00000000-0000-0000-0000-000000000001");
-        builder.Property(e => e.ModifiedBy)
+        builder.Property(e => e.LastModifiedBy)
             .IsRequired(false)
             .HasDefaultValue("00000000-0000-0000-0000-000000000001");
             
-        // Concurrency control - MUST: Rowversion for critical clusters
-        builder.Property<byte[]>("RowVersion")
-            .IsRowVersion();
+
         
         // Properties configuration
         builder.Property(e => e.SettingId)

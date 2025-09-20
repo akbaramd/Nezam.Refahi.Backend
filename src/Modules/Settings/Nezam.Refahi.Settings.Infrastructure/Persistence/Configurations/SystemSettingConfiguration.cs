@@ -24,19 +24,17 @@ public class SystemSettingConfiguration : IEntityTypeConfiguration<Setting>
         builder.Property(s => s.CreatedAt)
             .IsRequired()
             .HasDefaultValueSql("GETUTCDATE()");
-        builder.Property(s => s.ModifiedAt)
+        builder.Property(s => s.LastModifiedAt)
             .IsRequired(false)
             .HasDefaultValueSql("GETUTCDATE()");
         builder.Property(s => s.CreatedBy)
             .IsRequired(false)
             .HasDefaultValue("00000000-0000-0000-0000-000000000001");
-        builder.Property(s => s.ModifiedBy)
+        builder.Property(s => s.LastModifiedBy)
             .IsRequired(false)
             .HasDefaultValue("00000000-0000-0000-0000-000000000001");
             
-        // Concurrency control - MUST: Rowversion for critical clusters
-        builder.Property<byte[]>("RowVersion")
-            .IsRowVersion();
+   
         
         // Properties configuration
         builder.Property(s => s.Description)

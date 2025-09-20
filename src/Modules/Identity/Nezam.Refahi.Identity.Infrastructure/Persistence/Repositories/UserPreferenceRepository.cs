@@ -19,19 +19,19 @@ public class UserPreferenceRepository : EfRepository<IdentityDbContext, UserPref
 
     public async Task<UserPreference?> GetByUserAndKeyAsync(Guid userId, PreferenceKey key)
     {
-        return await _dbContext.UserPreferences
+        return await PrepareQuery(_dbSet)
             .FirstOrDefaultAsync(up => up.UserId == userId && up.Key.Value == key.Value);
     }
 
     public async Task<UserPreference?> GetByUserAndKeyAsync(Guid userId, string key)
     {
-        return await _dbContext.UserPreferences
+        return await PrepareQuery(_dbSet)
             .FirstOrDefaultAsync(up => up.UserId == userId && up.Key.Value == key);
     }
 
     public async Task<IEnumerable<UserPreference>> GetByUserIdAsync(Guid userId)
     {
-        return await _dbContext.UserPreferences
+        return await PrepareQuery(_dbSet)
             .Where(up => up.UserId == userId)
             .OrderBy(up => up.DisplayOrder)
             .ToListAsync();
@@ -39,7 +39,7 @@ public class UserPreferenceRepository : EfRepository<IdentityDbContext, UserPref
 
     public async Task<IEnumerable<UserPreference>> GetActiveByUserIdAsync(Guid userId)
     {
-        return await _dbContext.UserPreferences
+        return await PrepareQuery(_dbSet)
             .Where(up => up.UserId == userId && up.IsActive)
             .OrderBy(up => up.DisplayOrder)
             .ToListAsync();
@@ -48,7 +48,7 @@ public class UserPreferenceRepository : EfRepository<IdentityDbContext, UserPref
     public async Task<IEnumerable<UserPreference>> GetByUserAndKeysAsync(Guid userId, IEnumerable<string> keys)
     {
         var keyList = keys.ToList();
-        return await _dbContext.UserPreferences
+        return await PrepareQuery(_dbSet)
             .Where(up => up.UserId == userId && keyList.Contains(up.Key.Value))
             .OrderBy(up => up.DisplayOrder)
             .ToListAsync();
@@ -56,7 +56,7 @@ public class UserPreferenceRepository : EfRepository<IdentityDbContext, UserPref
 
     public async Task<IEnumerable<UserPreference>> GetByUserAndTypeAsync(Guid userId, PreferenceType type)
     {
-        return await _dbContext.UserPreferences
+        return await PrepareQuery(_dbSet)
             .Where(up => up.UserId == userId && up.Value.Type == type)
             .OrderBy(up => up.DisplayOrder)
             .ToListAsync();
@@ -64,31 +64,31 @@ public class UserPreferenceRepository : EfRepository<IdentityDbContext, UserPref
 
     public async Task<bool> ExistsAsync(Guid userId, PreferenceKey key)
     {
-        return await _dbContext.UserPreferences
+        return await PrepareQuery(_dbSet)
             .AnyAsync(up => up.UserId == userId && up.Key.Value == key.Value);
     }
 
     public async Task<bool> ExistsAsync(Guid userId, string key)
     {
-        return await _dbContext.UserPreferences
+        return await PrepareQuery(_dbSet)
             .AnyAsync(up => up.UserId == userId && up.Key.Value == key);
     }
 
     public async Task<int> GetCountByUserIdAsync(Guid userId)
     {
-        return await _dbContext.UserPreferences
+        return await PrepareQuery(_dbSet)
             .CountAsync(up => up.UserId == userId);
     }
 
     public async Task<int> GetActiveCountByUserIdAsync(Guid userId)
     {
-        return await _dbContext.UserPreferences
+        return await PrepareQuery(_dbSet)
             .CountAsync(up => up.UserId == userId && up.IsActive);
     }
 
     public async Task<IEnumerable<UserPreference>> SearchByDescriptionAsync(Guid userId, string searchTerm)
     {
-        return await _dbContext.UserPreferences
+        return await PrepareQuery(_dbSet)
             .Where(up => up.UserId == userId && up.Description.Contains(searchTerm))
             .OrderBy(up => up.DisplayOrder)
             .ToListAsync();
@@ -98,17 +98,17 @@ public class UserPreferenceRepository : EfRepository<IdentityDbContext, UserPref
 
     public async Task<int> DeleteByUserIdAsync(Guid userId)
     {
-        var preferences = await _dbContext.UserPreferences
+        var preferences = await PrepareQuery(_dbSet)
             .Where(up => up.UserId == userId)
             .ToListAsync();
 
-        _dbContext.UserPreferences.RemoveRange(preferences);
+        _dbSet.RemoveRange(preferences);
         return preferences.Count;
     }
 
     public async Task<int> DeactivateByUserIdAsync(Guid userId)
     {
-        var preferences = await _dbContext.UserPreferences
+        var preferences = await PrepareQuery(_dbSet)
             .Where(up => up.UserId == userId && up.IsActive)
             .ToListAsync();
 
@@ -122,7 +122,7 @@ public class UserPreferenceRepository : EfRepository<IdentityDbContext, UserPref
 
     public async Task<IEnumerable<UserPreference>> GetByValueAsync(Guid userId, string key, string value)
     {
-        return await _dbContext.UserPreferences
+        return await PrepareQuery(_dbSet)
             .Where(up => up.UserId == userId && up.Key.Value == key && up.Value.RawValue == value)
             .OrderBy(up => up.DisplayOrder)
             .ToListAsync();
@@ -130,7 +130,7 @@ public class UserPreferenceRepository : EfRepository<IdentityDbContext, UserPref
 
     public async Task<IEnumerable<UserPreference>> GetByUserAndCategoryAsync(Guid userId, PreferenceCategory category)
     {
-        return await _dbContext.UserPreferences
+        return await PrepareQuery(_dbSet)
             .Where(up => up.UserId == userId && up.Category == category)
             .OrderBy(up => up.DisplayOrder)
             .ToListAsync();
@@ -138,7 +138,7 @@ public class UserPreferenceRepository : EfRepository<IdentityDbContext, UserPref
 
     public async Task<IEnumerable<UserPreference>> GetActiveByUserAndCategoryAsync(Guid userId, PreferenceCategory category)
     {
-        return await _dbContext.UserPreferences
+        return await PrepareQuery(_dbSet)
             .Where(up => up.UserId == userId && up.Category == category && up.IsActive)
             .OrderBy(up => up.DisplayOrder)
             .ToListAsync();
@@ -146,13 +146,18 @@ public class UserPreferenceRepository : EfRepository<IdentityDbContext, UserPref
 
     public async Task<int> GetCountByUserAndCategoryAsync(Guid userId, PreferenceCategory category)
     {
-        return await _dbContext.UserPreferences
+        return await PrepareQuery(_dbSet)
             .CountAsync(up => up.UserId == userId && up.Category == category);
     }
 
     public async Task<int> GetActiveCountByUserAndCategoryAsync(Guid userId, PreferenceCategory category)
     {
-        return await _dbContext.UserPreferences
+        return await PrepareQuery(_dbSet)
             .CountAsync(up => up.UserId == userId && up.Category == category && up.IsActive);
+    }
+
+    protected override IQueryable<UserPreference> PrepareQuery(IQueryable<UserPreference> query)
+    {
+        return base.PrepareQuery(query);
     }
 }

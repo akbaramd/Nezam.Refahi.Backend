@@ -63,9 +63,9 @@ namespace Nezam.Refahi.Identity.Application.Features.Users.Queries.GetUserDetail
                 LastDeviceFingerprint = user.LastDeviceFingerprint?.Value,
 
                 // Audit (نام‌های Utc با DTO هم‌تراز می‌شود)
-                CreatedAtUtc = user.CreatedAtUtc,
+                CreatedAtUtc = user.CreatedAt,
                 CreatedBy = user.CreatedBy,
-                UpdatedAtUtc = user.LastModifiedUtc,
+                UpdatedAtUtc = user.LastModifiedAt,
             };
 
             // Roles (UserRoleDto سبک، بدون تزریق RoleDto کامل برای جلوگیری از گراف‌های سنگین)

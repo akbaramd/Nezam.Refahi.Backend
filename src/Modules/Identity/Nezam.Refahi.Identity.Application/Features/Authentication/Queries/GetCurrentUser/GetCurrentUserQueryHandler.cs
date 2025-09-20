@@ -58,7 +58,7 @@ public class GetCurrentUserQueryHandler
             // 2) Fetch UserDetail Data
             // ========================================================================
             
-            var user = await _userRepository.GetByIdAsync(userId, ct);
+            var user = await _userRepository.FindOneAsync(x=>x.Id==userId,ct);
             if (user is null)
                 return ApplicationResult<CurrentUserResponse>.Failure("UserDetail not found.");
 

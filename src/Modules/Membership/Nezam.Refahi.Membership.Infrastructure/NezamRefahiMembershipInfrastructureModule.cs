@@ -35,6 +35,8 @@ public class NezamRefahiMembershipInfrastructureModule : BonModule
         {
             throw new InvalidOperationException("Database connection string 'DefaultConnection' is not configured.");
         }
+
+        options.EnableSensitiveDataLogging();
         options.UseSqlServer(connectionString, sqlOptions =>
         {
           sqlOptions.MigrationsHistoryTable("__EFMigrationsHistory__Membership","membership");
@@ -44,9 +46,10 @@ public class NezamRefahiMembershipInfrastructureModule : BonModule
     // Register repositories
     context.Services.AddScoped<IMemberRepository, MemberRepository>();
     context.Services.AddScoped<IRoleRepository, RoleRepository>();
-    context.Services.AddScoped<IClaimTypeRepository, ClaimTypeRepository>();
+    context.Services.AddScoped<IFeatureRepository, FeatureRepository>();
     context.Services.AddScoped<IMemberRoleRepository, MemberRoleRepository>();
-    context.Services.AddScoped<IMemberClaimRepository, MemberClaimRepository>();
+    context.Services.AddScoped<IMemberCapabilityRepository, MemberCapabilityRepository>();
+    context.Services.AddScoped<ICapabilityRepository, CapabilityRepository>();
     
     // Register Unit of Work
     context.Services.AddScoped<IMembershipUnitOfWork, MembershipUnitOfWork>();

@@ -35,7 +35,7 @@ public class OtpCleanupService : IOtpCleanupService
         await _unitOfWork.BeginAsync(cancellationToken);
         try
         {
-            var totalCleaned = await _otpChallengeRepository.BatchCleanupConsumedChallengesAsync(batchSize, cancellationToken);
+            var totalCleaned = await _otpChallengeRepository.BatchCleanupConsumedChallengesAsync(batchSize, cancellationToken:cancellationToken);
             
             await _unitOfWork.CommitAsync(cancellationToken);
             
@@ -85,7 +85,7 @@ public class OtpCleanupService : IOtpCleanupService
         await _unitOfWork.BeginAsync(cancellationToken);
         try
         {
-            var deleted = await _otpChallengeRepository.DeleteChallengesForPhoneAsync(phoneNumber, cancellationToken);
+            var deleted = await _otpChallengeRepository.DeleteChallengesForPhoneAsync(phoneNumber, cancellationToken:cancellationToken);
             await _unitOfWork.SaveAsync(cancellationToken);
             await _unitOfWork.CommitAsync(cancellationToken);
             
@@ -116,7 +116,7 @@ public class OtpCleanupService : IOtpCleanupService
             stats = stats with { ExpiredChallenges = expiredCount };
             
             // 2. Batch cleanup of consumed challenges (big data friendly)
-            var consumedCount = await _otpChallengeRepository.BatchCleanupConsumedChallengesAsync(2000, cancellationToken);
+            var consumedCount = await _otpChallengeRepository.BatchCleanupConsumedChallengesAsync(2000, cancellationToken:cancellationToken);
             stats = stats with { ConsumedChallenges = consumedCount };
             
             // 3. Clean challenges older than 7 days (keep recent for potential analysis)

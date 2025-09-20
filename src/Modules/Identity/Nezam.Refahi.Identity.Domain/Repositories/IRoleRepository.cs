@@ -1,5 +1,5 @@
 using Nezam.Refahi.Identity.Domain.Entities;
-using MCA.SharedKernel.Domain.Contracts;
+using MCA.SharedKernel.Domain.Contracts.Repositories;
 
 namespace Nezam.Refahi.Identity.Domain.Repositories;
 

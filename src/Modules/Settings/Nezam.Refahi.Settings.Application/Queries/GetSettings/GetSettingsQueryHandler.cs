@@ -98,7 +98,7 @@ public class GetSettingsQueryHandler : IRequestHandler<GetSettingsQuery, Applica
             "key" => sortDescending ? settings.OrderByDescending(s => s.Key.Value) : settings.OrderBy(s => s.Key.Value),
             "value" => sortDescending ? settings.OrderByDescending(s => s.Value.RawValue) : settings.OrderBy(s => s.Value.RawValue),
             "description" => sortDescending ? settings.OrderByDescending(s => s.Description) : settings.OrderBy(s => s.Description),
-            "modifiedat" => sortDescending ? settings.OrderByDescending(s => s.ModifiedAt) : settings.OrderBy(s => s.ModifiedAt),
+            "modifiedat" => sortDescending ? settings.OrderByDescending(s => s.LastModifiedAt) : settings.OrderBy(s => s.LastModifiedAt),
             _ => sortDescending ? settings.OrderByDescending(s => s.DisplayOrder) : settings.OrderBy(s => s.DisplayOrder)
         };
     }

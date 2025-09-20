@@ -40,7 +40,7 @@ public class SetSettingCommandHandler : IRequestHandler<SetSettingCommand, Appli
         try
         {
             // Validate request
-            var validation = await _validator.ValidateAsync(request, cancellationToken);
+            var validation = await _validator.ValidateAsync(request, cancellation:cancellationToken);
             if (!validation.IsValid)
             {
                 var errors = validation.Errors.Select(e => e.ErrorMessage).ToList();

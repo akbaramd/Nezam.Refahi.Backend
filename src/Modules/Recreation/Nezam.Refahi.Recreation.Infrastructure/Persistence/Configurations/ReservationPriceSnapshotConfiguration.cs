@@ -1,0 +1,94 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Nezam.Refahi.Recreation.Domain.Entities;
+using Nezam.Refahi.Recreation.Domain.Enums;
+
+namespace Nezam.Refahi.Recreation.Infrastructure.Persistence.Configurations;
+
+public class ReservationPriceSnapshotConfiguration : IEntityTypeConfiguration<ReservationPriceSnapshot>
+{
+    public void Configure(EntityTypeBuilder<ReservationPriceSnapshot> builder)
+    {
+        builder.ToTable("ReservationPriceSnapshots", "recreation", t =>
+        {
+            t.HasCheckConstraint("CK_ReservationPriceSnapshots_BasePricePositive", "[BasePriceRials] >= 0");
+            t.HasCheckConstraint("CK_ReservationPriceSnapshots_FinalPricePositive", "[FinalPriceRials] >= 0");
+            t.HasCheckConstraint("CK_ReservationPriceSnapshots_DiscountValid", "[DiscountAmountRials] IS NULL OR [DiscountAmountRials] >= 0");
+        });
+
+        builder.HasKey(ps => ps.Id);
+        builder.Property(ps => ps.Id)
+            .ValueGeneratedNever();
+
+        builder.Property(ps => ps.ReservationId)
+            .IsRequired();
+
+        builder.Property(ps => ps.ParticipantType)
+            .IsRequired()
+            .HasConversion<int>();
+
+        // Configure Money value objects
+        builder.OwnsOne(ps => ps.BasePrice, money =>
+        {
+            money.Property(m => m.AmountRials)
+                .HasColumnName("BasePriceRials")
+                .HasColumnType("bigint")
+                .IsRequired();
+        });
+
+        builder.OwnsOne(ps => ps.FinalPrice, money =>
+        {
+            money.Property(m => m.AmountRials)
+                .HasColumnName("FinalPriceRials")
+                .HasColumnType("bigint")
+                .IsRequired();
+        });
+
+        builder.OwnsOne(ps => ps.DiscountAmount, money =>
+        {
+            money.Property(m => m.AmountRials)
+                .HasColumnName("DiscountAmountRials")
+                .HasColumnType("bigint");
+        });
+
+        builder.Property(ps => ps.DiscountCode)
+            .HasMaxLength(50);
+
+        builder.Property(ps => ps.DiscountDescription)
+            .HasMaxLength(200);
+
+        builder.Property(ps => ps.PricingRules)
+            .HasColumnType("nvarchar(max)"); // JSON
+
+        builder.Property(ps => ps.SnapshotDate)
+            .IsRequired()
+            .HasColumnType("datetime2");
+
+        // Multi-tenancy support
+        builder.Property(ps => ps.TenantId)
+            .IsRequired(false)
+            .HasMaxLength(50);
+
+        // Configure relationship with TourReservation
+        builder.HasOne(ps => ps.Reservation)
+            .WithMany(r => r.PriceSnapshots)
+            .HasForeignKey(ps => ps.ReservationId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Unique constraint: One snapshot per reservation per participant type
+        builder.HasIndex(ps => new { ps.TenantId, ps.ReservationId, ps.ParticipantType })
+            .HasDatabaseName("UX_ReservationPriceSnapshots_TenantReservationParticipantType")
+            .IsUnique();
+
+        // Performance indexes
+        builder.HasIndex(ps => new { ps.TenantId, ps.ReservationId })
+            .HasDatabaseName("IX_ReservationPriceSnapshots_TenantReservation");
+
+        builder.HasIndex(ps => ps.SnapshotDate)
+            .HasDatabaseName("IX_ReservationPriceSnapshots_SnapshotDate");
+
+        builder.HasIndex(ps => ps.DiscountCode)
+            .HasDatabaseName("IX_ReservationPriceSnapshots_DiscountCode")
+            .HasFilter("[DiscountCode] IS NOT NULL");
+    }
+}

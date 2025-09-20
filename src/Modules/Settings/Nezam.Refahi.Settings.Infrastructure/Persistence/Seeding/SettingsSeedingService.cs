@@ -40,13 +40,13 @@ public class SettingsSeedingService : IHostedService
             await context.Database.EnsureCreatedAsync(cancellationToken);
 
             // Seed settings sections
-            await SeedSettingsSectionsAsync(context, cancellationToken);
+            await SeedSettingsSectionsAsync(context, cancellationToken:cancellationToken);
 
             // Seed settings categories
-            await SeedSettingsCategoriesAsync(context, cancellationToken);
+            await SeedSettingsCategoriesAsync(context, cancellationToken:cancellationToken);
 
             // Seed default settings
-            await SeedDefaultSettingsAsync(context, cancellationToken);
+            await SeedDefaultSettingsAsync(context, cancellationToken:cancellationToken);
 
             await context.SaveChangesAsync(cancellationToken);
             _logger.LogInformation("Settings seeding completed successfully");
@@ -77,7 +77,7 @@ public class SettingsSeedingService : IHostedService
         foreach (var section in sections)
         {
             var existingSection = await context.SettingsSections
-                .FirstOrDefaultAsync(s => s.Name == section.Name, cancellationToken);
+                .FirstOrDefaultAsync(s => s.Name == section.Name, cancellationToken:cancellationToken);
 
             if (existingSection == null)
             {
@@ -97,9 +97,9 @@ public class SettingsSeedingService : IHostedService
     {
         // Get sections first
         var webAppSection = await context.SettingsSections
-            .FirstOrDefaultAsync(s => s.Name == "WebApp", cancellationToken);
+            .FirstOrDefaultAsync(s => s.Name == "WebApp", cancellationToken:cancellationToken);
         var webhooksSection = await context.SettingsSections
-            .FirstOrDefaultAsync(s => s.Name == "Webhooks", cancellationToken);
+            .FirstOrDefaultAsync(s => s.Name == "Webhooks", cancellationToken:cancellationToken);
 
         var categories = new List<SettingsCategory>();
 
@@ -118,7 +118,7 @@ public class SettingsSeedingService : IHostedService
         foreach (var category in categories)
         {
             var existingCategory = await context.SettingsCategories
-                .FirstOrDefaultAsync(c => c.Name == category.Name, cancellationToken);
+                .FirstOrDefaultAsync(c => c.Name == category.Name, cancellationToken:cancellationToken);
 
             if (existingCategory == null)
             {
@@ -138,14 +138,14 @@ public class SettingsSeedingService : IHostedService
     {
         // Get sections and categories for reference
         var webAppSection = await context.SettingsSections
-            .FirstOrDefaultAsync(s => s.Name == "WebApp", cancellationToken);
+            .FirstOrDefaultAsync(s => s.Name == "WebApp", cancellationToken:cancellationToken);
         var webhooksSection = await context.SettingsSections
-            .FirstOrDefaultAsync(s => s.Name == "Webhooks", cancellationToken);
+            .FirstOrDefaultAsync(s => s.Name == "Webhooks", cancellationToken:cancellationToken);
 
         var generalCategory = await context.SettingsCategories
-            .FirstOrDefaultAsync(c => c.Name == "General", cancellationToken);
+            .FirstOrDefaultAsync(c => c.Name == "General", cancellationToken:cancellationToken);
         var integrationCategory = await context.SettingsCategories
-            .FirstOrDefaultAsync(c => c.Name == "Integration", cancellationToken);
+            .FirstOrDefaultAsync(c => c.Name == "Integration", cancellationToken:cancellationToken);
 
         // Define settings as array
         var settingsToSeed = new[]
@@ -203,7 +203,7 @@ public class SettingsSeedingService : IHostedService
         foreach (var settingData in settingsToSeed)
         {
             var existingSetting = await context.Settings
-                .FirstOrDefaultAsync(s => s.Key.Value == settingData.Key, cancellationToken);
+                .FirstOrDefaultAsync(s => s.Key.Value == settingData.Key, cancellationToken:cancellationToken);
 
             if (existingSetting == null)
             {

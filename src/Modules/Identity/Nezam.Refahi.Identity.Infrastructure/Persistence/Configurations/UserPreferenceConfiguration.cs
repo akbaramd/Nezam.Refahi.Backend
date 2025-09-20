@@ -84,9 +84,7 @@ public class UserPreferenceConfiguration : IEntityTypeConfiguration<UserPreferen
             .HasDefaultValue(PreferenceCategory.General)
             .HasSentinel(PreferenceCategory.General);
             
-        // Concurrency control - MUST: Rowversion for critical clusters
-        builder.Property<byte[]>("RowVersion")
-            .IsRowVersion();
+
             
  
             

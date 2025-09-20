@@ -26,13 +26,13 @@ public class UserTokenRepository : EfRepository<IdentityDbContext, UserToken, Gu
 
     public async Task<UserToken?> GetByTokenValueAsync(string tokenValue, string tokenType)
     {
-        return await _dbContext.UserTokens
+        return await PrepareQuery(_dbSet)
             .FirstOrDefaultAsync(t => t.TokenValue == tokenValue && t.TokenType == tokenType);
     }
 
     public async Task<IEnumerable<UserToken>> GetActiveTokensForUserAsync(Guid userId, string? tokenType = null)
     {
-        var query = _dbContext.UserTokens
+        var query = PrepareQuery(_dbSet)
             .Where(t => t.UserId == userId && !t.IsUsed && !t.IsRevoked && t.ExpiresAt > DateTime.UtcNow);
 
         if (!string.IsNullOrEmpty(tokenType))
@@ -45,14 +45,14 @@ public class UserTokenRepository : EfRepository<IdentityDbContext, UserToken, Gu
 
     public async Task<IEnumerable<UserToken>> GetTokensBySessionFamilyAsync(Guid sessionFamilyId)
     {
-        return await _dbContext.UserTokens
+        return await PrepareQuery(_dbSet)
             .Where(t => t.SessionFamilyId == sessionFamilyId)
             .ToListAsync();
     }
 
     public async Task<IEnumerable<UserToken>> GetRefreshTokensByDeviceAsync(Guid userId, string deviceFingerprint)
     {
-        return await _dbContext.UserTokens
+        return await PrepareQuery(_dbSet)
             .Where(t => t.UserId == userId && 
                        t.TokenType == "RefreshToken" && 
                        t.DeviceFingerprint == deviceFingerprint &&
@@ -62,7 +62,7 @@ public class UserTokenRepository : EfRepository<IdentityDbContext, UserToken, Gu
 
     public async Task<IEnumerable<UserToken>> GetAllActiveTokensByTypeAsync(string tokenType)
     {
-        return await _dbContext.UserTokens
+        return await PrepareQuery(_dbSet)
             .Where(t => t.TokenType == tokenType && 
                        !t.IsUsed && 
                        !t.IsRevoked && 
@@ -76,7 +76,7 @@ public class UserTokenRepository : EfRepository<IdentityDbContext, UserToken, Gu
 
     public async Task<int> RevokeAllUserTokensOfTypeAsync(Guid userId, string tokenType, bool isSoftDelete = true, bool savedChanges = false)
     {
-        var tokens = await _dbContext.UserTokens
+        var tokens = await PrepareQuery(_dbSet)
             .Where(t => t.UserId == userId && t.TokenType == tokenType && !t.IsRevoked)
             .ToListAsync();
 
@@ -89,7 +89,7 @@ public class UserTokenRepository : EfRepository<IdentityDbContext, UserToken, Gu
         }
         else
         {
-            _dbContext.UserTokens.RemoveRange(tokens);
+            _dbSet.RemoveRange(tokens);
         }
 
         if (savedChanges)
@@ -103,7 +103,7 @@ public class UserTokenRepository : EfRepository<IdentityDbContext, UserToken, Gu
 
     public async Task<int> RevokeSessionFamilyAsync(Guid sessionFamilyId, bool savedChanges = false)
     {
-        var tokens = await _dbContext.UserTokens
+        var tokens = await PrepareQuery(_dbSet)
             .Where(t => t.SessionFamilyId == sessionFamilyId && !t.IsRevoked)
             .ToListAsync();
 
@@ -124,7 +124,7 @@ public class UserTokenRepository : EfRepository<IdentityDbContext, UserToken, Gu
 
     public async Task<int> RevokeDeviceRefreshTokensAsync(Guid userId, string deviceFingerprint, bool savedChanges = false)
     {
-        var tokens = await _dbContext.UserTokens
+        var tokens = await PrepareQuery(_dbSet)
             .Where(t => t.UserId == userId && 
                        t.TokenType == "RefreshToken" && 
                        t.DeviceFingerprint == deviceFingerprint &&
@@ -148,7 +148,7 @@ public class UserTokenRepository : EfRepository<IdentityDbContext, UserToken, Gu
 
     public async Task<bool> RevokeJwtByIdAsync(string jwtId, bool savedChanges = false)
     {
-        var token = await _dbContext.UserTokens
+        var token = await PrepareQuery(_dbSet)
             .FirstOrDefaultAsync(t => t.TokenType == "AccessToken" && t.TokenValue == jwtId);
 
         if (token == null)
@@ -171,11 +171,11 @@ public class UserTokenRepository : EfRepository<IdentityDbContext, UserToken, Gu
 
     public async Task<int> CleanupExpiredTokensAsync(bool savedChanges = false)
     {
-        var expiredTokens = await _dbContext.UserTokens
+        var expiredTokens = await PrepareQuery(_dbSet)
             .Where(t => t.ExpiresAt < DateTime.UtcNow.AddDays(-1)) // Keep tokens for 1 day after expiration for audit purposes
             .ToListAsync();
 
-        _dbContext.UserTokens.RemoveRange(expiredTokens);
+        _dbSet.RemoveRange(expiredTokens);
 
         if (savedChanges)
         {
@@ -189,7 +189,7 @@ public class UserTokenRepository : EfRepository<IdentityDbContext, UserToken, Gu
     public async Task<int> CleanupIdleTokensAsync(int idleTimeoutDays = 7, bool savedChanges = false)
     {
         var cutoffDate = DateTime.UtcNow.AddDays(-idleTimeoutDays);
-        var idleTokens = await _dbContext.UserTokens
+        var idleTokens = await PrepareQuery(_dbSet)
             .Where(t => t.LastUsedAt.HasValue && 
                        t.LastUsedAt < cutoffDate && 
                        t.TokenType == "RefreshToken" &&
@@ -214,11 +214,11 @@ public class UserTokenRepository : EfRepository<IdentityDbContext, UserToken, Gu
     public async Task<int> CleanupOldRevokedTokensAsync(int olderThanDays = 30, bool savedChanges = false)
     {
         var cutoffDate = DateTime.UtcNow.AddDays(-olderThanDays);
-        var oldRevokedTokens = await _dbContext.UserTokens
+        var oldRevokedTokens = await PrepareQuery(_dbSet)
             .Where(t => t.IsRevoked )
             .ToListAsync();
 
-        _dbContext.UserTokens.RemoveRange(oldRevokedTokens);
+        _dbSet.RemoveRange(oldRevokedTokens);
 
         if (savedChanges)
         {
@@ -239,7 +239,7 @@ public class UserTokenRepository : EfRepository<IdentityDbContext, UserToken, Gu
         var now = DateTime.UtcNow;
         var sevenDaysAgo = now.AddDays(-7);
 
-        var tokens = await _dbContext.UserTokens
+        var tokens = await PrepareQuery(_dbSet)
             .Where(t => t.UserId == userId)
             .ToListAsync();
 
@@ -265,7 +265,7 @@ public class UserTokenRepository : EfRepository<IdentityDbContext, UserToken, Gu
         var now = DateTime.UtcNow;
         var sevenDaysAgo = now.AddDays(-7);
 
-        return await _dbContext.UserTokens
+        return await PrepareQuery(_dbSet)
             .Where(t => t.UserId == userId && 
                        t.TokenType == "RefreshToken" && 
                        !t.IsUsed && 
@@ -273,5 +273,10 @@ public class UserTokenRepository : EfRepository<IdentityDbContext, UserToken, Gu
                        t.ExpiresAt > now &&
                        (!t.LastUsedAt.HasValue || t.LastUsedAt > sevenDaysAgo))
             .CountAsync();
+    }
+
+    protected override IQueryable<UserToken> PrepareQuery(IQueryable<UserToken> query)
+    {
+        return base.PrepareQuery(query);
     }
 }

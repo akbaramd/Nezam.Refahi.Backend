@@ -84,9 +84,7 @@ public class RefreshSessionConfiguration : IEntityTypeConfiguration<RefreshSessi
         builder.HasIndex(rs => new { rs.UserId, rs.ClientId })
             .HasDatabaseName("IX_RefreshSessions_UserId_ClientId");
 
-        // Concurrency control - MUST: Rowversion for critical clusters
-        builder.Property<byte[]>("RowVersion")
-            .IsRowVersion();
+        //
 
         // Relationships - Within aggregate (UserDetail owns RefreshSession)
         builder.HasOne<User>()

@@ -1,4 +1,4 @@
-using MCA.SharedKernel.Domain.Contracts;
+using MCA.SharedKernel.Domain.Contracts.Repositories;
 using Nezam.Refahi.Membership.Domain.Entities;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
 
@@ -94,31 +94,57 @@ public interface IMemberRepository : IRepository<Member, Guid>
     Task<IEnumerable<Member>> GetByNationalCodesAsync(IEnumerable<NationalId> nationalCodes);
 
     /// <summary>
-    /// Gets a member with their claims by national code
+    /// Gets members by claim type through their capabilities
+    /// </summary>
+    /// <param name="claimTypeId">The claim type ID</param>
+    /// <returns>Collection of members with the specified claim type through capabilities</returns>
+    Task<IEnumerable<Member>> GetMembersByFeatureAsync(string featureId);
+
+    /// <summary>
+    /// Gets a member with their capabilities by ID
+    /// </summary>
+    /// <param name="id">Member ID</param>
+    /// <returns>The member with capabilities if found, null otherwise</returns>
+    Task<Member?> GetByIdWithCapabilitiesAsync(Guid id);
+
+    /// <summary>
+    /// Gets a member with their capabilities by national code
     /// </summary>
     /// <param name="nationalCode">The member's national code</param>
-    /// <returns>The member with claims if found, null otherwise</returns>
-    Task<Member?> GetByNationalCodeWithClaimsAsync(NationalId nationalCode);
+    /// <returns>The member with capabilities if found, null otherwise</returns>
+    Task<Member?> GetByNationalCodeWithCapabilitiesAsync(NationalId nationalCode);
 
     /// <summary>
-    /// Gets members with claims that will expire within the specified days
+    /// Gets members by capability ID
+    /// </summary>
+    /// <param name="capabilityId">The capability ID</param>
+    /// <returns>Collection of members with the specified capability</returns>
+    Task<IEnumerable<Member>> GetMembersByCapabilityAsync(string capabilityId);
+
+    /// <summary>
+    /// Gets members without any capability assigned
+    /// </summary>
+    /// <returns>Collection of members without capabilities</returns>
+    Task<IEnumerable<Member>> GetMembersWithoutCapabilitiesAsync();
+
+    /// <summary>
+    /// Gets members with capabilities that will expire within the specified days
     /// </summary>
     /// <param name="days">Number of days to look ahead</param>
-    /// <returns>Collection of members with expiring claims</returns>
-    Task<IEnumerable<Member>> GetMembersWithExpiringClaimsAsync(int days);
+    /// <returns>Collection of members with expiring capabilities</returns>
+    Task<IEnumerable<Member>> GetMembersWithExpiringCapabilitiesAsync(int days);
 
     /// <summary>
-    /// Gets members by claim type and value
+    /// Gets members having all specified capabilities
     /// </summary>
-    /// <param name="claimType">The claim type</param>
-    /// <param name="claimValue">The claim value</param>
-    /// <returns>Collection of members with the specified claim</returns>
-    Task<IEnumerable<Member>> GetMembersByClaimAsync(string claimType, string claimValue);
+    /// <param name="capabilityIds">List of capability IDs</param>
+    /// <returns>Collection of members with all specified capabilities</returns>
+    Task<IEnumerable<Member>> GetMembersWithAllCapabilitiesAsync(IEnumerable<string> capabilityIds);
 
     /// <summary>
-    /// Gets members by claim type
+    /// Gets members having any of the specified capabilities
     /// </summary>
-    /// <param name="claimType">The claim type</param>
-    /// <returns>Collection of members with claims of the specified type</returns>
-    Task<IEnumerable<Member>> GetMembersByClaimTypeAsync(string claimType);
+    /// <param name="capabilityIds">List of capability IDs</param>
+    /// <returns>Collection of members with any of the specified capabilities</returns>
+    Task<IEnumerable<Member>> GetMembersWithAnyCapabilitiesAsync(IEnumerable<string> capabilityIds);
 }

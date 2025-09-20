@@ -24,7 +24,7 @@ public class GetUsersPaginatedQueryHandler
             return ApplicationResult<PaginatedResult<UserDto>>.Failure("Invalid pagination parameters.");
 
         // Base Query
-        var query = await _userRepository.GetPaginatedAsync(new UserPagiantedSpec(request.PageNumber,request.PageSize,request.Search), cancellationToken);
+        var query = await _userRepository.GetPaginatedAsync(new UserPagiantedSpec(request.PageNumber,request.PageSize,request.Search), cancellationToken:cancellationToken);
 
        
    
@@ -38,8 +38,8 @@ public class GetUsersPaginatedQueryHandler
             NationalId = u.NationalId?.Value,
             PhoneNumber = u.PhoneNumber.Value,
             IsActive = u.IsActive,
-            CreatedAtUtc = u.CreatedAtUtc,
-            UpdatedAtUtc = u.LastModifiedUtc
+            CreatedAtUtc = u.CreatedAt,
+            UpdatedAtUtc = u.LastModifiedAt
         }).ToList();
 
         var result = new PaginatedResult<UserDto>

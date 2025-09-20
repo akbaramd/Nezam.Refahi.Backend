@@ -11,10 +11,12 @@ using Nezam.Refahi.Identity.Presentation;
 using Nezam.Refahi.Membership.Presentation;
 using Nezam.Refahi.Settings.Presentation;
 using Nezam.Refahi.WebApi.Endpoints;
-using Nezam.Refahi.WebApi.Services;
 using Nezam.Refahi.WebApi.Swagger;
 using Swashbuckle.AspNetCore.Filters;
 using System.Reflection;
+using Nezam.Refahi.Finance.Presentation;
+using Nezam.Refahi.Membership.Application.HostedServices;
+using Nezam.Refahi.Recreation.Presentation;
 
 namespace Nezam.Refahi.WebApi;
 
@@ -25,6 +27,8 @@ public class NezamWebApiModule : BonWebModule
     DependOn<NezamRefahiIdentityPresentationModule>();
     DependOn<NezamRefahiSettingsPresentationModule>();
     DependOn<NezamRefahiMembershipPresentationModule>();
+    DependOn<NezamRefahiRecreationPresentationModule>();
+    DependOn<NezamRefahiFinancePresentationModule>();
   }
 
   public override Task OnConfigureAsync(BonConfigurationContext context)
@@ -100,8 +104,7 @@ public class NezamWebApiModule : BonWebModule
       options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
-    // Register membership seeding hosted service
-    context.Services.AddHostedService<MembershipSeedingHostedService>();
+  
 
     return base.OnConfigureAsync(context);
   }
@@ -115,8 +118,8 @@ public class NezamWebApiModule : BonWebModule
   public override Task OnApplicationAsync(BonWebApplicationContext context)
   {
     var app = context.Application;
-    
-    
+
+      app.UseStaticFiles();
       app.UseSwagger();
       app.UseSwaggerUI(options =>
       {

@@ -18,7 +18,7 @@ public class Province : Entity<Guid>
     // Private constructor for EF Core
     private Province() : base() { }
     
-    public Province(string name, string code) : base()
+    public Province(string name, string code) : base(Guid.NewGuid())
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Province name cannot be empty", nameof(name));

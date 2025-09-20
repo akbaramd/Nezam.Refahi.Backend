@@ -12,11 +12,11 @@ public class MembershipDbContext(DbContextOptions<MembershipDbContext> options) 
 {
     // Membership bounded context
     public DbSet<Member> Members { get; set; } = default!;
-    public DbSet<MemberClaim> MemberClaims { get; set; } = default!;
+    public DbSet<Capability> Capabilities { get; set; } = default!;
+    public DbSet<MemberCapability> MemberCapabilities { get; set; } = default!;
     public DbSet<Role> Roles { get; set; } = default!;
     public DbSet<MemberRole> MemberRoles { get; set; } = default!;
-    public DbSet<ClaimType> ClaimTypes { get; set; } = default!;
-    public DbSet<ClaimTypeOption> ClaimTypeOptions { get; set; } = default!;
+    public DbSet<Features> Features { get; set; } = default!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

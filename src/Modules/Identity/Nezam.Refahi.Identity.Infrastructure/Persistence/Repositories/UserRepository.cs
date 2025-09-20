@@ -18,17 +18,17 @@ namespace Nezam.Refahi.Identity.Infrastructure.Persistence.Repositories;
 
   public async Task<int> GetActiveUserCountAsync()
   {
-    return await PrepareQuery(_dbContext.Users).CountAsync(u => u.IsActive);
+    return await PrepareQuery(_dbSet).CountAsync(u => u.IsActive);
   }
 
   public async Task<IEnumerable<User>> GetActiveUsersAsync()
   {
-    return await PrepareQuery(_dbContext.Users).Where(u => u.IsActive).ToListAsync();
+    return await PrepareQuery(_dbSet).Where(u => u.IsActive).ToListAsync();
   }
 
   public async Task<IEnumerable<User>> GetByAuthenticationDateRangeAsync(DateTime fromDate, DateTime toDate)
   {
-    return await PrepareQuery(_dbContext.Users).Where(u => u.LastAuthenticatedAt >= fromDate && u.LastAuthenticatedAt <= toDate).ToListAsync();
+    return await PrepareQuery(_dbSet).Where(u => u.LastAuthenticatedAt >= fromDate && u.LastAuthenticatedAt <= toDate).ToListAsync();
   }
 
 
@@ -40,70 +40,70 @@ namespace Nezam.Refahi.Identity.Infrastructure.Persistence.Repositories;
 
   public async Task<User?> GetByNationalIdAsync(NationalId nationalId)
       {
-          return await PrepareQuery(_dbContext.Users)
+          return await PrepareQuery(_dbSet)
               .FirstOrDefaultAsync(u => u.NationalId != null && u.NationalId.Value == nationalId.Value);
       }
 
       public async Task<User?> GetByPhoneNumberAsync(string phoneNumber)
       {
-        return await  PrepareQuery(_dbContext.Users)
+        return await  PrepareQuery(_dbSet)
           .FirstOrDefaultAsync(u => u.PhoneNumber.Value == phoneNumber);
       }
 
     public async Task<User?> GetByPhoneNumberValueObjectAsync(PhoneNumber phoneNumber)
   {
 
-return await PrepareQuery(_dbContext.Users)
+return await PrepareQuery(_dbSet)
 .FirstOrDefaultAsync(u => u.PhoneNumber.Value == phoneNumber.Value);
   }
 
   public async Task<IEnumerable<User>> GetByPhoneVerificationDateRangeAsync(DateTime fromDate, DateTime toDate)
   {
-    return await PrepareQuery(_dbContext.Users)
+    return await PrepareQuery(_dbSet)
     .Where(u => u.PhoneVerifiedAt >= fromDate && u.PhoneVerifiedAt <= toDate)
     .ToListAsync();
   }
 
   public async Task<IEnumerable<User>> GetInactiveUsersAsync(DateTime beforeDate)
   {
-    return await PrepareQuery(_dbContext.Users)
+    return await PrepareQuery(_dbSet)
     .Where(u => u.LastAuthenticatedAt < beforeDate)
     .ToListAsync();
   }
 
   public async Task<int> GetLockedUserCountAsync()
   {
-    return await PrepareQuery(_dbContext.Users).CountAsync(u => u.LockedAt != null);
+    return await PrepareQuery(_dbSet).CountAsync(u => u.LockedAt != null);
   }
 
   public async Task<IEnumerable<User>> GetLockedUsersAsync()
   {
-    return await PrepareQuery(_dbContext.Users).Where(u => u.LockedAt != null).ToListAsync();
+    return await PrepareQuery(_dbSet).Where(u => u.LockedAt != null).ToListAsync();
   }
 
   public async Task<IEnumerable<User>> GetUnverifiedUsersAsync()
   {
-    return await PrepareQuery(_dbContext.Users).Where(u => !u.IsPhoneVerified).ToListAsync();
+    return await PrepareQuery(_dbSet).Where(u => !u.IsPhoneVerified).ToListAsync();
   }
 
   public async Task<IEnumerable<User>> GetUsersToUnlockAsync()
   {
-    return await PrepareQuery(_dbContext.Users).Where(u => u.LockedAt != null && u.LockedAt < DateTime.UtcNow).ToListAsync();
+    return await PrepareQuery(_dbSet).Where(u => u.LockedAt != null && u.LockedAt < DateTime.UtcNow).ToListAsync();
   }
 
   public async Task<int> GetVerifiedUserCountAsync()
   {
-    return await PrepareQuery(_dbContext.Users).CountAsync(u => u.IsPhoneVerified);
+    return await PrepareQuery(_dbSet).CountAsync(u => u.IsPhoneVerified);
   }
 
   public async Task<IEnumerable<User>> GetVerifiedUsersAsync()
   {
-    return await PrepareQuery(_dbContext.Users).Where(u => u.IsPhoneVerified).ToListAsync();
+    return await PrepareQuery(_dbSet).Where(u => u.IsPhoneVerified).ToListAsync();
   }
 
   public async Task<bool> IsPhoneNumberRegisteredAsync(PhoneNumber phoneNumber)
   {
-    return await PrepareQuery(_dbContext.Users).AnyAsync(u => u.PhoneNumber.Value == phoneNumber.Value);
+    return await PrepareQuery(_dbSet).AnyAsync(u => u.PhoneNumber.Value == phoneNumber.Value);
   }
 
   protected override IQueryable<User> PrepareQuery(IQueryable<User> query)

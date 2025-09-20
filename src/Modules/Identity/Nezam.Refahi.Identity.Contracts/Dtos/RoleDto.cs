@@ -15,7 +15,7 @@ public  class RoleDto
 
   public List<RoleClaimDto> Claims { get; set; } = new();
 
-  // FullyAuditableAggregateRoot<Guid>
+  // FullAggregateRoot<Guid>
   public DateTime CreatedAt { get; set; }
   public string? CreatedBy { get; set; }
   public DateTime? UpdatedAt { get; set; }

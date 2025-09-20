@@ -19,13 +19,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Modules\Finance\Nezam.Refahi.Finance.Presentation\Nezam.Refahi.Finance.Presentation.csproj" />
     <ProjectReference Include="..\Modules\Identity\Nezam.Refahi.Identity.Presentation\Nezam.Refahi.Identity.Presentation.csproj" />
     <ProjectReference Include="..\Modules\Membership\Nezam.Refahi.Membership.Presentation\Nezam.Refahi.Membership.Presentation.csproj" />
+    <ProjectReference Include="..\Modules\Recreation\Nezam.Refahi.Recreation.Presentation\Nezam.Refahi.Recreation.Presentation.csproj" />
     <ProjectReference Include="..\Modules\Settings\Nezam.Refahi.Settings.Presentation\Nezam.Refahi.Settings.Presentation.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Plugins\" />
+    <Folder Include="Services\" />
+    <Folder Include="wwwroot\" />
   </ItemGroup>
 
   <ItemGroup>

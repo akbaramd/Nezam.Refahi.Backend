@@ -1,4 +1,4 @@
-using MCA.SharedKernel.Domain.Contracts;
+using MCA.SharedKernel.Domain.Contracts.Repositories;
 using Nezam.Refahi.Shared.Domain.Entities;
 
 namespace Nezam.Refahi.Shared.Domain.Repositories;

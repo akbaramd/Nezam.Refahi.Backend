@@ -199,10 +199,7 @@ public class OtpChallengeConfiguration : IEntityTypeConfiguration<OtpChallenge>
         // Composite index for cleanup operations
         builder.HasIndex(o => new { o.Status, o.ExpiresAt })
             .HasDatabaseName("IX_OtpChallenges_Status_ExpiresAt");
-            
-        // Concurrency control - MUST: Rowversion for critical clusters
-        builder.Property(o => o.RowVersion)
-            .IsRowVersion();
+  
 
     }
 }

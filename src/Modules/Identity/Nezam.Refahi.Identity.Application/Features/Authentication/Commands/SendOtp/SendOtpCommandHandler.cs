@@ -57,7 +57,7 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Application
         try
         {
             // Validate request
-            var validation = await _validator.ValidateAsync(request, cancellationToken);
+            var validation = await _validator.ValidateAsync(request, cancellation:cancellationToken);
             if (!validation.IsValid)
             {
                 var errors = validation.Errors.Select(e => e.ErrorMessage).ToList();
@@ -74,7 +74,7 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Application
             // If not local, fetch from external sources and create
             if (user == null)
             {
-                var externalUserInfo = await _userIntegrationPool.GetExternalUserInfoAsync(nationalId, cancellationToken);
+                var externalUserInfo = await _userIntegrationPool.GetExternalUserInfoAsync(nationalId, cancellationToken:cancellationToken);
                 if (externalUserInfo == null || !externalUserInfo.CanCreateAccount)
                 {
                     await _unitOfWork.RollbackAsync(cancellationToken);
@@ -90,24 +90,23 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Application
                     externalUserInfo.PhoneNumber ?? string.Empty
                 );
                 
-                await _userRepository.AddAsync(user, cancellationToken);
-                
-                // Assign appropriate role based on external user role
-                if (!string.IsNullOrWhiteSpace(externalUserInfo.UserRole))
+                await _userRepository.AddAsync(user, cancellationToken:cancellationToken);
+
+                // Always assign Member role as default
+                var memberRole = await _roleRepository.GetByNameAsync("Member", cancellationToken:cancellationToken);
+                if (memberRole != null)
                 {
-                    var role = await _roleRepository.GetByNameAsync(externalUserInfo.UserRole, cancellationToken);
-                    if (role != null)
+                    user.AssignRole(memberRole);
+                }
+
+                // Additionally assign specific role if available (user can have multiple roles)
+                if (!string.IsNullOrWhiteSpace(externalUserInfo.UserRole) &&
+                    !externalUserInfo.UserRole.Equals("Member", StringComparison.OrdinalIgnoreCase))
+                {
+                    var specificRole = await _roleRepository.GetByNameAsync(externalUserInfo.UserRole, cancellationToken:cancellationToken);
+                    if (specificRole != null)
                     {
-                        user.AssignRole(role);
-                    }
-                    else
-                    {
-                        // Fallback to a default role if specific role not found
-                        var defaultRole = await _roleRepository.GetByNameAsync("Member", cancellationToken);
-                        if (defaultRole != null)
-                        {
-                            user.AssignRole(defaultRole);
-                        }
+                        user.AssignRole(specificRole);
                     }
                 }
             }
@@ -119,7 +118,7 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Application
 
                 
 
-                var externalUserInfo = await _userIntegrationPool.GetExternalUserInfoAsync(nationalId, cancellationToken);
+                var externalUserInfo = await _userIntegrationPool.GetExternalUserInfoAsync(nationalId, cancellationToken:cancellationToken);
                 if (externalUserInfo != null)
                 {
                     // Update user information if changed
@@ -136,7 +135,7 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Application
                     }
                 }
                 
-                await _userRepository.UpdateAsync(user, cancellationToken);
+                await _userRepository.UpdateAsync(user, cancellationToken:cancellationToken);
             }
 
             // Check phone number
@@ -158,7 +157,7 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Application
 
             // Smart cleanup: Only delete challenges for this phone number to avoid affecting other users
             // Also delete only expired challenges to prevent data accumulation
-            await _otpChallengeRepository.DeleteChallengesForPhoneAsync(phoneNumber, cancellationToken);
+            await _otpChallengeRepository.DeleteChallengesForPhoneAsync(phoneNumber, cancellationToken:cancellationToken);
             
             // Lightweight expired cleanup - don't overload the system
             await _otpChallengeRepository.DeleteExpiredChallengesAsync();
@@ -207,7 +206,7 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Application
             otpChallenge.MarkAsSent();
 
             // Save OTP challenge
-            await _otpChallengeRepository.AddAsync(otpChallenge, cancellationToken);
+            await _otpChallengeRepository.AddAsync(otpChallenge, cancellationToken:cancellationToken);
 
             // Send OTP via SMS
             var message = $"Your verification code is {otpCode}. It expires in {ExpiryMinutes} minutes.";

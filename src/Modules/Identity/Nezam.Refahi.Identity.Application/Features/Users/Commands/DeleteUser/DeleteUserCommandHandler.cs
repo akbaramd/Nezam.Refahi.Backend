@@ -1,0 +1,80 @@
+using MCA.SharedKernel.Application.Contracts;
+using MediatR;
+using Nezam.Refahi.Identity.Application.Services;
+using Nezam.Refahi.Identity.Application.Services.Contracts;
+using Nezam.Refahi.Identity.Domain.Repositories;
+using Nezam.Refahi.Shared.Application.Common.Models;
+
+namespace Nezam.Refahi.Identity.Application.Features.Users.Commands.DeleteUser;
+
+public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, ApplicationResult>
+{
+    private readonly IUserRepository _userRepository;
+    private readonly IIdentityUnitOfWork _unitOfWork;
+
+    public DeleteUserCommandHandler(IUserRepository userRepository, IIdentityUnitOfWork unitOfWork)
+    {
+        _userRepository = userRepository;
+        _unitOfWork = unitOfWork;
+    }
+
+    public async Task<ApplicationResult> Handle(DeleteUserCommand request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            // Find the user to delete
+            var user = await _userRepository.FindOneAsync(x=>x.Id==request.Id, cancellationToken:cancellationToken);
+            if (user == null)
+            {
+                return ApplicationResult.Failure("کاربر یافت نشد");
+            }
+
+            // Check if user has active tokens or active sessions that might prevent deletion
+            var activeTokens = user.GetActiveTokensForUserAsync(request.Id);
+            if (activeTokens.Any())
+            {
+                // Revoke all active tokens before deletion
+                user.RevokeAllUserRefreshTokens(isSoftDelete: true);
+            }
+
+            if (request.SoftDelete)
+            {
+                // Soft delete: Deactivate the user
+                var lockReason = string.IsNullOrEmpty(request.DeleteReason) 
+                    ? "کاربر توسط مدیر سیستم غیرفعال شده است" 
+                    : $"غیرفعال شده به دلیل: {request.DeleteReason}";
+                    
+                user.Lock(lockReason, lockDurationMinutes: 0); // 0 means indefinite lock
+                
+                await _userRepository.UpdateAsync(user, cancellationToken:cancellationToken);
+            }
+            else
+            {
+                // Hard delete: Completely remove the user
+                await _userRepository.DeleteAsync(user, cancellationToken:cancellationToken);
+            }
+            
+            // Save changes
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.CommitAsync(cancellationToken);
+
+            var successMessage = request.SoftDelete 
+                ? "کاربر با موفقیت غیرفعال شد" 
+                : "کاربر با موفقیت حذف شد";
+                
+            return ApplicationResult.Success(successMessage);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return ApplicationResult.Failure(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            var errorMessage = request.SoftDelete 
+                ? $"خطا در غیرفعال‌سازی کاربر: {ex.Message}"
+                : $"خطا در حذف کاربر: {ex.Message}";
+                
+            return ApplicationResult.Failure(errorMessage);
+        }
+    }
+}

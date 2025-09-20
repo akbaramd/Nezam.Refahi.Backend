@@ -17,7 +17,7 @@ public class RefreshSessionRepository : EfRepository<IdentityDbContext, RefreshS
 
     public async Task<IEnumerable<RefreshSession>> GetActiveByUserAndClientAsync(Guid userId, string clientId, DeviceFingerprint? deviceFingerprint = null)
     {
-        var query = _dbContext.Set<RefreshSession>()
+        var query = PrepareQuery(_dbSet)
             .Where(rs => rs.UserId == userId && rs.ClientId == clientId && rs.IsActive);
 
         if (deviceFingerprint != null)
@@ -30,53 +30,53 @@ public class RefreshSessionRepository : EfRepository<IdentityDbContext, RefreshS
 
     public async Task<IEnumerable<RefreshSession>> GetActiveByUserAsync(Guid userId)
     {
-        return await _dbContext.Set<RefreshSession>()
+        return await PrepareQuery(_dbSet)
             .Where(rs => rs.UserId == userId && rs.IsActive)
             .ToListAsync();
     }
 
     public async Task<RefreshSession?> GetByTokenHashAsync(string tokenHash)
     {
-        return await _dbContext.Set<RefreshSession>()
+        return await PrepareQuery(_dbSet)
             .FirstOrDefaultAsync(rs => rs.CurrentTokenHash.Hash == tokenHash);
     }
 
     public async Task<IEnumerable<RefreshSession>> GetExpiredAsync(DateTime beforeDate)
     {
-        return await _dbContext.Set<RefreshSession>()
+        return await PrepareQuery(_dbSet)
             .Where(rs => rs.CreatedAt < beforeDate)
             .ToListAsync();
     }
 
     public async Task<IEnumerable<RefreshSession>> GetRevokedAsync()
     {
-        return await _dbContext.Set<RefreshSession>()
+        return await PrepareQuery(_dbSet)
             .Where(rs => rs.RevokedAt != null)
             .ToListAsync();
     }
 
     public async Task<IEnumerable<RefreshSession>> GetByDeviceFingerprintAsync(DeviceFingerprint deviceFingerprint)
     {
-        return await _dbContext.Set<RefreshSession>()
+        return await PrepareQuery(_dbSet)
             .Where(rs => rs.DeviceFingerprint == deviceFingerprint)
             .ToListAsync();
     }
 
     public async Task<int> GetActiveCountByUserAsync(Guid userId)
     {
-        return await _dbContext.Set<RefreshSession>()
+        return await PrepareQuery(_dbSet)
             .CountAsync(rs => rs.UserId == userId && rs.IsActive);
     }
 
     public async Task<int> GetActiveCountByUserAndClientAsync(Guid userId, string clientId)
     {
-        return await _dbContext.Set<RefreshSession>()
+        return await PrepareQuery(_dbSet)
             .CountAsync(rs => rs.UserId == userId && rs.ClientId == clientId && rs.IsActive);
     }
 
     public async Task<int> RevokeAllByUserAsync(Guid userId, string reason)
     {
-        var sessions = await _dbContext.Set<RefreshSession>()
+        var sessions = await PrepareQuery(_dbSet)
             .Where(rs => rs.UserId == userId && rs.IsActive)
             .ToListAsync();
 
@@ -90,7 +90,7 @@ public class RefreshSessionRepository : EfRepository<IdentityDbContext, RefreshS
 
     public async Task<int> RevokeAllByUserAndClientAsync(Guid userId, string clientId, string reason)
     {
-        var sessions = await _dbContext.Set<RefreshSession>()
+        var sessions = await PrepareQuery(_dbSet)
             .Where(rs => rs.UserId == userId && rs.ClientId == clientId && rs.IsActive)
             .ToListAsync();
 
@@ -104,25 +104,30 @@ public class RefreshSessionRepository : EfRepository<IdentityDbContext, RefreshS
 
     public async Task<int> DeleteExpiredAsync(DateTime beforeDate)
     {
-        var expiredSessions = await _dbContext.Set<RefreshSession>()
+        var expiredSessions = await PrepareQuery(_dbSet)
             .Where(rs => rs.CreatedAt < beforeDate)
             .ToListAsync();
 
-        _dbContext.Set<RefreshSession>().RemoveRange(expiredSessions);
+        _dbSet.RemoveRange(expiredSessions);
         return expiredSessions.Count;
     }
 
     public async Task<IEnumerable<RefreshSession>> GetByCreationDateRangeAsync(DateTime fromDate, DateTime toDate)
     {
-        return await _dbContext.Set<RefreshSession>()
+        return await PrepareQuery(_dbSet)
             .Where(rs => rs.CreatedAt >= fromDate && rs.CreatedAt <= toDate)
             .ToListAsync();
     }
 
     public async Task<IEnumerable<RefreshSession>> GetByLastUsedDateRangeAsync(DateTime fromDate, DateTime toDate)
     {
-        return await _dbContext.Set<RefreshSession>()
+        return await PrepareQuery(_dbSet)
             .Where(rs => rs.LastUsedAt >= fromDate && rs.LastUsedAt <= toDate)
             .ToListAsync();
+    }
+
+    protected override IQueryable<RefreshSession> PrepareQuery(IQueryable<RefreshSession> query)
+    {
+        return base.PrepareQuery(query);
     }
 }

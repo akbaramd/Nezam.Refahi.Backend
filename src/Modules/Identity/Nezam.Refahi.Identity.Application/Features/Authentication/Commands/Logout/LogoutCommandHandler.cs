@@ -43,7 +43,7 @@ public class LogoutCommandHandler
                 //-----------------------------------------------------------------
                 // 1) کاربر باید وجود داشته باشد
                 //-----------------------------------------------------------------
-                var user = await _userRepository.GetByIdAsync(cmd.UserId);
+                var user = await _userRepository.FindOneAsync(x=>x.Id==cmd.UserId);
                 if (user is null)
                 {
                     await _uow.RollbackAsync(ct);
@@ -61,7 +61,7 @@ public class LogoutCommandHandler
                     if (jwtToken != null && jwtToken.UserId == cmd.UserId) // Ensure token belongs to user
                     {
                         jwtToken.Revoke();
-                        await _userTokenRepository.UpdateAsync(jwtToken, ct);
+                        await _userTokenRepository.UpdateAsync(jwtToken, cancellationToken:ct);
                     }
                 }
 

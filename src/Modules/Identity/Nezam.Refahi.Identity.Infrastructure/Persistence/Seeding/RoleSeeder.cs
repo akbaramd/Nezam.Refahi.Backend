@@ -97,63 +97,23 @@ public class RoleSeeder
                 1,
                 new List<(string, string)>
                 {
-                    ("permission", "users.read"),
-                    ("permission", "users.create"),
-                    ("permission", "users.update"),
-                    ("permission", "users.delete"),
-                    ("permission", "roles.read"),
-                    ("permission", "roles.create"),
-                    ("permission", "roles.update"),
-                    ("permission", "roles.delete"),
-                    ("permission", "system.restore"),
+                   
                     ("scope", "panel"),
                     ("scope", "app")
                 }
             ),
 
-            // Employer Role
-            (
-                "Employer",
-                "Employer with access to panel features",
-                true,
-                2,
-                new List<(string, string)>
-                {
-                    ("permission", "panel.access"),
-                    ("permission", "members.read"),
-                    ("permission", "members.manage"),
-                    ("permission", "reports.view"),
-                    ("scope", "panel")
-                }
-            ),
-          
-            // Member Role
             (
                 "Member",
                 "Member with access to app features",
                 true,
-                3,
+                2,
                 new List<(string, string)>
                 {
-                    ("permission", "profile.read"),
-                    ("permission", "profile.update"),
-                    ("permission", "services.access"),
                     ("scope", "app")
                 }
             ),
-
-            // Guest Role
-            (
-                "Guest",
-                "Guest user with read-only access",
-                true,
-                4,
-                new List<(string, string)>
-                {
-                    ("permission", "profile.read"),
-                    ("scope", "app")
-                }
-            )
+          
         };
     }
 

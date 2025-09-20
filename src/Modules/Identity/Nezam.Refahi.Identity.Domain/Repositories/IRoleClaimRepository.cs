@@ -1,4 +1,4 @@
-using MCA.SharedKernel.Domain.Contracts;
+using MCA.SharedKernel.Domain.Contracts.Repositories;
 using Nezam.Refahi.Identity.Domain.Entities;
 
 namespace Nezam.Refahi.Identity.Domain.Repositories;
@@ -28,10 +28,6 @@ public interface IRoleClaimRepository : IRepository<RoleClaim, Guid>
     /// </summary>
     Task<RoleClaim?> GetByRoleAndClaimAsync(Guid roleId, string claimType, string claimValue, CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Gets role claims by multiple claim types
-    /// </summary>
-    Task<IEnumerable<RoleClaim>> GetByClaimTypesAsync(IEnumerable<string> claimTypes, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets role claims by multiple claims

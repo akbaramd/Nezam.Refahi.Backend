@@ -73,12 +73,6 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                         .HasColumnType("int")
                         .HasDefaultValue(3);
 
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .IsRequired()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -136,11 +130,6 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                         .HasColumnType("int")
                         .HasDefaultValue(1);
 
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
@@ -166,16 +155,10 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<long>("AccessCount")
-                        .HasColumnType("bigint");
-
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("CreatedBy")
                         .ValueGeneratedOnAdd()
@@ -210,30 +193,12 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
-                    b.Property<DateTime?>("LastAccessedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LastAccessedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("LastArchivedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("LastBackupAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTimeOffset>("LastModifiedUtc")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("Metadata")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ModifiedAt")
+                    b.Property<DateTime?>("LastModifiedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
 
-                    b.Property<string>("ModifiedBy")
+                    b.Property<string>("LastModifiedBy")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(max)")
                         .HasDefaultValue("00000000-0000-0000-0000-000000000001");
@@ -244,11 +209,10 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
 
-                    b.Property<long>("SnapshotVersion")
+                    b.Property<long>("Version")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
@@ -280,11 +244,6 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                     b.Property<Guid>("RoleId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
                     b.HasKey("Id");
 
                     b.HasIndex("RoleId")
@@ -293,32 +252,29 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                     b.ToTable("RoleClaims", "identity");
                 });
 
-            modelBuilder.Entity("Nezam.Refahi.Identity.Domain.Entities.UserDetail", b =>
+            modelBuilder.Entity("Nezam.Refahi.Identity.Domain.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<long>("AccessCount")
-                        .HasColumnType("bigint");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
 
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("datetimeoffset");
-
                     b.Property<string>("CreatedBy")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("00000000-0000-0000-0000-000000000001");
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("DeletedBy")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<int>("FailedAttempts")
                         .ValueGeneratedOnAdd()
@@ -336,26 +292,16 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                         .HasDefaultValue(true);
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<bool>("IsPhoneVerified")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
-                    b.Property<DateTime?>("LastAccessedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LastAccessedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("LastArchivedAt")
-                        .HasColumnType("datetime2");
-
                     b.Property<DateTime?>("LastAuthenticatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("LastBackupAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("LastIpAddress")
@@ -365,8 +311,13 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                     b.Property<DateTime?>("LastLoginAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTimeOffset>("LastModifiedUtc")
-                        .HasColumnType("datetimeoffset");
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -384,38 +335,51 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                     b.Property<DateTime?>("LockedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Metadata")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ModifiedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("ModifiedBy")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("00000000-0000-0000-0000-000000000001");
-
                     b.Property<DateTime?>("PhoneVerifiedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
+                        .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
-
-                    b.Property<long>("SnapshotVersion")
-                        .HasColumnType("bigint");
 
                     b.Property<DateTime?>("UnlockAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<long>("Version")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_User_CreatedAt");
+
+                    b.HasIndex("CreatedBy")
+                        .HasDatabaseName("IX_User_CreatedBy");
+
+                    b.HasIndex("DeletedAt")
+                        .HasDatabaseName("IX_User_DeletedAt")
+                        .HasFilter("[DeletedAt] IS NOT NULL");
+
+                    b.HasIndex("DeletedBy")
+                        .HasDatabaseName("IX_User_DeletedBy")
+                        .HasFilter("[DeletedBy] IS NOT NULL");
 
                     b.HasIndex("IsActive");
 
+                    b.HasIndex("IsDeleted")
+                        .HasDatabaseName("IX_User_IsDeleted");
+
                     b.HasIndex("IsPhoneVerified");
+
+                    b.HasIndex("LastModifiedAt")
+                        .HasDatabaseName("IX_User_LastModifiedAt")
+                        .HasFilter("[LastModifiedAt] IS NOT NULL");
+
+                    b.HasIndex("LastModifiedBy")
+                        .HasDatabaseName("IX_User_LastModifiedBy")
+                        .HasFilter("[LastModifiedBy] IS NOT NULL");
 
                     b.ToTable("Users", "identity");
                 });
@@ -445,11 +409,6 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                     b.Property<string>("Notes")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
@@ -508,11 +467,6 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
 
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
@@ -560,11 +514,6 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
 
                     b.Property<Guid>("RoleId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
@@ -634,11 +583,6 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
 
                     b.Property<Guid?>("ParentTokenId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
 
                     b.Property<string>("Salt")
                         .HasMaxLength(64)
@@ -834,7 +778,7 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
 
             modelBuilder.Entity("Nezam.Refahi.Identity.Domain.Entities.RefreshSession", b =>
                 {
-                    b.HasOne("Nezam.Refahi.Identity.Domain.Entities.UserDetail", null)
+                    b.HasOne("Nezam.Refahi.Identity.Domain.Entities.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -945,7 +889,7 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("Nezam.Refahi.Identity.Domain.Entities.UserDetail", b =>
+            modelBuilder.Entity("Nezam.Refahi.Identity.Domain.Entities.User", b =>
                 {
                     b.OwnsOne("Nezam.Refahi.Identity.Domain.ValueObjects.DeviceFingerprint", "LastDeviceFingerprint", b1 =>
                         {
@@ -1019,7 +963,7 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
 
             modelBuilder.Entity("Nezam.Refahi.Identity.Domain.Entities.UserClaim", b =>
                 {
-                    b.HasOne("Nezam.Refahi.Identity.Domain.Entities.UserDetail", "UserDetail")
+                    b.HasOne("Nezam.Refahi.Identity.Domain.Entities.User", "User")
                         .WithMany("UserClaims")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1064,12 +1008,12 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                     b.Navigation("Claim")
                         .IsRequired();
 
-                    b.Navigation("UserDetail");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Nezam.Refahi.Identity.Domain.Entities.UserPreference", b =>
                 {
-                    b.HasOne("Nezam.Refahi.Identity.Domain.Entities.UserDetail", "UserDetail")
+                    b.HasOne("Nezam.Refahi.Identity.Domain.Entities.User", "User")
                         .WithMany("Preferences")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1125,7 +1069,7 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                     b.Navigation("Key")
                         .IsRequired();
 
-                    b.Navigation("UserDetail");
+                    b.Navigation("User");
 
                     b.Navigation("Value")
                         .IsRequired();
@@ -1139,7 +1083,7 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Nezam.Refahi.Identity.Domain.Entities.UserDetail", "UserDetail")
+                    b.HasOne("Nezam.Refahi.Identity.Domain.Entities.User", "User")
                         .WithMany("UserRoles")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1147,18 +1091,18 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
 
                     b.Navigation("Role");
 
-                    b.Navigation("UserDetail");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Nezam.Refahi.Identity.Domain.Entities.UserToken", b =>
                 {
-                    b.HasOne("Nezam.Refahi.Identity.Domain.Entities.UserDetail", "UserDetail")
+                    b.HasOne("Nezam.Refahi.Identity.Domain.Entities.User", "User")
                         .WithMany("Tokens")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("UserDetail");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Nezam.Refahi.Identity.Domain.Entities.Role", b =>
@@ -1168,7 +1112,7 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                     b.Navigation("UserRoles");
                 });
 
-            modelBuilder.Entity("Nezam.Refahi.Identity.Domain.Entities.UserDetail", b =>
+            modelBuilder.Entity("Nezam.Refahi.Identity.Domain.Entities.User", b =>
                 {
                     b.Navigation("Preferences");
 

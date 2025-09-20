@@ -43,6 +43,7 @@ public interface IMemberService
     /// <param name="email">The email address</param>
     /// <returns>Member data if found, null otherwise</returns>
     Task<MemberDto?> GetMemberByEmailAsync(string email);
+    Task<MemberDto?> GetMemberByExternalIdAsync(string externalId);
 
     /// <summary>
     /// Checks if a member exists with the given national code
@@ -64,4 +65,34 @@ public interface IMemberService
     /// <param name="nationalCode">The member's national code</param>
     /// <returns>Basic member information</returns>
     Task<BasicMemberInfoDto?> GetBasicMemberInfoAsync(NationalId nationalCode);
+
+    /// <summary>
+    /// Gets member capabilities by national code
+    /// </summary>
+    /// <param name="nationalCode">The member's national code</param>
+    /// <returns>List of member capabilities</returns>
+    Task<IEnumerable<string>> GetMemberCapabilitiesAsync(NationalId nationalCode);
+
+    /// <summary>
+    /// Gets member features by national code
+    /// </summary>
+    /// <param name="nationalCode">The member's national code</param>
+    /// <returns>List of member features</returns>
+    Task<IEnumerable<string>> GetMemberFeaturesAsync(NationalId nationalCode);
+
+    /// <summary>
+    /// Checks if a member has specific capability
+    /// </summary>
+    /// <param name="nationalCode">The member's national code</param>
+    /// <param name="capabilityId">The capability ID to check</param>
+    /// <returns>True if member has the capability, false otherwise</returns>
+    Task<bool> HasCapabilityAsync(NationalId nationalCode, string capabilityId);
+
+    /// <summary>
+    /// Checks if a member has specific feature
+    /// </summary>
+    /// <param name="nationalCode">The member's national code</param>
+    /// <param name="featureId">The feature ID to check</param>
+    /// <returns>True if member has the feature, false otherwise</returns>
+    Task<bool> HasFeatureAsync(NationalId nationalCode, string featureId);
 }

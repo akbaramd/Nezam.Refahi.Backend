@@ -1,0 +1,98 @@
+﻿using MediatR;
+using Microsoft.Extensions.Logging;
+using Nezam.Refahi.Identity.Application.Services;
+using Nezam.Refahi.Identity.Application.Services.Contracts;
+using Nezam.Refahi.Identity.Domain.Repositories;
+using Nezam.Refahi.Shared.Application.Common.Models;
+
+namespace Nezam.Refahi.Identity.Application.Features.Users.Commands.RemoveRole;
+
+/// <summary>
+/// Handler for removing a role from a user
+/// </summary>
+public class RemoveRoleFromUserCommandHandler : IRequestHandler<RemoveRoleFromUserCommand, ApplicationResult>
+{
+    private readonly IUserRepository _userRepository;
+    private readonly IRoleRepository _roleRepository;
+    private readonly IUserRoleRepository _userRoleRepository;
+    private readonly IIdentityUnitOfWork _unitOfWork;
+    private readonly ILogger<RemoveRoleFromUserCommandHandler> _logger;
+
+    public RemoveRoleFromUserCommandHandler(
+        IUserRepository userRepository,
+        IRoleRepository roleRepository,
+        IUserRoleRepository userRoleRepository,
+        IIdentityUnitOfWork unitOfWork,
+        ILogger<RemoveRoleFromUserCommandHandler> logger)
+    {
+        _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+        _roleRepository = roleRepository ?? throw new ArgumentNullException(nameof(roleRepository));
+        _userRoleRepository = userRoleRepository ?? throw new ArgumentNullException(nameof(userRoleRepository));
+        _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    public async Task<ApplicationResult> Handle(RemoveRoleFromUserCommand request, CancellationToken cancellationToken)
+    {
+        await _unitOfWork.BeginAsync(cancellationToken);
+
+        try
+        {
+            // 1. Verify user exists
+            var user = await _userRepository.GetByIdAsync(request.UserId);
+            if (user == null)
+            {
+                await _unitOfWork.RollbackAsync(cancellationToken);
+                return ApplicationResult.Failure("کاربر یافت نشد");
+            }
+
+            // 2. Verify role exists
+            var role = await _roleRepository.GetByIdAsync(request.RoleId);
+            if (role == null)
+            {
+                await _unitOfWork.RollbackAsync(cancellationToken);
+                return ApplicationResult.Failure("نقش مورد نظر یافت نشد");
+            }
+
+            // 3. Find active user role assignment
+            var userRole = await _userRoleRepository.GetActiveByUserAndRoleAsync(request.UserId, request.RoleId, cancellationToken);
+            if (userRole == null)
+            {
+                await _unitOfWork.RollbackAsync(cancellationToken);
+                return ApplicationResult.Failure("این نقش به کاربر اختصاص داده نشده است");
+            }
+
+            // 4. Deactivate the user role assignment
+            userRole.Deactivate();
+            
+            // Update notes with removal reason if provided
+            if (!string.IsNullOrEmpty(request.Reason))
+            {
+                var existingNotes = userRole.Notes;
+                var removalNote = $"Removed by {request.RemovedBy}: {request.Reason}";
+                var updatedNotes = string.IsNullOrEmpty(existingNotes) 
+                    ? removalNote 
+                    : $"{existingNotes}\n{removalNote}";
+                userRole.UpdateNotes(updatedNotes);
+            }
+
+            await _userRoleRepository.UpdateAsync(userRole, cancellationToken);
+
+            // 5. Save changes
+            await _unitOfWork.SaveAsync(cancellationToken);
+            await _unitOfWork.CommitAsync(cancellationToken);
+
+            _logger.LogInformation("Successfully removed role {RoleId} from user {UserId}", 
+                request.RoleId, request.UserId);
+
+            return ApplicationResult.Success("نقش با موفقیت از کاربر حذف شد");
+        }
+        catch (Exception ex)
+        {
+            await _unitOfWork.RollbackAsync(cancellationToken);
+            _logger.LogError(ex, "Failed to remove role {RoleId} from user {UserId}", 
+                request.RoleId, request.UserId);
+            return ApplicationResult.Failure("خطا در حذف نقش از کاربر. لطفا مجددا تلاش کنید.");
+        }
+    }
+}
