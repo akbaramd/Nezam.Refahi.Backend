@@ -222,7 +222,7 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime?>("BirthDate")
+                    b.Property<DateTime>("BirthDate")
                         .HasColumnType("date");
 
                     b.Property<string>("Email")
@@ -404,6 +404,9 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
                     b.Property<int?>("MaxAge")
                         .HasColumnType("int");
 
+                    b.Property<int?>("MaxGuestsPerReservation")
+                        .HasColumnType("int");
+
                     b.Property<int?>("MinAge")
                         .HasColumnType("int");
 
@@ -412,6 +415,9 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -467,6 +473,9 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("CapacityState")
+                        .HasColumnType("int");
 
                     b.Property<string>("Description")
                         .HasMaxLength(500)

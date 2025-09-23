@@ -58,12 +58,19 @@ public class CancelReservationCommandHandler : IRequestHandler<CancelReservation
                 return ApplicationResult<CancelReservationResponse>.Failure("رزرو مورد نظر یافت نشد");
             }
 
+            // Get tour for business rule validation
+            var tour = await _tourRepository.FindOneAsync(x => x.Id == reservation.TourId, cancellationToken);
+            if (tour == null)
+            {
+                return ApplicationResult<CancelReservationResponse>.Failure("تور مورد نظر یافت نشد");
+            }
+
             // Check authorization if member ID is available
             if (memberId.HasValue)
             {
                 var hasAccess = reservation.MemberId == memberId.Value;
 
-                if (!hasAccess)
+                if (!hasAccess )
                 {
                     _logger.LogWarning("User does not have access to reservation - ReservationId: {ReservationId}, MemberId: {MemberId}",
                         request.ReservationId, memberId);
@@ -73,12 +80,21 @@ public class CancelReservationCommandHandler : IRequestHandler<CancelReservation
             else
             {
                 // If no member ID is available and user is not authenticated, deny access
-                if (!_currentUserService.IsAuthenticated)
+                if (!_currentUserService.IsAuthenticated )
                 {
                     _logger.LogWarning("Unauthorized access attempt to cancel reservation - ReservationId: {ReservationId}",
                         request.ReservationId);
                     return ApplicationResult<CancelReservationResponse>.Failure("شما به این رزرو دسترسی ندارید");
                 }
+            }
+
+            // Apply business rule validation
+            var businessRuleValidation = ValidateCancellationBusinessRules(reservation, tour);
+            if (!businessRuleValidation.IsValid)
+            {
+                _logger.LogWarning("Business rule validation failed - ReservationId: {ReservationId}, Error: {Error}",
+                    request.ReservationId, businessRuleValidation.ErrorMessage);
+                return ApplicationResult<CancelReservationResponse>.Failure(businessRuleValidation.ErrorMessage);
             }
 
             // Store information for response before potential deletion
@@ -99,8 +115,10 @@ public class CancelReservationCommandHandler : IRequestHandler<CancelReservation
 
             if (request.PermanentDelete)
             {
+    
+
                 // Perform safe deletion
-                await SafeDeleteReservationAsync(reservation, request.Reason, cancellationToken);
+                await SafeDeleteReservationAsync(reservation, tour, request.Reason, cancellationToken);
                 response.WasDeleted = true;
 
                 _logger.LogInformation("Successfully deleted reservation and {ParticipantCount} participants - ReservationId: {ReservationId}",
@@ -143,9 +161,10 @@ public class CancelReservationCommandHandler : IRequestHandler<CancelReservation
     /// Safely deletes a reservation and all associated data from the database
     /// </summary>
     /// <param name="reservation">The reservation to delete</param>
+    /// <param name="tour">The associated tour</param>
     /// <param name="reason">Cancellation reason</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    private async Task SafeDeleteReservationAsync(TourReservation reservation, string? reason, CancellationToken cancellationToken)
+    private async Task SafeDeleteReservationAsync(TourReservation reservation, Tour tour, string? reason, CancellationToken cancellationToken)
     {
         try
         {
@@ -154,21 +173,8 @@ public class CancelReservationCommandHandler : IRequestHandler<CancelReservation
 
             try
             {
-                // 1. Release tour capacity if the reservation was using capacity
-                if (reservation.CapacityId.HasValue && reservation.IsActive())
-                {
-                    var tour = await _tourRepository.FindOneAsync(x => x.Id == reservation.TourId, cancellationToken);
-                    if (tour != null)
-                    {
-                        var capacity = tour.Capacities.FirstOrDefault(c => c.Id == reservation.CapacityId.Value);
-                        if (capacity != null)
-                        {
-                            // Release the participants count back to capacity
-                            capacity.ReleaseParticipants(reservation.Participants.Count);
-                            await _tourRepository.UpdateAsync(tour, cancellationToken: cancellationToken);
-                        }
-                    }
-                }
+                // 1. Release tour capacity if the reservation was using capacity (idempotent)
+                await ReleaseCapacityIfNeededAsync(reservation, tour, cancellationToken);
 
                 // 2. Log the cancellation for audit purposes before deletion
                 _logger.LogInformation("Deleting reservation {ReservationId} with {ParticipantCount} participants. Reason: {Reason}",
@@ -243,5 +249,85 @@ public class CancelReservationCommandHandler : IRequestHandler<CancelReservation
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Validates business rules for cancellation
+    /// </summary>
+    /// <param name="reservation">The reservation to cancel</param>
+    /// <param name="tour">The associated tour</param>
+    /// <param name="isOperatorRequest">Whether this is an operator request</param>
+    /// <returns>Validation result</returns>
+    private (bool IsValid, string ErrorMessage) ValidateCancellationBusinessRules(
+        TourReservation reservation, 
+        Tour tour)
+    {
+        var now = DateTime.UtcNow;
+        
+        // Guard 1: Tour has started - only operators can cancel
+        if (now >= tour.TourStart )
+        {
+            return (false, "امکان لغو رزرو بعد از شروع تور وجود ندارد");
+        }
+        
+        // Guard 2: Cancellation deadline (24 hours before tour)
+        var cancellationDeadline = tour.TourStart.AddHours(-24);
+        if (now >= cancellationDeadline)
+        {
+            return (false, "مهلت لغو رزرو (24 ساعت قبل از شروع تور) گذشته است");
+        }
+        
+        // Guard 3: Special handling for Paying state - prevent race with PSP callback
+        if (reservation.Status == ReservationStatus.Paying)
+        {
+            return (false, "رزرو در حال پردازش پرداخت است. لطفاً چند دقیقه صبر کنید و مجدداً تلاش کنید");
+        }
+        
+        // Guard 4: Already cancelled states
+        if (reservation.Status == ReservationStatus.Cancelled || 
+            reservation.Status == ReservationStatus.SystemCancelled ||
+            reservation.Status == ReservationStatus.Refunded)
+        {
+            return (false, "این رزرو قبلاً لغو شده است");
+        }
+        
+        return (true, string.Empty);
+    }
+
+    /// <summary>
+    /// Releases capacity for a reservation in an idempotent manner
+    /// </summary>
+    /// <param name="reservation">The reservation</param>
+    /// <param name="tour">The tour</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    private async Task ReleaseCapacityIfNeededAsync(
+        TourReservation reservation, 
+        Tour tour, 
+        CancellationToken cancellationToken)
+    {
+        // Only release capacity for reservations that actually held capacity
+        // Confirmed reservations held capacity, others might not have
+        if (!reservation.CapacityId.HasValue || 
+            (reservation.Status != ReservationStatus.Confirmed && 
+             reservation.Status != ReservationStatus.Held))
+        {
+            return;
+        }
+
+        var capacity = tour.Capacities.FirstOrDefault(c => c.Id == reservation.CapacityId.Value);
+        if (capacity != null)
+        {
+            // Idempotent capacity release - only release if not already released
+            var participantCount = reservation.Participants.Count;
+            
+            _logger.LogInformation("Releasing capacity for reservation {ReservationId}: {ParticipantCount} participants",
+                reservation.Id, participantCount);
+                
+            capacity.ReleaseParticipants(participantCount);
+            await _tourRepository.UpdateAsync(tour, cancellationToken: cancellationToken);
+            
+            // TODO: Trigger waitlist promotion event here
+            // await _eventBus.PublishAsync(new CapacityReleasedEvent(tour.Id, capacity.Id, participantCount), cancellationToken);
+        }
     }
 }

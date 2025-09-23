@@ -145,7 +145,7 @@ public class User : FullAggregateRoot<Guid>
     /// <param name="role">The role to assign</param>
     public void AssignRole(Role role)
     {
-        _userRoles.Add(new UserRole(Id, role.Id));
+        _userRoles.Add(new UserRole(Id, role));
     }
 
     /// <summary>
@@ -576,6 +576,17 @@ public class User : FullAggregateRoot<Guid>
 
         var userRole = new UserRole(Id, roleId, expiresAt, assignedBy, notes);
         _userRoles.Add(userRole);
+    }
+    
+    public void AssignRole(Role role, DateTime? expiresAt = null, string? assignedBy = null, string? notes = null)
+    {
+
+      // Check if user already has this role
+      if (_userRoles.Any(ur => ur.RoleId == role.Id && ur.IsActive))
+        throw new InvalidOperationException("User already has this role");
+
+      var userRole = new UserRole(Id, role, expiresAt, assignedBy, notes);
+      _userRoles.Add(userRole);
     }
 
     /// <summary>

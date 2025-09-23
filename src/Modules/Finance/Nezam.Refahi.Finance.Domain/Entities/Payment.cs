@@ -1,5 +1,7 @@
 using MCA.SharedKernel.Domain;
+using MCA.SharedKernel.Domain.AggregateRoots;
 using Nezam.Refahi.Finance.Domain.Enums;
+using Nezam.Refahi.Finance.Domain.Events;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
 
 namespace Nezam.Refahi.Finance.Domain.Entities;
@@ -8,11 +10,12 @@ namespace Nezam.Refahi.Finance.Domain.Entities;
 /// پرداخت - نماینده تلاش پرداخت برای یک صورت حساب
 /// در دنیای واقعی: هر عملیات پرداختی چه آنلاین، کارتخوان یا نقدی
 /// </summary>
-public sealed class Payment : Entity<Guid>
+public sealed class Payment : SoftDeletableAggregateRoot<Guid>
 {
     public Guid BillId { get; private set; }
     public string BillNumber { get; private set; } = null!;
     public Money Amount { get; private set; } = null!;
+    public string? TrackingNumber { get; private set; }
     public PaymentStatus Status { get; private set; }
     public PaymentMethod Method { get; private set; }
     public PaymentGateway? Gateway { get; private set; }
@@ -20,7 +23,6 @@ public sealed class Payment : Entity<Guid>
     public string? GatewayReference { get; private set; }
     public string? CallbackUrl { get; private set; }
     public string? Description { get; private set; }
-    public DateTime CreatedAt { get; private set; }
     public DateTime? ExpiryDate { get; private set; }
     public DateTime? CompletedAt { get; private set; }
     public string? FailureReason { get; private set; }
@@ -115,6 +117,19 @@ public sealed class Payment : Entity<Guid>
 
         Status = PaymentStatus.Processing;
         GatewayTransactionId = gatewayTransactionId?.Trim();
+
+        // Raise domain event
+        AddDomainEvent(new PaymentProcessingEvent(
+            Id,
+            BillId,
+            BillNumber,
+            Bill.ReferenceId,
+            Bill.UserNationalNumber,
+            Amount,
+            Gateway!.Value,
+            gatewayTransactionId,
+            TrackingNumber,
+            CallbackUrl));
     }
 
     /// <summary>
@@ -152,6 +167,12 @@ public sealed class Payment : Entity<Guid>
         CompletedAt = DateTime.UtcNow;
         ExpiryDate = null; // Clear expiry on completion
     }
+
+    public void SetTrackingNumber(string? trackingNumber)
+    {
+        TrackingNumber = trackingNumber;
+    }
+    
 
     /// <summary>
     /// علامت‌گذاری پرداخت به عنوان ناموفق
@@ -250,6 +271,19 @@ public sealed class Payment : Entity<Guid>
             return; // Only pending payments can expire
 
         Status = PaymentStatus.Expired;
+
+        // Raise domain event
+        AddDomainEvent(new PaymentExpiredEvent(
+            Id,
+            BillId,
+            BillNumber,
+            Bill.ReferenceId,
+            Bill.UserNationalNumber,
+            Amount,
+            Method,
+            Gateway,
+            TrackingNumber,
+            ExpiryDate));
     }
 
     /// <summary>

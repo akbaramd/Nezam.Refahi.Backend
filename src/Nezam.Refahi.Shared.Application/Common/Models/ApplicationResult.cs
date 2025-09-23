@@ -66,6 +66,72 @@ namespace Nezam.Refahi.Shared.Application.Common.Models;
               Errors = errors,
           };
       }
+
+      /// <summary>
+      /// Creates a new failed result from an exception with comprehensive error collection
+      /// </summary>
+      /// <param name="exception">The exception to extract errors from</param>
+      /// <param name="message">Optional error message</param>
+      /// <returns>A failed result with all exception details</returns>
+      public static ApplicationResult Failure(Exception exception, string message = "An error occurred")
+      {
+          var errors = ExtractExceptionErrors(exception);
+          return new ApplicationResult
+          {
+              IsSuccess = false,
+              Message = message,
+              Errors = errors,
+          };
+      }
+
+      /// <summary>
+      /// Creates a new failed result by combining multiple service result errors
+      /// </summary>
+      /// <param name="serviceResults">Collection of failed service results</param>
+      /// <param name="message">Optional error message</param>
+      /// <returns>A failed result with all collected errors</returns>
+      public static ApplicationResult Failure(IEnumerable<ApplicationResult> serviceResults, string message = "Multiple errors occurred")
+      {
+          var allErrors = new List<string>();
+          foreach (var result in serviceResults.Where(r => !r.IsSuccess))
+          {
+              allErrors.AddRange(result.Errors);
+              if (!string.IsNullOrEmpty(result.Message))
+              {
+                  allErrors.Add(result.Message);
+              }
+          }
+          
+          return new ApplicationResult
+          {
+              IsSuccess = false,
+              Message = message,
+              Errors = allErrors,
+          };
+      }
+
+      /// <summary>
+      /// Extracts all error messages from an exception and its inner exceptions
+      /// </summary>
+      /// <param name="exception">The exception to extract errors from</param>
+      /// <returns>List of all error messages</returns>
+      private static List<string> ExtractExceptionErrors(Exception exception)
+      {
+          var errors = new List<string>();
+          var currentException = exception;
+          
+          while (currentException != null)
+          {
+              if (!string.IsNullOrEmpty(currentException.Message))
+              {
+                  errors.Add(currentException.Message);
+              }
+              
+              currentException = currentException.InnerException;
+          }
+          
+          return errors;
+      }
   }
 
   /// <summary>
@@ -125,5 +191,71 @@ namespace Nezam.Refahi.Shared.Application.Common.Models;
               Message = message,
               Errors = errors,
           };
+      }
+
+      /// <summary>
+      /// Creates a new failed result from an exception with comprehensive error collection
+      /// </summary>
+      /// <param name="exception">The exception to extract errors from</param>
+      /// <param name="message">Optional error message</param>
+      /// <returns>A failed result with all exception details</returns>
+      public static new ApplicationResult<T> Failure(Exception exception, string message = "An error occurred")
+      {
+          var errors = ExtractExceptionErrors(exception);
+          return new ApplicationResult<T>
+          {
+              IsSuccess = false,
+              Message = message,
+              Errors = errors,
+          };
+      }
+
+      /// <summary>
+      /// Creates a new failed result by combining multiple service result errors
+      /// </summary>
+      /// <param name="serviceResults">Collection of failed service results</param>
+      /// <param name="message">Optional error message</param>
+      /// <returns>A failed result with all collected errors</returns>
+      public static new ApplicationResult<T> Failure(IEnumerable<ApplicationResult> serviceResults, string message = "Multiple errors occurred")
+      {
+          var allErrors = new List<string>();
+          foreach (var result in serviceResults.Where(r => !r.IsSuccess))
+          {
+              allErrors.AddRange(result.Errors);
+              if (!string.IsNullOrEmpty(result.Message))
+              {
+                  allErrors.Add(result.Message);
+              }
+          }
+          
+          return new ApplicationResult<T>
+          {
+              IsSuccess = false,
+              Message = message,
+              Errors = allErrors,
+          };
+      }
+
+      /// <summary>
+      /// Extracts all error messages from an exception and its inner exceptions
+      /// </summary>
+      /// <param name="exception">The exception to extract errors from</param>
+      /// <returns>List of all error messages</returns>
+      private static List<string> ExtractExceptionErrors(Exception exception)
+      {
+          var errors = new List<string>();
+          var currentException = exception;
+          
+          while (currentException != null)
+          {
+              if (!string.IsNullOrEmpty(currentException.Message))
+              {
+                  errors.Add(currentException.Message);
+              }
+              
+              currentException = currentException.InnerException;
+          }
+          
+          return errors;
       }
   }

@@ -27,6 +27,9 @@ public class TourSummaryDto : IStaticMapper<Tour, TourSummaryDto>
   public int? MinAge { get; set; }
   public int? MaxAge { get; set; }
 
+  // Guest limitations per reservation
+  public int? MaxGuestsPerReservation { get; set; }
+
   public bool IsActive { get; set; }
 
   // Capacity details
@@ -67,6 +70,7 @@ public class TourSummaryDto : IStaticMapper<Tour, TourSummaryDto>
       IsRegistrationOpen = entity.IsRegistrationOpen(currentDate),
       MinAge = entity.MinAge,
       MaxAge = entity.MaxAge,
+      MaxGuestsPerReservation = entity.MaxGuestsPerReservation,
       IsActive = entity.IsActive,
       Capacities = activeCapacities.Select(TourCapacityDetailDto.MapFrom).ToList(),
       Pricing = entity.Pricing.Select(p => TourPricingDto.MapFrom(p)).ToList()

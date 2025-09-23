@@ -8,7 +8,7 @@ using Nezam.Refahi.Shared.Infrastructure.Persistence;
 namespace Nezam.Refahi.Recreation.Infrastructure.Persistence.Repositories;
 
 /// <summary>
-/// Repository implementation for TourReservation entities
+/// پیاده‌سازی Repository برای موجودیت‌های TourReservation
 /// </summary>
 public class TourReservationRepository : EfRepository<RecreationDbContext, TourReservation, Guid>, ITourReservationRepository
 {
@@ -30,7 +30,7 @@ public class TourReservationRepository : EfRepository<RecreationDbContext, TourR
         return await PrepareQuery(_dbSet)
             .Where(r => r.TourId == tourId && 
                        r.Status == status &&
-                       (r.ExpiryDate == null || r.ExpiryDate > currentTime)) // Exclude expired reservations
+                       (r.ExpiryDate == null || r.ExpiryDate > currentTime)) // حذف رزروهای منقضی شده
             .OrderByDescending(r => r.ReservationDate)
             .ToListAsync(cancellationToken);
     }
@@ -58,7 +58,7 @@ public class TourReservationRepository : EfRepository<RecreationDbContext, TourR
     public async Task<TourReservation?> GetByTrackingCodeAsync(string trackingCode, CancellationToken cancellationToken = default)
     {
         return await PrepareQuery(_dbSet)
-            .FirstOrDefaultAsync(r => r.TrackingCode == trackingCode.ToUpperInvariant(), cancellationToken:cancellationToken);
+            .FirstOrDefaultAsync(r => r.TrackingCode.ToLower() == trackingCode.ToLower(), cancellationToken:cancellationToken);
     }
 
     public async Task<int> GetConfirmedParticipantCountAsync(Guid tourId, CancellationToken cancellationToken = default)
@@ -67,7 +67,7 @@ public class TourReservationRepository : EfRepository<RecreationDbContext, TourR
         return await PrepareQuery(_dbSet)
             .Where(r => r.TourId == tourId && 
                        r.Status == ReservationStatus.Confirmed &&
-                       (r.ExpiryDate == null || r.ExpiryDate > currentTime)) // Exclude expired reservations
+                       (r.ExpiryDate == null || r.ExpiryDate > currentTime)) // حذف رزروهای منقضی شده
             .SelectMany(r => r.Participants)
             .CountAsync(cancellationToken);
     }
@@ -77,8 +77,8 @@ public class TourReservationRepository : EfRepository<RecreationDbContext, TourR
         var currentTime = DateTime.UtcNow;
         return await PrepareQuery(_dbSet)
             .Where(r => r.TourId == tourId && 
-                       r.Status == ReservationStatus.Held &&
-                       (r.ExpiryDate == null || r.ExpiryDate > currentTime)) // Exclude expired reservations
+                       (r.Status == ReservationStatus.Held || r.Status == ReservationStatus.Paying) && // شامل رزروهای در حال پرداخت
+                       (r.ExpiryDate == null || r.ExpiryDate > currentTime)) // حذف رزروهای منقضی شده
             .SelectMany(r => r.Participants)
             .CountAsync(cancellationToken);
     }
@@ -120,18 +120,26 @@ public class TourReservationRepository : EfRepository<RecreationDbContext, TourR
 
     public async Task<int> GetCapacityUtilizationAsync(Guid capacityId, CancellationToken cancellationToken = default)
     {
+        var currentTime = DateTime.UtcNow;
         return await PrepareQuery(_dbSet)
             .Where(r => r.CapacityId == capacityId &&
-                       (r.Status == ReservationStatus.Confirmed || r.Status == ReservationStatus.Held))
+                       (r.Status == ReservationStatus.Confirmed || 
+                        r.Status == ReservationStatus.Held || 
+                        r.Status == ReservationStatus.Paying) && // اضافه کردن رزروهای در حال پرداخت
+                       (r.ExpiryDate == null || r.ExpiryDate > currentTime)) // چک انقضا
             .SelectMany(r => r.Participants)
             .CountAsync(cancellationToken);
     }
 
     public async Task<int> GetTourUtilizationAsync(Guid tourId, CancellationToken cancellationToken = default)
     {
+        var currentTime = DateTime.UtcNow;
         return await PrepareQuery(_dbSet)
             .Where(r => r.TourId == tourId &&
-                       (r.Status == ReservationStatus.Confirmed || r.Status == ReservationStatus.Held))
+                       (r.Status == ReservationStatus.Confirmed || 
+                        r.Status == ReservationStatus.Held || 
+                        r.Status == ReservationStatus.Paying) && // اضافه کردن رزروهای در حال پرداخت
+                       (r.ExpiryDate == null || r.ExpiryDate > currentTime)) // چک انقضا
             .SelectMany(r => r.Participants)
             .CountAsync(cancellationToken);
     }
@@ -166,8 +174,10 @@ public class TourReservationRepository : EfRepository<RecreationDbContext, TourR
         var currentTime = DateTime.UtcNow;
         var utilizations = await PrepareQuery(_dbSet)
             .Where(r => tourIdsList.Contains(r.TourId) &&
-                       (r.Status == ReservationStatus.Confirmed || r.Status == ReservationStatus.Held) &&
-                       (r.ExpiryDate == null || r.ExpiryDate > currentTime)) // Exclude expired reservations
+                       (r.Status == ReservationStatus.Confirmed || 
+                        r.Status == ReservationStatus.Held || 
+                        r.Status == ReservationStatus.Paying) && // اضافه کردن رزروهای در حال پرداخت
+                       (r.ExpiryDate == null || r.ExpiryDate > currentTime)) // حذف رزروهای منقضی شده
             .SelectMany(r => r.Participants)
             .GroupBy(p => p.Reservation.TourId)
             .Select(g => new { TourId = g.Key, Count = g.Count() })
@@ -192,8 +202,10 @@ public class TourReservationRepository : EfRepository<RecreationDbContext, TourR
         var utilizations = await PrepareQuery(_dbSet)
             .Where(r => r.CapacityId.HasValue && 
                        capacityIdsList.Contains(r.CapacityId.Value) &&
-                       (r.Status == ReservationStatus.Confirmed || r.Status == ReservationStatus.Held) &&
-                       (r.ExpiryDate == null || r.ExpiryDate > currentTime)) // Exclude expired reservations
+                       (r.Status == ReservationStatus.Confirmed || 
+                        r.Status == ReservationStatus.Held || 
+                        r.Status == ReservationStatus.Paying) && // اضافه کردن رزروهای در حال پرداخت
+                       (r.ExpiryDate == null || r.ExpiryDate > currentTime)) // حذف رزروهای منقضی شده
             .SelectMany(r => r.Participants)
             .GroupBy(p => p.Reservation.CapacityId)
             .Select(g => new { CapacityId = g.Key, Count = g.Count() })
@@ -215,8 +227,8 @@ public class TourReservationRepository : EfRepository<RecreationDbContext, TourR
     protected override IQueryable<TourReservation> PrepareQuery(IQueryable<TourReservation> query)
     {
       query = query.Include(x => x.Participants)
-      .Include(x => x.Capacity)
-        .Include(x=>x.Tour);
+                   .Include(x => x.Capacity)
+                   .Include(x => x.Tour);
       return base.PrepareQuery(query);
     }
 }

@@ -4,6 +4,7 @@ using Nezam.Refahi.Recreation.Contracts.Dtos;
 using Nezam.Refahi.Recreation.Domain.Entities;
 using Nezam.Refahi.Recreation.Domain.Enums;
 using Nezam.Refahi.Recreation.Domain.Repositories;
+using Nezam.Refahi.Recreation.Application.Services;
 using Nezam.Refahi.Shared.Application.Common.Models;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Membership.Contracts.Services;
@@ -23,6 +24,7 @@ public class GetToursPaginatedQueryHandler
     private readonly ICurrentUserService _currentUserService;
     private readonly IMemberService _memberService;
     private readonly TourCapacityCalculationService _capacityCalculationService;
+    private readonly TourDtoCalculationService _dtoCalculationService;
     private readonly ILogger<GetToursPaginatedQueryHandler> _logger;
 
     public GetToursPaginatedQueryHandler(
@@ -39,6 +41,7 @@ public class GetToursPaginatedQueryHandler
         _currentUserService = currentUserService;
         _memberService = memberService;
         _capacityCalculationService = new TourCapacityCalculationService(_tourReservationRepository);
+        _dtoCalculationService = new TourDtoCalculationService(_tourReservationRepository);
         _logger = logger;
     }
 
@@ -78,12 +81,22 @@ public class GetToursPaginatedQueryHandler
             var capacityInfos = await _capacityCalculationService.CalculateCapacitiesAsync(allActiveCapacities, cancellationToken);
 
             // Convert to DTOs with pre-calculated capacity information
-            var tourDtos = tours.Select(tour =>
+            var tourDtos = new List<TourDto>();
+            foreach (var tour in tours)
             {
                 var userReservation = userReservations.GetValueOrDefault(tour.Id);
                 var tourCapacityInfo = tourCapacityInfos.GetValueOrDefault(tour.Id);
-                return MapToDtoWithCapacityInfo(tour, userReservation, tourCapacityInfo, capacityInfos);
-            }).ToList();
+                var dto = MapToDtoWithCapacityInfo(tour, userReservation, tourCapacityInfo, capacityInfos);
+                
+                // محاسبه فیلدهای جدید با استفاده از سرویس
+                await _dtoCalculationService.CalculateTimeAndStatusFieldsAsync(dto, tour, cancellationToken);
+                await _dtoCalculationService.CalculateCapacityFieldsAsync(dto, tour, cancellationToken);
+                _dtoCalculationService.CalculatePricingFields(dto, tour);
+                _dtoCalculationService.CalculateUserFields(dto, userReservation);
+                await _dtoCalculationService.CalculateStatisticsFieldsAsync(dto, tour, cancellationToken);
+                
+                tourDtos.Add(dto);
+            }
 
             var result = new PaginatedResult<TourDto>
             {
@@ -101,8 +114,7 @@ public class GetToursPaginatedQueryHandler
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while getting paginated tours");
-            return ApplicationResult<PaginatedResult<TourDto>>.Failure(
-                "خطا در دریافت لیست تورها رخ داده است");
+            return ApplicationResult<PaginatedResult<TourDto>>.Failure(ex, "خطا در دریافت لیست تورها رخ داده است");
         }
     }
 
@@ -197,6 +209,7 @@ public class GetToursPaginatedQueryHandler
             // Age restrictions
             MinAge = tour.MinAge,
             MaxAge = tour.MaxAge,
+            MaxGuestsPerReservation = tour.MaxGuestsPerReservation,
 
             // Registration period (calculated from active capacities)
             RegistrationStart = registrationStart,
@@ -215,8 +228,8 @@ public class GetToursPaginatedQueryHandler
             TotalParticipants = reservedCapacity,
             MainParticipants = tour.GetConfirmedReservations().SelectMany(r => r.Participants).Count(p => p.ParticipantType == Domain.Enums.ParticipantType.Member),
             GuestParticipants = tour.GetConfirmedReservations().SelectMany(r => r.Participants).Count(p => p.ParticipantType == Domain.Enums.ParticipantType.Guest),
-            UserReservationStatus = ShouldIncludeReservationInfo(userReservation) ? userReservation?.Status : null,
-            UserReservationId = ShouldIncludeReservationInfo(userReservation) ? userReservation?.Id : null,
+            UserReservationStatus =  userReservation?.Status ?? null,
+            UserReservationId =  userReservation?.Id ?? null,
             CreatedAt = tour.CreatedAt,
             UpdatedAt = tour.LastModifiedAt,
             CreatedBy = tour.CreatedBy,
@@ -259,6 +272,12 @@ public class GetToursPaginatedQueryHandler
             IsEffectiveFor = capacity.IsEffectiveFor(currentDate),
             IsFullyBooked = isFullyBooked,
             IsNearlyFull = isNearlyFull,
+
+            // Domain behavior properties
+            IsExpired = currentDate > capacity.RegistrationEnd,
+            IsAvailable = capacity.IsActive && isRegistrationOpen && !isFullyBooked,
+            IsClosed = !capacity.IsActive || !isRegistrationOpen || isFullyBooked,
+            CanAcceptReservations = capacity.IsActive && isRegistrationOpen && !isFullyBooked,
             
             AvailabilityStatus = availabilityStatus,
             AvailabilityMessage = availabilityMessage
@@ -313,6 +332,7 @@ public class GetToursPaginatedQueryHandler
             // Age restrictions
             MinAge = tour.MinAge,
             MaxAge = tour.MaxAge,
+            MaxGuestsPerReservation = tour.MaxGuestsPerReservation,
 
             // Registration period (calculated from active capacities)
             RegistrationStart = registrationStart,
@@ -331,8 +351,8 @@ public class GetToursPaginatedQueryHandler
             TotalParticipants = totalUtilization,
             MainParticipants = tour.GetConfirmedReservations().SelectMany(r => r.Participants).Count(p => p.ParticipantType == Domain.Enums.ParticipantType.Member),
             GuestParticipants = tour.GetConfirmedReservations().SelectMany(r => r.Participants).Count(p => p.ParticipantType == Domain.Enums.ParticipantType.Guest),
-            UserReservationStatus = ShouldIncludeReservationInfo(userReservation) ? userReservation?.Status : null,
-            UserReservationId = ShouldIncludeReservationInfo(userReservation) ? userReservation?.Id : null,
+            UserReservationStatus =  userReservation?.Status ?? null,
+            UserReservationId =  userReservation?.Id ?? null,
             CreatedAt = tour.CreatedAt,
             UpdatedAt = tour.LastModifiedAt,
             CreatedBy = tour.CreatedBy,
@@ -491,19 +511,5 @@ public class GetToursPaginatedQueryHandler
         return null;
     }
 
-    /// <summary>
-    /// Determines whether to include reservation information based on reservation status.
-    /// Only includes info if reservation exists and is not null, cancelled, or expired.
-    /// </summary>
-    /// <param name="userReservation">The user's reservation for the tour</param>
-    /// <returns>True if reservation info should be included, false otherwise</returns>
-    private static bool ShouldIncludeReservationInfo(TourReservation? userReservation)
-    {
-        if (userReservation == null)
-            return false;
-
-        // Don't include info for cancelled or expired reservations
-        return userReservation.Status != ReservationStatus.Cancelled &&
-               userReservation.Status != ReservationStatus.Expired;
-    }
+    
 }

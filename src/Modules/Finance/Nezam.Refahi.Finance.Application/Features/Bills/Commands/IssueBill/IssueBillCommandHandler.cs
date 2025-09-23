@@ -1,5 +1,6 @@
 using FluentValidation;
 using MediatR;
+using Nezam.Refahi.Finance.Application.Services;
 using Nezam.Refahi.Finance.Contracts.Commands.Bills;
 using Nezam.Refahi.Finance.Domain.Repositories;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
@@ -14,12 +15,12 @@ public class IssueBillCommandHandler : IRequestHandler<IssueBillCommand, Applica
 {
     private readonly IBillRepository _billRepository;
     private readonly IValidator<IssueBillCommand> _validator;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IFinanceUnitOfWork _unitOfWork;
 
     public IssueBillCommandHandler(
         IBillRepository billRepository,
         IValidator<IssueBillCommand> validator,
-        IUnitOfWork unitOfWork)
+        IFinanceUnitOfWork unitOfWork)
     {
         _billRepository = billRepository ?? throw new ArgumentNullException(nameof(billRepository));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
@@ -38,7 +39,7 @@ public class IssueBillCommandHandler : IRequestHandler<IssueBillCommand, Applica
             if (!validation.IsValid)
             {
                 var errors = validation.Errors.Select(e => e.ErrorMessage).ToList();
-                return ApplicationResult<IssueBillResponse>.Failure(errors, "Validation failed");
+                return ApplicationResult<IssueBillResponse>.Failure(errors, "Validation failed: "+string.Join(',', errors));
             }
 
             // Get bill
@@ -72,7 +73,7 @@ public class IssueBillCommandHandler : IRequestHandler<IssueBillCommand, Applica
         catch (Exception ex)
         {
             await _unitOfWork.RollbackAsync(cancellationToken);
-            return ApplicationResult<IssueBillResponse>.Failure($"Failed to issue bill: {ex.Message}");
+            return ApplicationResult<IssueBillResponse>.Failure(ex, "Failed to issue bill");
         }
     }
 }

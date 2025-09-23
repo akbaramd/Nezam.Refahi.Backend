@@ -1,5 +1,6 @@
 using MCA.SharedKernel.Domain.AggregateRoots;
 using Nezam.Refahi.Recreation.Domain.Enums;
+using Nezam.Refahi.Recreation.Domain.ValueObjects;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
 
 namespace Nezam.Refahi.Recreation.Domain.Entities;
@@ -20,11 +21,15 @@ public sealed class Tour : FullAggregateRoot<Guid>
     /// </summary>
     public int MaxParticipants => _capacities.Where(c => c.IsActive).Sum(c => c.MaxParticipants);
 
+    public TourStatus Status { get; private set; }
     public bool IsActive { get; private set; }
 
     // Age restrictions
     public int? MinAge { get; private set; }
     public int? MaxAge { get; private set; }
+
+    // Guest limitations per reservation
+    public int? MaxGuestsPerReservation { get; private set; }
 
     // Navigation properties
     private readonly List<TourPhoto> _photos = new();
@@ -69,20 +74,24 @@ public sealed class Tour : FullAggregateRoot<Guid>
         DateTime tourEnd,
         int? minAge = null,
         int? maxAge = null,
+        int? maxGuestsPerReservation = null,
         IEnumerable<TourPhoto>? photos = null)
         : base(Guid.NewGuid())
     {
         ValidateTitle(title);
         ValidateTourDates(tourStart, tourEnd);
         ValidateAgeRestrictions(minAge, maxAge);
+        ValidateMaxGuestsPerReservation(maxGuestsPerReservation);
 
         Title = title.Trim();
         Description = description?.Trim() ?? string.Empty;
         TourStart = tourStart;
         TourEnd = tourEnd;
+        Status = TourStatus.Draft;
         IsActive = true;
         MinAge = minAge;
         MaxAge = maxAge;
+        MaxGuestsPerReservation = maxGuestsPerReservation;
 
         if (photos != null)
             _photos.AddRange(photos);
@@ -124,6 +133,15 @@ public sealed class Tour : FullAggregateRoot<Guid>
         ValidateAgeRestrictions(minAge, maxAge);
         MinAge = minAge;
         MaxAge = maxAge;
+    }
+
+    /// <summary>
+    /// Sets the maximum number of guests allowed per reservation
+    /// </summary>
+    public void SetMaxGuestsPerReservation(int? maxGuests)
+    {
+        ValidateMaxGuestsPerReservation(maxGuests);
+        MaxGuestsPerReservation = maxGuests;
     }
 
     // Capacity management methods
@@ -327,7 +345,7 @@ public sealed class Tour : FullAggregateRoot<Guid>
     }
 
     /// <summary>
-    /// Gets total count of participants in confirmed reservations
+    /// تعداد کل شرکت‌کنندگان در رزروهای تأیید شده
     /// </summary>
     public int GetConfirmedReservationCount()
     {
@@ -337,17 +355,28 @@ public sealed class Tour : FullAggregateRoot<Guid>
     }
 
     /// <summary>
-    /// Gets total count of participants in pending reservations
+    /// تعداد کل شرکت‌کنندگان در رزروهای Held
     /// </summary>
-    public int GetPendingReservationCount()
+    public int GetHeldReservationCount()
     {
         return _reservations
-            .Where(r => r.IsPending())
+            .Where(r => r.Status == ReservationStatus.Held)
             .Sum(r => r.GetParticipantCount());
     }
 
     /// <summary>
-    /// Checks if there are available spots (considering confirmed + pending reservations)
+    /// تعداد کل شرکت‌کنندگان در رزروهای در انتظار (Held + Paying)
+    /// </summary>
+    public int GetPendingReservationCount()
+    {
+        return _reservations
+            .Where(r => r.Status == ReservationStatus.Held || r.Status == ReservationStatus.Paying)
+            .Where(r => !r.IsExpired()) // حذف رزروهای منقضی شده
+            .Sum(r => r.GetParticipantCount());
+    }
+
+    /// <summary>
+    /// بررسی اینکه آیا ظرفیت خالی وجود دارد (با در نظر گیری رزروهای تأیید شده + در انتظار)
     /// </summary>
     public bool HasAvailableSpotsForReservation()
     {
@@ -356,7 +385,7 @@ public sealed class Tour : FullAggregateRoot<Guid>
     }
 
     /// <summary>
-    /// Gets available spots count (considering confirmed + pending reservations)
+    /// تعداد ظرفیت‌های خالی موجود (با در نظر گیری رزروهای تأیید شده + در انتظار)
     /// </summary>
     public int GetAvailableSpots()
     {
@@ -633,6 +662,47 @@ public sealed class Tour : FullAggregateRoot<Guid>
         return true;
     }
 
+    /// <summary>
+    /// Validates if adding a guest to a reservation would exceed the maximum guests limit
+    /// </summary>
+    public bool CanAddGuestToReservation(TourReservation reservation)
+    {
+        if (reservation == null)
+            throw new ArgumentNullException(nameof(reservation));
+
+        if (!MaxGuestsPerReservation.HasValue)
+            return true; // No limit set
+
+        var currentGuestCount = reservation.Participants.Count(p => p.ParticipantType == ParticipantType.Guest);
+        return currentGuestCount < MaxGuestsPerReservation.Value;
+    }
+
+    /// <summary>
+    /// Validates if the initial guests count for a new reservation is within limits
+    /// </summary>
+    public bool CanCreateReservationWithGuests(int guestCount)
+    {
+        if (!MaxGuestsPerReservation.HasValue)
+            return true; // No limit set
+
+        return guestCount <= MaxGuestsPerReservation.Value;
+    }
+
+    /// <summary>
+    /// Gets the maximum number of additional guests that can be added to a reservation
+    /// </summary>
+    public int GetRemainingGuestSlotsForReservation(TourReservation reservation)
+    {
+        if (reservation == null)
+            throw new ArgumentNullException(nameof(reservation));
+
+        if (!MaxGuestsPerReservation.HasValue)
+            return int.MaxValue; // No limit
+
+        var currentGuestCount = reservation.Participants.Count(p => p.ParticipantType == ParticipantType.Guest);
+        return Math.Max(0, MaxGuestsPerReservation.Value - currentGuestCount);
+    }
+
 
 
     /// <summary>
@@ -651,12 +721,153 @@ public sealed class Tour : FullAggregateRoot<Guid>
         IsActive = false;
     }
 
+    // Status management methods
+
+    /// <summary>
+    /// Changes the tour status using the state machine
+    /// </summary>
+    public void ChangeStatus(TourStatus newStatus, string? reason = null)
+    {
+        if (!TourStateMachine.IsValidTransition(Status, newStatus))
+        {
+            var (_, errorMessage) = TourStateMachine.ValidateTransition(Status, newStatus, reason);
+            throw new InvalidOperationException(errorMessage);
+        }
+
+        Status = newStatus;
+    }
+
+    /// <summary>
+    /// Schedules the tour (moves from Draft to Scheduled)
+    /// </summary>
+    public void Schedule()
+    {
+        ChangeStatus(TourStatus.Scheduled, "Tour scheduled for publication");
+    }
+
+    /// <summary>
+    /// Opens registration for the tour
+    /// </summary>
+    public void OpenRegistration()
+    {
+        ChangeStatus(TourStatus.RegistrationOpen, "Registration opened");
+    }
+
+    /// <summary>
+    /// Closes registration for the tour
+    /// </summary>
+    public void CloseRegistration()
+    {
+        ChangeStatus(TourStatus.RegistrationClosed, "Registration closed");
+    }
+
+    /// <summary>
+    /// Starts the tour
+    /// </summary>
+    public void StartTour()
+    {
+        ChangeStatus(TourStatus.InProgress, "Tour started");
+    }
+
+    /// <summary>
+    /// Completes the tour
+    /// </summary>
+    public void CompleteTour()
+    {
+        ChangeStatus(TourStatus.Completed, "Tour completed");
+    }
+
+    /// <summary>
+    /// Cancels the tour
+    /// </summary>
+    public void CancelTour(string? reason = null)
+    {
+        ChangeStatus(TourStatus.Cancelled, reason ?? "Tour cancelled");
+    }
+
+    /// <summary>
+    /// Postpones the tour
+    /// </summary>
+    public void PostponeTour(string? reason = null)
+    {
+        ChangeStatus(TourStatus.Postponed, reason ?? "Tour postponed");
+    }
+
+    /// <summary>
+    /// Suspends the tour
+    /// </summary>
+    public void SuspendTour(string? reason = null)
+    {
+        ChangeStatus(TourStatus.Suspended, reason ?? "Tour suspended");
+    }
+
+    /// <summary>
+    /// Archives the tour
+    /// </summary>
+    public void ArchiveTour()
+    {
+        ChangeStatus(TourStatus.Archived, "Tour archived");
+    }
+
+    /// <summary>
+    /// Reschedules a postponed tour
+    /// </summary>
+    public void RescheduleTour(DateTime newTourStart, DateTime newTourEnd)
+    {
+        if (Status != TourStatus.Postponed)
+            throw new InvalidOperationException("Can only reschedule postponed tours");
+
+        ValidateTourDates(newTourStart, newTourEnd);
+        TourStart = newTourStart;
+        TourEnd = newTourEnd;
+        ChangeStatus(TourStatus.Scheduled, "Tour rescheduled");
+    }
+
+    /// <summary>
+    /// Gets the overall capacity state based on all active capacities
+    /// </summary>
+    public CapacityState GetOverallCapacityState()
+    {
+        var activeCapacities = _capacities.Where(c => c.IsActive).ToList();
+        
+        if (!activeCapacities.Any())
+            return CapacityState.Full;
+
+        // Check capacity states
+        var hasSpareCapacity = activeCapacities.Any(c => c.CapacityState == CapacityState.HasSpare);
+        var hasTightCapacity = activeCapacities.Any(c => c.CapacityState == CapacityState.Tight);
+        var allFullCapacity = activeCapacities.All(c => c.CapacityState == CapacityState.Full);
+
+        // Logic: If all full → Full, else if any spare → HasSpare, else → Tight
+        if (allFullCapacity)
+            return CapacityState.Full;
+        if (hasSpareCapacity)
+            return CapacityState.HasSpare;
+        if (hasTightCapacity)
+            return CapacityState.Tight;
+
+        return CapacityState.Full; // Default fallback
+    }
+
+    /// <summary>
+    /// Updates capacity states for all active capacities
+    /// </summary>
+    public void UpdateAllCapacityStates()
+    {
+        foreach (var capacity in _capacities.Where(c => c.IsActive))
+        {
+            capacity.UpdateCapacityState();
+        }
+    }
+
     /// <summary>
     /// Checks if registration is currently open for any capacity
     /// </summary>
     public bool IsRegistrationOpen(DateTime currentDate)
     {
-        return IsActive && _capacities.Any(c => c.IsRegistrationOpen(currentDate));
+        return Status == TourStatus.RegistrationOpen && 
+               IsActive && 
+               _capacities.Any(c => c.IsRegistrationOpen(currentDate));
     }
 
 
@@ -685,6 +896,14 @@ public sealed class Tour : FullAggregateRoot<Guid>
             throw new ArgumentException("Maximum age cannot be negative", nameof(maxAge));
         if (minAge.HasValue && maxAge.HasValue && minAge.Value > maxAge.Value)
             throw new ArgumentException("Minimum age cannot be greater than maximum age");
+    }
+
+    private static void ValidateMaxGuestsPerReservation(int? maxGuests)
+    {
+        if (maxGuests.HasValue && maxGuests.Value < 0)
+            throw new ArgumentException("Maximum guests per reservation cannot be negative", nameof(maxGuests));
+        if (maxGuests.HasValue && maxGuests.Value > 50) // Reasonable upper limit
+            throw new ArgumentException("Maximum guests per reservation cannot exceed 50", nameof(maxGuests));
     }
 
     // Participant age validation is now done in reservation context

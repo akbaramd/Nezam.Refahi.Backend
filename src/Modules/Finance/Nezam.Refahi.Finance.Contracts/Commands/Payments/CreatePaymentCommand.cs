@@ -100,4 +100,10 @@ public record CreatePaymentResponse
     public decimal BillTotalAmount { get; init; }
     public int ItemsAdded { get; init; }
     public bool BillWasIssued { get; init; }
+    
+    // Payment processing fields
+    public long? TrackingNumber { get; init; }
+    public bool RequiresRedirect { get; init; }
+    public string? PaymentMessage { get; init; }
+    public string? PaymentGateway { get; init; }
 }

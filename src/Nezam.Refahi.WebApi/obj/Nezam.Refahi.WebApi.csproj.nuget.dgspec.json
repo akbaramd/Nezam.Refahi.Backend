@@ -361,6 +361,18 @@
               "suppressParent": "All",
               "target": "Package",
               "version": "[8.0.18, )"
+            },
+            "Parbad": {
+              "target": "Package",
+              "version": "[3.11.3, )"
+            },
+            "Parbad.AspNetCore": {
+              "target": "Package",
+              "version": "[1.5.0, )"
+            },
+            "Parbad.Storage.Cache": {
+              "target": "Package",
+              "version": "[1.5.0, )"
             }
           },
           "imports": [
@@ -438,6 +450,24 @@
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
+          "dependencies": {
+            "Bonyan.AspNetCore": {
+              "target": "Package",
+              "version": "[1.5.7, )"
+            },
+            "MediatR": {
+              "target": "Package",
+              "version": "[12.5.0, )"
+            },
+            "Microsoft.AspNetCore.OpenApi": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[6.5.0, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",
@@ -450,6 +480,9 @@
           "assetTargetFallback": true,
           "warn": true,
           "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
@@ -1461,6 +1494,9 @@
               "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Finance\\Nezam.Refahi.Finance.Contracts\\Nezam.Refahi.Finance.Contracts.csproj": {
                 "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Finance\\Nezam.Refahi.Finance.Contracts\\Nezam.Refahi.Finance.Contracts.csproj"
               },
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Finance\\Nezam.Refahi.Finance.Domain\\Nezam.Refahi.Finance.Domain.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Finance\\Nezam.Refahi.Finance.Domain\\Nezam.Refahi.Finance.Domain.csproj"
+              },
               "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Contracts\\Nezam.Refahi.Identity.Contracts.csproj": {
                 "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Contracts\\Nezam.Refahi.Identity.Contracts.csproj"
               },
@@ -1528,6 +1564,9 @@
           "assetTargetFallback": true,
           "warn": true,
           "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }

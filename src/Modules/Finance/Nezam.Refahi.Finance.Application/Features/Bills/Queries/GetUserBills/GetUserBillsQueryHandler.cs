@@ -74,7 +74,7 @@ public class GetUserBillsQueryHandler : IRequestHandler<GetUserBillsQuery, Appli
         }
         catch (Exception ex)
         {
-            return ApplicationResult<UserBillsResponse>.Failure($"Failed to retrieve user bills: {ex.Message}");
+            return ApplicationResult<UserBillsResponse>.Failure(ex, "Failed to retrieve user bills");
         }
     }
 

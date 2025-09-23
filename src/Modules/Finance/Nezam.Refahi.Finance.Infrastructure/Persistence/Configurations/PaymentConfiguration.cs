@@ -1,3 +1,4 @@
+using MCA.SharedKernel.Infrastructure.Configurations.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Nezam.Refahi.Finance.Domain.Entities;
@@ -64,6 +65,7 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.Property(p => p.FailureReason)
             .HasMaxLength(1000);
 
+        builder.ConfigureSoftDeletableEntity();
         // Money value object
         builder.OwnsOne(p => p.Amount, money =>
         {

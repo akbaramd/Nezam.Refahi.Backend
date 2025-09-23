@@ -1,4 +1,5 @@
 using MCA.SharedKernel.Domain;
+using Nezam.Refahi.Recreation.Domain.Enums;
 
 namespace Nezam.Refahi.Recreation.Domain.Entities;
 
@@ -16,6 +17,7 @@ public sealed class TourCapacity : Entity<Guid>
     public string? Description { get; private set; }
     public int MinParticipantsPerReservation { get; private set; } = 1;
     public int MaxParticipantsPerReservation { get; private set; } = 10;
+    public CapacityState CapacityState { get; private set; }
     
     // Multi-tenancy support
     public string? TenantId { get; private set; }
@@ -57,6 +59,7 @@ public sealed class TourCapacity : Entity<Guid>
         MaxParticipantsPerReservation = maxParticipantsPerReservation;
         TenantId = tenantId;
         IsActive = true;
+        CapacityState = CalculateCapacityState();
     }
 
     /// <summary>
@@ -71,6 +74,7 @@ public sealed class TourCapacity : Entity<Guid>
         MaxParticipants = maxParticipants;
         RemainingParticipants = Math.Max(0, maxParticipants - currentlyUsed);
         Description = description?.Trim();
+        CapacityState = CalculateCapacityState();
     }
 
     /// <summary>
@@ -92,6 +96,7 @@ public sealed class TourCapacity : Entity<Guid>
             return false;
 
         RemainingParticipants -= requestedCount;
+        CapacityState = CalculateCapacityState();
         return true;
     }
 
@@ -103,6 +108,7 @@ public sealed class TourCapacity : Entity<Guid>
         if (count <= 0) return;
         
         RemainingParticipants = Math.Min(MaxParticipants, RemainingParticipants + count);
+        CapacityState = CalculateCapacityState();
     }
 
     /// <summary>
@@ -187,6 +193,31 @@ public sealed class TourCapacity : Entity<Guid>
             return false;
 
         return RegistrationStart < other.RegistrationEnd && RegistrationEnd > other.RegistrationStart;
+    }
+
+    /// <summary>
+    /// Updates the capacity state based on current availability
+    /// </summary>
+    public void UpdateCapacityState()
+    {
+        CapacityState = CalculateCapacityState();
+    }
+
+    /// <summary>
+    /// Calculates the capacity state based on current availability
+    /// </summary>
+    private CapacityState CalculateCapacityState()
+    {
+        if (RemainingParticipants <= 0)
+            return CapacityState.Full;
+        
+        var percentage = (double)RemainingParticipants / MaxParticipants;
+        return percentage switch
+        {
+            >= 0.5 => CapacityState.HasSpare,
+            >= 0.1 => CapacityState.Tight,
+            _ => CapacityState.Full
+        };
     }
 
     // Private validation methods

@@ -95,7 +95,7 @@ public class GetTourDetailQueryHandler : IRequestHandler<GetTourDetailQuery, App
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while getting tour detail for tour {TourId}", request.TourId);
-            return ApplicationResult<TourDetailDto>.Failure("خطا در دریافت جزئیات تور رخ داده است");
+            return ApplicationResult<TourDetailDto>.Failure(ex, "خطا در دریافت جزئیات تور رخ داده است");
         }
     }
 
@@ -161,6 +161,7 @@ public class GetTourDetailQueryHandler : IRequestHandler<GetTourDetailQuery, App
             // Age restrictions
             MinAge = tour.MinAge,
             MaxAge = tour.MaxAge,
+            MaxGuestsPerReservation = tour.MaxGuestsPerReservation,
             AgeRestrictionNote = GetAgeRestrictionNote(tour.MinAge, tour.MaxAge),
 
             // Registration period
@@ -378,9 +379,7 @@ public class GetTourDetailQueryHandler : IRequestHandler<GetTourDetailQuery, App
         if (!tour.IsActive || !tour.IsRegistrationOpen(currentDate))
             return false;
 
-        if (userReservation != null && 
-            (userReservation.Status == ReservationStatus.Held || 
-             userReservation.Status == ReservationStatus.Confirmed))
+        if (userReservation != null && userReservation.IsActive())
             return false;
 
         return tour.MaxParticipants > 0; // Has available capacity

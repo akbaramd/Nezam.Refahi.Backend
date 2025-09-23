@@ -21,10 +21,13 @@ public class CancelReservationCommand : IRequest<ApplicationResult<CancelReserva
     /// <summary>
     /// Whether to permanently delete the reservation and participants from database
     /// If false, only marks as cancelled. If true, removes all data.
+    /// WARNING: Permanent delete should only be used by operators for legal compliance.
     /// </summary>
-    public bool PermanentDelete { get; set; } = true;
+    public bool PermanentDelete { get; set; } = false; // Changed default to preserve audit trail
 
-    public CancelReservationCommand(Guid reservationId, string? reason = null, bool permanentDelete = true)
+ 
+
+    public CancelReservationCommand(Guid reservationId, string? reason = null, bool permanentDelete = false)
     {
         ReservationId = reservationId;
         Reason = reason;

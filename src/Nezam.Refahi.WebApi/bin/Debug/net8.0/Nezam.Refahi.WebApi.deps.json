@@ -1369,6 +1369,49 @@
           }
         }
       },
+      "Parbad/3.11.3": {
+        "dependencies": {
+          "Newtonsoft.Json": "13.0.3",
+          "Parbad.Storage.Abstractions": "1.3.0"
+        },
+        "runtime": {
+          "lib/net8.0/Parbad.dll": {
+            "assemblyVersion": "3.11.3.0",
+            "fileVersion": "3.11.3.0"
+          }
+        }
+      },
+      "Parbad.AspNetCore/1.5.0": {
+        "dependencies": {
+          "Parbad": "3.11.3"
+        },
+        "runtime": {
+          "lib/net8.0/Parbad.AspNetCore.dll": {
+            "assemblyVersion": "1.5.0.0",
+            "fileVersion": "1.5.0.0"
+          }
+        }
+      },
+      "Parbad.Storage.Abstractions/1.3.0": {
+        "runtime": {
+          "lib/net8.0/Parbad.Storage.Abstractions.dll": {
+            "assemblyVersion": "1.3.0.0",
+            "fileVersion": "1.3.0.0"
+          }
+        }
+      },
+      "Parbad.Storage.Cache/1.5.0": {
+        "dependencies": {
+          "Newtonsoft.Json": "13.0.3",
+          "Parbad.Storage.Abstractions": "1.3.0"
+        },
+        "runtime": {
+          "lib/net8.0/Parbad.Storage.Cache.dll": {
+            "assemblyVersion": "1.5.0.0",
+            "fileVersion": "1.5.0.0"
+          }
+        }
+      },
       "Scrutor/3.3.0": {
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
@@ -1852,7 +1895,10 @@
           "Microsoft.EntityFrameworkCore.Sqlite": "8.0.18",
           "Nezam.Refahi.Finance.Application": "1.0.0",
           "Nezam.Refahi.Finance.Domain": "1.0.0",
-          "Nezam.Refahi.Shared.Infrastructure": "1.0.0"
+          "Nezam.Refahi.Shared.Infrastructure": "1.0.0",
+          "Parbad": "3.11.3",
+          "Parbad.AspNetCore": "1.5.0",
+          "Parbad.Storage.Cache": "1.5.0"
         },
         "runtime": {
           "Nezam.Refahi.Finance.Infrastructure.dll": {
@@ -1863,7 +1909,11 @@
       },
       "Nezam.Refahi.Finance.Presentation/1.0.0": {
         "dependencies": {
-          "Nezam.Refahi.Finance.Infrastructure": "1.0.0"
+          "Bonyan.AspNetCore": "1.5.7",
+          "MediatR": "12.5.0",
+          "Microsoft.AspNetCore.OpenApi": "8.0.0",
+          "Nezam.Refahi.Finance.Infrastructure": "1.0.0",
+          "Swashbuckle.AspNetCore": "6.5.0"
         },
         "runtime": {
           "Nezam.Refahi.Finance.Presentation.dll": {
@@ -2035,6 +2085,7 @@
           "FluentValidation.DependencyInjectionExtensions": "11.8.1",
           "Microsoft.Extensions.Http": "8.0.1",
           "Nezam.Refahi.Finance.Contracts": "1.0.0",
+          "Nezam.Refahi.Finance.Domain": "1.0.0",
           "Nezam.Refahi.Identity.Contracts": "1.0.0",
           "Nezam.Refahi.Membership.Contracts": "1.0.0",
           "Nezam.Refahi.Recreation.Contracts": "1.0.0",
@@ -2936,6 +2987,34 @@
       "sha512": "sha512-6sZ5uynQeAE9dPWBQGKebNmxbY4xsvcc5VplB5WkYEESUS7oy4AwnFp0FhqxTSKm/PaFrFqLrYr696CYN8cugg==",
       "path": "nito.disposables/2.2.1",
       "hashPath": "nito.disposables.2.2.1.nupkg.sha512"
+    },
+    "Parbad/3.11.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-AwPP40htVuOPpDGIE5rkuZb5nsknSbbFZHZG8B92dlEluwQpYmaj+LFkSq3C7Q62bRyD81DDomEn8ZYWNBsPrQ==",
+      "path": "parbad/3.11.3",
+      "hashPath": "parbad.3.11.3.nupkg.sha512"
+    },
+    "Parbad.AspNetCore/1.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-PYk8IKl87x2xUVXyJ8I/niD7Ts7uq2IKwO92w5YmVpwVlM5GGWWmAuZSyARrz9X5kyA4JEA5LGrcrllTh2+0xA==",
+      "path": "parbad.aspnetcore/1.5.0",
+      "hashPath": "parbad.aspnetcore.1.5.0.nupkg.sha512"
+    },
+    "Parbad.Storage.Abstractions/1.3.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-dAq5OGsH7RgjhQS/7mUPBtyIgUd0LMm2WpGVVCb0/QYVYTG3oo8QxgkLOXyjyKbBM8chVsHjoE4WE2bTc4IatA==",
+      "path": "parbad.storage.abstractions/1.3.0",
+      "hashPath": "parbad.storage.abstractions.1.3.0.nupkg.sha512"
+    },
+    "Parbad.Storage.Cache/1.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-EJeUOSuViZpdYTEEk9ziMx60wK2IggBgN9O4wAdpjBoW3xfaIEOlWNwq4rWAHtO/aPAYcP9jcIbFzJiKgkfmeg==",
+      "path": "parbad.storage.cache/1.5.0",
+      "hashPath": "parbad.storage.cache.1.5.0.nupkg.sha512"
     },
     "Scrutor/3.3.0": {
       "type": "package",

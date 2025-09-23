@@ -68,11 +68,11 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Appli
         }
         catch (ArgumentException ex)
         {
-            return ApplicationResult<Guid>.Failure(ex.Message);
+            return ApplicationResult<Guid>.Failure(ex, ex.Message);
         }
         catch (Exception ex)
         {
-            return ApplicationResult<Guid>.Failure($"خطا در ایجاد کاربر: {ex.Message}");
+            return ApplicationResult<Guid>.Failure(ex, "خطا در ایجاد کاربر");
         }
     }
 }

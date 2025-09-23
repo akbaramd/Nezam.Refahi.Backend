@@ -1,4 +1,5 @@
 ﻿using Nezam.Refahi.Recreation.Domain.Entities;
+using Nezam.Refahi.Recreation.Domain.Enums;
 using Nezam.Refahi.Shared.Application.Common.Contracts;
 
 namespace Nezam.Refahi.Recreation.Contracts.Dtos;
@@ -24,6 +25,7 @@ public class TourCapacityDetailDto : IStaticMapper<TourCapacity, TourCapacityDet
   public int MaxParticipantsPerReservation { get; set; }
   public bool IsFullyBooked { get; set; }
   public bool IsNearlyFull { get; set; }
+  public CapacityState CapacityState { get; set; }
   public string AvailabilityStatus { get; set; } = string.Empty;
   public string AvailabilityMessage { get; set; } = string.Empty;
   public string? Color { get; set; }

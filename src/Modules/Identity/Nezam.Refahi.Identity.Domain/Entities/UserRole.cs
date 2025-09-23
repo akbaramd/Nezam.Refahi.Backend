@@ -38,7 +38,21 @@ public class UserRole : Entity<Guid>
         AssignedBy = assignedBy?.Trim();
         Notes = notes?.Trim();
     }
+    public UserRole(Guid userId, Role role, DateTime? expiresAt = null, string? assignedBy = null, string? notes = null) : base(Guid.NewGuid())
+    {
+      if (userId == Guid.Empty)
+        throw new ArgumentException("User ID cannot be empty", nameof(userId));
 
+ 
+      UserId = userId;
+      RoleId = role.Id;
+      Role = role;
+      IsActive = true;
+      AssignedAt = DateTime.UtcNow;
+      ExpiresAt = expiresAt;
+      AssignedBy = assignedBy?.Trim();
+      Notes = notes?.Trim();
+    }
     /// <summary>
     /// Activates the user role assignment
     /// </summary>

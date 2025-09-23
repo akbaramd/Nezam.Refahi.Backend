@@ -5,6 +5,7 @@ using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
 using Nezam.Refahi.Membership.Contracts.Services;
+using Nezam.Refahi.Recreation.Application.Services;
 
 namespace Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.ConfirmReservation;
 
@@ -14,14 +15,14 @@ namespace Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands
 public class ConfirmReservationCommandHandler : IRequestHandler<ConfirmReservationCommand, ApplicationResult>
 {
     private readonly ITourReservationRepository _reservationRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IRecreationUnitOfWork _unitOfWork;
     private readonly ICurrentUserService _currentUserService;
     private readonly IMemberService _memberService;
     private readonly ILogger<ConfirmReservationCommandHandler> _logger;
 
     public ConfirmReservationCommandHandler(
         ITourReservationRepository reservationRepository,
-        IUnitOfWork unitOfWork,
+        IRecreationUnitOfWork unitOfWork,
         ICurrentUserService currentUserService,
         IMemberService memberService,
         ILogger<ConfirmReservationCommandHandler> logger)
@@ -37,11 +38,10 @@ public class ConfirmReservationCommandHandler : IRequestHandler<ConfirmReservati
     {
         try
         {
-            // Get user national number from current user or request parameter
-            string? nationalNumber = await GetUserNationalNumberAsync( cancellationToken);
+            
 
-            _logger.LogInformation("Confirming reservation - ReservationId: {ReservationId}, TotalAmount: {TotalAmount}, PaymentReference: {PaymentReference}, NationalNumber: {NationalNumber}",
-                request.ReservationId, request.TotalAmountRials, request.PaymentReference, nationalNumber);
+            _logger.LogInformation("Confirming reservation - ReservationId: {ReservationId}, TotalAmount: {TotalAmount}, PaymentReference: {PaymentReference}",
+                request.ReservationId, request.TotalAmountRials, request.PaymentReference);
 
             // Get the reservation
             var reservation = await _reservationRepository.FindOneAsync(x => x.Id == request.ReservationId, cancellationToken);
@@ -52,30 +52,7 @@ public class ConfirmReservationCommandHandler : IRequestHandler<ConfirmReservati
                 return ApplicationResult.Failure("رزرو مورد نظر یافت نشد");
             }
 
-            // Check authorization if national number is available
-            if (!string.IsNullOrWhiteSpace(nationalNumber))
-            {
-                var hasAccess = reservation.Participants.Any(p =>
-                    p.NationalNumber == nationalNumber);
-
-                if (!hasAccess)
-                {
-                    _logger.LogWarning("User does not have access to reservation - ReservationId: {ReservationId}, NationalNumber: {NationalNumber}",
-                        request.ReservationId, nationalNumber);
-                    return ApplicationResult.Failure("شما به این رزرو دسترسی ندارید");
-                }
-            }
-            else
-            {
-                // If no national number is available and user is not authenticated, deny access
-                if (!_currentUserService.IsAuthenticated)
-                {
-                    _logger.LogWarning("Unauthorized access attempt to confirm reservation - ReservationId: {ReservationId}",
-                        request.ReservationId);
-                    return ApplicationResult.Failure("شما به این رزرو دسترسی ندارید");
-                }
-            }
-
+           
             // Prepare total amount if provided
             Money? totalAmount = null;
             if (request.TotalAmountRials.HasValue)
@@ -86,7 +63,22 @@ public class ConfirmReservationCommandHandler : IRequestHandler<ConfirmReservati
             // Confirm the reservation
             try
             {
-                reservation.Confirm(totalAmount);
+                // For payment-confirmed reservations, we should allow confirmation even if expired
+                // because the payment was initiated before expiry
+                if (reservation.Status == Nezam.Refahi.Recreation.Domain.Enums.ReservationStatus.Paying)
+                {
+                    // Special handling for payment-confirmed reservations
+                    // Skip expiry check since payment was initiated before expiry
+                    reservation.Confirm(totalAmount, skipExpiryCheck: true);
+                    
+                    _logger.LogInformation("Confirmed expired reservation {ReservationId} due to successful payment", 
+                        reservation.Id);
+                }
+                else
+                {
+                    // Normal confirmation with expiry check
+                    reservation.Confirm(totalAmount);
+                }
 
                 // Add payment reference to notes if provided
                 if (!string.IsNullOrWhiteSpace(request.PaymentReference))
@@ -129,24 +121,5 @@ public class ConfirmReservationCommandHandler : IRequestHandler<ConfirmReservati
     /// <param name="requestNationalNumber">National number provided in the request</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The national number to use for authorization, or null if not found</returns>
-    private async Task<string?> GetUserNationalNumberAsync( CancellationToken cancellationToken)
-    {
-
-
-        // If user is authenticated, get their member information
-        if (_currentUserService.IsAuthenticated && _currentUserService.UserId.HasValue)
-        {
-            try
-            {
-                var member = await _memberService.GetMemberByExternalIdAsync(_currentUserService.UserId.Value.ToString());
-                return member?.NationalCode;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Failed to retrieve member information for user {UserId}", _currentUserService.UserId);
-            }
-        }
-
-        return null;
-    }
+    
 }

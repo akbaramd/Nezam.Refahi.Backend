@@ -1,5 +1,6 @@
 using FluentValidation;
 using MediatR;
+using Nezam.Refahi.Finance.Application.Services;
 using Nezam.Refahi.Finance.Contracts.Commands.Bills;
 using Nezam.Refahi.Finance.Domain.Repositories;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
@@ -15,12 +16,12 @@ public class AddBillItemCommandHandler : IRequestHandler<AddBillItemCommand, App
 {
     private readonly IBillRepository _billRepository;
     private readonly IValidator<AddBillItemCommand> _validator;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IFinanceUnitOfWork _unitOfWork;
 
     public AddBillItemCommandHandler(
         IBillRepository billRepository,
         IValidator<AddBillItemCommand> validator,
-        IUnitOfWork unitOfWork)
+        IFinanceUnitOfWork unitOfWork)
     {
         _billRepository = billRepository ?? throw new ArgumentNullException(nameof(billRepository));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
@@ -83,7 +84,7 @@ public class AddBillItemCommandHandler : IRequestHandler<AddBillItemCommand, App
         catch (Exception ex)
         {
             await _unitOfWork.RollbackAsync(cancellationToken);
-            return ApplicationResult<AddBillItemResponse>.Failure($"Failed to add bill item: {ex.Message}");
+            return ApplicationResult<AddBillItemResponse>.Failure(ex, "Failed to add bill item");
         }
     }
 }

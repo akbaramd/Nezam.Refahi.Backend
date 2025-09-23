@@ -11,6 +11,8 @@ using Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.Con
 using Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.ReactivateExpiredReservation;
 using Nezam.Refahi.Recreation.Application.Features.TourReservations.Queries.GetReservationPricing;
 using Nezam.Refahi.Recreation.Application.Features.TourReservations.Queries.GetReservationDetail;
+using Nezam.Refahi.Recreation.Application.Features.TourReservations.Queries.GetUserReservations;
+using Nezam.Refahi.Recreation.Domain.Enums;
 using Nezam.Refahi.Recreation.Contracts.Dtos;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
@@ -213,6 +215,37 @@ public static class ReservationEndpoints
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status404NotFound);
+
+        // Get current user's reservations
+        group.MapGet("/my-reservations", async (
+            [FromServices] IMediator mediator,
+            CancellationToken cancellationToken,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] ReservationStatus? status = null,
+            [FromQuery] string? trackingCode = null,
+            [FromQuery] DateTime? fromDate = null,
+            [FromQuery] DateTime? toDate = null) =>
+        {
+            var query = new GetUserReservationsQuery
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                Status = status,
+                TrackingCode = trackingCode,
+                FromDate = fromDate,
+                ToDate = toDate
+            };
+
+            var result = await mediator.Send(query, cancellationToken:cancellationToken);
+            return result;
+        })
+        .WithName("GetUserReservations")
+        .WithSummary("Get current user's reservations")
+        .WithDescription("Gets paginated list of reservations for the current authenticated user, including participant information")
+        .Produces<ApplicationResult<PaginatedResult<UserReservationDto>>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized);
     }
 }
 

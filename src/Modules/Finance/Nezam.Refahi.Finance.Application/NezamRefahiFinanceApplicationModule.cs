@@ -4,6 +4,8 @@ using System.Reflection;
 using Bonyan.Modularity;
 using Bonyan.Modularity.Abstractions;
 using MediatR;
+using Nezam.Refahi.Finance.Application.Configuration;
+using Microsoft.Extensions.Configuration;
 
 namespace Nezam.Refahi.Finance.Application;
 
@@ -21,6 +23,11 @@ public  class NezamRefahiFinanceApplicationModule : BonModule
 
     // Add FluentValidation
     context.Services.AddValidatorsFromAssembly(assembly);
+
+    // Register configuration
+    var configuration = context.GetRequireService<IConfiguration>();
+    context.Services.Configure<FrontendSettings>(configuration.GetSection(FrontendSettings.SectionName));
+
     return base.OnConfigureAsync(context);
   }
 }

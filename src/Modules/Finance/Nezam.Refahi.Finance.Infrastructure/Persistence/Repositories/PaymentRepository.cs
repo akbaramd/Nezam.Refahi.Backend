@@ -30,6 +30,12 @@ public class PaymentRepository : EfRepository<FinanceDbContext, Payment, Guid>, 
             .FirstOrDefaultAsync(p => p.GatewayTransactionId == gatewayTransactionId, cancellationToken);
     }
 
+    public async Task<Payment?> GetByTrackingNumberAsync(string trackingNumber, CancellationToken cancellationToken = default)
+    {
+        return await PrepareQuery(_dbSet)
+            .FirstOrDefaultAsync(p => p.TrackingNumber == trackingNumber, cancellationToken);
+    }
+
     public async Task<IEnumerable<Payment>> GetByStatusAsync(PaymentStatus status, CancellationToken cancellationToken = default)
     {
         return await PrepareQuery(_dbSet)

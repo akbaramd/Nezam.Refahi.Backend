@@ -66,7 +66,7 @@ public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Appli
         }
         catch (InvalidOperationException ex)
         {
-            return ApplicationResult.Failure(ex.Message);
+            return ApplicationResult.Failure(ex, ex.Message);
         }
         catch (Exception ex)
         {

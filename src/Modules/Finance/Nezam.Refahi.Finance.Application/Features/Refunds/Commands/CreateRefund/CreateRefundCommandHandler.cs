@@ -1,5 +1,6 @@
 using FluentValidation;
 using MediatR;
+using Nezam.Refahi.Finance.Application.Services;
 using Nezam.Refahi.Finance.Contracts.Commands.Refunds;
 using Nezam.Refahi.Finance.Domain.Repositories;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
@@ -16,13 +17,13 @@ public class CreateRefundCommandHandler : IRequestHandler<CreateRefundCommand, A
     private readonly IBillRepository _billRepository;
     private readonly IRefundRepository _refundRepository;
     private readonly IValidator<CreateRefundCommand> _validator;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IFinanceUnitOfWork _unitOfWork;
 
     public CreateRefundCommandHandler(
         IBillRepository billRepository,
         IRefundRepository refundRepository,
         IValidator<CreateRefundCommand> validator,
-        IUnitOfWork unitOfWork)
+        IFinanceUnitOfWork unitOfWork)
     {
         _billRepository = billRepository ?? throw new ArgumentNullException(nameof(billRepository));
         _refundRepository = refundRepository ?? throw new ArgumentNullException(nameof(refundRepository));
@@ -83,7 +84,7 @@ public class CreateRefundCommandHandler : IRequestHandler<CreateRefundCommand, A
         catch (Exception ex)
         {
             await _unitOfWork.RollbackAsync(cancellationToken);
-            return ApplicationResult<CreateRefundResponse>.Failure($"Failed to create refund: {ex.Message}");
+            return ApplicationResult<CreateRefundResponse>.Failure(ex, "Failed to create refund");
         }
     }
 }

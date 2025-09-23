@@ -99,6 +99,20 @@ public sealed class Bill : FullAggregateRoot<Guid>
         PaidAmount = Money.Zero;
         RemainingAmount = Money.Zero;
         Metadata = metadata ?? new Dictionary<string, string>();
+
+        // Raise domain event
+        AddDomainEvent(new BillCreatedEvent(
+            Id,
+            BillNumber,
+            Title,
+            ReferenceId,
+            BillType,
+            UserNationalNumber,
+            UserFullName,
+            TotalAmount,
+            IssueDate,
+            DueDate,
+            Description));
     }
 
     /// <summary>
@@ -203,8 +217,17 @@ public sealed class Bill : FullAggregateRoot<Guid>
         if (!_items.Any())
             throw new InvalidOperationException("Cannot issue bill without items");
 
+        var previousStatus = Status;
         Status = BillStatus.Issued;
         IssueDate = DateTime.UtcNow;
+
+        // Raise domain event
+        AddDomainEvent(new BillStatusChangedEvent(
+            Id,
+            BillNumber,
+            previousStatus,
+            Status,
+            "Bill issued"));
     }
 
     /// <summary>
@@ -248,6 +271,22 @@ public sealed class Bill : FullAggregateRoot<Guid>
 
         var payment = new Payment(Id, BillNumber, amount, method, gateway, callbackUrl, description, expiryDate);
         _payments.Add(payment);
+
+        // Raise domain event
+        AddDomainEvent(new PaymentInitiatedEvent(
+            payment.Id,
+            Id,
+            BillNumber,
+            ReferenceId,
+            BillType,
+            UserNationalNumber,
+            amount,
+            method,
+            gateway,
+            payment.TrackingNumber,
+            expiryDate,
+            description));
+
         return payment;
     }
 
@@ -320,6 +359,19 @@ public sealed class Bill : FullAggregateRoot<Guid>
 
         var refund = new Refund(Id, refundAmount, reason, requestedByNationalNumber ?? UserNationalNumber);
         _refunds.Add(refund);
+
+        // Raise domain event
+        AddDomainEvent(new RefundInitiatedEvent(
+            refund.Id,
+            Id,
+            Id, // BillId
+            BillNumber,
+            ReferenceId,
+            BillType,
+            refundAmount,
+            refund.RequestedByNationalNumber,
+            reason));
+
         return refund;
     }
 
@@ -389,11 +441,241 @@ public sealed class Bill : FullAggregateRoot<Guid>
             payment.Cancel(reason);
         }
 
+        var previousStatus = Status;
         Status = BillStatus.Cancelled;
         if (!string.IsNullOrWhiteSpace(reason))
         {
             Metadata["CancellationReason"] = reason;
         }
+
+        // Raise domain event
+        AddDomainEvent(new BillCancelledEvent(
+            Id,
+            BillNumber, 
+            ReferenceId,
+            BillType,
+            UserNationalNumber,
+            TotalAmount,
+            PaidAmount,
+            PaidAmount, // Refund amount equals paid amount for cancelled bills
+            reason ?? "Bill cancelled"));
+    }
+
+    /// <summary>
+    /// Voids the bill before any payment (prevents financial impact)
+    /// </summary>
+    /// <remarks>
+    /// <para>توضیح رفتار:</para>
+    /// این رفتار فاکتور را قبل از هر پرداختی ابطال می‌کند و از تأثیر مالی جلوگیری می‌نماید.
+    /// با Cancel متفاوت است زیرا هیچ پرداختی انجام نشده است.
+    ///
+    /// <para>کاربرد در دنیای واقعی:</para>
+    /// زمانی که فاکتور اشتباه صادر شده یا نیاز به اصلاح قبل از ارسال به مشتری وجود دارد.
+    ///
+    /// <para>قوانین:</para>
+    /// - فقط فاکتورهای Draft یا Issued قابل ابطال هستند.
+    /// - هیچ پرداختی نباید انجام شده باشد.
+    /// - وضعیت به Voided تغییر می‌یابد.
+    ///
+    /// <para>بایدها و نبایدها:</para>
+    /// - باید: فقط قبل از هر پرداختی قابل اجرا باشد.
+    /// - باید: دلیل ابطال ثبت شود.
+    /// - نباید: فاکتورهای پرداخت شده ابطال شوند.
+    /// - نباید: با Cancel اشتباه گرفته شود.
+    /// </remarks>
+    public void Void(string? reason = null)
+    {
+        if (Status != BillStatus.Draft && Status != BillStatus.Issued)
+            throw new InvalidOperationException("Can only void draft or issued bills");
+        if (PaidAmount.AmountRials > 0)
+            throw new InvalidOperationException("Cannot void bill with payments");
+        if (Status == BillStatus.Voided)
+            return; // Already voided
+
+        var previousStatus = Status;
+        Status = BillStatus.Voided;
+        if (!string.IsNullOrWhiteSpace(reason))
+        {
+            Metadata["VoidReason"] = reason;
+        }
+
+        // Raise domain event
+        AddDomainEvent(new BillStatusChangedEvent(
+            Id,
+            BillNumber,
+            previousStatus,
+            Status,
+            reason ?? "Bill voided"));
+    }
+
+    /// <summary>
+    /// Writes off the bill as bad debt (with financial documentation)
+    /// </summary>
+    /// <remarks>
+    /// <para>توضیح رفتار:</para>
+    /// این رفتار فاکتور را به عنوان مطالبه سوخته علامت‌گذاری می‌کند
+    /// و نیاز به اسناد مالی و تأیید مدیریت مالی دارد.
+    ///
+    /// <para>کاربرد در دنیای واقعی:</para>
+    /// زمانی که مشتری قادر به پرداخت نیست یا مطالبه غیرقابل وصول است.
+    ///
+    /// <para>قوانین:</para>
+    /// - فقط فاکتورهای Issued یا Overdue قابل سوخت هستند.
+    /// - نیاز به تأیید مدیریت مالی دارد.
+    /// - وضعیت به WrittenOff تغییر می‌یابد.
+    ///
+    /// <para>بایدها و نبایدها:</para>
+    /// - باید: تأیید مدیریت مالی داشته باشد.
+    /// - باید: اسناد مالی کامل باشد.
+    /// - نباید: بدون تأیید انجام شود.
+    /// - نباید: فاکتورهای Draft سوخته شوند.
+    /// </remarks>
+    public void WriteOff(string? reason = null, string? approvedBy = null)
+    {
+        if (Status != BillStatus.Issued && Status != BillStatus.Overdue)
+            throw new InvalidOperationException("Can only write off issued or overdue bills");
+        if (Status == BillStatus.WrittenOff)
+            return; // Already written off
+
+        var previousStatus = Status;
+        Status = BillStatus.WrittenOff;
+        if (!string.IsNullOrWhiteSpace(reason))
+        {
+            Metadata["WriteOffReason"] = reason;
+        }
+        if (!string.IsNullOrWhiteSpace(approvedBy))
+        {
+            Metadata["WriteOffApprovedBy"] = approvedBy;
+        }
+
+        // Raise domain event
+        AddDomainEvent(new BillStatusChangedEvent(
+            Id,
+            BillNumber,
+            previousStatus,
+            Status,
+            reason ?? "Bill written off"));
+    }
+
+    /// <summary>
+    /// Issues a credit note for correction/post-payment discount
+    /// </summary>
+    /// <remarks>
+    /// <para>توضیح رفتار:</para>
+    /// این رفتار Credit Note صادر می‌کند برای اصلاح یا تخفیف پسینی
+    /// که معادل Refund در سطح سند است.
+    ///
+    /// <para>کاربرد در دنیای واقعی:</para>
+    /// زمانی که نیاز به اصلاح فاکتور یا اعطای تخفیف پسینی وجود دارد.
+    ///
+    /// <para>قوانین:</para>
+    /// - فقط فاکتورهای Issued یا FullyPaid قابل اعتبار هستند.
+    /// - مبلغ اعتبار نباید از مبلغ کل بیشتر باشد.
+    /// - وضعیت به Credited تغییر می‌یابد.
+    ///
+    /// <para>بایدها و نبایدها:</para>
+    /// - باید: مبلغ اعتبار معتبر باشد.
+    /// - باید: دلیل اعتبار ثبت شود.
+    /// - نباید: فاکتورهای Draft اعتبار یابند.
+    /// - نباید: مبلغ بیش از کل فاکتور باشد.
+    /// </remarks>
+    public void Credit(Money creditAmount, string? reason = null)
+    {
+        if (Status != BillStatus.Issued && Status != BillStatus.FullyPaid)
+            throw new InvalidOperationException("Can only credit issued or fully paid bills");
+        if (creditAmount.AmountRials > TotalAmount.AmountRials)
+            throw new InvalidOperationException("Credit amount cannot exceed total bill amount");
+        if (Status == BillStatus.Credited)
+            return; // Already credited
+
+        var previousStatus = Status;
+        Status = BillStatus.Credited;
+        if (!string.IsNullOrWhiteSpace(reason))
+        {
+            Metadata["CreditReason"] = reason;
+        }
+        Metadata["CreditAmount"] = creditAmount.AmountRials.ToString();
+
+        // Raise domain event
+        AddDomainEvent(new BillStatusChangedEvent(
+            Id,
+            BillNumber,
+            previousStatus,
+            Status,
+            reason ?? "Bill credited"));
+    }
+
+    /// <summary>
+    /// Marks the bill as disputed (suspended until arbitration)
+    /// </summary>
+    /// <remarks>
+    /// <para>توضیح رفتار:</para>
+    /// این رفتار فاکتور را به عنوان مورد اعتراض مالی علامت‌گذاری می‌کند
+    /// و پیگیری آن را تا زمان داوری متوقف می‌نماید.
+    ///
+    /// <para>کاربرد در دنیای واقعی:</para>
+    /// زمانی که مشتری با مبلغ یا محتوای فاکتور مخالف است و نیاز به داوری دارد.
+    ///
+    /// <para>قوانین:</para>
+    /// - فقط فاکتورهای Issued یا FullyPaid قابل اعتراض هستند.
+    /// - وضعیت به Disputed تغییر می‌یابد.
+    /// - پیگیری متوقف می‌شود تا زمان حل اختلاف.
+    ///
+    /// <para>بایدها و نبایدها:</para>
+    /// - باید: دلیل اعتراض ثبت شود.
+    /// - باید: تاریخ اعتراض ثبت شود.
+    /// - نباید: فاکتورهای Draft اعتراض یابند.
+    /// - نباید: بدون دلیل اعتراض انجام شود.
+    /// </remarks>
+    public void Dispute(string? reason = null)
+    {
+        if (Status != BillStatus.Issued && Status != BillStatus.FullyPaid)
+            throw new InvalidOperationException("Can only dispute issued or fully paid bills");
+        if (Status == BillStatus.Disputed)
+            return; // Already disputed
+
+        var previousStatus = Status;
+        Status = BillStatus.Disputed;
+        if (!string.IsNullOrWhiteSpace(reason))
+        {
+            Metadata["DisputeReason"] = reason;
+        }
+        Metadata["DisputeDate"] = DateTime.UtcNow.ToString("O");
+
+        // Raise domain event
+        AddDomainEvent(new BillStatusChangedEvent(
+            Id,
+            BillNumber,
+            previousStatus,
+            Status,
+            reason ?? "Bill disputed"));
+    }
+
+    /// <summary>
+    /// Resolves a disputed bill (moves back to appropriate status)
+    /// </summary>
+    public void ResolveDispute(BillStatus newStatus, string? resolution = null)
+    {
+        if (Status != BillStatus.Disputed)
+            throw new InvalidOperationException("Can only resolve disputed bills");
+        if (newStatus == BillStatus.Disputed)
+            throw new InvalidOperationException("Cannot resolve dispute to disputed status");
+
+        var previousStatus = Status;
+        Status = newStatus;
+        if (!string.IsNullOrWhiteSpace(resolution))
+        {
+            Metadata["DisputeResolution"] = resolution;
+        }
+        Metadata["DisputeResolvedDate"] = DateTime.UtcNow.ToString("O");
+
+        // Raise domain event
+        AddDomainEvent(new BillStatusChangedEvent(
+            Id,
+            BillNumber,
+            previousStatus,
+            Status,
+            resolution ?? "Dispute resolved"));
     }
 
     /// <summary>
@@ -438,6 +720,20 @@ public sealed class Bill : FullAggregateRoot<Guid>
 
     private void UpdateBillStatus()
     {
+        var previousStatus = Status;
+        var wasFullyPaid = Status == BillStatus.FullyPaid;
+
+        // Don't update status for terminal or special statuses
+        if (Status == BillStatus.Voided || 
+            Status == BillStatus.WrittenOff || 
+            Status == BillStatus.Credited || 
+            Status == BillStatus.Disputed ||
+            Status == BillStatus.Cancelled ||
+            Status == BillStatus.Refunded)
+        {
+            return;
+        }
+
         if (PaidAmount.AmountRials == 0)
         {
             Status = BillStatus.Issued;
@@ -456,6 +752,50 @@ public sealed class Bill : FullAggregateRoot<Guid>
         if (IsOverdue() && Status != BillStatus.FullyPaid)
         {
             Status = BillStatus.Overdue;
+        }
+
+        // Raise status changed event if status changed
+        if (previousStatus != Status)
+        {
+            AddDomainEvent(new BillStatusChangedEvent(
+                Id,
+                BillNumber,
+                previousStatus,
+                Status,
+                "Bill status updated due to payment"));
+        }
+
+        // Raise fully paid event if bill just became fully paid
+        if ( Status == BillStatus.FullyPaid)
+        {
+            var completedPayments = _payments.Where(p => p.Status == PaymentStatus.Completed).ToList();
+            AddDomainEvent(new BillFullyPaidEvent(
+                Id,
+                BillNumber,
+                ReferenceId,
+                BillType,
+                UserNationalNumber,
+                TotalAmount,
+                PaidAmount,
+                FullyPaidDate!.Value,
+                completedPayments.Count,
+                completedPayments.LastOrDefault()?.Method.ToString(),
+                completedPayments.LastOrDefault()?.Gateway?.ToString()));
+        }
+
+        // Raise overdue event if bill just became overdue
+        if (Status == BillStatus.Overdue && previousStatus != BillStatus.Overdue)
+        {
+            AddDomainEvent(new BillOverdueEvent(
+                Id,
+                BillNumber,
+                ReferenceId,
+                BillType,
+                UserNationalNumber,
+                TotalAmount,        
+                RemainingAmount,
+                DueDate!.Value,
+                DateTime.UtcNow));
         }
     }
 

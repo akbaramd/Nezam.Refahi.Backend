@@ -1,0 +1,109 @@
+using MediatR;
+using Microsoft.Extensions.Logging;
+using Nezam.Refahi.Finance.Domain.Events;
+using Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.ConfirmReservation;
+using Nezam.Refahi.Recreation.Application.Services;
+using Nezam.Refahi.Recreation.Domain.Repositories;
+using Nezam.Refahi.Shared.Application.Common.Interfaces;
+
+namespace Nezam.Refahi.Recreation.Application.EventConsumers;
+
+/// <summary>
+/// Handles BillFullyPaidEvent to confirm tour reservations
+/// When a bill is fully paid, the associated tour reservation should be confirmed
+/// </summary>
+public class BillFullyPaidEventConsumer : INotificationHandler<BillFullyPaidEvent>
+{
+    private readonly ITourReservationRepository _reservationRepository;
+    private readonly IRecreationUnitOfWork _unitOfWork;
+    private readonly IMediator _mediator;
+    private readonly ILogger<BillFullyPaidEventConsumer> _logger;
+
+    public BillFullyPaidEventConsumer(
+        ITourReservationRepository reservationRepository,
+        IRecreationUnitOfWork unitOfWork,
+        IMediator mediator,
+        ILogger<BillFullyPaidEventConsumer> logger)
+    {
+        _reservationRepository = reservationRepository ?? throw new ArgumentNullException(nameof(reservationRepository));
+        _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    public async Task Handle(BillFullyPaidEvent notification, CancellationToken cancellationToken)
+    {
+        try
+        {
+            _logger.LogInformation("Processing BillFullyPaidEvent for Bill {BillId}, ReferenceId: {ReferenceId}", 
+notification.BillId, notification.ReferenceId);
+
+            // Check if this is a tour reservation bill
+            if (notification.ReferenceType != "TourReservation")
+            {
+                _logger.LogDebug("Ignoring BillFullyPaidEvent - ReferenceType {ReferenceType} is not for tour reservation", 
+                    notification.ReferenceType);
+                return;
+            }
+
+            // Find reservation by ReferenceId (which is now the reservation ID)
+            if (!Guid.TryParse(notification.ReferenceId, out var reservationId))
+            {
+                _logger.LogWarning("Invalid reservation ID: {ReferenceId}", notification.ReferenceId);
+                return;
+            }
+
+            var reservation = await _reservationRepository.GetByIdAsync(reservationId, cancellationToken);
+            
+            if (reservation == null)
+            {
+                _logger.LogWarning("No reservation found with ID {ReservationId} for BillFullyPaidEvent", 
+                    reservationId);
+                return;
+            }
+
+            // Verify the bill ID matches
+            if (reservation.BillId != notification.BillId)
+            {
+                _logger.LogWarning("Bill ID mismatch for reservation {ReservationId}. Expected: {ExpectedBillId}, Actual: {ActualBillId}", 
+                    reservation.Id, notification.BillId, reservation.BillId);
+                return;
+            }
+
+            // Check if reservation is in Paying status
+            if (reservation.Status != Nezam.Refahi.Recreation.Domain.Enums.ReservationStatus.Paying)
+            {
+                _logger.LogWarning("Reservation {ReservationId} is not in Paying status. Current status: {Status}", 
+                    reservation.Id, reservation.Status);
+                return;
+            }
+
+            // Confirm the reservation using the existing command
+            var confirmCommand = new ConfirmReservationCommand
+            {
+                ReservationId = reservation.Id,
+                TotalAmountRials = (long?)notification.PaidAmount.AmountRials, // System confirmation due to payment
+                PaymentReference = notification.ReferenceId // System confirmation due to payment
+            };
+
+            var result = await _mediator.Send(confirmCommand, cancellationToken);
+
+            if (result.IsSuccess)
+            {
+                _logger.LogInformation("Successfully confirmed reservation {ReservationId} due to full payment of bill {BillId}", 
+                    reservation.Id, notification.BillId);
+            }
+            else
+            {
+                _logger.LogError("Failed to confirm reservation {ReservationId} due to full payment of bill {BillId}. Errors: {Errors}", 
+                    reservation.Id, notification.BillId, string.Join(", ", result.Errors ?? new List<string>()));
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing BillFullyPaidEvent for Bill {BillId}, ReferenceId: {ReferenceId}", 
+                notification.BillId, notification.ReferenceId);
+            throw;
+        }
+    }
+}

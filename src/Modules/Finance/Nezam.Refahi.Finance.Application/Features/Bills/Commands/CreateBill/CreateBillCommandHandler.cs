@@ -1,5 +1,6 @@
 using FluentValidation;
 using MediatR;
+using Nezam.Refahi.Finance.Application.Services;
 using Nezam.Refahi.Finance.Contracts.Commands.Bills;
 using Nezam.Refahi.Finance.Domain.Entities;
 using Nezam.Refahi.Finance.Domain.Repositories;
@@ -16,12 +17,12 @@ public class CreateBillCommandHandler : IRequestHandler<CreateBillCommand, Appli
 {
     private readonly IBillRepository _billRepository;
     private readonly IValidator<CreateBillCommand> _validator;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IFinanceUnitOfWork _unitOfWork;
 
     public CreateBillCommandHandler(
         IBillRepository billRepository,
         IValidator<CreateBillCommand> validator,
-        IUnitOfWork unitOfWork)
+        IFinanceUnitOfWork unitOfWork)
     {
         _billRepository = billRepository ?? throw new ArgumentNullException(nameof(billRepository));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
@@ -89,7 +90,7 @@ public class CreateBillCommandHandler : IRequestHandler<CreateBillCommand, Appli
         catch (Exception ex)
         {
             await _unitOfWork.RollbackAsync(cancellationToken);
-            return ApplicationResult<CreateBillResponse>.Failure($"Failed to create bill: {ex.Message}");
+            return ApplicationResult<CreateBillResponse>.Failure(ex, "Failed to create bill");
         }
     }
 }

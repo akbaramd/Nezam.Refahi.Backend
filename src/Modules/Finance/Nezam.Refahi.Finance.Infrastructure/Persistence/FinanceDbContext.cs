@@ -20,6 +20,11 @@ public class FinanceDbContext : DbContext
     public DbSet<Payment> Payments { get; set; } = default!;
     public DbSet<PaymentTransaction> PaymentTransactions { get; set; } = default!;
     public DbSet<Refund> Refunds { get; set; } = default!;
+    
+    // Wallet entities
+    public DbSet<Wallet> Wallets { get; set; } = default!;
+    public DbSet<WalletTransaction> WalletTransactions { get; set; } = default!;
+    public DbSet<WalletDeposit> WalletDeposits { get; set; } = default!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

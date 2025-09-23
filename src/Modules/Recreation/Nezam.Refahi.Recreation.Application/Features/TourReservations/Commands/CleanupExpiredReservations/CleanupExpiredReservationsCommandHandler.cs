@@ -116,23 +116,33 @@ public class CleanupExpiredReservationsCommandHandler : IRequestHandler<CleanupE
                         reservation.MarkAsExpired();
                         reservationInfo.NewStatus = ReservationStatus.Expired.ToString();
 
-                        // Release capacity if reservation was holding it
-                        if (ReservationStateMachine.IsActiveState(reservation.Status) && participantCount > 0)
+                        // Only release capacity for Held reservations, NOT for Paying reservations
+                        // Paying reservations should keep their capacity until payment is processed
+                        if (reservation.Status == ReservationStatus.Held && participantCount > 0)
                         {
-                            var capacity = reservation.CapacityId.HasValue 
-                            ? await _capacityRepository.GetByIdAsync(reservation.CapacityId.Value, cancellationToken)
-                            : null;
-                            if (capacity != null)
+                            if (reservation.CapacityId.HasValue)
                             {
-                                capacity.ReleaseParticipants(participantCount);
-                                response.ReleasedParticipantsCount += participantCount;
+                                var capacity = await _capacityRepository.GetByIdAsync(reservation.CapacityId.Value, cancellationToken);
+                                if (capacity != null)
+                                {
+                                    capacity.ReleaseParticipants(participantCount);
+                                    response.ReleasedParticipantsCount += participantCount;
+                                }
+                                else
+                                {
+                                    response.Errors.Add($"ظرفیت {reservation.CapacityId.Value} برای رزرو {reservation.Id} یافت نشد");
+                                }
                             }
+                        }
+                        else if (reservation.Status == ReservationStatus.Paying)
+                        {
+                            response.Errors.Add($"رزرو منقضی شده {reservation.Id} در وضعیت Paying است - ظرفیت آزاد نشد تا از overbooking جلوگیری شود");
                         }
                     }
                     else
                     {
                         reservationInfo.NewStatus = previousStatus; // No change
-                        response.Errors.Add($"Cannot expire reservation {reservation.Id} in status {previousStatus}");
+                        response.Errors.Add($"امکان انقضای رزرو {reservation.Id} در وضعیت {previousStatus} وجود ندارد");
                         continue;
                     }
                 }

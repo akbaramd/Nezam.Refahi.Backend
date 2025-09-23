@@ -81,6 +81,13 @@ public class AddGuestToReservationCommandHandler
                 return ApplicationResult<AddGuestToReservationResponse>.Failure("ظرفیت تور تکمیل شده است");
             }
 
+            // Check if adding this guest would exceed the maximum guests per reservation limit
+            if (!tour.CanAddGuestToReservation(reservation))
+            {
+                var maxGuests = tour.MaxGuestsPerReservation ?? 0;
+                return ApplicationResult<AddGuestToReservationResponse>.Failure($"حداکثر تعداد مهمان مجاز برای هر رزرو {maxGuests} نفر است");
+            }
+
             // Check if participant already exists in this reservation
             if (reservation.Participants.Any(p => p.NationalNumber == request.Guest.NationalNumber))
             {

@@ -20,6 +20,9 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        <PackageReference Include="Parbad" Version="3.11.3" />
+        <PackageReference Include="Parbad.AspNetCore" Version="1.5.0" />
+        <PackageReference Include="Parbad.Storage.Cache" Version="1.5.0" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\..\..\Nezam.Refahi.Shared.Infrastructure\Nezam.Refahi.Shared.Infrastructure.csproj" />

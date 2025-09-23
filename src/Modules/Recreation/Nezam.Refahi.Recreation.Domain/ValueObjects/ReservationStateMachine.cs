@@ -15,7 +15,9 @@ public static class ReservationStateMachine
         [ReservationStatus.Draft] = new()
         {
             ReservationStatus.Held,
-            ReservationStatus.Cancelled
+            ReservationStatus.Cancelled,
+            ReservationStatus.Waitlisted,
+            ReservationStatus.Rejected
         },
         [ReservationStatus.Held] = new()
         {
@@ -23,20 +25,25 @@ public static class ReservationStateMachine
             ReservationStatus.Confirmed, // Direct confirmation (e.g., free tours)
             ReservationStatus.Cancelled,
             ReservationStatus.Expired,
-            ReservationStatus.SystemCancelled
+            ReservationStatus.SystemCancelled,
+            ReservationStatus.Waitlisted
         },
         [ReservationStatus.Paying] = new()
         {
             ReservationStatus.Confirmed,
             ReservationStatus.PaymentFailed,
             ReservationStatus.Cancelled,
-            ReservationStatus.SystemCancelled
+            ReservationStatus.SystemCancelled,
+            ReservationStatus.CancelRequested
         },
         [ReservationStatus.Confirmed] = new()
         {
             ReservationStatus.Cancelled,
             ReservationStatus.SystemCancelled,
-            ReservationStatus.Refunding
+            ReservationStatus.Refunding,
+            ReservationStatus.CancelRequested,
+            ReservationStatus.AmendRequested,
+            ReservationStatus.NoShow
         },
         [ReservationStatus.PaymentFailed] = new()
         {
@@ -53,10 +60,35 @@ public static class ReservationStateMachine
             ReservationStatus.Held, // Allow reactivation to Held state
             ReservationStatus.Cancelled // Allow manual cancellation of expired reservations
         },
+        [ReservationStatus.Waitlisted] = new()
+        {
+            ReservationStatus.Held, // Promote to held when capacity becomes available
+            ReservationStatus.Cancelled,
+            ReservationStatus.Expired,
+            ReservationStatus.SystemCancelled
+        },
+        [ReservationStatus.CancelRequested] = new()
+        {
+            ReservationStatus.Cancelled, // Complete cancellation after PSP arbitration
+            ReservationStatus.Confirmed, // Revert if cancellation is denied
+            ReservationStatus.Paying // Revert if cancellation is denied
+        },
+        [ReservationStatus.AmendRequested] = new()
+        {
+            ReservationStatus.Confirmed, // Approve amendment
+            ReservationStatus.Cancelled, // Reject amendment
+            ReservationStatus.SystemCancelled
+        },
+        [ReservationStatus.NoShow] = new()
+        {
+            ReservationStatus.Cancelled, // Convert to cancelled after no-show
+            ReservationStatus.SystemCancelled
+        },
         // Terminal states (no transitions allowed)
         [ReservationStatus.Cancelled] = new(),
         [ReservationStatus.SystemCancelled] = new(),
-        [ReservationStatus.Refunded] = new()
+        [ReservationStatus.Refunded] = new(),
+        [ReservationStatus.Rejected] = new()
     };
 
     /// <summary>
@@ -92,7 +124,8 @@ public static class ReservationStateMachine
     {
         return state is ReservationStatus.Held 
                     or ReservationStatus.Paying 
-                    or ReservationStatus.Confirmed;
+                    or ReservationStatus.Confirmed
+                    or ReservationStatus.Waitlisted;
     }
 
     /// <summary>
@@ -117,6 +150,46 @@ public static class ReservationStateMachine
     public static bool CanBeConfirmed(ReservationStatus state)
     {
         return GetValidNextStates(state).Contains(ReservationStatus.Confirmed);
+    }
+
+    /// <summary>
+    /// Checks if a state allows waitlisting
+    /// </summary>
+    public static bool CanBeWaitlisted(ReservationStatus state)
+    {
+        return GetValidNextStates(state).Contains(ReservationStatus.Waitlisted);
+    }
+
+    /// <summary>
+    /// Checks if a state allows cancellation request
+    /// </summary>
+    public static bool CanRequestCancellation(ReservationStatus state)
+    {
+        return GetValidNextStates(state).Contains(ReservationStatus.CancelRequested);
+    }
+
+    /// <summary>
+    /// Checks if a state allows amendment request
+    /// </summary>
+    public static bool CanRequestAmendment(ReservationStatus state)
+    {
+        return GetValidNextStates(state).Contains(ReservationStatus.AmendRequested);
+    }
+
+    /// <summary>
+    /// Checks if a state can be marked as no-show
+    /// </summary>
+    public static bool CanBeMarkedAsNoShow(ReservationStatus state)
+    {
+        return GetValidNextStates(state).Contains(ReservationStatus.NoShow);
+    }
+
+    /// <summary>
+    /// Checks if a state can be rejected
+    /// </summary>
+    public static bool CanBeRejected(ReservationStatus state)
+    {
+        return GetValidNextStates(state).Contains(ReservationStatus.Rejected);
     }
 
     /// <summary>

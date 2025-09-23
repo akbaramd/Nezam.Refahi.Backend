@@ -217,7 +217,7 @@ public class VerifyOtpCommandHandler
                 var memberRole = await _roleRepository.GetByNameAsync("Member", ct);
                 if (memberRole != null)
                 {
-                    user.AssignRole(memberRole.Id);
+                    user.AssignRole(memberRole);
                 }
             }
 
@@ -329,7 +329,7 @@ public class VerifyOtpCommandHandler
         {
             await _uow.RollbackAsync(ct);
             _logger.LogError(ex, "VerifyOtp failed for ChallengeId {ChallengeId}", request.ChallengeId);
-            return ApplicationResult<VerifyOtpResponse>.Failure($"Verification failed: {ex.Message}");
+            return ApplicationResult<VerifyOtpResponse>.Failure(ex, "Verification failed");
         }
     }
 

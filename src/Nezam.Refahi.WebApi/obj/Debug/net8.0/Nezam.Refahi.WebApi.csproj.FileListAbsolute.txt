@@ -489,3 +489,12 @@ D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\obj\Debug\
 D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\obj\Debug\net8.0\Nezam.Refahi.WebApi.genruntimeconfig.cache
 D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\obj\Debug\net8.0\ref\Nezam.Refahi.WebApi.dll
 D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\bin\Debug\net8.0\Nezam.Refahi.WebApi.staticwebassets.runtime.json
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\bin\Debug\net8.0\Nezam.Refahi.Finance.Presentation.staticwebassets.endpoints.json
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\bin\Debug\net8.0\Parbad.dll
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\bin\Debug\net8.0\Parbad.AspNetCore.dll
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\bin\Debug\net8.0\Parbad.Storage.Abstractions.dll
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\bin\Debug\net8.0\Parbad.Storage.Cache.dll
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\bin\Debug\net8.0\Nezam.Refahi.Finance.Presentation.xml
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\bin\Debug\net8.0\Features\Tours\Queries\GetToursPaginated\GetToursPaginatedResponse.example.json
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\bin\Debug\net8.0\Services\ReservationCleanupConfiguration.json
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\bin\Debug\net8.0\Nezam.Refahi.Recreation.Application.staticwebassets.endpoints.json

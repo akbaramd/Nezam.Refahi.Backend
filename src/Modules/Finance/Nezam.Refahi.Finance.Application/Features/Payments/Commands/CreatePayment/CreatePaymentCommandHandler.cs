@@ -1,6 +1,8 @@
 using FluentValidation;
 using MediatR;
+using Nezam.Refahi.Finance.Application.Services;
 using Nezam.Refahi.Finance.Contracts.Commands.Payments;
+using Nezam.Refahi.Finance.Contracts.Services;
 using Nezam.Refahi.Finance.Domain.Enums;
 using Nezam.Refahi.Finance.Domain.Repositories;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
@@ -52,17 +54,20 @@ public class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand,
 {
     private readonly IBillRepository _billRepository;
     private readonly IPaymentRepository _paymentRepository;
+    private readonly IPaymentService _paymentService;
     private readonly IValidator<CreatePaymentCommand> _validator;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IFinanceUnitOfWork _unitOfWork;
 
     public CreatePaymentCommandHandler(
         IBillRepository billRepository,
         IPaymentRepository paymentRepository,
+        IPaymentService paymentService,
         IValidator<CreatePaymentCommand> validator,
-        IUnitOfWork unitOfWork)
+        IFinanceUnitOfWork unitOfWork)
     {
         _billRepository = billRepository ?? throw new ArgumentNullException(nameof(billRepository));
         _paymentRepository = paymentRepository ?? throw new ArgumentNullException(nameof(paymentRepository));
+        _paymentService = paymentService ?? throw new ArgumentNullException(nameof(paymentService));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
     }
@@ -182,13 +187,59 @@ public class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand,
                 description: request.Description,
                 expiryDate: request.ExpiryDate
             );
-
+            var traclingNumber = GenerateTrackingNumber();
+            payment.SetTrackingNumber(traclingNumber.ToString());
             // STEP 7: SAVE ALL CHANGES
             await _billRepository.UpdateAsync(bill, cancellationToken:cancellationToken);
             await _unitOfWork.SaveAsync(cancellationToken);
             await _unitOfWork.CommitAsync(cancellationToken);
 
-            // STEP 8: PREPARE COMPREHENSIVE RESPONSE
+            // STEP 8: PROCESS PAYMENT IF ONLINE
+            PaymentProcessingResult? paymentProcessingResult = null;
+            if (paymentMethod == PaymentMethod.Online && !string.IsNullOrEmpty(request.CallbackUrl))
+            {
+            
+                // Create gateway request (gateway-focused)
+                var gatewayRequest = new PaymentGatewayRequest
+                {
+                    TrackingNumber = traclingNumber,
+                    Amount = amount,
+                    Gateway = paymentGateway!.Value,
+                    CallbackUrl = request.CallbackUrl,
+                    Description = request.Description,
+                    AdditionalData = new Dictionary<string, string>
+                    {
+                        ["PaymentId"] = payment.Id.ToString(),
+                        ["BillId"] = bill.Id.ToString(),
+                        ["BillNumber"] = bill.BillNumber
+                    }
+                };
+
+                var processingResult = await _paymentService.ProcessPaymentAsync(
+                    gatewayRequest, 
+                    cancellationToken);
+
+                if (processingResult.IsSuccess)
+                {
+                    paymentProcessingResult = processingResult.Data;
+                    
+                    // Update payment with tracking number (business logic)
+                    // Note: Payment entity should have a method to set tracking number
+                    // payment.SetTrackingNumber(gatewayRequest.TrackingNumber.ToString());
+                    // await _paymentRepository.UpdateAsync(payment, cancellationToken: cancellationToken);
+                    // await _unitOfWork.SaveAsync(cancellationToken);
+                }
+                else
+                {
+                    // Log the error but don't fail the entire operation
+                    // The payment was created successfully, just the gateway processing failed
+                    await _unitOfWork.RollbackAsync(cancellationToken);
+                    return ApplicationResult<CreatePaymentResponse>.Failure(
+                        processingResult.Errors?.FirstOrDefault() ?? "خطا در پردازش پرداخت آنلاین");
+                }
+            }
+
+            // STEP 9: PREPARE COMPREHENSIVE RESPONSE
             var response = new CreatePaymentResponse
             {
                 PaymentId = payment.Id,
@@ -199,11 +250,15 @@ public class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand,
                 Status = payment.Status.ToString(),
                 CreatedAt = payment.CreatedAt,
                 ExpiryDate = payment.ExpiryDate,
-                GatewayRedirectUrl = null, // This would be set by payment gateway integration
+                GatewayRedirectUrl = paymentProcessingResult?.RedirectUrl,
                 BillStatus = bill.Status.ToString(),
                 BillTotalAmount = bill.TotalAmount.AmountRials,
                 ItemsAdded = itemsAdded,
-                BillWasIssued = billWasIssued
+                BillWasIssued = billWasIssued,
+                TrackingNumber = paymentProcessingResult?.TrackingNumber,
+                RequiresRedirect = paymentProcessingResult?.RedirectUrl != null,
+                PaymentMessage = paymentProcessingResult?.Message,
+                PaymentGateway = paymentGateway?.ToString()
             };
 
             var successMessage = $"Payment created successfully. ";
@@ -217,7 +272,17 @@ public class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand,
         catch (Exception ex)
         {
             await _unitOfWork.RollbackAsync(cancellationToken);
-            return ApplicationResult<CreatePaymentResponse>.Failure($"Failed to create payment: {ex.Message}");
+            return ApplicationResult<CreatePaymentResponse>.Failure(ex, "Failed to create payment");
         }
+    }
+
+    /// <summary>
+    /// Generates a unique tracking number for payment
+    /// </summary>
+    private long GenerateTrackingNumber()
+    {
+        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var random = new Random().Next(1000, 9999);
+        return timestamp * 10000 + random;
     }
 }

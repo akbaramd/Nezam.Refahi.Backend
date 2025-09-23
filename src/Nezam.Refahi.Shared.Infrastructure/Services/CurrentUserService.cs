@@ -30,6 +30,15 @@ public class CurrentUserService : ICurrentUserService
         }
     }
 
+    public string? UserNationalNumber
+    {
+        get
+        {
+            var nationalNumberClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("national_id");
+            return nationalNumberClaim?.Value;
+        }
+    }
+
     public bool IsAuthenticated => _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
 
     public IEnumerable<string> Roles

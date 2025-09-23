@@ -7,6 +7,11 @@ public interface ICurrentUserService
     /// Gets the current user's ID
     /// </summary>
     Guid? UserId { get; }
+
+    /// <summary>
+    /// Gets the current user's national number
+    /// </summary>
+    string? UserNationalNumber { get; }
     
     /// <summary>
     /// Checks if the current user is authenticated

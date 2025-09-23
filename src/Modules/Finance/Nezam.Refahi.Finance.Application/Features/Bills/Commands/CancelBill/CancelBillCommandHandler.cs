@@ -1,5 +1,6 @@
 using FluentValidation;
 using MediatR;
+using Nezam.Refahi.Finance.Application.Services;
 using Nezam.Refahi.Finance.Contracts.Commands.Bills;
 using Nezam.Refahi.Finance.Domain.Repositories;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
@@ -14,12 +15,12 @@ public class CancelBillCommandHandler : IRequestHandler<CancelBillCommand, Appli
 {
     private readonly IBillRepository _billRepository;
     private readonly IValidator<CancelBillCommand> _validator;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IFinanceUnitOfWork _unitOfWork;
 
     public CancelBillCommandHandler(
         IBillRepository billRepository,
         IValidator<CancelBillCommand> validator,
-        IUnitOfWork unitOfWork)
+        IFinanceUnitOfWork unitOfWork)
     {
         _billRepository = billRepository ?? throw new ArgumentNullException(nameof(billRepository));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
@@ -70,7 +71,7 @@ public class CancelBillCommandHandler : IRequestHandler<CancelBillCommand, Appli
         catch (Exception ex)
         {
             await _unitOfWork.RollbackAsync(cancellationToken);
-            return ApplicationResult<CancelBillResponse>.Failure($"Failed to cancel bill: {ex.Message}");
+            return ApplicationResult<CancelBillResponse>.Failure(ex, "Failed to cancel bill");
         }
     }
 }

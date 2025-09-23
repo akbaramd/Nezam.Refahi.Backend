@@ -30,6 +30,11 @@ public interface IPaymentRepository : IRepository<Payment, Guid>
     Task<Payment?> GetByGatewayTransactionIdAsync(string gatewayTransactionId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets payment by tracking number
+    /// </summary>
+    Task<Payment?> GetByTrackingNumberAsync(string trackingNumber, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Gets expired payments
     /// </summary>
     Task<IEnumerable<Payment>> GetExpiredPaymentsAsync(CancellationToken cancellationToken = default);

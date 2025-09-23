@@ -57,7 +57,7 @@ public class UserValidationService : IUserValidationService
         }
         catch (Exception ex)
         {
-            return UserValidationResult.Failure($"خطا در بررسی یکتایی کد ملی: {ex.Message}");
+            return UserValidationResult.Failure($"خطا در بررسی یکتایی کد ملی: {ex.InnerException?.Message ?? ex.Message}");
         }
     }
 
@@ -90,7 +90,7 @@ public class UserValidationService : IUserValidationService
         }
         catch (Exception ex)
         {
-            return UserValidationResult.Failure($"خطا در بررسی یکتایی شماره موبایل: {ex.Message}");
+            return UserValidationResult.Failure($"خطا در بررسی یکتایی شماره موبایل: {ex.InnerException?.Message ?? ex.Message}");
         }
     }
 

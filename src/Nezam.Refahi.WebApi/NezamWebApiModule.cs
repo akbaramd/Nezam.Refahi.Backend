@@ -118,8 +118,9 @@ public class NezamWebApiModule : BonWebModule
   public override Task OnApplicationAsync(BonWebApplicationContext context)
   {
     var app = context.Application;
-
+      app.UseDeveloperExceptionPage();
       app.UseStaticFiles();
+      app.UseParbadVirtualGateway();
       app.UseSwagger();
       app.UseSwaggerUI(options =>
       {
@@ -174,5 +175,11 @@ public class NezamWebApiModule : BonWebModule
           ClockSkew = TimeSpan.Zero
         };
       });
+  }
+
+  public override Task OnPostApplicationAsync(BonWebApplicationContext context)
+  {
+    context.Application.MapControllers();
+    return base.OnPostApplicationAsync(context);
   }
 }

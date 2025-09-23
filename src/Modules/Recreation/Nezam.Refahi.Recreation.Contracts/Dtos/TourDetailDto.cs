@@ -45,6 +45,9 @@ public class TourDetailDto
     public int? MinAge { get; set; }
     public int? MaxAge { get; set; }
     public string? AgeRestrictionNote { get; set; }
+
+    // Guest limitations per reservation
+    public int? MaxGuestsPerReservation { get; set; }
     public string? PhysicalRequirements { get; set; }
     public string? HealthRequirements { get; set; }
 

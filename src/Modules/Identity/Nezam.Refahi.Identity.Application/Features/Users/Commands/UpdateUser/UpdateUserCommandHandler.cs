@@ -74,15 +74,15 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Appli
         }
         catch (ArgumentException ex)
         {
-            return ApplicationResult.Failure(ex.Message);
+            return ApplicationResult.Failure(ex, ex.Message);
         }
         catch (InvalidOperationException ex)
         {
-            return ApplicationResult.Failure(ex.Message);
+            return ApplicationResult.Failure(ex, ex.Message);
         }
         catch (Exception ex)
         {
-            return ApplicationResult.Failure($"خطا در به‌روزرسانی اطلاعات کاربر: {ex.Message}");
+            return ApplicationResult.Failure(ex, "خطا در به‌روزرسانی اطلاعات کاربر");
         }
     }
 }

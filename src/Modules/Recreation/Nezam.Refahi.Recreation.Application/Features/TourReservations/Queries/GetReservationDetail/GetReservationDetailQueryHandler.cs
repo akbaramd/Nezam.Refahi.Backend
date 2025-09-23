@@ -116,8 +116,7 @@ public class GetReservationDetailQueryHandler
         {
             _logger.LogError(ex, "Error occurred while getting reservation detail - ReservationId: {ReservationId}",
                 request.ReservationId);
-            return ApplicationResult<ReservationDetailDto>.Failure(
-                "خطا در دریافت جزئیات رزرو رخ داده است");
+            return ApplicationResult<ReservationDetailDto>.Failure(ex, "خطا در دریافت جزئیات رزرو رخ داده است");
         }
     }
 
@@ -149,6 +148,7 @@ public class GetReservationDetailQueryHandler
             TotalAmountRials = reservation.TotalAmount?.AmountRials,
             Notes = reservation.Notes,
             CapacityId = reservation.CapacityId,
+            BillId = reservation.BillId,
             Capacity = capacityDto,
             Tour = await MapToTourSummaryDtoAsync(tour, tourCapacities, currentDate, cancellationToken),
             Participants = reservation.Participants.Select(MapToParticipantDto).ToList(),
@@ -158,6 +158,14 @@ public class GetReservationDetailQueryHandler
             IsExpired = reservation.IsExpired(),
             IsConfirmed = reservation.IsConfirmed(),
             IsPending = reservation.IsPending(),
+
+            // Additional domain behavior properties
+            IsActive = reservation.IsActive(),
+            IsCancelled = reservation.IsCancelled(),
+            IsTerminal = reservation.IsTerminal(),
+            IsDraft = reservation.IsDraft(),
+            IsPaying = reservation.IsPaying(),
+            IsSystemCancelled = reservation.Status == ReservationStatus.SystemCancelled,
             CreatedAt = reservation.CreatedAt,
             UpdatedAt = reservation.LastModifiedAt,
             CreatedBy = reservation.CreatedBy,
@@ -190,7 +198,13 @@ public class GetReservationDetailQueryHandler
             IsFullyPaid = participant.IsFullyPaid,
             RemainingAmountRials = participant.RemainingAmount.AmountRials,
             IsMainParticipant = participant.IsMainParticipant,
-            IsGuest = participant.IsGuest
+            IsGuest = participant.IsGuest,
+
+            // Domain behavior properties
+            IsPaymentPending = !participant.HasPaid && participant.RequiredAmount.AmountRials > 0,
+            IsPaymentOverdue = !participant.HasPaid && participant.RequiredAmount.AmountRials > 0,
+            CanMakePayment = !participant.HasPaid && participant.RequiredAmount.AmountRials > 0,
+            IsPaymentRequired = participant.RequiredAmount.AmountRials > 0
         };
     }
 
@@ -272,6 +286,7 @@ public class GetReservationDetailQueryHandler
             // Age restrictions
             MinAge = tour.MinAge,
             MaxAge = tour.MaxAge,
+            MaxGuestsPerReservation = tour.MaxGuestsPerReservation,
 
             IsActive = tour.IsActive,
             Capacities = capacityDtos,

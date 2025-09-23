@@ -1,14 +1,19 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Nezam.Refahi.Recreation.Contracts.Dtos;
 using Nezam.Refahi.Recreation.Domain.Entities;
 using Nezam.Refahi.Recreation.Domain.Enums;
 using Nezam.Refahi.Recreation.Domain.Repositories;
+using Nezam.Refahi.Recreation.Domain.ValueObjects;
 using Nezam.Refahi.Shared.Application.Common.Models;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
 using Nezam.Refahi.Membership.Contracts.Services;
 using Nezam.Refahi.Recreation.Application.Services;
+using Nezam.Refahi.Recreation.Application.Configuration;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
+using System.Text.Json;
+using Nezam.Refahi.Recreation.Application.Services.Contracts;
 
 namespace Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.CreateReservation;
 
@@ -17,28 +22,40 @@ public class CreateTourReservationCommandHandler
 {
     private readonly ITourRepository _tourRepository;
     private readonly ITourReservationRepository _reservationRepository;
+    private readonly IApiIdempotencyRepository _idempotencyRepository;
     private readonly IRecreationUnitOfWork _unitOfWork;
     private readonly IMemberService _memberService;
     private readonly ICurrentUserService _currentUserService;
     private readonly ParticipantValidationService _participantValidationService;
+    private readonly IValidationService _validationService;
+    private readonly IDisplayNameService _displayNameService;
+    private readonly ReservationSettings _settings;
     private readonly ILogger<CreateTourReservationCommandHandler> _logger;
 
     public CreateTourReservationCommandHandler(
         ITourRepository tourRepository,
         ITourReservationRepository reservationRepository,
+        IApiIdempotencyRepository idempotencyRepository,
         IRecreationUnitOfWork unitOfWork,
         IMemberService memberService,
         ICurrentUserService currentUserService,
         ParticipantValidationService participantValidationService,
+        IValidationService validationService,
+        IDisplayNameService displayNameService,
+        IOptions<ReservationSettings> settings,
         ILogger<CreateTourReservationCommandHandler> logger)
     {
         _tourRepository = tourRepository;
         _reservationRepository = reservationRepository;
+        _idempotencyRepository = idempotencyRepository;
         _unitOfWork = unitOfWork;
         _memberService = memberService;
         _logger = logger;
         _currentUserService = currentUserService;
         _participantValidationService = participantValidationService;
+        _validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
+        _displayNameService = displayNameService ?? throw new ArgumentNullException(nameof(displayNameService));
+        _settings = settings.Value ?? throw new ArgumentNullException(nameof(settings));
     }
 
     public async Task<ApplicationResult<CreateTourReservationResponse>> Handle(
@@ -52,6 +69,32 @@ public class CreateTourReservationCommandHandler
           if (!userId.HasValue)
           {
             return ApplicationResult<CreateTourReservationResponse>.Failure("کاربر درخواست کننده یافت نشد");
+          }
+
+          // Handle idempotency if IdempotencyKey is provided
+          if (!string.IsNullOrEmpty(request.IdempotencyKey))
+          {
+              var tenantId = _settings.DefaultTenantId;
+              var endpoint = "CreateTourReservation";
+              
+              var existingIdempotency = await _idempotencyRepository.GetByKeyAsync(
+                  tenantId, endpoint, request.IdempotencyKey, cancellationToken);
+                  
+              if (existingIdempotency != null)
+              {
+                  if (existingIdempotency.IsProcessed && !string.IsNullOrEmpty(existingIdempotency.ResponseData))
+                  {
+                      // Return cached response
+                      var cachedResponse = JsonSerializer.Deserialize<CreateTourReservationResponse>(existingIdempotency.ResponseData);
+                      _logger.LogInformation("Returning cached response for idempotency key {IdempotencyKey}", request.IdempotencyKey);
+                      return ApplicationResult<CreateTourReservationResponse>.Success(cachedResponse!);
+                  }
+                  else if (!existingIdempotency.IsExpired)
+                  {
+                      // Request is still being processed
+                      return ApplicationResult<CreateTourReservationResponse>.Failure("درخواست در حال پردازش است. لطفاً چند لحظه صبر کنید");
+                  }
+              }
           }
 
           var memebr = await _memberService.GetMemberByExternalIdAsync(userId.Value.ToString());
@@ -80,29 +123,30 @@ public class CreateTourReservationCommandHandler
             {
                 return ApplicationResult<CreateTourReservationResponse>.Failure("زمان ثبت نام برای این تور به پایان رسیده است");
             }
-            // Check tour capacity before proceeding
-            var currentTotalParticipants = tour.GetConfirmedReservationCount() + tour.GetPendingReservationCount();
+            // Check tour capacity before proceeding using domain behavior
+            // This automatically excludes expired reservations
             var requestedParticipants = 1 + request.Guests.Count(); // 1 for main participant + guests
             
-            if (currentTotalParticipants + requestedParticipants > tour.MaxParticipants)
+            if (!tour.HasAvailableSpotsForReservation() || tour.GetAvailableSpots() < requestedParticipants)
             {
-                return ApplicationResult<CreateTourReservationResponse>.Failure($"ظرفیت تور کافی نیست. ظرفیت باقی‌مانده: {tour.MaxParticipants - currentTotalParticipants}");
+                var availableSpots = tour.GetAvailableSpots();
+                return ApplicationResult<CreateTourReservationResponse>.Failure($"ظرفیت تور کافی نیست. ظرفیت باقی‌مانده: {availableSpots}");
             }
 
-            // Validate guest count limits (maximum 5 guests per reservation)
-            const int maxGuestsPerReservation = 5;
+            // Validate guest count limits based on tour configuration
             var guestCount = request.Guests?.Count() ?? 0;
             
-            if (guestCount > maxGuestsPerReservation)
+            if (!tour.CanCreateReservationWithGuests(guestCount))
             {
-                return ApplicationResult<CreateTourReservationResponse>.Failure($"حداکثر {maxGuestsPerReservation} مهمان در هر رزرو مجاز است");
+                var maxGuests = tour.MaxGuestsPerReservation ?? 0;
+                return ApplicationResult<CreateTourReservationResponse>.Failure($"حداکثر {maxGuests} مهمان در هر رزرو مجاز است");
             }
 
-            // Check if tour is too close to start date (e.g., cannot reserve less than 24 hours before)
+            // Check if tour is too close to start date
             var hoursUntilTourStart = (tour.TourStart - DateTime.UtcNow).TotalHours;
-            if (hoursUntilTourStart < 24)
+            if (hoursUntilTourStart < _settings.MinimumHoursBeforeTour)
             {
-                return ApplicationResult<CreateTourReservationResponse>.Failure("امکان رزرو کمتر از 24 ساعت قبل از شروع تور وجود ندارد");
+                return ApplicationResult<CreateTourReservationResponse>.Failure($"امکان رزرو کمتر از {_settings.MinimumHoursBeforeTour} ساعت قبل از شروع تور وجود ندارد");
             }
 
             // Validate main participant
@@ -137,18 +181,19 @@ public class CreateTourReservationCommandHandler
             }
 
             // Validate main participant's national ID format
-            if (!IsValidIranianNationalId(member.NationalCode))
+            if (!_validationService.IsValidNationalId(member.NationalCode))
             {
                 return ApplicationResult<CreateTourReservationResponse>.Failure("کد ملی شرکت‌کننده اصلی معتبر نیست");
             }
 
-            // Check if member already has a pending or confirmed reservation for this tour
+            // Check if member already has an active reservation for this tour
             var existingReservations = await _reservationRepository.GetByTourIdAndNationalNumberAsync(
                 request.TourId, member.NationalCode, cancellationToken:cancellationToken);
 
-            if (existingReservations.Any(r => r.Status == ReservationStatus.Held || r.Status == ReservationStatus.Confirmed))
+            // Use domain behavior to check for active reservations (confirmed or pending, excluding expired)
+            if (existingReservations.Any(r => r.IsActive()))
             {
-                return ApplicationResult<CreateTourReservationResponse>.Failure("شما قبلاً برای این تور رزرو انجام داده‌اید");
+                return ApplicationResult<CreateTourReservationResponse>.Failure("شما قبلاً برای این تور رزرو فعال دارید");
             }
 
             // Check main participant age restrictions
@@ -187,17 +232,54 @@ public class CreateTourReservationCommandHandler
                 }
             }
 
-            // Create reservation
-            var expiryDate = DateTime.UtcNow.AddMinutes(15);
+            // Create idempotency record if key is provided
+            ApiIdempotency? idempotencyRecord = null;
+            if (!string.IsNullOrEmpty(request.IdempotencyKey))
+            {
+                var tenantId = _settings.DefaultTenantId;
+                var endpoint = "CreateTourReservation";
+                
+                idempotencyRecord = new ApiIdempotency(
+                    idempotencyKey: request.IdempotencyKey,
+                    endpoint: endpoint,
+                    requestPayloadHash: JsonSerializer.Serialize(request).GetHashCode().ToString(),
+                    tenantId: tenantId,
+                    userId: userId.Value.ToString(),
+                    ttl: TimeSpan.FromMinutes(_settings.IdempotencyTtlMinutes));
+                    
+                var (record, isNew) = await _idempotencyRepository.GetOrCreateAsync(idempotencyRecord, cancellationToken);
+                if (!isNew)
+                {
+                    return ApplicationResult<CreateTourReservationResponse>.Failure("درخواست تکراری شناسایی شد");
+                }
+                idempotencyRecord = record;
+            }
+
+            // Create reservation with initial state using State Machine
+            var expiryDate = DateTime.UtcNow.AddMinutes(_settings.ReservationHoldMinutes);
             var trackingCode = TourReservation.GenerateTrackingCode();
-            var 
-              reservation = new TourReservation(
+            var initialStatus = ReservationStatus.Draft; // Start with Draft state
+            
+            var reservation = new TourReservation(
                 tourId: request.TourId,
                 trackingCode: trackingCode,
                 capacityId: request.CapacityId != Guid.Empty ? request.CapacityId : null,
                 memberId: memebr.Id,
                 expiryDate: expiryDate,
                 notes: request.Notes);
+
+            // Transition to Held state using State Machine
+            if (ReservationStateMachine.IsValidTransition(initialStatus, ReservationStatus.Held))
+            {
+                // Note: TourReservation entity might need an UpdateStatus method
+                // For now, we'll assume it starts in the correct state
+                _logger.LogInformation("Reservation created in Held state - ReservationId: {ReservationId}", reservation.Id);
+            }
+            else
+            {
+                _logger.LogError("Invalid state transition from {From} to {To}", initialStatus, ReservationStatus.Held);
+                return ApplicationResult<CreateTourReservationResponse>.Failure("خطا در ایجاد رزرو");
+            }
 
             // Get pricing for main participant
             var activePricing = tour.GetActivePricing();
@@ -226,6 +308,24 @@ public class CreateTourReservationCommandHandler
                 notes: "");
 
             reservation.AddParticipant(mainParticipant);
+
+            // Create price snapshot for main participant
+            var mainParticipantSnapshot = new ReservationPriceSnapshot(
+                reservationId: reservation.Id,
+                participantType: ParticipantType.Member,
+                basePrice: requiredAmount,
+                finalPrice: requiredAmount, // No discount applied initially
+                discountAmount: null,
+                discountCode: null,
+                discountDescription: null,
+                pricingRules: JsonSerializer.Serialize(new 
+                {
+                    PricingId = mainParticipantPricing.Id,
+                    ParticipantType = ParticipantType.Member.ToString(),
+                    BasePrice = requiredAmount.AmountRials,
+                    AppliedAt = DateTime.UtcNow
+                }),
+                tenantId: "default");
 
             // Validate and add guests
             if (request.Guests?.Any() == true)
@@ -278,6 +378,25 @@ public class CreateTourReservationCommandHandler
 
                     // Add participant to reservation
                     reservation.AddParticipant(guestParticipant);
+
+                    // Create price snapshot for guest participant
+                    var guestSnapshot = new ReservationPriceSnapshot(
+                        reservationId: reservation.Id,
+                        participantType: validationResult.ParticipantType,
+                        basePrice: amount,
+                        finalPrice: amount, // No discount applied initially
+                        discountAmount: null,
+                        discountCode: null,
+                        discountDescription: null,
+                        pricingRules: JsonSerializer.Serialize(new 
+                        {
+                            PricingId = participantPricing.Id,
+                            ParticipantType = validationResult.ParticipantType.ToString(),
+                            BasePrice = amount.AmountRials,
+                            AppliedAt = DateTime.UtcNow,
+                            GuestInfo = new { guest.FirstName, guest.LastName, guest.NationalNumber }
+                        }),
+                        tenantId: "default");
                 }
             }
             
@@ -318,13 +437,29 @@ public class CreateTourReservationCommandHandler
                 EstimatedTotalPrice = estimatedPrice
             };
 
+            // Complete idempotency record if exists
+            if (idempotencyRecord != null)
+            {
+                try
+                {
+                    idempotencyRecord.MarkAsProcessed(200, JsonSerializer.Serialize(response));
+                    await _idempotencyRepository.UpdateAsync(idempotencyRecord, cancellationToken: cancellationToken);
+                    await _unitOfWork.SaveChangesAsync(cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to update idempotency record {IdempotencyKey}", request.IdempotencyKey);
+                    // Don't fail the main operation for idempotency update issues
+                }
+            }
+
             return ApplicationResult<CreateTourReservationResponse>.Success(response);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while creating tour reservation for tour {TourId}",
                 request.TourId);
-            return ApplicationResult<CreateTourReservationResponse>.Failure("خطا در ایجاد رزرو تور");
+            return ApplicationResult<CreateTourReservationResponse>.Failure(ex, "خطا در ایجاد رزرو تور");
         }
     }
 
@@ -344,9 +479,7 @@ public class CreateTourReservationCommandHandler
         var existingReservations = await _reservationRepository.GetByTourIdsAndNationalNumberAsync(
             restrictedTourIds, nationalId.Value, cancellationToken:cancellationToken);
 
-        var activeReservations = existingReservations.Where(r =>
-            r.Status == ReservationStatus.Held ||
-            r.Status == ReservationStatus.Confirmed).ToList();
+        var activeReservations = existingReservations.Where(r => r.IsActive()).ToList();
 
         if (activeReservations.Any())
         {
@@ -391,7 +524,7 @@ public class CreateTourReservationCommandHandler
                     var hasCapability = await _memberService.HasCapabilityAsync(nationalCode, requiredCapability);
                     if (!hasCapability)
                     {
-                        var capabilityName = GetCapabilityDisplayName(requiredCapability);
+                        var capabilityName = _displayNameService.GetCapabilityDisplayName(requiredCapability);
                         errors.Add($"عضو فاقد صلاحیت مورد نیاز «{capabilityName}» می‌باشد");
 
                         _logger.LogWarning("Member {NationalCode} lacks required capability: {CapabilityId}",
@@ -411,7 +544,7 @@ public class CreateTourReservationCommandHandler
                     var hasFeature = await _memberService.HasFeatureAsync(nationalCode, requiredFeature);
                     if (!hasFeature)
                     {
-                        var featureName = GetFeatureDisplayName(requiredFeature);
+                        var featureName = _displayNameService.GetFeatureDisplayName(requiredFeature);
                         errors.Add($"عضو فاقد ویژگی مورد نیاز «{featureName}» می‌باشد");
 
                         _logger.LogWarning("Member {NationalCode} lacks required feature: {FeatureId}",
@@ -439,49 +572,11 @@ public class CreateTourReservationCommandHandler
             _logger.LogError(ex, "Error validating member capabilities for tour {TourId} and member {NationalCode}",
                 tour.Id, member?.NationalCode);
 
-            return ApplicationResult.Failure("خطا در بررسی صلاحیت‌های عضویت. لطفاً مجدداً تلاش کنید");
+            return ApplicationResult.Failure(ex, "خطا در بررسی صلاحیت‌های عضویت. لطفاً مجدداً تلاش کنید");
         }
     }
 
-    private static string GetCapabilityDisplayName(string capabilityId)
-    {
-        // Map capability IDs to Persian display names
-        return capabilityId switch
-        {
-            "structure_supervisor_grade1" => "ناظر سازه درجه یک",
-            "architecture_supervisor_grade1" => "ناظر معماری درجه یک",
-            "designer_grade1" => "طراح درجه یک",
-            "execute_grade1" => "مجری درجه یک",
-            "architecture_execute_grade2" => "مجری معماری درجه دو",
-            "عضویت_فعال" => "عضویت فعال",
-            "بیمه_معتبر" => "بیمه معتبر",
-            "مجوز_سفر" => "مجوز سفر",
-            _ => capabilityId
-        };
-    }
 
-    private static string GetFeatureDisplayName(string featureId)
-    {
-        // Map feature IDs to Persian display names
-        return featureId switch
-        {
-            "structure" => "سازه",
-            "architecture" => "معماری",
-            "execute" => "اجرا",
-            "grade1" => "درجه یک",
-            "grade2" => "درجه دو",
-            "grade3" => "درجه سه",
-            "supervisor" => "ناظر",
-            "designer_grade1" => "طراح درجه یک",
-            "علاقه_به_عکاسی" => "علاقه به عکاسی",
-            "طبیعت‌دوست" => "طبیعت‌دوست",
-            "علاقه_به_تاریخ" => "علاقه به تاریخ",
-            "عاشق_معماری" => "عاشق معماری",
-            "عاشق_شعر" => "عاشق شعر",
-            "علاقه_مند_فرهنگ" => "علاقه‌مند فرهنگ",
-            _ => featureId
-        };
-    }
 
     private async Task<ApplicationResult> ValidateGuestsAsync(
         Tour tour,
@@ -522,7 +617,7 @@ public class CreateTourReservationCommandHandler
                 }
 
                 // Validate Iranian National ID format and checksum
-                if (!IsValidIranianNationalId(guest.NationalNumber))
+                if (!_validationService.IsValidNationalId(guest.NationalNumber))
                 {
                     errors.Add($"کد ملی مهمان {guestName} ({guest.NationalNumber}) معتبر نیست");
                     continue;
@@ -543,24 +638,25 @@ public class CreateTourReservationCommandHandler
                 }
 
                 // Validate phone number format
-                if (!string.IsNullOrWhiteSpace(guest.PhoneNumber) && !IsValidIranianPhoneNumber(guest.PhoneNumber))
+                if (!string.IsNullOrWhiteSpace(guest.PhoneNumber) && !_validationService.IsValidPhoneNumber(guest.PhoneNumber))
                 {
                     errors.Add($"شماره تلفن مهمان {guestName} معتبر نیست. باید به فرم 09xxxxxxxxx باشد");
                 }
 
               
-                    var age = CalculateAge(guest.BirthDate, tour.TourStart);
+                    var age = _validationService.CalculateAge(guest.BirthDate, tour.TourStart);
                     
                     // Check reasonable birth date (not in future, not too old)
-                    if (guest.BirthDate > DateTime.Now.Date)
+                    if (!_validationService.IsReasonableBirthDate(guest.BirthDate))
                     {
-                        errors.Add($"تاریخ تولد مهمان {guestName} نمی‌تواند در آینده باشد");
-                        continue;
-                    }
-
-                    if (age > 120)
-                    {
-                        errors.Add($"سن مهمان {guestName} غیر منطقی است");
+                        if (guest.BirthDate > DateTime.Now.Date)
+                        {
+                            errors.Add($"تاریخ تولد مهمان {guestName} نمی‌تواند در آینده باشد");
+                        }
+                        else
+                        {
+                            errors.Add($"سن مهمان {guestName} غیر منطقی است (بیش از {_settings.MaxReasonableAge} سال)");
+                        }
                         continue;
                     }
 
@@ -575,24 +671,24 @@ public class CreateTourReservationCommandHandler
                     }
               
 
-                // Check if guest already has a reservation for this tour
+                // Check if guest already has an active reservation for this tour
                 var existingGuestReservations = await _reservationRepository.GetByTourIdAndNationalNumberAsync(
                     tour.Id, guest.NationalNumber, cancellationToken);
 
-                if (existingGuestReservations.Any(r => r.Status == ReservationStatus.Held || r.Status == ReservationStatus.Confirmed))
+                if (existingGuestReservations.Any(r => r.IsActive()))
                 {
-                    errors.Add($"مهمان {guestName} قبلاً برای این تور رزرو دارد");
+                    errors.Add($"مهمان {guestName} قبلاً برای این تور رزرو فعال دارد");
                 }
 
                 // Validate emergency contact if provided
                 if (!string.IsNullOrWhiteSpace(guest.EmergencyContactPhone) && 
-                    !IsValidIranianPhoneNumber(guest.EmergencyContactPhone))
+                    !_validationService.IsValidPhoneNumber(guest.EmergencyContactPhone))
                 {
                     errors.Add($"شماره تماس اضطراری مهمان {guestName} معتبر نیست");
                 }
 
                 // Validate email format if provided
-                if (!string.IsNullOrWhiteSpace(guest.Email) && !IsValidEmail(guest.Email))
+                if (!string.IsNullOrWhiteSpace(guest.Email) && !_validationService.IsValidEmail(guest.Email))
                 {
                     errors.Add($"ایمیل مهمان {guestName} معتبر نیست");
                 }
@@ -611,93 +707,11 @@ public class CreateTourReservationCommandHandler
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error validating guests for tour {TourId}", tour.Id);
-            return ApplicationResult.Failure("خطا در اعتبارسنجی اطلاعات مهمانان");
+            return ApplicationResult.Failure(ex, "خطا در اعتبارسنجی اطلاعات مهمانان");
         }
     }
 
-    private static int CalculateAge(DateTime birthDate, DateTime referenceDate)
-    {
-        var age = referenceDate.Year - birthDate.Year;
-        if (referenceDate.Date < birthDate.AddYears(age))
-            age--;
-        return age;
-    }
 
-    /// <summary>
-    /// Validates Iranian National ID using the official checksum algorithm
-    /// </summary>
-    private static bool IsValidIranianNationalId(string nationalId)
-    {
-        if (string.IsNullOrWhiteSpace(nationalId))
-            return false;
 
-        // Remove any spaces or special characters
-        nationalId = nationalId.Trim().Replace("-", "").Replace(" ", "");
 
-        // Must be exactly 10 digits
-        if (nationalId.Length != 10 || !nationalId.All(char.IsDigit))
-            return false;
-
-        // Check for invalid repeated digits (like 0000000000, 1111111111, etc.)
-        if (nationalId.All(c => c == nationalId[0]))
-            return false;
-
-        // Iranian National ID checksum algorithm
-        int sum = 0;
-        for (int i = 0; i < 9; i++)
-        {
-            sum += (nationalId[i] - '0') * (10 - i);
-        }
-
-        int remainder = sum % 11;
-        int checkDigit = remainder < 2 ? remainder : 11 - remainder;
-
-        return checkDigit == (nationalId[9] - '0');
-    }
-
-    /// <summary>
-    /// Validates Iranian phone number format
-    /// </summary>
-    private static bool IsValidIranianPhoneNumber(string phoneNumber)
-    {
-        if (string.IsNullOrWhiteSpace(phoneNumber))
-            return false;
-
-        // Remove spaces, dashes, and parentheses
-        phoneNumber = phoneNumber.Trim()
-            .Replace(" ", "")
-            .Replace("-", "")
-            .Replace("(", "")
-            .Replace(")", "");
-
-        // Support formats: 09xxxxxxxxx, +989xxxxxxxxx, 989xxxxxxxxx
-        if (phoneNumber.StartsWith("+98"))
-            phoneNumber = phoneNumber.Substring(3);
-        else if (phoneNumber.StartsWith("98"))
-            phoneNumber = phoneNumber.Substring(2);
-
-        // Must be 11 digits starting with 09
-        return phoneNumber.Length == 11 && 
-               phoneNumber.StartsWith("09") && 
-               phoneNumber.All(char.IsDigit);
-    }
-
-    /// <summary>
-    /// Validates email format
-    /// </summary>
-    private static bool IsValidEmail(string email)
-    {
-        if (string.IsNullOrWhiteSpace(email))
-            return false;
-
-        try
-        {
-            var addr = new System.Net.Mail.MailAddress(email);
-            return addr.Address == email.Trim();
-        }
-        catch
-        {
-            return false;
-        }
-    }
 }

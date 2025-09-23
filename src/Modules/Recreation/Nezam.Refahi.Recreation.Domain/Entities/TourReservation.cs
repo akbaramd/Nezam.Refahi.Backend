@@ -57,7 +57,7 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
         : base(Guid.NewGuid())
     {
         if (tourId == Guid.Empty)
-            throw new ArgumentException("Tour ID cannot be empty", nameof(tourId));
+            throw new ArgumentException("شناسه تور الزامی است", nameof(tourId));
 
         ValidateTrackingCode(trackingCode);
 
@@ -80,15 +80,15 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
         if (participant == null)
             throw new ArgumentNullException(nameof(participant));
         if (participant.ReservationId != Id)
-            throw new ArgumentException("Participant does not belong to this reservation", nameof(participant));
+            throw new ArgumentException("شرکت‌کننده متعلق به این رزرو نمی‌باشد", nameof(participant));
         
         // Only allow adding participants in Draft or Held state
         if (Status != ReservationStatus.Draft && Status != ReservationStatus.Held)
-            throw new InvalidOperationException($"Cannot add participants to reservation in {Status} state");
+            throw new InvalidOperationException($"امکان اضافه کردن شرکت‌کننده در وضعیت {Status} وجود ندارد");
 
         // Check if national number already exists in this reservation
         if (_participants.Any(p => p.NationalNumber == participant.NationalNumber))
-            throw new InvalidOperationException("Participant with this national number already exists in reservation");
+            throw new InvalidOperationException("شرکت‌کننده با این شماره ملی قبلاً در رزرو ثبت شده است");
 
         _participants.Add(participant);
     }
@@ -99,7 +99,7 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     public void RemoveParticipant(Guid participantId)
     {
         if (Status != ReservationStatus.Draft && Status != ReservationStatus.Held)
-            throw new InvalidOperationException("Cannot remove participants from non-pending reservations");
+            throw new InvalidOperationException("امکان حذف شرکت‌کننده از رزروهای غیردر انتظار وجود ندارد");
 
         var participant = _participants.FirstOrDefault(p => p.Id == participantId);
         if (participant != null)
@@ -118,7 +118,7 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
             throw new InvalidOperationException(errorMessage);
 
         if (!_participants.Any())
-            throw new InvalidOperationException("Cannot hold reservation without participants");
+            throw new InvalidOperationException("رزرو بدون شرکت‌کننده قابل نگهداری نیست");
 
         Status = ReservationStatus.Held;
         ExpiryDate ??= DateTime.UtcNow.AddMinutes(15); // Set expiry if not already set
@@ -133,10 +133,10 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
         if (!isValid)
             throw new InvalidOperationException(errorMessage);
 
-        if (DateTime.UtcNow > ExpiryDate)
-            throw new InvalidOperationException("Cannot process payment for expired reservation");
+        if (ExpiryDate.HasValue && DateTime.UtcNow > ExpiryDate.Value)
+            throw new InvalidOperationException("رزرو منقضی شده است و امکان پردازش پرداخت وجود ندارد");
         if (!_participants.Any())
-            throw new InvalidOperationException("Cannot process payment for reservation without participants");
+            throw new InvalidOperationException("رزرو بدون شرکت‌کننده است و امکان پردازش پرداخت وجود ندارد");
 
         Status = ReservationStatus.Paying;
     }
@@ -144,16 +144,17 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     /// <summary>
     /// Confirms the reservation
     /// </summary>
-    public void Confirm(Money? totalAmount = null)
+    public void Confirm(Money? totalAmount = null, bool skipExpiryCheck = false)
     {
         var (isValid, errorMessage) = ReservationStateMachine.ValidateTransition(Status, ReservationStatus.Confirmed, "Confirm");
         if (!isValid)
             throw new InvalidOperationException(errorMessage);
 
-        if (DateTime.UtcNow > ExpiryDate)
-            throw new InvalidOperationException("Cannot confirm expired reservation");
+        // Skip expiry check for payment-confirmed reservations
+        if (!skipExpiryCheck && ExpiryDate.HasValue && DateTime.UtcNow > ExpiryDate.Value)
+            throw new InvalidOperationException("رزرو منقضی شده است و امکان تأیید وجود ندارد");
         if (!_participants.Any())
-            throw new InvalidOperationException("Cannot confirm reservation without participants");
+            throw new InvalidOperationException("رزرو بدون شرکت‌کننده است و امکان تأیید وجود ندارد");
 
         Status = ReservationStatus.Confirmed;
         ConfirmationDate = DateTime.UtcNow;
@@ -207,7 +208,7 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     /// </summary>
     public void MarkAsExpired()
     {
-        if (DateTime.UtcNow > ExpiryDate)
+        if (ExpiryDate.HasValue && DateTime.UtcNow > ExpiryDate.Value)
         {
             var (isValid, errorMessage) = ReservationStateMachine.ValidateTransition(Status, ReservationStatus.Expired, "MarkAsExpired");
             if (isValid)
@@ -227,10 +228,10 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
             throw new InvalidOperationException(errorMessage);
 
         if (Status != ReservationStatus.Expired)
-            throw new InvalidOperationException("Only expired reservations can be reactivated");
+            throw new InvalidOperationException("فقط رزروهای منقضی شده قابل فعال‌سازی مجدد می‌باشند");
 
         if (newExpiryDate <= DateTime.UtcNow)
-            throw new ArgumentException("New expiry date must be in the future", nameof(newExpiryDate));
+            throw new ArgumentException("تاریخ انقضای جدید باید در آینده تعیین شود", nameof(newExpiryDate));
 
         Status = ReservationStatus.Held;
         ExpiryDate = newExpiryDate;
@@ -298,9 +299,9 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     public void ExtendExpiry(DateTime newExpiryDate)
     {
         if (Status != ReservationStatus.Draft && Status != ReservationStatus.Held)
-            throw new InvalidOperationException("Can only extend expiry for pending reservations");
+            throw new InvalidOperationException("امکان تمدید تاریخ انقضا فقط برای رزروهای در انتظار وجود دارد");
         if (newExpiryDate <= DateTime.UtcNow)
-            throw new ArgumentException("New expiry date must be in the future", nameof(newExpiryDate));
+            throw new ArgumentException("تاریخ انقضای جدید باید در آینده تعیین شود", nameof(newExpiryDate));
 
         ExpiryDate = newExpiryDate;
     }
@@ -319,9 +320,9 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     public void SetBillId(Guid billId)
     {
         if (billId == Guid.Empty)
-            throw new ArgumentException("Bill ID cannot be empty", nameof(billId));
+            throw new ArgumentException("شناسه فاکتور الزامی است", nameof(billId));
         if (BillId.HasValue)
-            throw new InvalidOperationException("Bill ID has already been set for this reservation");
+            throw new InvalidOperationException("شناسه فاکتور قبلاً برای این رزرو تعریف شده است");
 
         BillId = billId;
     }
@@ -360,7 +361,7 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     }
 
     /// <summary>
-    /// Checks if reservation is confirmed and not expired
+    /// بررسی اینکه آیا رزرو تأیید شده و منقضی نشده است
     /// </summary>
     public bool IsConfirmed()
     {
@@ -368,11 +369,11 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     }
 
     /// <summary>
-    /// Checks if reservation is pending (held state) and not expired
+    /// بررسی اینکه آیا رزرو در انتظار است (Held یا Paying) و منقضی نشده
     /// </summary>
     public bool IsPending()
     {
-        return Status == ReservationStatus.Held && !IsExpired();
+        return (Status == ReservationStatus.Held || Status == ReservationStatus.Paying) && !IsExpired();
     }
 
     /// <summary>
@@ -431,7 +432,7 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
         if (priceSnapshot == null)
             throw new ArgumentNullException(nameof(priceSnapshot));
         if (priceSnapshot.ReservationId != Id)
-            throw new ArgumentException("Price snapshot does not belong to this reservation", nameof(priceSnapshot));
+            throw new ArgumentException("تصویر قیمت متعلق به این رزرو نمی‌باشد", nameof(priceSnapshot));
 
         // Remove existing snapshot for same participant type
         var existingSnapshot = _priceSnapshots.FirstOrDefault(ps => ps.ParticipantType == priceSnapshot.ParticipantType);
@@ -498,8 +499,8 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     private static void ValidateTrackingCode(string trackingCode)
     {
         if (string.IsNullOrWhiteSpace(trackingCode))
-            throw new ArgumentException("Tracking code cannot be empty", nameof(trackingCode));
+            throw new ArgumentException("کد پیگیری الزامی است", nameof(trackingCode));
         if (trackingCode.Length > 50)
-            throw new ArgumentException("Tracking code cannot exceed 50 characters", nameof(trackingCode));
+            throw new ArgumentException("کد پیگیری نمی‌تواند بیش از 50 کاراکتر باشد", nameof(trackingCode));
     }
 }

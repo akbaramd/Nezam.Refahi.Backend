@@ -178,7 +178,7 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Application
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackAsync(cancellationToken);
-                return ApplicationResult<SendOtpResponse>.Failure($"Failed to generate OTP: {ex.Message}");
+                return ApplicationResult<SendOtpResponse>.Failure(ex, "Failed to generate OTP");
             }
             
             // Create OTP policy
@@ -234,7 +234,7 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Application
         catch (Exception ex)
         {
             await _unitOfWork.RollbackAsync(cancellationToken);
-            return ApplicationResult<SendOtpResponse>.Failure($"Failed to send OTP: {ex.Message}");
+            return ApplicationResult<SendOtpResponse>.Failure(ex, "Failed to send OTP");
         }
     }
 

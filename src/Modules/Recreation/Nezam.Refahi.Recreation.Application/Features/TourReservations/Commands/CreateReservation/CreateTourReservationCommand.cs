@@ -20,6 +20,11 @@ public class CreateTourReservationCommand : IRequest<ApplicationResult<CreateTou
     public Guid CapacityId { get; init; }
 
     /// <summary>
+    /// Idempotency key to prevent duplicate requests
+    /// </summary>
+    public string? IdempotencyKey { get; init; } = null!;
+
+    /// <summary>
     /// Guest participants to add to reservation
     /// </summary>
     public IEnumerable<GuestParticipantDto> Guests { get; init; } = [];

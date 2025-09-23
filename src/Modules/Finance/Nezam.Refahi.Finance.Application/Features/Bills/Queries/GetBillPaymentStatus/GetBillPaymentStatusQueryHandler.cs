@@ -56,7 +56,7 @@ public class GetBillPaymentStatusQueryHandler :
         }
         catch (Exception ex)
         {
-            return ApplicationResult<BillPaymentStatusResponse>.Failure($"Failed to retrieve bill payment status: {ex.Message}");
+            return ApplicationResult<BillPaymentStatusResponse>.Failure(ex, "Failed to retrieve bill payment status");
         }
     }
 
@@ -95,7 +95,7 @@ public class GetBillPaymentStatusQueryHandler :
         }
         catch (Exception ex)
         {
-            return ApplicationResult<BillPaymentStatusResponse>.Failure($"Failed to retrieve bill payment status: {ex.Message}");
+            return ApplicationResult<BillPaymentStatusResponse>.Failure(ex, "Failed to retrieve bill payment status");
         }
     }
 
