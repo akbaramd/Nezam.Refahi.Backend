@@ -1,7 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Nezam.Refahi.Finance.Contracts.Commands.Bills;
 using Nezam.Refahi.Finance.Contracts.Commands.Wallets;
+using Nezam.Refahi.Finance.Contracts.Dtos;
 using Nezam.Refahi.Finance.Contracts.Queries.Wallets;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
@@ -16,17 +16,37 @@ public static class WalletEndpoints
             .WithTags("Wallets")
             .RequireAuthorization();
 
-        // ───────────────────── Create Wallet Deposit Bill ─────────────────────
-        walletGroup.MapPost("/deposit-bill", async (
-                [FromBody] CreateBillChargeBillCommand command,
-                [FromServices] IMediator mediator) =>
+        // ───────────────────── Create Wallet Deposit ─────────────────────
+        walletGroup.MapPost("/deposit", async (
+                [FromBody] CreateWalletDepositRequest request,
+                [FromServices] IMediator mediator,
+                [FromServices] ICurrentUserService currentUserService) =>
             {
+                // Get user information from current user service
+                var externalUserId = currentUserService.UserId;
+                if (externalUserId == null)
+                {
+                    return Results.Unauthorized();
+                }
+
+                // Create command with user information
+                var command = new CreateWalletDepositCommand
+                {
+                    ExternalUserId = externalUserId.Value,
+                    UserFullName = currentUserService.UserFullName ?? string.Empty,
+                    AmountRials = request.AmountRials,
+                    Description = request.Description,
+                    ExternalReference = request.ExternalReference,
+                    Metadata = request.Metadata
+                };
+
                 var result = await mediator.Send(command);
-                return result.IsSuccess ? Results.Created($"/api/v1/bills/{result.Data!.BillId}", result) : Results.BadRequest(result);
+                return result.IsSuccess ? Results.Created($"/api/v1/wallets/deposits/{result.Data!.DepositId}", result) : Results.BadRequest(result);
             })
-            .WithName("CreateWalletDepositBill")
-            .Produces<ApplicationResult<CreateBillChargeBillResponse>>(201)
-            .Produces(400);
+            .WithName("CreateWalletDeposit")
+            .Produces<ApplicationResult<CreateWalletDepositResponse>>(201)
+            .Produces(400)
+            .Produces(401);
 
 
         // ───────────────────── Get Wallet Balance ─────────────────────
@@ -34,14 +54,14 @@ public static class WalletEndpoints
                 [FromServices] ICurrentUserService currentUserService,
                 [FromServices] IMediator mediator) =>
             {
-                var query = new GetWalletBalanceQuery { UserNationalNumber = currentUserService.UserNationalNumber!.ToString() };
+                var query = new GetWalletBalanceQuery { ExternalUserId = currentUserService.UserId!.Value };
                 var result = await mediator.Send(query);
                 return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
-            })
+            }) 
             .WithName("GetWalletBalance")
             .Produces<ApplicationResult<WalletBalanceResponse>>(200)
             .Produces(400);
-
+        
         // ───────────────────── Get Wallet Transactions ─────────────────────
         walletGroup.MapGet("/transactions", async (
                 [FromServices] ICurrentUserService currentUserService,
@@ -55,7 +75,7 @@ public static class WalletEndpoints
             {
                 var query = new GetWalletTransactionsQuery
                 {
-                    UserNationalNumber = currentUserService.UserNationalNumber!.ToString(),
+                    ExternalUserId = currentUserService.UserId!.Value,
                     PageNumber = pageNumber,
                     PageSize = pageSize,
                     TransactionType = transactionType,
@@ -82,7 +102,7 @@ public static class WalletEndpoints
             {
                 var query = new GetWalletDepositsQuery
                 {
-                    UserNationalNumber = currentUserService.UserNationalNumber!.ToString(),
+                    ExternalUserId = currentUserService.UserId!.Value,
                     Page = page,
                     PageSize = pageSize,
                     Status = status,

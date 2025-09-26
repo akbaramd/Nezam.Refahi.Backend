@@ -15,7 +15,7 @@ public sealed class Refund : Entity<Guid>
     public Money Amount { get; private set; } = null!;
     public RefundStatus Status { get; private set; }
     public string Reason { get; private set; } = null!;
-    public string RequestedByNationalNumber { get; private set; } = null!;
+    public Guid RequestedByExternalUserId { get; private set; }
     public DateTime RequestedAt { get; private set; }
     public DateTime? ProcessedAt { get; private set; }
     public DateTime? CompletedAt { get; private set; }
@@ -59,20 +59,20 @@ public sealed class Refund : Entity<Guid>
         Guid billId,
         Money amount,
         string reason,
-        string requestedByNationalNumber)
+        Guid requestedByExternalUserId)   
         : base(Guid.NewGuid())
     {
         if (billId == Guid.Empty)
             throw new ArgumentException("Bill ID cannot be empty", nameof(billId));
         if (string.IsNullOrWhiteSpace(reason))
             throw new ArgumentException("Refund reason cannot be empty", nameof(reason));
-        if (string.IsNullOrWhiteSpace(requestedByNationalNumber))
-            throw new ArgumentException("Requester national number cannot be empty", nameof(requestedByNationalNumber));
+        if (requestedByExternalUserId == Guid.Empty)
+            throw new ArgumentException("Requester external user ID cannot be empty", nameof(requestedByExternalUserId));   
 
         BillId = billId;
         Amount = amount ?? throw new ArgumentNullException(nameof(amount));
         Reason = reason.Trim();
-        RequestedByNationalNumber = requestedByNationalNumber.Trim();
+        RequestedByExternalUserId = requestedByExternalUserId;
         Status = RefundStatus.Pending;
         RequestedAt = DateTime.UtcNow;
     }

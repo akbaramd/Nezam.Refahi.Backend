@@ -11,13 +11,15 @@ public class GetWalletTransactionsQueryValidator : AbstractValidator<GetWalletTr
 {
     public GetWalletTransactionsQueryValidator()
     {
-        RuleFor(x => x.UserNationalNumber)
+        RuleFor(x => x.ExternalUserId)
             .NotEmpty()
-            .WithMessage("User national number is required")
-            .Length(10, 10)
-            .WithMessage("National number must be exactly 10 digits")
-            .Matches(@"^\d{10}$")
-            .WithMessage("National number must contain only digits");
+            .WithMessage("User external user ID is required")
+            .NotEqual(Guid.Empty)
+            .WithMessage("User external user ID cannot be empty");
+
+        RuleFor(x => x.ExternalUserId)
+            .NotEmpty()
+            .WithMessage("User external user ID cannot be empty");
 
         RuleFor(x => x.TransactionType)
             .Must(type => string.IsNullOrEmpty(type) || Enum.IsDefined(typeof(WalletTransactionType), type))

@@ -64,6 +64,11 @@ namespace Nezam.Refahi.Finance.Infrastructure.Migrations
                     b.Property<DateTime?>("DueDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("ExternalUserId")
+                        .HasMaxLength(10)
+                        .HasColumnType("uniqueidentifier")
+                        .IsFixedLength();
+
                     b.Property<DateTime?>("FullyPaidDate")
                         .HasColumnType("datetime2");
 
@@ -112,12 +117,6 @@ namespace Nezam.Refahi.Finance.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("UserNationalNumber")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nchar(10)")
-                        .IsFixedLength();
-
                     b.Property<long>("Version")
                         .HasColumnType("bigint");
 
@@ -142,6 +141,8 @@ namespace Nezam.Refahi.Finance.Infrastructure.Migrations
 
                     b.HasIndex("DueDate");
 
+                    b.HasIndex("ExternalUserId");
+
                     b.HasIndex("IsDeleted")
                         .HasDatabaseName("IX_Bill_IsDeleted");
 
@@ -156,8 +157,6 @@ namespace Nezam.Refahi.Finance.Infrastructure.Migrations
                         .HasFilter("[LastModifiedBy] IS NOT NULL");
 
                     b.HasIndex("Status");
-
-                    b.HasIndex("UserNationalNumber");
 
                     b.HasIndex("ReferenceId", "BillType");
 
@@ -403,10 +402,9 @@ namespace Nezam.Refahi.Finance.Infrastructure.Migrations
                     b.Property<DateTime>("RequestedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("RequestedByNationalNumber")
-                        .IsRequired()
+                    b.Property<Guid>("RequestedByExternalUserId")
                         .HasMaxLength(10)
-                        .HasColumnType("nchar(10)")
+                        .HasColumnType("uniqueidentifier")
                         .IsFixedLength();
 
                     b.Property<string>("Status")
@@ -424,11 +422,367 @@ namespace Nezam.Refahi.Finance.Infrastructure.Migrations
 
                     b.HasIndex("RequestedAt");
 
-                    b.HasIndex("RequestedByNationalNumber");
+                    b.HasIndex("RequestedByExternalUserId");
 
                     b.HasIndex("Status");
 
                     b.ToTable("Refunds", "finance");
+                });
+
+            modelBuilder.Entity("Nezam.Refahi.Finance.Domain.Entities.Wallet", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid>("ExternalUserId")
+                        .HasMaxLength(10)
+                        .HasColumnType("uniqueidentifier")
+                        .IsFixedLength();
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasMaxLength(100)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTime?>("LastTransactionAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Metadata")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<long>("Version")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("WalletName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_Wallet_CreatedAt");
+
+                    b.HasIndex("CreatedBy")
+                        .HasDatabaseName("IX_Wallet_CreatedBy");
+
+                    b.HasIndex("DeletedAt")
+                        .HasDatabaseName("IX_Wallet_DeletedAt")
+                        .HasFilter("[DeletedAt] IS NOT NULL");
+
+                    b.HasIndex("DeletedBy")
+                        .HasDatabaseName("IX_Wallet_DeletedBy")
+                        .HasFilter("[DeletedBy] IS NOT NULL");
+
+                    b.HasIndex("ExternalUserId")
+                        .IsUnique();
+
+                    b.HasIndex("IsDeleted")
+                        .HasDatabaseName("IX_Wallet_IsDeleted");
+
+                    b.HasIndex("LastModifiedAt")
+                        .HasDatabaseName("IX_Wallet_LastModifiedAt")
+                        .HasFilter("[LastModifiedAt] IS NOT NULL");
+
+                    b.HasIndex("LastModifiedBy")
+                        .HasDatabaseName("IX_Wallet_LastModifiedBy")
+                        .HasFilter("[LastModifiedBy] IS NOT NULL");
+
+                    b.HasIndex("LastTransactionAt");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("ExternalUserId", "Status");
+
+                    b.ToTable("Wallets", "finance");
+                });
+
+            modelBuilder.Entity("Nezam.Refahi.Finance.Domain.Entities.WalletDeposit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("ExternalReference")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("ExternalUserId")
+                        .HasMaxLength(20)
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Metadata")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("RequestedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("TrackingCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<long>("Version")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("WalletId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExternalReference")
+                        .HasDatabaseName("IX_WalletDeposits_ExternalReference");
+
+                    b.HasIndex("ExternalUserId")
+                        .HasDatabaseName("IX_WalletDeposits_ExternalUserId");
+
+                    b.HasIndex("RequestedAt")
+                        .HasDatabaseName("IX_WalletDeposits_RequestedAt");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_WalletDeposits_Status");
+
+                    b.HasIndex("TrackingCode")
+                        .IsUnique()
+                        .HasDatabaseName("IX_WalletDeposits_TrackingCode");
+
+                    b.HasIndex("WalletId")
+                        .HasDatabaseName("IX_WalletDeposits_WalletId");
+
+                    b.HasIndex("ExternalUserId", "RequestedAt")
+                        .HasDatabaseName("IX_WalletDeposits_ExternalUserId_RequestedAt");
+
+                    b.HasIndex("WalletId", "Status")
+                        .HasDatabaseName("IX_WalletDeposits_WalletId_Status");
+
+                    b.ToTable("WalletDeposits", "Finance");
+                });
+
+            modelBuilder.Entity("Nezam.Refahi.Finance.Domain.Entities.WalletSnapshot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Balance")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ExternalUserId")
+                        .HasMaxLength(20)
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastTransactionAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Metadata")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("NetChange")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<DateTime>("SnapshotDate")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("TotalDeposits")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalWithdrawals")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("TransactionCount")
+                        .HasColumnType("int");
+
+                    b.Property<long>("Version")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("WalletId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExternalUserId")
+                        .HasDatabaseName("IX_WalletSnapshots_ExternalUserId");
+
+                    b.HasIndex("SnapshotDate")
+                        .HasDatabaseName("IX_WalletSnapshots_SnapshotDate");
+
+                    b.HasIndex("WalletId")
+                        .HasDatabaseName("IX_WalletSnapshots_WalletId");
+
+                    b.HasIndex("ExternalUserId", "SnapshotDate")
+                        .HasDatabaseName("IX_WalletSnapshots_ExternalUserId_SnapshotDate");
+
+                    b.HasIndex("WalletId", "SnapshotDate")
+                        .IsUnique()
+                        .HasDatabaseName("IX_WalletSnapshots_WalletId_SnapshotDate_Unique");
+
+                    b.ToTable("WalletSnapshots", "Finance");
+                });
+
+            modelBuilder.Entity("Nezam.Refahi.Finance.Domain.Entities.WalletTransaction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("ExternalReference")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Metadata")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReferenceId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TransactionType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("WalletId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("ExternalReference");
+
+                    b.HasIndex("ReferenceId");
+
+                    b.HasIndex("TransactionType");
+
+                    b.HasIndex("WalletId");
+
+                    b.HasIndex("TransactionType", "CreatedAt");
+
+                    b.HasIndex("WalletId", "CreatedAt");
+
+                    b.HasIndex("WalletId", "TransactionType");
+
+                    b.ToTable("WalletTransactions", "finance");
                 });
 
             modelBuilder.Entity("Nezam.Refahi.Finance.Domain.Entities.Bill", b =>
@@ -637,6 +991,79 @@ namespace Nezam.Refahi.Finance.Infrastructure.Migrations
                     b.Navigation("Bill");
                 });
 
+            modelBuilder.Entity("Nezam.Refahi.Finance.Domain.Entities.WalletDeposit", b =>
+                {
+                    b.HasOne("Nezam.Refahi.Finance.Domain.Entities.Wallet", "Wallet")
+                        .WithMany()
+                        .HasForeignKey("WalletId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Wallet");
+                });
+
+            modelBuilder.Entity("Nezam.Refahi.Finance.Domain.Entities.WalletSnapshot", b =>
+                {
+                    b.HasOne("Nezam.Refahi.Finance.Domain.Entities.Wallet", "Wallet")
+                        .WithMany("Snapshots")
+                        .HasForeignKey("WalletId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Wallet");
+                });
+
+            modelBuilder.Entity("Nezam.Refahi.Finance.Domain.Entities.WalletTransaction", b =>
+                {
+                    b.HasOne("Nezam.Refahi.Finance.Domain.Entities.Wallet", "Wallet")
+                        .WithMany("Transactions")
+                        .HasForeignKey("WalletId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("Nezam.Refahi.Shared.Domain.ValueObjects.Money", "Amount", b1 =>
+                        {
+                            b1.Property<Guid>("WalletTransactionId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<decimal>("AmountRials")
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("AmountRials");
+
+                            b1.HasKey("WalletTransactionId");
+
+                            b1.ToTable("WalletTransactions", "finance");
+
+                            b1.WithOwner()
+                                .HasForeignKey("WalletTransactionId");
+                        });
+
+                    b.OwnsOne("Nezam.Refahi.Shared.Domain.ValueObjects.Money", "PreviousBalance", b1 =>
+                        {
+                            b1.Property<Guid>("WalletTransactionId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<decimal>("AmountRials")
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("PreviousBalanceRials");
+
+                            b1.HasKey("WalletTransactionId");
+
+                            b1.ToTable("WalletTransactions", "finance");
+
+                            b1.WithOwner()
+                                .HasForeignKey("WalletTransactionId");
+                        });
+
+                    b.Navigation("Amount")
+                        .IsRequired();
+
+                    b.Navigation("PreviousBalance")
+                        .IsRequired();
+
+                    b.Navigation("Wallet");
+                });
+
             modelBuilder.Entity("Nezam.Refahi.Finance.Domain.Entities.Bill", b =>
                 {
                     b.Navigation("Items");
@@ -648,6 +1075,13 @@ namespace Nezam.Refahi.Finance.Infrastructure.Migrations
 
             modelBuilder.Entity("Nezam.Refahi.Finance.Domain.Entities.Payment", b =>
                 {
+                    b.Navigation("Transactions");
+                });
+
+            modelBuilder.Entity("Nezam.Refahi.Finance.Domain.Entities.Wallet", b =>
+                {
+                    b.Navigation("Snapshots");
+
                     b.Navigation("Transactions");
                 });
 #pragma warning restore 612, 618

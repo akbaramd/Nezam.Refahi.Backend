@@ -10,7 +10,7 @@ public class PaymentFailedEvent : DomainEvent
     public Guid PaymentId { get; }
     public string ReferenceId { get; }
     public string ReferenceType { get; }
-    public string UserNationalNumber { get; }
+    public Guid ExternalUserId { get; }
     public string? FailureReason { get; }
     public string? ErrorCode { get; }
 
@@ -18,14 +18,14 @@ public class PaymentFailedEvent : DomainEvent
         Guid paymentId,
         string referenceId,
         string referenceType,
-        string userNationalNumber,
+        Guid externalUserId,
         string? failureReason,
         string? errorCode = null)
     {
         PaymentId = paymentId;
         ReferenceId = referenceId;
         ReferenceType = referenceType;
-        UserNationalNumber = userNationalNumber;
+        ExternalUserId = externalUserId;
         FailureReason = failureReason;
         ErrorCode = errorCode;
     }

@@ -85,7 +85,7 @@ public sealed class Payment : SoftDeletableAggregateRoot<Guid>
         Description = description?.Trim();
         Status = PaymentStatus.Pending;
         CreatedAt = DateTime.UtcNow;
-        ExpiryDate = expiryDate ?? DateTime.UtcNow.AddMinutes(15); // Default 15 minutes
+        ExpiryDate = expiryDate ?? DateTime.UtcNow.AddHours(1); // Default 15 minutes
     }
 
     /// <summary>
@@ -124,7 +124,7 @@ public sealed class Payment : SoftDeletableAggregateRoot<Guid>
             BillId,
             BillNumber,
             Bill.ReferenceId,
-            Bill.UserNationalNumber,
+            Bill.ExternalUserId,
             Amount,
             Gateway!.Value,
             gatewayTransactionId,
@@ -278,7 +278,7 @@ public sealed class Payment : SoftDeletableAggregateRoot<Guid>
             BillId,
             BillNumber,
             Bill.ReferenceId,
-            Bill.UserNationalNumber,
+            Bill.ExternalUserId,
             Amount,
             Method,
             Gateway,

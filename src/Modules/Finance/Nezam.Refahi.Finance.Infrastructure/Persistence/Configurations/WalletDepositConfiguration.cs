@@ -22,17 +22,19 @@ public class WalletDepositConfiguration : IEntityTypeConfiguration<WalletDeposit
         builder.Property(x => x.WalletId)
             .IsRequired();
 
-        builder.Property(x => x.BillId);
+        builder.Property(x => x.TrackingCode)
+            .IsRequired()
+            .HasMaxLength(20);
 
-        builder.Property(x => x.UserNationalNumber)
+        builder.Property(x => x.ExternalUserId)
             .IsRequired()
             .HasMaxLength(20);
 
         builder.Property(x => x.Amount)
             .IsRequired()
             .HasConversion(
-                v => new { v.AmountRials, v.Currency },
-                v => new Money(v.AmountRials));
+                v => v.AmountRials,
+                v => new Money(v));
 
         builder.Property(x => x.Status)
             .IsRequired()
@@ -58,8 +60,8 @@ public class WalletDepositConfiguration : IEntityTypeConfiguration<WalletDeposit
         builder.HasIndex(x => x.WalletId)
             .HasDatabaseName("IX_WalletDeposits_WalletId");
 
-        builder.HasIndex(x => x.UserNationalNumber)
-            .HasDatabaseName("IX_WalletDeposits_UserNationalNumber");
+        builder.HasIndex(x => x.ExternalUserId)
+            .HasDatabaseName("IX_WalletDeposits_ExternalUserId");   
 
         builder.HasIndex(x => x.Status)
             .HasDatabaseName("IX_WalletDeposits_Status");
@@ -73,19 +75,18 @@ public class WalletDepositConfiguration : IEntityTypeConfiguration<WalletDeposit
         builder.HasIndex(x => new { x.WalletId, x.Status })
             .HasDatabaseName("IX_WalletDeposits_WalletId_Status");
 
-        builder.HasIndex(x => new { x.UserNationalNumber, x.RequestedAt })
-            .HasDatabaseName("IX_WalletDeposits_UserNationalNumber_RequestedAt");
+        builder.HasIndex(x => new { x.ExternalUserId, x.RequestedAt })
+            .HasDatabaseName("IX_WalletDeposits_ExternalUserId_RequestedAt");
+
+        builder.HasIndex(x => x.TrackingCode)
+            .HasDatabaseName("IX_WalletDeposits_TrackingCode")
+            .IsUnique();
 
         // Relationships
         builder.HasOne(x => x.Wallet)
             .WithMany()
             .HasForeignKey(x => x.WalletId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasOne(x => x.Bill)
-            .WithMany()
-            .HasForeignKey(x => x.BillId)
-            .OnDelete(DeleteBehavior.SetNull);
 
         // Audit fields - WalletDeposit inherits from FullAggregateRoot which already has audit fields
     }

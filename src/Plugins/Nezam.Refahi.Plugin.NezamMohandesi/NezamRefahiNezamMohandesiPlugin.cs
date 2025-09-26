@@ -3,6 +3,7 @@ using Bonyan.Modularity.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Nezam.Refahi.BasicDefinitions.Contracts.Services;
 using Nezam.Refahi.Membership.Contracts.Services;
 using Nezam.Refahi.Plugin.NezamMohandesi.Cedo;
 using Nezam.Refahi.Plugin.NezamMohandesi.Seeding;
@@ -26,6 +27,7 @@ public class NezamRefahiNezamMohandesiPlugin : BonModule
     
     // Register seed contributors
     context.Services.AddScoped<IMembershipSeedContributor, NezamMohandesiSeedContributor>();
+    context.Services.AddScoped<IBasicDefinitionsSeedContributor, NezamMohandesiBasicDefinitionsSeedContributor>();
     
     // Register hosted services
     

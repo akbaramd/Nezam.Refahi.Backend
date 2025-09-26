@@ -46,19 +46,13 @@ public class PaymentFailedEventConsumer : INotificationHandler<PaymentFailedEven
                 return;
             }
 
-            // Find reservation by ReferenceId (which is now the reservation ID)
-            if (!Guid.TryParse(notification.ReferenceId, out var reservationId))
-            {
-                _logger.LogWarning("شناسه رزرو نامعتبر: {ReferenceId}", notification.ReferenceId);
-                return;
-            }
-
-            var reservation = await _reservationRepository.GetByIdAsync(reservationId, cancellationToken);
+            // Find reservation by tracking code (ReferenceId is now the tracking code)
+            var reservation = await _reservationRepository.GetByTrackingCodeAsync(notification.ReferenceId, cancellationToken);
             
             if (reservation == null)
             {
-                _logger.LogWarning("هیچ رزروی با شناسه {ReservationId} برای رویداد پرداخت ناموفق یافت نشد", 
-                    reservationId);
+                _logger.LogWarning("هیچ رزروی با کد پیگیری {TrackingCode} برای رویداد پرداخت ناموفق یافت نشد", 
+                    notification.ReferenceId);
                 return;
             }
 

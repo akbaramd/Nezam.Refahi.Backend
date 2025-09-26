@@ -50,8 +50,8 @@ public class CreateWalletCommandHandler : IRequestHandler<CreateWalletCommand, A
             }
 
             // Check if wallet already exists for this user
-            var existingWallet = await _walletRepository.GetByNationalNumberAsync(
-                request.UserNationalNumber, cancellationToken);
+            var existingWallet = await _walletRepository.GetByExternalUserIdAsync(
+                request.ExternalUserId, cancellationToken);
             
             if (existingWallet != null)
             {
@@ -60,10 +60,8 @@ public class CreateWalletCommandHandler : IRequestHandler<CreateWalletCommand, A
             }
 
             // Create new wallet
-            var initialBalance = Money.FromRials(request.InitialBalanceRials);
             var wallet = new Wallet(
-                request.UserNationalNumber,
-                initialBalance,
+                request.ExternalUserId,
                 request.UserFullName, // This will be used as walletName
                 request.Description,
                 request.Metadata);
@@ -79,9 +77,9 @@ public class CreateWalletCommandHandler : IRequestHandler<CreateWalletCommand, A
             var response = new CreateWalletResponse
             {
                 WalletId = wallet.Id,
-                UserNationalNumber = wallet.NationalNumber,
+                UserExternalUserId = wallet.ExternalUserId,
                 UserFullName = wallet.WalletName ?? request.UserFullName,
-                InitialBalanceRials = wallet.Balance.AmountRials,
+                InitialBalanceRials = wallet.Balance.AmountRials, // Initial balance is zero
                 Status = wallet.Status.ToString(),
                 CreatedAt = wallet.CreatedAt
             };

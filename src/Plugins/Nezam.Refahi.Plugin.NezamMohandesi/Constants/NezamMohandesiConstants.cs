@@ -1,4 +1,4 @@
-using Nezam.Refahi.Membership.Domain.Entities;
+using Nezam.Refahi.BasicDefinitions.Domain.Entities;
 
 namespace Nezam.Refahi.Plugin.NezamMohandesi.Constants;
 
@@ -13,6 +13,17 @@ public static class NezamMohandesiConstants
     }
     #endregion
 
+    #region Feature Types
+    public static class FeatureTypes
+    {
+        public const string ServiceField = "service_field";
+        public const string ServiceType = "service_type";
+        public const string LicenseStatus = "license_status";
+        public const string Grade = "grade";
+        public const string SpecialCapability = "special_capability";
+    }
+    #endregion
+
     #region Features
 
     /// <summary>
@@ -20,10 +31,10 @@ public static class NezamMohandesiConstants
     /// </summary>
     public static class ServiceFieldsFeatures
     {
-        public static readonly Features Structure = new("structure", "Structure Engineering / سازه", Features.FeatureTypes.ServiceField);
-        public static readonly Features Mechanic = new("mechanic", "Mechanic Engineering / مکانیک", Features.FeatureTypes.ServiceField);
-        public static readonly Features Electricity = new("electricity", "Electricity Engineering / برق", Features.FeatureTypes.ServiceField);
-        public static readonly Features Architecture = new("architecture", "Architecture / معماری", Features.FeatureTypes.ServiceField);
+        public static readonly Features Structure = new("structure", "Structure Engineering / سازه", FeatureTypes.ServiceField);
+        public static readonly Features Mechanic = new("mechanic", "Mechanic Engineering / مکانیک", FeatureTypes.ServiceField);
+        public static readonly Features Electricity = new("electricity", "Electricity Engineering / برق", FeatureTypes.ServiceField);
+        public static readonly Features Architecture = new("architecture", "Architecture / معماری", FeatureTypes.ServiceField);
 
         public static IEnumerable<Features> All => new[]
         {
@@ -36,10 +47,10 @@ public static class NezamMohandesiConstants
     /// </summary>
     public static class ServiceTypesFeatures
     {
-        public static readonly Features Design = new("designer", "Design / طراح", Features.FeatureTypes.ServiceType);
-        public static readonly Features Supervision = new("supervisor", "Supervision / ناظر", Features.FeatureTypes.ServiceType);
-        public static readonly Features Execute = new("execute", "Execute / اجرا", Features.FeatureTypes.ServiceType);
-        public static readonly Features Executor = new("executor", "Executor / مجری", Features.FeatureTypes.ServiceType);
+        public static readonly Features Design = new("designer", "Design / طراح", FeatureTypes.ServiceType);
+        public static readonly Features Supervision = new("supervisor", "Supervision / ناظر", FeatureTypes.ServiceType);
+        public static readonly Features Execute = new("execute", "Execute / اجرا", FeatureTypes.ServiceType);
+        public static readonly Features Executor = new("executor", "Executor / مجری", FeatureTypes.ServiceType);
 
         public static IEnumerable<Features> All => new[]
         {
@@ -52,8 +63,8 @@ public static class NezamMohandesiConstants
     /// </summary>
     public static class LicenseStatusFeatures
     {
-        public static readonly Features HasLicense = new("has_license", "Licensed Professional / دارای پروانه", Features.FeatureTypes.LicenseStatus);
-        public static readonly Features NoLicense = new("no_license", "Non-Licensed Professional / بدون پروانه", Features.FeatureTypes.LicenseStatus);
+        public static readonly Features HasLicense = new("has_license", "Licensed Professional / دارای پروانه", FeatureTypes.LicenseStatus);
+        public static readonly Features NoLicense = new("no_license", "Non-Licensed Professional / بدون پروانه", FeatureTypes.LicenseStatus);
 
         public static IEnumerable<Features> All => new[]
         {
@@ -66,10 +77,10 @@ public static class NezamMohandesiConstants
     /// </summary>
     public static class GradesFeatures
     {
-        public static readonly Features Master = new("master", "Master Grade / پایه ارشد", Features.FeatureTypes.Grade);
-        public static readonly Features Grade1 = new("grade1", "Grade 1 / پایه ۱", Features.FeatureTypes.Grade);
-        public static readonly Features Grade2 = new("grade2", "Grade 2 / پایه ۲", Features.FeatureTypes.Grade);
-        public static readonly Features Grade3 = new("grade3", "Grade 3 / پایه ۳", Features.FeatureTypes.Grade);
+        public static readonly Features Master = new("master", "Master Grade / پایه ارشد", FeatureTypes.Grade);
+        public static readonly Features Grade1 = new("grade1", "Grade 1 / پایه ۱", FeatureTypes.Grade);
+        public static readonly Features Grade2 = new("grade2", "Grade 2 / پایه ۲", FeatureTypes.Grade);
+        public static readonly Features Grade3 = new("grade3", "Grade 3 / پایه ۳", FeatureTypes.Grade);
 
         public static IEnumerable<Features> All => new[]
         {

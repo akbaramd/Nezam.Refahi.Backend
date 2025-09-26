@@ -10,24 +10,24 @@ public class GetWalletBalanceQueryValidator : AbstractValidator<GetWalletBalance
 {
     public GetWalletBalanceQueryValidator()
     {
-        RuleFor(x => x.UserNationalNumber)
+        RuleFor(x => x.ExternalUserId)
             .NotEmpty()
-            .WithMessage("User national number is required")
-            .Length(10, 10)
-            .WithMessage("National number must be exactly 10 digits")
-            .Matches(@"^\d{10}$")
-            .WithMessage("National number must contain only digits");
+            .WithMessage("شناسه کاربر الزامی است")
+            .NotEqual(Guid.Empty)
+            .WithMessage("شناسه کاربر نمی‌تواند خالی باشد");
+
+     
 
         RuleFor(x => x.TransactionHistoryCount)
             .GreaterThan(0)
-            .WithMessage("Transaction history count must be greater than zero")
+            .WithMessage("تعداد تراکنش‌های تاریخچه باید بیشتر از صفر باشد")
             .LessThanOrEqualTo(50)
-            .WithMessage("Transaction history count cannot exceed 50");
+            .WithMessage("تعداد تراکنش‌های تاریخچه نمی‌تواند بیش از 50 باشد");
 
         RuleFor(x => x.AnalysisDays)
             .GreaterThan(0)
-            .WithMessage("Analysis days must be greater than zero")
+            .WithMessage("تعداد روزهای تحلیل باید بیشتر از صفر باشد")
             .LessThanOrEqualTo(365)
-            .WithMessage("Analysis days cannot exceed 365");
+            .WithMessage("تعداد روزهای تحلیل نمی‌تواند بیش از 365 روز باشد");
     }
 }

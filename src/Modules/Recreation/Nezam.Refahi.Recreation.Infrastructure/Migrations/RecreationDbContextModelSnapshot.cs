@@ -783,6 +783,9 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
                     b.Property<DateTime?>("ExpiryDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("ExternalUserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -877,6 +880,9 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
 
                     b.HasIndex("TenantId", "CapacityId", "Status")
                         .HasDatabaseName("IX_TourReservations_TenantCapacityStatus");
+
+                    b.HasIndex("TenantId", "ExternalUserId", "ReservationDate")
+                        .HasDatabaseName("IX_TourReservations_TenantExternalUserDate");
 
                     b.HasIndex("TenantId", "MemberId", "ReservationDate")
                         .HasDatabaseName("IX_TourReservations_TenantMemberDate");

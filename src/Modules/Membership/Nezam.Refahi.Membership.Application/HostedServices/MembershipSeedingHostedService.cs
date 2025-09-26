@@ -29,9 +29,7 @@ public class MembershipSeedingHostedService : IHostedService
       using var scope = _serviceProvider.CreateScope();
       var seedContributors = scope.ServiceProvider.GetServices<IMembershipSeedContributor>();
 
-      var claimRepository = scope.ServiceProvider.GetRequiredService<IFeatureRepository>();
       var roleRepository = scope.ServiceProvider.GetRequiredService<IRoleRepository>();
-      var capabilityRepository = scope.ServiceProvider.GetRequiredService<ICapabilityRepository>();
       var uow = scope.ServiceProvider.GetRequiredService<IMembershipUnitOfWork>();
 
       if (!seedContributors.Any())
@@ -53,20 +51,13 @@ public class MembershipSeedingHostedService : IHostedService
         {
           _logger.LogInformation("Processing seed contributor: {ContributorType}", contributor.GetType().Name);
 
-          // Step 1: Get all capabilities first to collect claim types
-          var capabilities = await contributor.SeedCapabilitiesAsync(cancellationToken);
+          // Step 1: Get capability keys (now just strings)
+          var capabilityKeys = await contributor.SeedCapabilityKeysAsync(cancellationToken);
+          _logger.LogInformation("Found {Count} capability keys from contributor", capabilityKeys.Count);
 
-          // Step 2: Sync all claim types first (dependencies for capabilities)
-          await SyncClaimTypesAsync(capabilities, claimRepository, cancellationToken:cancellationToken);
-          await uow.SaveChangesAsync(cancellationToken);
-
-          // Step 3: Sync capabilities (now that all claim types exist)
-          await SyncCapabilitiesAsync(capabilities, capabilityRepository, claimRepository, cancellationToken:cancellationToken);
-          await uow.SaveChangesAsync(cancellationToken);
-
-          // Step 4: Sync roles
+          // Step 2: Sync roles
           var roles = await contributor.SeedRolesAsync(cancellationToken);
-          await SyncRolesAsync(roles, roleRepository, cancellationToken:cancellationToken);
+          await SyncRolesAsync(roles, roleRepository, cancellationToken);
           await uow.SaveChangesAsync(cancellationToken);
 
           await uow.CommitAsync(cancellationToken);
@@ -90,113 +81,6 @@ public class MembershipSeedingHostedService : IHostedService
     }
   }
 
-  private async Task SyncClaimTypesAsync(
-    IEnumerable<Domain.Entities.Capability> capabilities,
-    IFeatureRepository claimRepository,
-    CancellationToken cancellationToken)
-  {
-    _logger.LogInformation("Syncing claim types");
-
-    // Collect all unique claim types from all capabilities
-    var allClaimTypes = capabilities
-      .SelectMany(c => c.Features)
-      .GroupBy(ct => ct.Id)
-      .Select(g => g.First()) // Take first occurrence of each unique key
-      .ToList();
-
-    _logger.LogInformation("Found {Count} unique claim types to sync", allClaimTypes.Count);
-
-    foreach (var claimType in allClaimTypes)
-    {
-      var existingClaimType = await claimRepository.FindOneAsync(ct => ct.Id == claimType.Id, cancellationToken:cancellationToken);
-
-      if (existingClaimType == null)
-      {
-        // Create new claim type
-        await claimRepository.AddAsync(claimType, cancellationToken:cancellationToken);
-        _logger.LogInformation("Added new claim type: {ClaimTypeKey} - {ClaimTypeTitle}",
-          claimType.Id, claimType.Title);
-      }
-      else
-      {
-        // Update existing claim type
-        existingClaimType.Update(
-          title: claimType.Title,
-          type: claimType.Type);
-
-
-        _logger.LogInformation("Updated existing claim type: {ClaimTypeKey} - {ClaimTypeTitle}",
-          claimType.Id, claimType.Title);
-      }
-    }
-  }
-
-  private async Task SyncCapabilitiesAsync(
-    IEnumerable<Domain.Entities.Capability> capabilities,
-    ICapabilityRepository capabilityRepository,
-    IFeatureRepository claimRepository,
-    CancellationToken cancellationToken)
-  {
-    _logger.LogInformation("Syncing capabilities");
-
-    foreach (var capability in capabilities)
-    {
-      var existingCapability = await capabilityRepository.FindOneAsync(c => c.Id == capability.Id, cancellationToken:cancellationToken);
-
-      if (existingCapability == null)
-      {
-        // Create new capability
-        var newCapability = new Domain.Entities.Capability(
-          key: capability.Id,
-          name: capability.Name,
-          description: capability.Description,
-          validFrom: capability.ValidFrom,
-          validTo: capability.ValidTo);
-
-        // Add claim types to the new capability
-        foreach (var claimType in capability.Features)
-        {
-          var dbClaimType = await claimRepository.FindOneAsync(ct => ct.Id == claimType.Id, cancellationToken:cancellationToken);
-          if (dbClaimType != null)
-          {
-            newCapability.AddFeature(dbClaimType);
-          }
-        }
-
-        await capabilityRepository.AddAsync(newCapability, cancellationToken:cancellationToken);
-        _logger.LogInformation("Added new capability: {CapabilityKey} - {CapabilityName} with {ClaimTypeCount} claim types",
-          capability.Id, capability.Name, capability.Features.Count);
-      }
-      else
-      {
-        // Update existing capability
-        existingCapability.Update(
-          name: capability.Name,
-          description: capability.Description,
-          validFrom: capability.ValidFrom,
-          validTo: capability.ValidTo);
-
-        // Sync claim types for the capability
-        foreach (var claimType in capability.Features)
-        {
-          var dbClaimType = await claimRepository.FindOneAsync(ct => ct.Id == claimType.Id, cancellationToken:cancellationToken);
-          if (dbClaimType != null && !existingCapability.HasFeature(dbClaimType.Id))
-          {
-            existingCapability.AddFeature(dbClaimType);
-          }
-        }
-
-        if (!existingCapability.IsActive)
-        {
-          existingCapability.Activate();
-        }
-
-        _logger.LogInformation("Updated existing capability: {CapabilityKey} - {CapabilityName} with {ClaimTypeCount} claim types",
-          capability.Id, capability.Name, capability.Features.Count);
-      }
-    }
-  }
-
   private async Task SyncRolesAsync(
     IEnumerable<Domain.Entities.Role> roles,
     IRoleRepository roleRepository,
@@ -206,12 +90,12 @@ public class MembershipSeedingHostedService : IHostedService
 
     foreach (var role in roles)
     {
-      var existingRole = await roleRepository.FindOneAsync(r => r.Key == role.Key, cancellationToken:cancellationToken);
+      var existingRole = await roleRepository.FindOneAsync(r => r.Key == role.Key, cancellationToken);
 
       if (existingRole == null)
       {
         // Create new role
-        await roleRepository.AddAsync(role, cancellationToken:cancellationToken);
+        await roleRepository.AddAsync(role, cancellationToken: cancellationToken);
         _logger.LogInformation("Added new role: {RoleKey} - {RoleTitle}", role.Id, role.Title);
       }
       else

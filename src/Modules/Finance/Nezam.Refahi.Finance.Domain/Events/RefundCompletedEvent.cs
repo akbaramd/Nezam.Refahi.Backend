@@ -12,7 +12,7 @@ public class RefundCompletedEvent : DomainEvent
     public string ReferenceId { get; }
     public string ReferenceType { get; }
     public decimal RefundAmountRials { get; }
-    public string RequestedByNationalNumber { get; }
+    public Guid RequestedByExternalUserId { get; }
     public DateTime CompletedAt { get; }
 
     public RefundCompletedEvent(
@@ -21,7 +21,7 @@ public class RefundCompletedEvent : DomainEvent
         string referenceId,
         string referenceType,
         decimal refundAmountRials,
-        string requestedByNationalNumber,
+        Guid requestedByExternalUserId,
         DateTime completedAt)
     {
         RefundId = refundId;
@@ -29,7 +29,7 @@ public class RefundCompletedEvent : DomainEvent
         ReferenceId = referenceId;
         ReferenceType = referenceType;
         RefundAmountRials = refundAmountRials;
-        RequestedByNationalNumber = requestedByNationalNumber;
+        RequestedByExternalUserId = requestedByExternalUserId;
         CompletedAt = completedAt;
     }
 }

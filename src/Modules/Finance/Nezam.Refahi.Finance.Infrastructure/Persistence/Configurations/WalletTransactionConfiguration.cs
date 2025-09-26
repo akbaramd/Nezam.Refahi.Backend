@@ -52,10 +52,10 @@ public class WalletTransactionConfiguration : IEntityTypeConfiguration<WalletTra
                 .IsRequired();
         });
 
-        builder.OwnsOne(t => t.BalanceAfter, money =>
+        builder.OwnsOne(t => t.PreviousBalance, money =>
         {
             money.Property(m => m.AmountRials)
-                .HasColumnName("BalanceAfterRials")
+                .HasColumnName("PreviousBalanceRials")
                 .HasColumnType("decimal(18,2)")
                 .IsRequired();
         });
@@ -91,6 +91,5 @@ public class WalletTransactionConfiguration : IEntityTypeConfiguration<WalletTra
 
         builder.HasIndex(t => new { t.TransactionType, t.CreatedAt });
 
-        builder.ConfigureEntity();
     }
 }

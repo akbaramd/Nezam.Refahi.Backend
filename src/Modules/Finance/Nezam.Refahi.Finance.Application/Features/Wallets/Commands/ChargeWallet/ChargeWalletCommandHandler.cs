@@ -49,9 +49,9 @@ public class ChargeWalletCommandHandler : IRequestHandler<ChargeWalletCommand, A
                     );
             }
 
-            // Get wallet by national number
-            var wallet = await _walletRepository.GetByNationalNumberAsync(
-                request.UserNationalNumber, cancellationToken);
+            // Get wallet by national number with refreshed balance
+            var wallet = await _walletRepository.GetByExternalUserIdWithRefreshedBalanceAsync(
+                request.ExternalUserId, cancellationToken);
             
             if (wallet == null)
             {
@@ -79,7 +79,7 @@ public class ChargeWalletCommandHandler : IRequestHandler<ChargeWalletCommand, A
                     );
             }
 
-            // Record previous balance
+            // Get previous balance from wallet
             var previousBalance = wallet.Balance;
 
             // Charge the wallet
@@ -96,15 +96,18 @@ public class ChargeWalletCommandHandler : IRequestHandler<ChargeWalletCommand, A
             // Commit changes
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+            // Get new balance from wallet (already updated by Deposit method)
+            var newBalance = wallet.Balance;
+
              // Return response
              var response = new ChargeWalletResponse
              {
                  WalletId = wallet.Id,
                  TransactionId = transaction.Id,
-                 UserNationalNumber = wallet.NationalNumber,
+                 UserExternalUserId = wallet.ExternalUserId,
                  AmountRials = amount.AmountRials,
                  PreviousBalanceRials = previousBalance.AmountRials,
-                 NewBalanceRials = wallet.Balance.AmountRials,
+                 NewBalanceRials = newBalance.AmountRials,
                  TransactionType = transaction.TransactionType.ToString(),
                  Status = "Completed", // Wallet transactions are always completed when created
                  TransactionDate = transaction.CreatedAt,

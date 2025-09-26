@@ -181,6 +181,25 @@ public static class PaymentEndpoints
             .Produces<ApplicationResult<CreatePaymentResponse>>()
             .Produces(400);
 
+        // ───────────────────── Pay with Wallet ─────────────────────
+        group.MapPost("/wallet", async (
+                [FromBody] PayWithWalletCommand command,
+                [FromServices] IMediator mediator) =>
+            {
+                var result = await mediator.Send(command);
+
+                if (result.IsSuccess)
+                {
+                    return Results.Ok(result);
+                }
+
+                return Results.BadRequest(result);
+            })
+            .RequireAuthorization()
+            .WithName("PayWithWallet")
+            .Produces<ApplicationResult<PayWithWalletResponse>>()
+            .Produces(400);
+
         // ═══════════════════════ BILL MANAGEMENT ENDPOINTS ═══════════════════════
         if (app.Environment.IsDevelopment())
         {

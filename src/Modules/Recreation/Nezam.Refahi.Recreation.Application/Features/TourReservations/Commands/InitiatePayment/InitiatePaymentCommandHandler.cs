@@ -99,9 +99,9 @@ public class
     var createBillCommand = new CreateBillCommand
     {
       Title = $"فاکتور تور {tour.Title}",
-      ReferenceId = reservation.Id.ToString(),
+      ReferenceId = reservation.TrackingCode, // Use tracking code as reference ID
       BillType = "TourReservation",
-      UserNationalNumber = mainParticipant.NationalNumber,
+      ExternalUserId = request.ExternalUserId,
       UserFullName = mainParticipant.FullName,
       Description = $"پرداخت رزرو تور {tour.Title} - کد پیگیری: {reservation.TrackingCode}",
       DueDate = reservation.ExpiryDate,
@@ -109,6 +109,7 @@ public class
       {
         ["TourId"] = tour.Id.ToString(),
         ["ReservationId"] = reservation.Id.ToString(),
+        ["TrackingCode"] = reservation.TrackingCode, // Add tracking code to metadata
         ["TourTitle"] = tour.Title,
         ["ParticipantCount"] = reservation.GetParticipantCount().ToString(),
         ["ReservationDate"] = reservation.ReservationDate.ToString("yyyy-MM-dd HH:mm:ss")

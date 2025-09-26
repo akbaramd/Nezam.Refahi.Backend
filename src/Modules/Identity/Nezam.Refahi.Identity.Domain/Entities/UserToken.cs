@@ -124,9 +124,7 @@ public class UserToken : Entity<Guid>
         if (string.IsNullOrWhiteSpace(jwtId))
             throw new ArgumentException("JWT ID cannot be empty", nameof(jwtId));
             
-        if (expiresInMinutes <= 0 || expiresInMinutes > 60)
-            throw new ArgumentException("Access token expiry must be between 1-60 minutes", nameof(expiresInMinutes));
-            
+  
         return new UserToken
         {
             Id = Guid.NewGuid(),
@@ -168,9 +166,7 @@ public class UserToken : Entity<Guid>
         if (string.IsNullOrWhiteSpace(rawToken))
             throw new ArgumentException("Raw token cannot be empty", nameof(rawToken));
             
-        if (expiresInDays <= 0 || expiresInDays > 90)
-            throw new ArgumentException("Refresh token expiry must be between 1-90 days", nameof(expiresInDays));
-            
+
         // Generate salt and hash the token
         var salt = GenerateSalt();
         var hashedToken = HashToken(rawToken, salt, pepper);

@@ -27,7 +27,7 @@ public interface IRefundRepository : IRepository<Refund, Guid>
     /// <summary>
     /// Gets refunds by requester national number
     /// </summary>
-    Task<IEnumerable<Refund>> GetByRequesterAsync(string nationalNumber, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Refund>> GetByRequesterAsync(Guid externalUserId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets refunds in date range

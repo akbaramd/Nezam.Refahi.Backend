@@ -33,5 +33,6 @@ public enum PaymentGateway
     /// <summary>
     /// Iran Kish payment gateway
     /// </summary>
-    IranKish = 6
+    IranKish = 6,
+    Wallet = 7
 }

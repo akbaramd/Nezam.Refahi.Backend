@@ -28,13 +28,11 @@ public class CreateBillCommandValidator : AbstractValidator<CreateBillCommand>
             .MaximumLength(50)
             .WithMessage("Bill type cannot exceed 50 characters");
 
-        RuleFor(x => x.UserNationalNumber)
+        RuleFor(x => x.ExternalUserId)  
             .NotEmpty()
-            .WithMessage("User national number is required")
-            .Length(10)
-            .WithMessage("National number must be exactly 10 digits")
-            .Matches(@"^\d{10}$")
-            .WithMessage("National number must contain only digits");
+            .WithMessage("User external user ID is required")
+            .NotEqual(Guid.Empty)
+            .WithMessage("User external user ID cannot be empty");
 
         RuleFor(x => x.UserFullName)
             .MaximumLength(200)

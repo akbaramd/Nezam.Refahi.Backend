@@ -17,6 +17,11 @@ using System.Reflection;
 using Nezam.Refahi.Finance.Presentation;
 using Nezam.Refahi.Membership.Application.HostedServices;
 using Nezam.Refahi.Recreation.Presentation;
+using Hangfire;
+using Hangfire.SqlServer;
+using Nezam.Refahi.Notifications.Presentation;
+using Nezam.Refahi.BasicDefinitions.Presentation;
+using Nezam.Refahi.WebApi.Services;
 
 namespace Nezam.Refahi.WebApi;
 
@@ -29,6 +34,8 @@ public class NezamWebApiModule : BonWebModule
     DependOn<NezamRefahiMembershipPresentationModule>();
     DependOn<NezamRefahiRecreationPresentationModule>();
     DependOn<NezamRefahiFinancePresentationModule>();
+    DependOn<NezamRefahiNotificationPresentationModule>();
+    DependOn<NezamRefahiBasicDefinitionsPresentationModule>();
   }
 
   public override Task OnConfigureAsync(BonConfigurationContext context)
@@ -83,6 +90,9 @@ public class NezamWebApiModule : BonWebModule
     // Add example filters
     context.Services.AddSwaggerExamplesFromAssemblyOf<NezamWebApiModule>();
 
+    // Configure Hangfire
+    ConfigureHangfire(context);
+
   // Configure CORS
     context.Services.AddCors();
     ConfigureJwtAuthentication(context);
@@ -104,7 +114,8 @@ public class NezamWebApiModule : BonWebModule
       options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
-  
+    // Register hosted services
+    context.Services.AddHostedService<WalletSnapshotHostedService>();
 
     return base.OnConfigureAsync(context);
   }
@@ -121,6 +132,15 @@ public class NezamWebApiModule : BonWebModule
       app.UseDeveloperExceptionPage();
       app.UseStaticFiles();
       app.UseParbadVirtualGateway();
+      
+      // Configure Hangfire Dashboard
+      app.UseHangfireDashboard("/hangfire", new DashboardOptions
+      {
+        Authorization = new[] { new HangfireAuthorizationFilter() },
+        DashboardTitle = "Nezam Refahi Background Jobs",
+        DisplayStorageConnectionString = false
+      });
+      
       app.UseSwagger();
       app.UseSwaggerUI(options =>
       {
@@ -149,6 +169,33 @@ public class NezamWebApiModule : BonWebModule
     app.UseAuthorization();
 
     return base.OnApplicationAsync(context);
+  }
+
+  private void ConfigureHangfire(BonConfigurationContext context)
+  {
+    var configuration = context.GetRequireService<IConfiguration>();
+    var connectionString = configuration.GetConnectionString("DefaultConnection") 
+      ?? throw new InvalidOperationException("DefaultConnection connection string is not configured");
+
+    // Add Hangfire services
+    context.Services.AddHangfire(config =>
+    {
+      config.UseSqlServerStorage(connectionString, new SqlServerStorageOptions
+      {
+        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+        QueuePollInterval = TimeSpan.Zero,
+        UseRecommendedIsolationLevel = true,
+        DisableGlobalLocks = true
+      });
+    });
+
+    // Add Hangfire server
+    context.Services.AddHangfireServer(options =>
+    {
+      options.WorkerCount = Environment.ProcessorCount * 5;
+      options.Queues = new[] { "default", "wallet-snapshots" };
+    });
   }
 
   private void ConfigureJwtAuthentication(BonConfigurationContext context)

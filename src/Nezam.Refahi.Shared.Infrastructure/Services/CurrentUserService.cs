@@ -39,6 +39,15 @@ public class CurrentUserService : ICurrentUserService
         }
     }
 
+    public string? UserFullName
+    {
+        get
+        {
+            var fullNameClaim = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Name);
+            return fullNameClaim?.Value;
+        }
+    }
+
     public bool IsAuthenticated => _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
 
     public IEnumerable<string> Roles

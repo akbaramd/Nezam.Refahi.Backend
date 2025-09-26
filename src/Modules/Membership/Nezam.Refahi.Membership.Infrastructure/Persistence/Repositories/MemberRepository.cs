@@ -122,12 +122,11 @@ public class MemberRepository : EfRepository<MembershipDbContext, Member, Guid>,
             .ToListAsync();
     }
 
+
     public async Task<Member?> GetByNationalCodeWithCapabilitiesAsync(NationalId nationalCode)
     {
         return await this.PrepareQuery(this._dbSet)
             .Include(m => m.Capabilities)
-                .ThenInclude(mc => mc.Capability)
-                    .ThenInclude(c => c.Features)
             .Include(m => m.Roles)
                 .ThenInclude(mr => mr.Role)
             .FirstOrDefaultAsync(m => m.NationalCode != null && m.NationalCode.Value == nationalCode.Value);
@@ -138,7 +137,6 @@ public class MemberRepository : EfRepository<MembershipDbContext, Member, Guid>,
         var cutoffDate = DateTime.UtcNow.AddDays(days);
         return await this.PrepareQuery(this._dbSet)
             .Include(m => m.Capabilities)
-                .ThenInclude(mc => mc.Capability)
             .Include(m => m.Roles)
                 .ThenInclude(mr => mr.Role)
             .Where(m => m.Capabilities.Any(mc =>
@@ -153,7 +151,6 @@ public class MemberRepository : EfRepository<MembershipDbContext, Member, Guid>,
     {
         return await this.PrepareQuery(this._dbSet)
             .Include(m => m.Capabilities)
-                .ThenInclude(mc => mc.Capability)
             .Include(m => m.Roles)
                 .ThenInclude(mr => mr.Role)
             .Where(m => m.Capabilities.Any(mc =>
@@ -168,7 +165,6 @@ public class MemberRepository : EfRepository<MembershipDbContext, Member, Guid>,
     {
         return await this.PrepareQuery(this._dbSet)
             .Include(m => m.Capabilities)
-                .ThenInclude(mc => mc.Capability)
             .Include(m => m.Roles)
                 .ThenInclude(mr => mr.Role)
             .Where(m => m.Roles.Any(mr =>
@@ -179,26 +175,10 @@ public class MemberRepository : EfRepository<MembershipDbContext, Member, Guid>,
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<Member>> GetMembersByFeatureAsync(string featureId)
-    {
-        return await this.PrepareQuery(this._dbSet)
-            .Include(m => m.Capabilities)
-                .ThenInclude(mc => mc.Capability)
-                    .ThenInclude(c => c.Features)
-            .Where(m => m.Capabilities.Any(mc =>
-                mc.IsValid() &&
-                mc.Capability!.Features.Any(ct => ct.Id == featureId)))
-            .OrderBy(m => m.FullName.FirstName)
-            .ThenBy(m => m.FullName.LastName)
-            .ToListAsync();
-    }
-
     public async Task<Member?> GetByIdWithCapabilitiesAsync(Guid id)
     {
         return await this.PrepareQuery(this._dbSet)
             .Include(m => m.Capabilities)
-                .ThenInclude(mc => mc.Capability)
-                    .ThenInclude(c => c.Features)
             .Include(m => m.Roles)
                 .ThenInclude(mr => mr.Role)
             .FirstOrDefaultAsync(m => m.Id == id);
@@ -218,7 +198,6 @@ public class MemberRepository : EfRepository<MembershipDbContext, Member, Guid>,
         var capabilityIdsList = capabilityIds.ToList();
         return await this.PrepareQuery(this._dbSet)
             .Include(m => m.Capabilities)
-                .ThenInclude(mc => mc.Capability)
             .Where(m => capabilityIdsList.All(capId =>
                 m.Capabilities.Any(mc =>
                     mc.CapabilityId == capId && mc.IsValid())))
@@ -231,7 +210,6 @@ public class MemberRepository : EfRepository<MembershipDbContext, Member, Guid>,
     {
         return await this.PrepareQuery(this._dbSet)
             .Include(m => m.Capabilities)
-                .ThenInclude(mc => mc.Capability)
             .Where(m => m.Capabilities.Any(mc =>
                 capabilityIds.Contains(mc.CapabilityId) && mc.IsValid()))
             .OrderBy(m => m.FullName.FirstName)
@@ -241,9 +219,7 @@ public class MemberRepository : EfRepository<MembershipDbContext, Member, Guid>,
 
     protected override IQueryable<Member> PrepareQuery(IQueryable<Member> query)
     {
-      query = query.Include(x => x.Capabilities)
-        .ThenInclude(x => x.Capability)
-        .ThenInclude(x => x.Features);
+      query = query.Include(x => x.Capabilities);
       return base.PrepareQuery(query);
     }
 }

@@ -13,7 +13,7 @@ public class PaymentExpiredEvent : DomainEvent
     public Guid BillId { get; }
     public string BillNumber { get; }
     public string ReferenceId { get; }
-    public string UserNationalNumber { get; }
+    public Guid ExternalUserId { get; }
     public Money Amount { get; }
     public PaymentMethod Method { get; }
     public PaymentGateway? Gateway { get; }
@@ -27,7 +27,7 @@ public class PaymentExpiredEvent : DomainEvent
         Guid billId,
         string billNumber,
         string referenceId,
-        string userNationalNumber,
+        Guid externalUserId,
         Money amount,
         PaymentMethod method,
         PaymentGateway? gateway = null,
@@ -38,7 +38,7 @@ public class PaymentExpiredEvent : DomainEvent
         BillId = billId;
         BillNumber = billNumber;
         ReferenceId = referenceId;
-        UserNationalNumber = userNationalNumber;
+        ExternalUserId = externalUserId;
         Amount = amount;
         Method = method;
         Gateway = gateway;

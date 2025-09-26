@@ -12,20 +12,24 @@ namespace Nezam.Refahi.Finance.Application.Features.Bills.Queries.GetBillPayment
 /// </summary>
 public class GetBillPaymentStatusQueryHandler :
     IRequestHandler<GetBillPaymentStatusQuery, ApplicationResult<BillPaymentStatusResponse>>,
-    IRequestHandler<GetBillPaymentStatusByNumberQuery, ApplicationResult<BillPaymentStatusResponse>>
+    IRequestHandler<GetBillPaymentStatusByNumberQuery, ApplicationResult<BillPaymentStatusResponse>>,
+    IRequestHandler<GetBillPaymentStatusByTrackingCodeQuery, ApplicationResult<BillPaymentStatusResponse>>
 {
     private readonly IBillRepository _billRepository;
     private readonly IValidator<GetBillPaymentStatusQuery> _validator;
     private readonly IValidator<GetBillPaymentStatusByNumberQuery> _numberValidator;
+    private readonly IValidator<GetBillPaymentStatusByTrackingCodeQuery> _trackingCodeValidator;
 
     public GetBillPaymentStatusQueryHandler(
         IBillRepository billRepository,
         IValidator<GetBillPaymentStatusQuery> validator,
-        IValidator<GetBillPaymentStatusByNumberQuery> numberValidator)
+        IValidator<GetBillPaymentStatusByNumberQuery> numberValidator,
+        IValidator<GetBillPaymentStatusByTrackingCodeQuery> trackingCodeValidator)
     {
         _billRepository = billRepository ?? throw new ArgumentNullException(nameof(billRepository));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         _numberValidator = numberValidator ?? throw new ArgumentNullException(nameof(numberValidator));
+        _trackingCodeValidator = trackingCodeValidator ?? throw new ArgumentNullException(nameof(trackingCodeValidator));
     }
 
     public async Task<ApplicationResult<BillPaymentStatusResponse>> Handle(
@@ -120,9 +124,10 @@ public class GetBillPaymentStatusQueryHandler :
             Title = bill.Title,
             ReferenceId = bill.ReferenceId,
             BillType = bill.BillType,
-            UserNationalNumber = bill.UserNationalNumber,
+            UserExternalUserId = bill.ExternalUserId,
             UserFullName = bill.UserFullName,
             Status = bill.Status.ToString(),
+            StatusText = GetBillStatusText(bill.Status),
             IsPaid = bill.Status == BillStatus.FullyPaid,
             IsPartiallyPaid = bill.Status == BillStatus.PartiallyPaid,
             IsOverdue = bill.Status == BillStatus.Overdue || bill.IsOverdue(),
@@ -151,6 +156,7 @@ public class GetBillPaymentStatusQueryHandler :
                     AmountRials = p.Amount.AmountRials,
                     Method = p.Method.ToString(),
                     Status = p.Status.ToString(),
+                    StatusText = GetPaymentStatusText(p.Status),
                     Gateway = p.Gateway?.ToString(),
                     GatewayTransactionId = p.GatewayTransactionId,
                     GatewayReference = p.GatewayReference,
@@ -172,7 +178,8 @@ public class GetBillPaymentStatusQueryHandler :
                     AmountRials = r.Amount.AmountRials,
                     Reason = r.Reason,
                     Status = r.Status.ToString(),
-                    RequestedByNationalNumber = r.RequestedByNationalNumber,
+                    StatusText = GetRefundStatusText(r.Status),
+                    RequestedByExternalUserId = r.RequestedByExternalUserId,
                     RequestedAt = r.RequestedAt,
                     CompletedAt = r.CompletedAt,
                     GatewayRefundId = r.GatewayRefundId,
@@ -200,5 +207,100 @@ public class GetBillPaymentStatusQueryHandler :
         }
 
         return response;
+    }
+
+    public async Task<ApplicationResult<BillPaymentStatusResponse>> Handle(
+        GetBillPaymentStatusByTrackingCodeQuery request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            // Validate request
+            var validation = await _trackingCodeValidator.ValidateAsync(request, cancellationToken);
+            if (!validation.IsValid)
+            {
+                var errors = validation.Errors.Select(e => e.ErrorMessage).ToList();
+                return ApplicationResult<BillPaymentStatusResponse>.Failure(errors, "Validation failed");
+            }
+
+            // Get bill by tracking code (reference ID) and bill type
+            var bill = await _billRepository.GetByReferenceAsync(request.TrackingCode, request.BillType, cancellationToken);
+            if (bill == null)
+            {
+                return ApplicationResult<BillPaymentStatusResponse>.Failure("Bill not found for the given tracking code");
+            }
+
+            // Get bill with all related data for complete status information
+            var billWithData = await _billRepository.GetWithAllDataAsync(bill.Id, cancellationToken);
+            if (billWithData == null)
+            {
+                return ApplicationResult<BillPaymentStatusResponse>.Failure("Bill data not found");
+            }
+
+            // Build response with tracking code information
+            var response = BuildBillPaymentStatusResponse(billWithData, request.IncludePaymentHistory, request.IncludeRefundHistory, request.IncludeBillItems);
+            
+            // Add tracking code to response
+            response = response with
+            {
+                TrackingCode = request.TrackingCode
+            };
+
+            return ApplicationResult<BillPaymentStatusResponse>.Success(response);
+        }
+        catch (Exception ex)
+        {
+            return ApplicationResult<BillPaymentStatusResponse>.Failure(ex, "Error retrieving bill payment status by tracking code");
+        }
+    }
+
+    /// <summary>
+    /// Convert bill status to Persian text
+    /// </summary>
+    private static string GetBillStatusText(BillStatus status)
+    {
+        return status switch
+        {
+            BillStatus.Draft => "پیش‌نویس",
+            BillStatus.Issued => "صادر شده",
+            BillStatus.PartiallyPaid => "پرداخت جزئی",
+            BillStatus.FullyPaid => "پرداخت کامل",
+            BillStatus.Overdue => "منقضی شده",
+            BillStatus.Cancelled => "لغو شده",
+            _ => status.ToString()
+        };
+    }
+
+    /// <summary>
+    /// Convert payment status to Persian text
+    /// </summary>
+    private static string GetPaymentStatusText(PaymentStatus status)
+    {
+        return status switch
+        {
+            PaymentStatus.Pending => "در انتظار",
+            PaymentStatus.Processing => "در حال پردازش",
+            PaymentStatus.Completed => "تکمیل شده",
+            PaymentStatus.Failed => "ناموفق",
+            PaymentStatus.Cancelled => "لغو شده",
+            PaymentStatus.Refunded => "برگشت داده شده",
+            _ => status.ToString()
+        };
+    }
+
+    /// <summary>
+    /// Convert refund status to Persian text
+    /// </summary>
+    private static string GetRefundStatusText(RefundStatus status)
+    {
+        return status switch
+        {
+            RefundStatus.Pending => "در انتظار",
+            RefundStatus.Processing => "در حال پردازش",
+            RefundStatus.Completed => "تکمیل شده",
+            RefundStatus.Rejected => "رد شده",
+            RefundStatus.Failed => "ناموفق",
+            _ => status.ToString()
+        };
     }
 }

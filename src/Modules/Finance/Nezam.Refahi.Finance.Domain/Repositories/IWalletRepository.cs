@@ -11,20 +11,20 @@ namespace Nezam.Refahi.Finance.Domain.Repositories;
 public interface IWalletRepository : IRepository<Wallet, Guid>
 {
     /// <summary>
-    /// Find wallet by national number
+    /// Find wallet by external user ID
     /// </summary>
-    /// <param name="nationalNumber">User's national number</param>
+    /// <param name="externalUserId">User's external ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Wallet if found, null otherwise</returns>
-    Task<Wallet?> GetByNationalNumberAsync(string nationalNumber, CancellationToken cancellationToken = default);
+    Task<Wallet?> GetByExternalUserIdAsync(Guid externalUserId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Check if wallet exists for national number
+    /// Check if wallet exists for external user ID
     /// </summary>
-    /// <param name="nationalNumber">User's national number</param>
+    /// <param name="externalUserId">User's external ID</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>True if wallet exists, false otherwise</returns>
-    Task<bool> ExistsByNationalNumberAsync(string nationalNumber, CancellationToken cancellationToken = default);
+    Task<bool> ExistsByExternalUserIdAsync(Guid externalUserId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get wallets by status
@@ -83,7 +83,7 @@ public interface IWalletRepository : IRepository<Wallet, Guid>
     /// <summary>
     /// Search wallets with multiple criteria
     /// </summary>
-    /// <param name="nationalNumber">National number filter</param>
+    /// <param name="externalUserId">External user ID filter</param>
     /// <param name="status">Status filter</param>
     /// <param name="minBalance">Minimum balance filter</param>
     /// <param name="maxBalance">Maximum balance filter</param>
@@ -92,11 +92,69 @@ public interface IWalletRepository : IRepository<Wallet, Guid>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>List of matching wallets</returns>
     Task<List<Wallet>> SearchWalletsAsync(
-        string? nationalNumber = null,
+        Guid? externalUserId = null,
         WalletStatus? status = null,
         Money? minBalance = null,
         Money? maxBalance = null,
         DateTime? createdFrom = null,
         DateTime? createdTo = null,
         CancellationToken cancellationToken = default);
+
+    // Snapshot and Balance Management Methods
+
+    /// <summary>
+    /// Get wallets that don't have snapshots for a specific date
+    /// </summary>
+    /// <param name="date">Date to check for snapshots</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of wallet IDs without snapshots</returns>
+    Task<IEnumerable<Guid>> GetWalletsWithoutSnapshotForDateAsync(DateTime date, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get the latest snapshot for a wallet
+    /// </summary>
+    /// <param name="walletId">Wallet ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Latest snapshot or null</returns>
+    Task<WalletSnapshot?> GetLatestSnapshotAsync(Guid walletId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get transactions after a specific snapshot date
+    /// </summary>
+    /// <param name="walletId">Wallet ID</param>
+    /// <param name="snapshotDate">Snapshot date</param>
+    /// <param name="targetDate">Target date</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Transactions after snapshot date</returns>
+    Task<IEnumerable<WalletTransaction>> GetTransactionsAfterSnapshotAsync(
+        Guid walletId, 
+        DateTime? snapshotDate, 
+        DateTime targetDate, 
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Calculate wallet balance from snapshots and transactions
+    /// </summary>
+    /// <param name="walletId">Wallet ID</param>
+    /// <param name="asOfDate">Date to calculate balance for</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Calculated balance</returns>
+    Task<Money> CalculateWalletBalanceAsync(Guid walletId, DateTime? asOfDate = null, CancellationToken cancellationToken = default);
+
+
+    /// <summary>
+    /// Get wallet by external user ID with refreshed balance
+    /// </summary>
+    /// <param name="externalUserId">User external ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Wallet with refreshed balance</returns>
+    Task<Wallet?> GetByExternalUserIdWithRefreshedBalanceAsync(Guid externalUserId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get wallet by ID with refreshed balance
+    /// </summary>
+    /// <param name="walletId">Wallet ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Wallet with refreshed balance</returns>
+    Task<Wallet?> GetByIdWithRefreshedBalanceAsync(Guid walletId, CancellationToken cancellationToken = default);
 }

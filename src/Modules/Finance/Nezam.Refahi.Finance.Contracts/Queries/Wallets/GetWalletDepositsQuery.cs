@@ -9,7 +9,7 @@ namespace Nezam.Refahi.Finance.Contracts.Queries.Wallets;
 /// </summary>
 public class GetWalletDepositsQuery : IRequest<ApplicationResult<WalletDepositsResponse>>
 {
-    public string UserNationalNumber { get; set; } = string.Empty;
+    public Guid ExternalUserId { get; set; }
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 20;
     public string? Status { get; set; }
@@ -22,7 +22,7 @@ public class GetWalletDepositsQuery : IRequest<ApplicationResult<WalletDepositsR
 /// </summary>
 public class WalletDepositsResponse
 {
-    public string UserNationalNumber { get; set; } = string.Empty;
+    public Guid ExternalUserId { get; set; }
     public int TotalCount { get; set; }
     public int Page { get; set; }
     public int PageSize { get; set; }
@@ -37,14 +37,14 @@ public class WalletDepositDto
 {
     public Guid DepositId { get; set; }
     public Guid WalletId { get; set; }
-    public Guid? BillId { get; set; }
-    public string UserNationalNumber { get; set; } = string.Empty;
+    public string TrackingCode { get; set; } = string.Empty;
+    public Guid ExternalUserId { get; set; }
     public long AmountRials { get; set; }
     public string Status { get; set; } = string.Empty;
+    public string StatusText { get; set; } = string.Empty;  // Persian status text
     public string? Description { get; set; }
     public string? ExternalReference { get; set; }
     public DateTime RequestedAt { get; set; }
     public DateTime? CompletedAt { get; set; }
-    public string? BillNumber { get; set; }
     public Dictionary<string, string> Metadata { get; set; } = new();
 }

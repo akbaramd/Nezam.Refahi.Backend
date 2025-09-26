@@ -14,7 +14,7 @@ public class PaymentInitiatedEvent : DomainEvent
     public string BillNumber { get; }
     public string ReferenceId { get; }
     public string ReferenceType { get; }
-    public string UserNationalNumber { get; }
+    public Guid ExternalUserId { get; }
     public Money Amount { get; }
     public PaymentMethod Method { get; }
     public PaymentGateway? Gateway { get; }
@@ -29,7 +29,7 @@ public class PaymentInitiatedEvent : DomainEvent
         string billNumber,
         string referenceId,
         string referenceType,
-        string userNationalNumber,
+        Guid externalUserId,
         Money amount,
         PaymentMethod method,
         PaymentGateway? gateway = null,
@@ -42,7 +42,7 @@ public class PaymentInitiatedEvent : DomainEvent
         BillNumber = billNumber;
         ReferenceId = referenceId;
         ReferenceType = referenceType;
-        UserNationalNumber = userNationalNumber;
+        ExternalUserId = externalUserId;
         Amount = amount;
         Method = method;
         Gateway = gateway;

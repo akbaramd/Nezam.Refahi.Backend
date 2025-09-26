@@ -12,7 +12,7 @@ public class BillDto : DeletableAggregateDto<Guid>
     public string Title { get; set; } = string.Empty;
     public string ReferenceId { get; set; } = string.Empty;
     public string BillType { get; set; } = string.Empty;
-    public string UserNationalNumber { get; set; } = string.Empty;
+     Guid ExternalUserId { get; set; }
     public string? UserFullName { get; set; }
     public BillStatus Status { get; set; }
     public long TotalAmountRials { get; set; }
@@ -48,7 +48,7 @@ public class BillSummaryDto
     public string Title { get; set; } = string.Empty;
     public string ReferenceId { get; set; } = string.Empty;
     public string BillType { get; set; } = string.Empty;
-    public string UserNationalNumber { get; set; } = string.Empty;
+  Guid ExternalUserId { get; set; }
     public string? UserFullName { get; set; }
     public BillStatus Status { get; set; }
     public long TotalAmountRials { get; set; }
@@ -68,7 +68,7 @@ public class CreateBillDto
     public string Title { get; set; } = string.Empty;
     public string ReferenceId { get; set; } = string.Empty;
     public string BillType { get; set; } = string.Empty;
-    public string UserNationalNumber { get; set; } = string.Empty;
+     Guid ExternalUserId { get; set; }
     public string? UserFullName { get; set; }
     public string? Description { get; set; }
     public DateTime? DueDate { get; set; }

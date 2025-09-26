@@ -18,4 +18,9 @@ public record InitiatePaymentCommand : IRequest<ApplicationResult<InitiatePaymen
     /// Payment method (optional, defaults to system default)
     /// </summary>
     public string? PaymentMethod { get; init; }
+
+    /// <summary>
+    /// The ID of the external user initiating the payment
+    /// </summary>
+    public Guid ExternalUserId { get; init; }
 }

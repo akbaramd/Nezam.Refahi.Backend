@@ -72,9 +72,7 @@ public class TokenService : ITokenService
         string? userAgent = null, 
         int expiryMinutes = 15)
     {
-        if (expiryMinutes <= 0 || expiryMinutes > 60)
-            throw new ArgumentException("Access token expiry must be between 1-60 minutes", nameof(expiryMinutes));
-            
+  
         // Get signing key and algorithm
         var (signingKey, algorithm) = GetSigningCredentials();
         var now = DateTime.UtcNow;
@@ -200,9 +198,7 @@ public class TokenService : ITokenService
         string? userAgent = null, 
         int expiryDays = 30)
     {
-        if (expiryDays <= 0 || expiryDays > 90)
-            throw new ArgumentException("Refresh token expiry must be between 1-90 days", nameof(expiryDays));
-        
+      
         // Generate cryptographically secure random token
         var rawToken = GenerateSecureToken(REFRESH_TOKEN_LENGTH);
         var pepper = _configuration[PEPPER_CONFIG_KEY] ?? "";

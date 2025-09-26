@@ -22,11 +22,18 @@ public class WalletDepositRepository : EfRepository<FinanceDbContext, WalletDepo
             .OrderByDescending(x => x.RequestedAt)
             .ToListAsync(cancellationToken);
     }
-
-    public async Task<IEnumerable<WalletDeposit>> GetByUserNationalNumberAsync(string userNationalNumber, CancellationToken cancellationToken = default)
+   public async Task<WalletDeposit?> GetByTrackingCodeAsync(string trackingCode, CancellationToken cancellationToken = default)
     {
         return await PrepareQuery(_dbSet)
-            .Where(x => x.UserNationalNumber == userNationalNumber)
+            .Where(x => x.TrackingCode == trackingCode)
+            .OrderByDescending(x => x.RequestedAt)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<IEnumerable<WalletDeposit>> GetByExternalUserIdAsync(Guid externalUserId, CancellationToken cancellationToken = default)
+    {
+        return await PrepareQuery(_dbSet)
+            .Where(x => x.ExternalUserId == externalUserId)
             .OrderByDescending(x => x.RequestedAt)
             .ToListAsync(cancellationToken);
     }
@@ -65,13 +72,13 @@ public class WalletDepositRepository : EfRepository<FinanceDbContext, WalletDepo
     }
 
     public async Task<IEnumerable<WalletDeposit>> GetDepositsByUserAndDateRangeAsync(
-        string userNationalNumber,
+        Guid externalUserId,
         DateTime fromDate,
         DateTime toDate,
         CancellationToken cancellationToken = default)
     {
         return await PrepareQuery(_dbSet)
-            .Where(x => x.UserNationalNumber == userNationalNumber &&
+            .Where(x => x.ExternalUserId == externalUserId &&
                        x.RequestedAt >= fromDate &&
                        x.RequestedAt <= toDate)
             .OrderByDescending(x => x.RequestedAt)

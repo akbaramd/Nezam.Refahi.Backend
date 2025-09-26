@@ -18,9 +18,9 @@ public sealed class MemberCapability : Entity<Guid>
     public DateTime AssignedAt { get; private set; }    // When was it assigned
     public string? Notes { get; private set; }          // Additional context
 
-    // Navigation properties
+    // Navigation properties - Only Member, no Capability relation
     public Member Member { get; private set; } = null!;
-    public Capability Capability { get; private set; } = null!;
+    // Capability relation removed - only store the key
 
     // Private constructor for EF Core
     private MemberCapability() : base() { }

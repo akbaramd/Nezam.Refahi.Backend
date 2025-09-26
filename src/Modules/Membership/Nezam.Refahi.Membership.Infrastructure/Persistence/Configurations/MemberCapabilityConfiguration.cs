@@ -81,10 +81,7 @@ public class MemberCapabilityConfiguration : IEntityTypeConfiguration<MemberCapa
             .HasForeignKey(mc => mc.MemberId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Configure relationship with Capability
-        builder.HasOne(mc => mc.Capability)
-            .WithMany()
-            .HasForeignKey(mc => mc.CapabilityId)
-            .OnDelete(DeleteBehavior.Restrict); // Don't cascade delete capabilities when capability is deleted
+        // Capability relation removed - only store the key
+        // No foreign key relationship with Capability entity
     }
 }

@@ -5,10 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Nezam.Refahi.Finance.Application;
+using Nezam.Refahi.Finance.Application.Consumers;
 using Nezam.Refahi.Finance.Application.Services;
 using Nezam.Refahi.Finance.Contracts.Services;
 using Nezam.Refahi.Finance.Domain.Repositories;
-using Nezam.Refahi.Finance.Infrastructure.Consumers;
+using Nezam.Refahi.Finance.Domain.Services;
 using Nezam.Refahi.Finance.Infrastructure.Persistence;
 using Nezam.Refahi.Finance.Infrastructure.Persistence.Repositories;
 using Nezam.Refahi.Finance.Infrastructure.Services;
@@ -78,12 +79,15 @@ public class NezamRefahiFinanceInfrastructureModule : BonWebModule
         context.Services.AddScoped<IWalletRepository, WalletRepository>();
         context.Services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
         context.Services.AddScoped<IWalletDepositRepository, WalletDepositRepository>();
+        context.Services.AddScoped<IWalletSnapshotRepository, WalletSnapshotRepository>();
 
         // Register Unit of Work
         context.Services.AddScoped<IFinanceUnitOfWork, FinanceUnitOfWork>();
 
         // Register Services
         context.Services.AddScoped<IPaymentService, PaymentService>();
+        context.Services.AddScoped<IWalletSnapshotService, WalletSnapshotService>();
+        context.Services.AddScoped<WalletDomainService>();
 
         // Register Event Consumers
         context.Services.AddScoped<WalletChargePaymentCompletedConsumer>();

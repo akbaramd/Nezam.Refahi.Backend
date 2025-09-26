@@ -67,7 +67,7 @@ public class NezamRefahiIdentityInfrastructureModule : BonModule
     // ========================================================================
     
     // Token cleanup background service
-    context.Services.AddHostedService<TokenCleanupService>();
+    // TokenCleanupService moved to Hangfire jobs - runs at 4:30 AM daily
     
      context.Services.AddDbContext<IdentityDbContext>(options =>
      {
@@ -106,7 +106,7 @@ public class NezamRefahiIdentityInfrastructureModule : BonModule
         context.Services.AddScoped<IdentityDataSeeder>();
         
         // Register hosted service for automatic seeding
-        context.Services.AddHostedService<IdentitySeedingService>();
+        // IdentitySeedingService moved to Hangfire jobs - runs at 1:00 AM daily
         
         // Register user validation service
         context.Services.AddScoped<IUserValidationService, UserValidationService>();

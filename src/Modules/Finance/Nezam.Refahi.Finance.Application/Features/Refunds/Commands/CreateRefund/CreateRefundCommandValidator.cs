@@ -24,11 +24,9 @@ public class CreateRefundCommandValidator : AbstractValidator<CreateRefundComman
             .MaximumLength(1000)
             .WithMessage("Refund reason cannot exceed 1000 characters");
 
-        RuleFor(x => x.RequestedByNationalNumber)
-            .Length(10)
-            .WithMessage("National number must be exactly 10 digits")
-            .Matches(@"^\d{10}$")
-            .WithMessage("National number must contain only digits")
-            .When(x => !string.IsNullOrEmpty(x.RequestedByNationalNumber));
+        RuleFor(x => x.RequestedByExternalUserId)
+            .NotEqual(Guid.Empty)
+            .WithMessage("User external user ID cannot be empty");
+
     }
 }

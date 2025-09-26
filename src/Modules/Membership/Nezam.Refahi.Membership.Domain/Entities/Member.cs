@@ -145,12 +145,14 @@ public sealed class Member : FullAggregateRoot<Guid>
 
 
     /// <summary>
-    /// Checks if member has access to a specific claim type through any capability
+    /// Checks if member has a specific capability key
+    /// Note: This only checks if member has a capability with the given key
+    /// Feature validation should be done through BasicDefinitions context
     /// </summary>
-    public bool HasClaimType(string featureId)
+    public bool HasCapabilityKey(string capabilityKey)
     {
         return GetValidCapabilities()
-            .Any(mc => mc.Capability?.HasFeature(featureId) ?? false);
+            .Any(mc => mc.CapabilityId == capabilityKey);
     }
 
     /// <summary>

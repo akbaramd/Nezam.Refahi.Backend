@@ -23,7 +23,7 @@ public class WalletConfiguration : IEntityTypeConfiguration<Wallet>
             .ValueGeneratedNever();
 
         // Properties
-        builder.Property(w => w.NationalNumber)
+        builder.Property(w => w.ExternalUserId)
             .IsRequired()
             .HasMaxLength(10)
             .IsFixedLength();
@@ -41,14 +41,8 @@ public class WalletConfiguration : IEntityTypeConfiguration<Wallet>
 
         builder.Property(w => w.LastTransactionAt);
 
-        // Money value object
-        builder.OwnsOne(w => w.Balance, money =>
-        {
-            money.Property(m => m.AmountRials)
-                .HasColumnName("BalanceRials")
-                .HasColumnType("decimal(18,2)")
-                .IsRequired();
-        });
+        // Balance is now calculated dynamically from snapshots + transactions
+        // No need to configure it as a database column
 
         // Metadata as JSON
         builder.Property(w => w.Metadata)
@@ -64,7 +58,7 @@ public class WalletConfiguration : IEntityTypeConfiguration<Wallet>
             .OnDelete(DeleteBehavior.Cascade);
 
         // Indexes
-        builder.HasIndex(w => w.NationalNumber)
+        builder.HasIndex(w => w.ExternalUserId)
             .IsUnique();
 
         builder.HasIndex(w => w.Status);
@@ -74,7 +68,7 @@ public class WalletConfiguration : IEntityTypeConfiguration<Wallet>
         builder.HasIndex(w => w.LastTransactionAt);
 
         // Composite index for performance
-        builder.HasIndex(w => new { w.NationalNumber, w.Status });
+        builder.HasIndex(w => new { w.ExternalUserId, w.Status });
 
         builder.ConfigureFullAuditableEntity();
     }

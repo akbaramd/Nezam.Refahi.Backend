@@ -1,15 +1,13 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Nezam.Refahi.Finance.Application.Features.Wallets.Commands.ChargeWallet;
 using Nezam.Refahi.Finance.Contracts.Commands.Wallets;
 using Nezam.Refahi.Finance.Domain.Events;
 using Nezam.Refahi.Finance.Domain.Repositories;
-using Nezam.Refahi.Shared.Application.Common.Models;
 
-namespace Nezam.Refahi.Finance.Infrastructure.Consumers;
+namespace Nezam.Refahi.Finance.Application.Consumers;
 
 /// <summary>
-/// Event consumer that charges wallet when a wallet charge bill payment is completed
+/// مصرف‌کننده رویداد که کیف پول را شارژ می‌کند زمانی که پرداخت صورت حساب واریز کیف پول تکمیل می‌شود
 /// </summary>
 public class WalletChargePaymentCompletedConsumer : INotificationHandler<BillFullyPaidEvent>
 {
@@ -31,40 +29,33 @@ public class WalletChargePaymentCompletedConsumer : INotificationHandler<BillFul
     }
 
     /// <summary>
-    /// Handles BillFullyPaidEvent for wallet charge bills
+    /// پردازش رویداد BillFullyPaidEvent برای صورت‌حساب‌های واریز کیف پول
     /// </summary>
     public async Task Handle(BillFullyPaidEvent notification, CancellationToken cancellationToken)
     {
         try
         {
             _logger.LogInformation(
-                "Processing bill fully paid event for BillId: {BillId}, ReferenceId: {ReferenceId}, ReferenceType: {ReferenceType}",
+                "پردازش رویداد پرداخت کامل صورت حساب - شناسه صورت حساب: {BillId}, کد پیگیری: {ReferenceId}, نوع مرجع: {ReferenceType}",
                 notification.BillId, notification.ReferenceId, notification.ReferenceType);
 
             // Check if this is a wallet deposit bill by ReferenceType
             if (!IsWalletDepositBill(notification.ReferenceType))
             {
                 _logger.LogDebug(
-                    "Bill {BillId} is not a wallet deposit bill (ReferenceType: {ReferenceType}), skipping wallet charge",
+                    "صورت حساب {BillId} مربوط به واریز کیف پول نیست (نوع مرجع: {ReferenceType})، واریز کیف پول رد می‌شود",
                     notification.BillId, notification.ReferenceType);
                 return;
             }
 
-            // Find the deposit using the ReferenceId (which is the deposit ID)
-            if (!Guid.TryParse(notification.ReferenceId, out var depositId))
-            {
-                _logger.LogError(
-                    "Invalid deposit ID format in ReferenceId: {ReferenceId} for BillId: {BillId}",
-                    notification.ReferenceId, notification.BillId);
-                return;
-            }
+          
 
-            var deposit = await _walletDepositRepository.GetByIdAsync(depositId, cancellationToken);
+            var deposit = await _walletDepositRepository.GetByTrackingCodeAsync(notification.ReferenceId, cancellationToken);
             if (deposit == null)
             {
                 _logger.LogError(
-                    "Deposit not found for ID: {DepositId}, BillId: {BillId}",
-                    depositId, notification.BillId);
+                    "واریز با کد پیگیری {ReferenceId} یافت نشد، شناسه صورت حساب: {BillId}",
+                    notification.ReferenceId, notification.BillId);
                 return;
             }
 
@@ -72,34 +63,35 @@ public class WalletChargePaymentCompletedConsumer : INotificationHandler<BillFul
             if (deposit.Status != Domain.Enums.WalletDepositStatus.Pending)
             {
                 _logger.LogWarning(
-                    "Deposit {DepositId} is not in pending status (Status: {Status}), skipping wallet charge",
-                    depositId, deposit.Status);
+                    "واریز {DepositId} در وضعیت انتظار نیست (وضعیت: {Status})، واریز کیف پول رد می‌شود",
+                    notification.ReferenceId, deposit.Status); 
                 return;
             }
 
             _logger.LogInformation(
-                "Processing wallet deposit completion for DepositId: {DepositId}, User: {UserNationalNumber}, Amount: {AmountRials} rials",
-                depositId, notification.UserNationalNumber, notification.TotalAmount.AmountRials);
+                "پردازش تکمیل واریز کیف پول - شناسه واریز: {DepositId}, کاربر: {ExternalUserId}, مبلغ: {AmountRials} ریال",
+                notification.ReferenceId, notification.ExternalUserId, notification.TotalAmount.AmountRials);
 
             // Complete the deposit
             deposit.Complete();
             await _walletDepositRepository.UpdateAsync(deposit, cancellationToken: cancellationToken);
 
             _logger.LogInformation(
-                "Deposit {DepositId} marked as completed, now charging wallet for user {UserNationalNumber}",
-                depositId, notification.UserNationalNumber);
+                "واریز {DepositId} به عنوان تکمیل شده علامت‌گذاری شد، اکنون کیف پول کاربر {ExternalUserId} شارژ می‌شود",
+                notification.ReferenceId, notification.ExternalUserId);
 
             // Charge the wallet using the ChargeWalletCommand
             var chargeCommand = new ChargeWalletCommand
             {
-                UserNationalNumber = notification.UserNationalNumber,
+                ExternalUserId = notification.ExternalUserId,
                 AmountRials = deposit.Amount.AmountRials,
                 ReferenceId = deposit.Id.ToString(),
                 ExternalReference = notification.LastGateway,
-                Description = $"Wallet deposit completion via bill payment - DepositId: {depositId}, BillId: {notification.BillId}",
+                Description = $"تکمیل واریز کیف پول از طریق پرداخت صورت حساب - کد پیگیری: {notification.ReferenceId}, شناسه صورت حساب: {notification.BillId}",
                 Metadata = new Dictionary<string, string>
                 {
-                    ["DepositId"] = depositId.ToString(),
+                    ["DepositId"] = deposit.Id.ToString(),
+                    ["TrackingCode"] = notification.ReferenceId,
                     ["BillId"] = notification.BillId.ToString(),
                     ["BillNumber"] = notification.BillNumber,
                     ["PaymentCount"] = notification.PaymentCount.ToString(),
@@ -114,26 +106,26 @@ public class WalletChargePaymentCompletedConsumer : INotificationHandler<BillFul
             if (result.IsSuccess)
             {
                 _logger.LogInformation(
-                    "Successfully completed deposit {DepositId} and charged wallet for user {UserNationalNumber}. TransactionId: {TransactionId}",
-                    depositId, notification.UserNationalNumber, result.Data?.TransactionId);
+                    "واریز {DepositId} با موفقیت تکمیل شد و کیف پول کاربر {ExternalUserId} شارژ شد. شناسه تراکنش: {TransactionId}",
+                    notification.ReferenceId, notification.ExternalUserId, result.Data?.TransactionId);
             }
             else
             {
                 _logger.LogError(
-                    "Failed to charge wallet for user {UserNationalNumber} after completing deposit {DepositId}. Errors: {Errors}",
-                    notification.UserNationalNumber, depositId, string.Join(", ", result.Errors));
+                    "خطا در شارژ کیف پول کاربر {ExternalUserId} پس از تکمیل واریز {DepositId}. خطاها: {Errors}",
+                    notification.ExternalUserId, notification.ReferenceId, string.Join(", ", result.Errors));
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex,
-                "Error processing wallet charge for BillId: {BillId}, ReferenceId: {ReferenceId}",
+                "خطا در پردازش شارژ کیف پول - شناسه صورت حساب: {BillId}, کد پیگیری: {ReferenceId}",
                 notification.BillId, notification.ReferenceId);
         }
     }
 
     /// <summary>
-    /// Determines if the reference type indicates a wallet deposit bill
+    /// تعیین می‌کند که آیا نوع مرجع نشان‌دهنده صورت حساب واریز کیف پول است
     /// </summary>
     private static bool IsWalletDepositBill(string referenceType)
     {

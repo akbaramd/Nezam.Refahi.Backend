@@ -10,7 +10,7 @@ public class WalletDepositCompletedEvent : DomainEvent
 {
     public Guid DepositId { get; }
     public Guid WalletId { get; }
-    public string UserNationalNumber { get; }
+    public Guid ExternalUserId { get; }
     public Money Amount { get; }
     public DateTime CompletedAt { get; }
     public string? Description { get; }
@@ -18,14 +18,14 @@ public class WalletDepositCompletedEvent : DomainEvent
     public WalletDepositCompletedEvent(
         Guid depositId,
         Guid walletId,
-        string userNationalNumber,
+        Guid externalUserId,
         Money amount,
         DateTime completedAt,
         string? description = null)
     {
         DepositId = depositId;
         WalletId = walletId;
-        UserNationalNumber = userNationalNumber;
+        ExternalUserId = externalUserId;
         Amount = amount;
         CompletedAt = completedAt;
         Description = description;

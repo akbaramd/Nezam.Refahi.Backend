@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "23bKu8yOSUI=",
+  "dgSpecHash": "mQhikKAOk3s=",
   "success": true,
   "projectFilePath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\Nezam.Refahi.WebApi.csproj",
   "expectedPackageFiles": [
@@ -30,6 +30,10 @@
     "C:\\Users\\akbar\\.nuget\\packages\\figgle\\0.5.1\\figgle.0.5.1.nupkg.sha512",
     "C:\\Users\\akbar\\.nuget\\packages\\fluentvalidation\\11.8.1\\fluentvalidation.11.8.1.nupkg.sha512",
     "C:\\Users\\akbar\\.nuget\\packages\\fluentvalidation.dependencyinjectionextensions\\11.8.1\\fluentvalidation.dependencyinjectionextensions.11.8.1.nupkg.sha512",
+    "C:\\Users\\akbar\\.nuget\\packages\\hangfire.aspnetcore\\1.8.6\\hangfire.aspnetcore.1.8.6.nupkg.sha512",
+    "C:\\Users\\akbar\\.nuget\\packages\\hangfire.core\\1.8.6\\hangfire.core.1.8.6.nupkg.sha512",
+    "C:\\Users\\akbar\\.nuget\\packages\\hangfire.netcore\\1.8.6\\hangfire.netcore.1.8.6.nupkg.sha512",
+    "C:\\Users\\akbar\\.nuget\\packages\\hangfire.sqlserver\\1.8.6\\hangfire.sqlserver.1.8.6.nupkg.sha512",
     "C:\\Users\\akbar\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\akbar\\.nuget\\packages\\jetbrains.annotations\\2024.2.0\\jetbrains.annotations.2024.2.0.nupkg.sha512",
     "C:\\Users\\akbar\\.nuget\\packages\\mediatr\\12.5.0\\mediatr.12.5.0.nupkg.sha512",

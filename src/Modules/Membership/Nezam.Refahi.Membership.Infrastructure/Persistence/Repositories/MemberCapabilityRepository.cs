@@ -49,8 +49,6 @@ public class MemberCapabilityRepository : EfRepository<MembershipDbContext, Memb
     public async Task<MemberCapability?> GetByMemberAndCapabilityAsync(Guid memberId, string capabilityId, CancellationToken cancellationToken = default)
     {
         return await this.PrepareQuery(this._dbSet)
-            .Include(mc => mc.Capability)
-                .ThenInclude(c => c.Features)
             .Include(mc => mc.Member)
             .FirstOrDefaultAsync(mc => mc.MemberId == memberId && mc.CapabilityId == capabilityId, cancellationToken:cancellationToken);
     }
@@ -58,8 +56,6 @@ public class MemberCapabilityRepository : EfRepository<MembershipDbContext, Memb
     public async Task<MemberCapability?> GetActiveByMemberAndCapabilityAsync(Guid memberId, string capabilityId, CancellationToken cancellationToken = default)
     {
         return await this.PrepareQuery(this._dbSet)
-            .Include(mc => mc.Capability)
-                .ThenInclude(c => c.Features)
             .Include(mc => mc.Member)
             .FirstOrDefaultAsync(mc => mc.MemberId == memberId &&
                                mc.CapabilityId == capabilityId &&
@@ -69,8 +65,6 @@ public class MemberCapabilityRepository : EfRepository<MembershipDbContext, Memb
     public async Task<IEnumerable<MemberCapability>> GetExpiringByMemberIdAsync(Guid memberId, DateTimeOffset cutoffDate, CancellationToken cancellationToken = default)
     {
         return await this.PrepareQuery(this._dbSet)
-            .Include(mc => mc.Capability)
-                .ThenInclude(c => c.Features)
             .Where(mc => mc.MemberId == memberId &&
                         mc.IsActive &&
                         mc.ValidTo.HasValue &&
@@ -84,8 +78,6 @@ public class MemberCapabilityRepository : EfRepository<MembershipDbContext, Memb
     {
         return await this.PrepareQuery(this._dbSet)
             .Include(mc => mc.Member)
-            .Include(mc => mc.Capability)
-                .ThenInclude(c => c.Features)
             .Where(mc => mc.IsActive &&
                         mc.ValidTo.HasValue &&
                         mc.ValidTo.Value <= cutoffDate &&
@@ -98,7 +90,6 @@ public class MemberCapabilityRepository : EfRepository<MembershipDbContext, Memb
     {
         return await this.PrepareQuery(this._dbSet)
             .Include(mc => mc.Member)
-            .Include(mc => mc.Capability)
             .Where(mc => mc.AssignedBy == assignedBy)
             .OrderByDescending(mc => mc.AssignedAt)
             .ToListAsync(cancellationToken);
@@ -108,7 +99,6 @@ public class MemberCapabilityRepository : EfRepository<MembershipDbContext, Memb
     {
         return await this.PrepareQuery(this._dbSet)
             .Include(mc => mc.Member)
-            .Include(mc => mc.Capability)
             .Where(mc => mc.AssignedAt >= fromDate && mc.AssignedAt <= toDate)
             .OrderByDescending(mc => mc.AssignedAt)
             .ToListAsync(cancellationToken);
@@ -191,9 +181,7 @@ public class MemberCapabilityRepository : EfRepository<MembershipDbContext, Memb
 
     protected override IQueryable<MemberCapability> PrepareQuery(IQueryable<MemberCapability> query)
     {
-        query = query.Include(x => x.Member)
-            .Include(x => x.Capability)
-                .ThenInclude(x => x.Features);
+        query = query.Include(x => x.Member);
         return base.PrepareQuery(query);
     }
 }

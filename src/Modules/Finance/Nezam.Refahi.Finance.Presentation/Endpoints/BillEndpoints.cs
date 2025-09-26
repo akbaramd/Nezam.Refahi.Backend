@@ -27,9 +27,9 @@ public static class BillEndpoints
             .Produces(400);
 
         // ───────────────────── Get User Bills ─────────────────────
-        billGroup.MapGet("/user/{userNationalNumber}", async (
-                string userNationalNumber,
+            billGroup.MapGet("/user/{externalUserId}", async (
                 [FromServices] IMediator mediator,
+                Guid externalUserId,
                 [FromQuery] string? status = null,
                 [FromQuery] string? billType = null,
                 [FromQuery] bool onlyOverdue = false,
@@ -41,7 +41,7 @@ public static class BillEndpoints
             {
                 var query = new GetUserBillsQuery
                 {
-                    UserNationalNumber = userNationalNumber,
+                    ExternalUserId = externalUserId,
                     Status = status,
                     BillType = billType,
                     OnlyOverdue = onlyOverdue,
@@ -105,46 +105,29 @@ public static class BillEndpoints
             .Produces<ApplicationResult<BillPaymentStatusResponse>>()
             .Produces(400);
 
-        // ───────────────────── Add Bill Item ─────────────────────
-        billGroup.MapPost("/{billId:guid}/items", async (
-                Guid billId,
-                [FromBody] AddBillItemRequest request,
-                [FromServices] IMediator mediator) =>
+        // ───────────────────── Get Bill Payment Status (By Tracking Code) ─────────────────────
+        billGroup.MapGet("/tracking/{trackingCode}/status", async (
+                string trackingCode,
+                [FromServices] IMediator mediator,
+                [FromQuery] string billType = "WalletDeposit",
+                [FromQuery] bool includePaymentHistory = false,
+                [FromQuery] bool includeRefundHistory = false,
+                [FromQuery] bool includeBillItems = false) =>
             {
-                var command = new AddBillItemCommand
+                var query = new GetBillPaymentStatusByTrackingCodeQuery
                 {
-                    BillId = billId,
-                    Title = request.Title,
-                    Description = request.Description,
-                    UnitPriceRials = request.UnitPriceRials,
-                    Quantity = request.Quantity,
-                    DiscountPercentage = request.DiscountPercentage
+                    TrackingCode = trackingCode,
+                    BillType = billType,
+                    IncludePaymentHistory = includePaymentHistory,
+                    IncludeRefundHistory = includeRefundHistory,
+                    IncludeBillItems = includeBillItems
                 };
 
-                var result = await mediator.Send(command);
+                var result = await mediator.Send(query);
                 return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
             })
-            .WithName("AddBillItem")
-            .Produces<ApplicationResult<AddBillItemResponse>>()
-            .Produces(400);
-
-        // ───────────────────── Remove Bill Item ─────────────────────
-        billGroup.MapDelete("/{billId:guid}/items/{itemId:guid}", async (
-                Guid billId,
-                Guid itemId,
-                [FromServices] IMediator mediator) =>
-            {
-                var command = new RemoveBillItemCommand
-                {
-                    BillId = billId,
-                    ItemId = itemId
-                };
-
-                var result = await mediator.Send(command);
-                return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
-            })
-            .WithName("RemoveBillItem")
-            .Produces<ApplicationResult<RemoveBillItemResponse>>()
+            .WithName("GetBillPaymentStatusByTrackingCode")
+            .Produces<ApplicationResult<BillPaymentStatusResponse>>()
             .Produces(400);
 
         // ───────────────────── Issue Bill ─────────────────────

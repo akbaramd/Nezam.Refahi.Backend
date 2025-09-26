@@ -13,7 +13,7 @@ public sealed class WalletTransaction : Entity<Guid>
     public Guid WalletId { get; private set; }
     public WalletTransactionType TransactionType { get; private set; }
     public Money Amount { get; private set; } = null!;
-    public Money BalanceAfter { get; private set; } = null!;
+    public Money PreviousBalance { get; private set; } = null!;
     public WalletTransactionStatus Status { get; private set; }
     public string? ReferenceId { get; private set; }
     public string? Description { get; private set; }
@@ -56,7 +56,7 @@ public sealed class WalletTransaction : Entity<Guid>
         Guid walletId,
         WalletTransactionType transactionType,
         Money amount,
-        Money balanceAfter,
+        Money? previousBalance = null,
         string? referenceId = null,
         string? description = null,
         string? externalReference = null,
@@ -69,7 +69,7 @@ public sealed class WalletTransaction : Entity<Guid>
         WalletId = walletId;
         TransactionType = transactionType;
         Amount = amount ?? throw new ArgumentNullException(nameof(amount));
-        BalanceAfter = balanceAfter ?? throw new ArgumentNullException(nameof(balanceAfter));
+        PreviousBalance = previousBalance ?? Money.Zero; // Previous balance before this transaction
         Status = WalletTransactionStatus.Completed; // Default to completed for wallet transactions
         ReferenceId = referenceId?.Trim();
         Description = description?.Trim();
@@ -112,9 +112,21 @@ public sealed class WalletTransaction : Entity<Guid>
     }
 
     /// <summary>
+    /// Update the balance after field for this transaction
+    /// </summary>
+    /// <param name="previousBalance">The calculated balance after this transaction</param>
+    public void UpdatePreviousBalance(Money previousBalance)
+    {
+        if (previousBalance == null)
+            throw new ArgumentNullException(nameof(previousBalance));
+
+        PreviousBalance = previousBalance;
+    }
+
+    /// <summary>
     /// بررسی اینکه آیا تراکنش مربوط به واریز است
     /// </summary>
-    public bool IsDeposit()
+    public bool IsIn()
     {
         return TransactionType == WalletTransactionType.Deposit ||
                TransactionType == WalletTransactionType.TransferIn ||
@@ -126,7 +138,7 @@ public sealed class WalletTransaction : Entity<Guid>
     /// <summary>
     /// بررسی اینکه آیا تراکنش مربوط به برداشت است
     /// </summary>
-    public bool IsWithdrawal()
+    public bool IsOut()
     {
         return TransactionType == WalletTransactionType.Withdrawal ||
                TransactionType == WalletTransactionType.TransferOut ||

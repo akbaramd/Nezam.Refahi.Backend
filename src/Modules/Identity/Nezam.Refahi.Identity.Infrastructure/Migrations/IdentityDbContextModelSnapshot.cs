@@ -147,7 +147,7 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                     b.HasIndex("UserId", "ClientId")
                         .HasDatabaseName("IX_RefreshSessions_UserId_ClientId");
 
-                    b.ToTable("RefreshSessions", (string)null);
+                    b.ToTable("RefreshSessions", "identity");
                 });
 
             modelBuilder.Entity("Nezam.Refahi.Identity.Domain.Entities.Role", b =>
@@ -796,7 +796,7 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
 
                             b1.HasKey("RefreshSessionId");
 
-                            b1.ToTable("RefreshSessions");
+                            b1.ToTable("RefreshSessions", "identity");
 
                             b1.WithOwner()
                                 .HasForeignKey("RefreshSessionId");
@@ -827,7 +827,7 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
 
                             b1.HasKey("RefreshSessionId");
 
-                            b1.ToTable("RefreshSessions");
+                            b1.ToTable("RefreshSessions", "identity");
 
                             b1.WithOwner()
                                 .HasForeignKey("RefreshSessionId");

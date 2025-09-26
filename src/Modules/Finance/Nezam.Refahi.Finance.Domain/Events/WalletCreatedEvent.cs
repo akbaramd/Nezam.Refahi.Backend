@@ -8,12 +8,12 @@ namespace Nezam.Refahi.Finance.Domain.Events;
 /// </summary>
 public sealed class WalletCreatedEvent(
     Guid WalletId,
-    string NationalNumber,
+    Guid ExternalUserId,
     Money InitialBalance,
     DateTime CreatedAt) : DomainEvent
 {
     public Guid WalletId { get; } = WalletId;
-    public string NationalNumber { get; } = NationalNumber;
+    public Guid ExternalUserId { get; } = ExternalUserId;
     public Money InitialBalance { get; } = InitialBalance;
     public DateTime CreatedAt { get; } = CreatedAt;
 }

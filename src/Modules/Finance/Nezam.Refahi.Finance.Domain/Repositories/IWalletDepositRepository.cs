@@ -15,12 +15,24 @@ public interface IWalletDepositRepository : IRepository<WalletDeposit, Guid>
     Task<IEnumerable<WalletDeposit>> GetByWalletIdAsync(Guid walletId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Get deposits by tracking code
+    /// </summary>
+    Task<WalletDeposit?> GetByTrackingCodeAsync(string trackingCode, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Get deposits by user national number
     /// </summary>
-    Task<IEnumerable<WalletDeposit>> GetByUserNationalNumberAsync(string userNationalNumber, CancellationToken cancellationToken = default);
+    /// <param name="externalUserId">User's external ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of deposits</returns>
+    Task<IEnumerable<WalletDeposit>> GetByExternalUserIdAsync(Guid externalUserId, CancellationToken cancellationToken = default);  
 
     /// <summary>
     /// Get deposits by status
+    /// </summary>
+    /// <param name="status">Status of deposits</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of deposits</returns>
     /// </summary>
     Task<IEnumerable<WalletDeposit>> GetByStatusAsync(WalletDepositStatus status, CancellationToken cancellationToken = default);
 
@@ -46,7 +58,7 @@ public interface IWalletDepositRepository : IRepository<WalletDeposit, Guid>
     /// Get deposits by user and date range
     /// </summary>
     Task<IEnumerable<WalletDeposit>> GetDepositsByUserAndDateRangeAsync(
-        string userNationalNumber,
+        Guid externalUserId,
         DateTime fromDate, 
         DateTime toDate, 
         CancellationToken cancellationToken = default);

@@ -43,8 +43,8 @@ public class GetWalletTransactionsQueryHandler : IRequestHandler<GetWalletTransa
             }
 
             // Get wallet by national number
-            var wallet = await _walletRepository.GetByNationalNumberAsync(
-                request.UserNationalNumber, cancellationToken);
+            var wallet = await _walletRepository.GetByExternalUserIdAsync(
+                request.ExternalUserId, cancellationToken);
             
             if (wallet == null)
             {
@@ -120,7 +120,7 @@ public class GetWalletTransactionsQueryHandler : IRequestHandler<GetWalletTransa
             var response = new WalletTransactionsResponse
             {
                 WalletId = wallet.Id,
-                UserNationalNumber = wallet.NationalNumber,
+                UserExternalUserId = wallet.ExternalUserId,
                 TotalCount = transactionList.Count,
                 PageNumber = request.PageNumber,
                 PageSize = request.PageSize,
@@ -130,12 +130,8 @@ public class GetWalletTransactionsQueryHandler : IRequestHandler<GetWalletTransa
                     TransactionId = t.Id,
                     TransactionType = t.TransactionType.ToString(),
                     AmountRials = t.Amount.AmountRials,
-                    BalanceBeforeRials = t.TransactionType == WalletTransactionType.Deposit || 
-                                         t.TransactionType == WalletTransactionType.TransferIn || 
-                                         t.TransactionType == WalletTransactionType.Refund
-                                         ? t.BalanceAfter.AmountRials - t.Amount.AmountRials // For deposits, previous = after - amount
-                                         : t.BalanceAfter.AmountRials + t.Amount.AmountRials, // For withdrawals, previous = after + amount
-                    BalanceAfterRials = t.BalanceAfter.AmountRials,
+                    BalanceBeforeRials = t.PreviousBalance.AmountRials, // Previous balance before this transaction
+                    PreviousBalanceRials = t.PreviousBalance.AmountRials,
                     Status = "Completed", // Wallet transactions are always completed when created
                     CreatedAt = t.CreatedAt,
                     ReferenceId = t.ReferenceId ?? string.Empty,

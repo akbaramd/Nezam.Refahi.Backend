@@ -121,7 +121,7 @@ public sealed class WalletDomainService
             warnings.Add("Large transfer amount - additional verification may be required");
 
         // Check for suspicious patterns (simplified example)
-        if (sourceWallet.NationalNumber == destinationWallet.NationalNumber)
+        if (sourceWallet.ExternalUserId == destinationWallet.ExternalUserId)
             warnings.Add("Transfer between wallets of the same user");
 
         return new WalletTransferValidation(
@@ -147,7 +147,7 @@ public sealed class WalletDomainService
             return Money.Zero;
 
         // Determine if it's internal or external transfer
-        var isInternalTransfer = sourceWallet.NationalNumber == destinationWallet.NationalNumber;
+        var isInternalTransfer = sourceWallet.ExternalUserId == destinationWallet.ExternalUserId;
         var feeRate = isInternalTransfer ? InternalTransferRate : ExternalTransferRate;
 
         // Calculate fee
@@ -264,9 +264,9 @@ public sealed class WalletDomainService
 
         foreach (var transaction in transactions)
         {
-            if (transaction.IsDeposit())
+            if (transaction.IsIn())
                 totalInflow = totalInflow.Add(transaction.Amount);
-            else if (transaction.IsWithdrawal())
+            else if (transaction.IsOut())
                 totalOutflow = totalOutflow.Add(transaction.Amount);
         }
 
@@ -286,9 +286,9 @@ public sealed class WalletDomainService
 
             foreach (var transaction in dayGroup)
             {
-                if (transaction.IsDeposit())
+                if (transaction.IsIn())
                     dailyInflow = dailyInflow.Add(transaction.Amount);
-                else if (transaction.IsWithdrawal())
+                else if (transaction.IsOut())
                     dailyOutflow = dailyOutflow.Add(transaction.Amount);
             }
 
@@ -391,7 +391,7 @@ public sealed class WalletDomainService
             errors.Add("Payment amount exceeds remaining bill amount");
 
         // Check wallet ownership
-        if (wallet.NationalNumber != bill.UserNationalNumber)
+        if (wallet.ExternalUserId != bill.ExternalUserId)
             errors.Add("Wallet does not belong to bill owner");
 
         // Check sufficient balance
@@ -500,7 +500,7 @@ public sealed class WalletDomainService
             throw new InvalidOperationException("Refund amount exceeds paid amount");
 
         // Create bill refund
-        var billRefund = bill.CreateRefund(refundAmount, reason, wallet.NationalNumber);
+        var billRefund = bill.CreateRefund(refundAmount, reason, wallet.ExternalUserId);
 
         // Process wallet refund transaction
         var walletTransaction = wallet.ReceiveRefund(
@@ -552,12 +552,12 @@ public sealed class WalletDomainService
 
         var usedToday = wallet.Transactions
             .Where(t => t.CreatedAt.Date == today)
-            .Where(t => t.IsWithdrawal())
+            .Where(t => t.IsOut())
             .Sum(t => t.Amount.AmountRials);
 
         var usedThisMonth = wallet.Transactions
             .Where(t => t.CreatedAt >= monthStart)
-            .Where(t => t.IsWithdrawal())
+            .Where(t => t.IsOut())
             .Sum(t => t.Amount.AmountRials);
 
         var usedTodayMoney = Money.FromRials(usedToday);

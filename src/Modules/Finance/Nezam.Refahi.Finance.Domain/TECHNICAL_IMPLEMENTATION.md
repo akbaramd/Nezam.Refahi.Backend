@@ -136,7 +136,7 @@ public class BillFullyPaidEvent : DomainEvent
         string billNumber,
         string referenceId,
         string referenceType,
-        string userNationalNumber,
+        Guid externalUserId,
         Money totalAmount,
         Money paidAmount,
         DateTime fullyPaidDate,
@@ -148,7 +148,7 @@ public class BillFullyPaidEvent : DomainEvent
         BillNumber = billNumber;
         ReferenceId = referenceId;
         ReferenceType = referenceType;
-        UserNationalNumber = userNationalNumber;
+        ExternalUserId = externalUserId;
         TotalAmount = totalAmount;
         PaidAmount = paidAmount;
         FullyPaidDate = fullyPaidDate;

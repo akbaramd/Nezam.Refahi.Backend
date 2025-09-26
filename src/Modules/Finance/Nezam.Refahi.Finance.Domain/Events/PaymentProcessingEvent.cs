@@ -13,7 +13,7 @@ public class PaymentProcessingEvent : DomainEvent
     public Guid BillId { get; }
     public string BillNumber { get; }
     public string ReferenceId { get; }
-    public string UserNationalNumber { get; }
+    public Guid ExternalUserId { get; }
     public Money Amount { get; }
     public PaymentGateway Gateway { get; }
     public string? GatewayTransactionId { get; }
@@ -26,7 +26,7 @@ public class PaymentProcessingEvent : DomainEvent
         Guid billId,
         string billNumber,
         string referenceId,
-        string userNationalNumber,
+        Guid externalUserId,
         Money amount,
         PaymentGateway gateway,
         string? gatewayTransactionId = null,
@@ -37,7 +37,7 @@ public class PaymentProcessingEvent : DomainEvent
         BillId = billId;
         BillNumber = billNumber;
         ReferenceId = referenceId;
-        UserNationalNumber = userNationalNumber;
+        ExternalUserId = externalUserId;
         Amount = amount;
         Gateway = gateway;
         GatewayTransactionId = gatewayTransactionId;

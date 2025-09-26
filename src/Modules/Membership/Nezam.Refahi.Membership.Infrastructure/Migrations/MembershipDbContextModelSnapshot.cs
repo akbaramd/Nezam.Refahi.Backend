@@ -22,87 +22,12 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("CapabilityFeatures", b =>
-                {
-                    b.Property<string>("CapabilityId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("ClaimTypeId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("CapabilityId", "ClaimTypeId");
-
-                    b.HasIndex("ClaimTypeId");
-
-                    b.ToTable("CapabilityFeatures", "membership");
-                });
-
-            modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.Capability", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime?>("ValidFrom")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("ValidTo")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IsActive")
-                        .HasDatabaseName("IX_Capabilities_IsActive");
-
-                    b.HasIndex("Name")
-                        .IsUnique()
-                        .HasDatabaseName("IX_Capabilities_Name");
-
-                    b.HasIndex("ValidFrom", "ValidTo")
-                        .HasDatabaseName("IX_Capabilities_ValidityPeriod");
-
-                    b.ToTable("Capabilities", "membership");
-                });
-
-            modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.Features", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Features", "membership");
-                });
-
             modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.Member", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateOnly?>("BirthDate")
+                    b.Property<DateTime?>("BirthDate")
                         .HasColumnType("date");
 
                     b.Property<DateTime>("CreatedAt")
@@ -365,21 +290,6 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
                     b.ToTable("Roles", "membership");
                 });
 
-            modelBuilder.Entity("CapabilityFeatures", b =>
-                {
-                    b.HasOne("Nezam.Refahi.Membership.Domain.Entities.Capability", null)
-                        .WithMany()
-                        .HasForeignKey("CapabilityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Nezam.Refahi.Membership.Domain.Entities.Features", null)
-                        .WithMany()
-                        .HasForeignKey("ClaimTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.Member", b =>
                 {
                     b.OwnsOne("Nezam.Refahi.Membership.Domain.ValueObjects.Email", "Email", b1 =>
@@ -493,19 +403,11 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
 
             modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.MemberCapability", b =>
                 {
-                    b.HasOne("Nezam.Refahi.Membership.Domain.Entities.Capability", "Capability")
-                        .WithMany()
-                        .HasForeignKey("CapabilityId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("Nezam.Refahi.Membership.Domain.Entities.Member", "Member")
                         .WithMany("Capabilities")
                         .HasForeignKey("MemberId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Capability");
 
                     b.Navigation("Member");
                 });

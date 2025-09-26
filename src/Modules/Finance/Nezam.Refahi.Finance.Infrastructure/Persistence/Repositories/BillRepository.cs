@@ -28,10 +28,10 @@ public class BillRepository : EfRepository<FinanceDbContext, Bill, Guid>, IBillR
             .FirstOrDefaultAsync(b => b.ReferenceId == referenceId && b.BillType == billType, cancellationToken);
     }
 
-    public async Task<IEnumerable<Bill>> GetByUserNationalNumberAsync(string nationalNumber, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Bill>> GetByExternalUserIdAsync(Guid externalUserId, CancellationToken cancellationToken = default)
     {
         return await PrepareQuery(_dbSet)
-            .Where(b => b.UserNationalNumber == nationalNumber)
+            .Where(b => b.ExternalUserId == externalUserId)
             .OrderByDescending(b => b.IssueDate)
             .ToListAsync(cancellationToken);
     }

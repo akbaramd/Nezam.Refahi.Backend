@@ -211,7 +211,7 @@ public class GetReservationDetailQueryHandler
     /// <summary>
     /// Gets the national number for the user - either from request parameter or current authenticated user
     /// </summary>
-    /// <param name="requestNationalNumber">National number provided in the request</param>
+    /// <param name="requestExternalUserId">External user ID provided in the request</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The national number to use for authorization, or null if not found</returns>
     private async Task<string?> GetUserNationalNumberAsync( CancellationToken cancellationToken)

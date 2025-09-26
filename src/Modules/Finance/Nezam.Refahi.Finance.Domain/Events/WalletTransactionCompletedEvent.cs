@@ -10,7 +10,7 @@ namespace Nezam.Refahi.Finance.Domain.Events;
 public sealed class WalletTransactionCompletedEvent(
     Guid TransactionId,
     Guid WalletId,
-    string NationalNumber,
+    Guid ExternalUserId,
     WalletTransactionType TransactionType,
     Money Amount,
     Money NewBalance,
@@ -20,7 +20,7 @@ public sealed class WalletTransactionCompletedEvent(
 {
     public Guid TransactionId { get; } = TransactionId;
     public Guid WalletId { get; } = WalletId;
-    public string NationalNumber { get; } = NationalNumber;
+    public Guid ExternalUserId { get; } = ExternalUserId;
     public WalletTransactionType TransactionType { get; } = TransactionType;
     public Money Amount { get; } = Amount;
     public Money NewBalance { get; } = NewBalance;

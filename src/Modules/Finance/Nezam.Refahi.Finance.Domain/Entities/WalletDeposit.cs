@@ -12,8 +12,8 @@ namespace Nezam.Refahi.Finance.Domain.Entities;
 public sealed class WalletDeposit : FullAggregateRoot<Guid>
 {
     public Guid WalletId { get; private set; }
-    public Guid? BillId { get; private set; }
-    public string UserNationalNumber { get; private set; } = null!;
+    public string TrackingCode { get; private set; } = null!;
+    public Guid ExternalUserId { get; private set; }
     public Money Amount { get; private set; } = null!;
     public WalletDepositStatus Status { get; private set; }
     public string? Description { get; private set; }
@@ -24,7 +24,6 @@ public sealed class WalletDeposit : FullAggregateRoot<Guid>
 
     // Navigation properties
     public Wallet Wallet { get; private set; } = null!;
-    public Bill? Bill { get; private set; }
 
     // Private constructor for EF Core
     private WalletDeposit() : base() { }
@@ -55,7 +54,7 @@ public sealed class WalletDeposit : FullAggregateRoot<Guid>
     /// </remarks>
     public WalletDeposit(
         Guid walletId,
-        string userNationalNumber,
+        Guid externalUserId,
         Money amount,
         string? description = null,
         string? externalReference = null,
@@ -64,13 +63,14 @@ public sealed class WalletDeposit : FullAggregateRoot<Guid>
     {
         if (walletId == Guid.Empty)
             throw new ArgumentException("Wallet ID cannot be empty", nameof(walletId));
-        if (string.IsNullOrWhiteSpace(userNationalNumber))
-            throw new ArgumentException("User national number cannot be empty", nameof(userNationalNumber));
+        if (externalUserId == Guid.Empty)
+            throw new ArgumentException("External user ID cannot be empty", nameof(externalUserId));
         if (amount.AmountRials <= 0)
             throw new ArgumentException("Deposit amount must be positive", nameof(amount));
 
         WalletId = walletId;
-        UserNationalNumber = userNationalNumber.Trim();
+        TrackingCode = GenerateTrackingCode();
+        ExternalUserId = externalUserId;
         Amount = amount;
         Status = WalletDepositStatus.Pending;
         Description = description?.Trim();
@@ -82,7 +82,7 @@ public sealed class WalletDeposit : FullAggregateRoot<Guid>
         AddDomainEvent(new WalletDepositRequestedEvent(
             Id,
             WalletId,
-            UserNationalNumber,
+            ExternalUserId,
             Amount,
             RequestedAt,
             Description));
@@ -121,7 +121,7 @@ public sealed class WalletDeposit : FullAggregateRoot<Guid>
         AddDomainEvent(new WalletDepositCompletedEvent(
             Id,
             WalletId,
-            UserNationalNumber,
+            ExternalUserId,
             Amount,
             CompletedAt.Value,
             Description));
@@ -165,7 +165,7 @@ public sealed class WalletDeposit : FullAggregateRoot<Guid>
         AddDomainEvent(new WalletDepositCancelledEvent(
             Id,
             WalletId,
-            UserNationalNumber,
+            ExternalUserId,
             Amount,
             CompletedAt.Value,
             reason));
@@ -185,13 +185,13 @@ public sealed class WalletDeposit : FullAggregateRoot<Guid>
     }
 
     /// <summary>
-    /// Set the bill ID for this deposit
+    /// Generate a unique tracking code for this deposit
     /// </summary>
-    public void SetBillId(Guid billId)
+    private static string GenerateTrackingCode()
     {
-        if (billId == Guid.Empty)
-            throw new ArgumentException("Bill ID cannot be empty", nameof(billId));
-
-        BillId = billId;
+        // Generate a unique tracking code: WD + timestamp + random
+        var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+        var random = new Random().Next(1000, 9999);
+        return $"WD{timestamp}{random}";
     }
 }

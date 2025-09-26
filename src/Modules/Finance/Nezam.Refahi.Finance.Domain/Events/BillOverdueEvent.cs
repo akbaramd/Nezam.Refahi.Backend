@@ -12,7 +12,7 @@ public class BillOverdueEvent : DomainEvent
     public string BillNumber { get; }
     public string ReferenceId { get; }
     public string ReferenceType { get; }
-    public string UserNationalNumber { get; }
+    public Guid ExternalUserId { get; }
     public Money TotalAmount { get; }
     public Money RemainingAmount { get; }
     public DateTime DueDate { get; }
@@ -24,7 +24,7 @@ public class BillOverdueEvent : DomainEvent
         string billNumber,
         string referenceId,
         string referenceType,
-        string userNationalNumber,  
+        Guid externalUserId,  
         Money totalAmount,
         Money remainingAmount,
         DateTime dueDate,
@@ -34,7 +34,7 @@ public class BillOverdueEvent : DomainEvent
         BillNumber = billNumber;
         ReferenceId = referenceId;
         ReferenceType = referenceType;
-        UserNationalNumber = userNationalNumber;
+        ExternalUserId = externalUserId;
         TotalAmount = totalAmount;
         RemainingAmount = remainingAmount;
         DueDate = dueDate;

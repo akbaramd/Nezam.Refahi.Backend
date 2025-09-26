@@ -22,7 +22,7 @@ public interface IBillRepository : IRepository<Bill, Guid>
     /// <summary>
     /// Gets bills by user national number
     /// </summary>
-    Task<IEnumerable<Bill>> GetByUserNationalNumberAsync(string nationalNumber, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Bill>> GetByExternalUserIdAsync(Guid externalUserId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets bills by status

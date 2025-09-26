@@ -12,7 +12,12 @@ public interface ICurrentUserService
     /// Gets the current user's national number
     /// </summary>
     string? UserNationalNumber { get; }
-    
+
+    /// <summary>
+    /// Gets the current user's full name
+    /// </summary>
+    string? UserFullName { get; }
+
     /// <summary>
     /// Checks if the current user is authenticated
     /// </summary>

@@ -38,38 +38,39 @@ public class GetWalletDepositsQueryHandler : IRequestHandler<GetWalletDepositsQu
                     validationResult.Errors.Select(e => e.ErrorMessage).ToArray());
             }
 
-            // Build query
-            var query = _walletDepositRepository.GetAll()
-                .Where(d => d.UserNationalNumber == request.UserNationalNumber);
+            // Get deposits by user national number
+            var allDeposits = await _walletDepositRepository.GetByExternalUserIdAsync(request.ExternalUserId, cancellationToken);
 
             // Apply filters
+            var filteredDeposits = allDeposits.AsQueryable();
+
             if (!string.IsNullOrEmpty(request.Status))
             {
                 if (Enum.TryParse<WalletDepositStatus>(request.Status, true, out var status))
                 {
-                    query = query.Where(d => d.Status == status);
+                    filteredDeposits = filteredDeposits.Where(d => d.Status == status);
                 }
             }
 
             if (request.FromDate.HasValue)
             {
-                query = query.Where(d => d.RequestedAt >= request.FromDate.Value);
+                filteredDeposits = filteredDeposits.Where(d => d.RequestedAt >= request.FromDate.Value);
             }
 
             if (request.ToDate.HasValue)
             {
-                query = query.Where(d => d.RequestedAt <= request.ToDate.Value);
+                filteredDeposits = filteredDeposits.Where(d => d.RequestedAt <= request.ToDate.Value);
             }
 
             // Get total count
-            var totalCount = await query.CountAsync(cancellationToken);
+            var totalCount = filteredDeposits.Count();
 
             // Calculate pagination
             var totalPages = (int)Math.Ceiling((double)totalCount / request.PageSize);
             var skip = (request.Page - 1) * request.PageSize;
 
             // Get deposits with pagination
-            var deposits = await query
+            var deposits = filteredDeposits
                 .OrderByDescending(d => d.RequestedAt)
                 .Skip(skip)
                 .Take(request.PageSize)
@@ -77,23 +78,23 @@ public class GetWalletDepositsQueryHandler : IRequestHandler<GetWalletDepositsQu
                 {
                     DepositId = d.Id,
                     WalletId = d.WalletId,
-                    BillId = d.BillId,
-                    UserNationalNumber = d.UserNationalNumber,
-                    AmountRials = d.Amount.AmountRials,
+                    TrackingCode = d.TrackingCode,
+                    ExternalUserId = d.ExternalUserId,
+                    AmountRials = (long)d.Amount.AmountRials,
                     Status = d.Status.ToString(),
+                    StatusText = GetWalletDepositStatusText(d.Status),
                     Description = d.Description,
                     ExternalReference = d.ExternalReference,
                     RequestedAt = d.RequestedAt,
                     CompletedAt = d.CompletedAt,
-                    BillNumber = d.Bill != null ? d.Bill.BillNumber : null,
                     Metadata = d.Metadata
                 })
-                .ToListAsync(cancellationToken);
+                .ToList();
 
             // Build response
             var response = new WalletDepositsResponse
             {
-                UserNationalNumber = request.UserNationalNumber,
+                ExternalUserId = request.ExternalUserId,
                 TotalCount = totalCount,
                 Page = request.Page,
                 PageSize = request.PageSize,
@@ -108,5 +109,20 @@ public class GetWalletDepositsQueryHandler : IRequestHandler<GetWalletDepositsQu
             return ApplicationResult<WalletDepositsResponse>.Failure(
                 $"An error occurred while retrieving wallet deposits: {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// Convert wallet deposit status to Persian text
+    /// </summary>
+    private static string GetWalletDepositStatusText(WalletDepositStatus status)
+    {
+        return status switch
+        {
+            WalletDepositStatus.Pending => "در انتظار",
+            WalletDepositStatus.Completed => "تکمیل شده",
+            WalletDepositStatus.Failed => "ناموفق",
+            WalletDepositStatus.Cancelled => "لغو شده",
+            _ => status.ToString()
+        };
     }
 }

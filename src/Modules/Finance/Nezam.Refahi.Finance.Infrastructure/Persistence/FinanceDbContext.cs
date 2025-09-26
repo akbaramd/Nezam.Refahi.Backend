@@ -25,6 +25,7 @@ public class FinanceDbContext : DbContext
     public DbSet<Wallet> Wallets { get; set; } = default!;
     public DbSet<WalletTransaction> WalletTransactions { get; set; } = default!;
     public DbSet<WalletDeposit> WalletDeposits { get; set; } = default!;
+    public DbSet<WalletSnapshot> WalletSnapshots { get; set; } = default!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

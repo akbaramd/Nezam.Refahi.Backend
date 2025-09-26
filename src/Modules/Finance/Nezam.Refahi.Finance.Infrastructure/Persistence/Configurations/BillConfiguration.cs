@@ -39,7 +39,7 @@ public class BillConfiguration : IEntityTypeConfiguration<Bill>
             .IsRequired()
             .HasMaxLength(50);
 
-        builder.Property(b => b.UserNationalNumber)
+        builder.Property(b => b.ExternalUserId)
             .IsRequired()
             .HasMaxLength(10)
             .IsFixedLength();
@@ -116,7 +116,7 @@ public class BillConfiguration : IEntityTypeConfiguration<Bill>
 
         builder.HasIndex(b => new { b.ReferenceId, b.BillType });
 
-        builder.HasIndex(b => b.UserNationalNumber);
+        builder.HasIndex(b => b.ExternalUserId);
 
         builder.HasIndex(b => b.Status);
 

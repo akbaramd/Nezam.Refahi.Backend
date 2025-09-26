@@ -45,7 +45,7 @@ public class NezamRefahiSettingsInfrastructureModule : BonModule
     context.Services.AddScoped<ISettingsUnitOfWork, SettingsUnitOfWork>();
 
     // Register settings seeding service
-    context.Services.AddHostedService<SettingsSeedingService>();
+    // SettingsSeedingService moved to Hangfire jobs - runs at 2:30 AM daily
 
     return base.OnConfigureAsync(context);
   }

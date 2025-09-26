@@ -10,11 +10,9 @@ public class GetWalletDepositsQueryValidator : AbstractValidator<GetWalletDeposi
 {
     public GetWalletDepositsQueryValidator()
     {
-        RuleFor(x => x.UserNationalNumber)
+        RuleFor(x => x.ExternalUserId)  
             .NotEmpty()
-            .WithMessage("User national number is required")
-            .MaximumLength(20)
-            .WithMessage("User national number cannot exceed 20 characters");
+            .WithMessage("External user ID is required");
 
         RuleFor(x => x.Page)
             .GreaterThan(0)

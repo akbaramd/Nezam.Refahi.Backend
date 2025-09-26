@@ -295,7 +295,7 @@ public sealed class Tour : FullAggregateRoot<Guid>
     /// <summary>
     /// Creates a new reservation for this tour
     /// </summary>
-    public TourReservation CreateReservation(Guid capacityId,Guid memberId,string? trackingCode = null, DateTime? expiryDate = null, string? notes = null)
+    public TourReservation CreateReservation(Guid externalUserId, Guid capacityId, Guid memberId, string? trackingCode = null, DateTime? expiryDate = null, string? notes = null)
     {
         if (!IsActive)
             throw new InvalidOperationException("Cannot create reservations for inactive tours");
@@ -303,7 +303,7 @@ public sealed class Tour : FullAggregateRoot<Guid>
             throw new InvalidOperationException("Registration is not open for this tour");
 
         var code = trackingCode ?? TourReservation.GenerateTrackingCode();
-        var reservation = new TourReservation(Id, code,capacityId,memberId, expiryDate, notes);
+        var reservation = new TourReservation(Id, code, externalUserId, capacityId, memberId, expiryDate, notes);
 
         _reservations.Add(reservation);
         return reservation;

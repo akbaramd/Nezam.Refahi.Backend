@@ -11,8 +11,8 @@ public class RefreshSessionConfiguration : IEntityTypeConfiguration<RefreshSessi
 {
     public void Configure(EntityTypeBuilder<RefreshSession> builder)
     {
-        // Table name
-        builder.ToTable("RefreshSessions");
+        // Table name and schema
+        builder.ToTable("RefreshSessions", "identity");
 
         // Primary key - Client-generated GUID
         builder.HasKey(rs => rs.Id);

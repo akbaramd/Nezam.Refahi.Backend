@@ -11,7 +11,7 @@ public record CreateWalletCommand : IRequest<ApplicationResult<CreateWalletRespo
     /// <summary>
     /// User's national number
     /// </summary>
-    public string UserNationalNumber { get; init; } = string.Empty;
+    public Guid ExternalUserId { get; init; }
 
     /// <summary>
     /// User's full name
@@ -40,7 +40,7 @@ public record CreateWalletCommand : IRequest<ApplicationResult<CreateWalletRespo
 public record CreateWalletResponse
 {
     public Guid WalletId { get; init; }
-    public string UserNationalNumber { get; init; } = string.Empty;
+    public Guid UserExternalUserId { get; init; }
     public string UserFullName { get; init; } = string.Empty;
     public decimal InitialBalanceRials { get; init; }
     public string Status { get; init; } = string.Empty;

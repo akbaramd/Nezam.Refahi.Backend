@@ -44,35 +44,34 @@ public class CreateBillCommandHandler : IRequestHandler<CreateBillCommand, Appli
                 return ApplicationResult<CreateBillResponse>.Failure(errors, "Validation failed");
             }
 
+            //add bill items to ctor and add items from this
+            var items = request.Items?.Select(item => new BillItem(
+                billId: Guid.NewGuid(),
+                title: item.Title,
+                description: item.Description,
+                unitPrice: Money.FromRials(item.UnitPriceRials),
+                quantity: item.Quantity,
+                discountPercentage: item.DiscountPercentage
+            )).ToList();
+
             // Create new bill
             var bill = new Bill(
                 title: request.Title,
                 referenceId: request.ReferenceId,
                 billType: request.BillType,
-                userNationalNumber: request.UserNationalNumber,
+                externalUserId: request.ExternalUserId,
                 userFullName: request.UserFullName,
                 description: request.Description,
                 dueDate: request.DueDate,
-                metadata: request.Metadata
+                metadata: request.Metadata,
+                items: items ?? new List<BillItem>()
             );
 
-            // Add items to bill if provided
-            if (request.Items != null && request.Items.Any())
-            {
-                foreach (var itemDto in request.Items)
-                {
-                    bill.AddItem(
-                        title: itemDto.Title,
-                        description: itemDto.Description,
-                        unitPrice: Money.FromRials(itemDto.UnitPriceRials),
-                        quantity: itemDto.Quantity,
-                        discountPercentage: itemDto.DiscountPercentage
-                    );
-                }
-            }
+   
+         
 
             // Save bill
-            await _billRepository.AddAsync(bill,cancellationToken: cancellationToken);
+            await _billRepository.AddAsync(bill, cancellationToken: cancellationToken);
             await _unitOfWork.SaveAsync(cancellationToken);
             await _unitOfWork.CommitAsync(cancellationToken);
 

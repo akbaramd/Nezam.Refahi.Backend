@@ -1,5 +1,6 @@
 using MCA.SharedKernel.Domain.AggregateRoots;
 using Nezam.Refahi.Recreation.Domain.Enums;
+using Nezam.Refahi.Recreation.Domain.Events;
 using Nezam.Refahi.Recreation.Domain.ValueObjects;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
 
@@ -24,6 +25,7 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     public Guid? BillId { get; private set; }
     public Guid? CapacityId { get; private set; }
     public Guid? MemberId { get; private set; }
+    public Guid ExternalUserId { get; private set; }
     
     // Multi-tenancy support
     public string? TenantId { get; private set; }
@@ -49,6 +51,7 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     public TourReservation(
         Guid tourId,
         string trackingCode,
+        Guid externalUserId,
         Guid? capacityId = null,
         Guid? memberId = null,
         DateTime? expiryDate = null,
@@ -59,13 +62,17 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
         if (tourId == Guid.Empty)
             throw new ArgumentException("شناسه تور الزامی است", nameof(tourId));
 
+        if (externalUserId == Guid.Empty)
+            throw new ArgumentException("شناسه کاربر خارجی الزامی است", nameof(externalUserId));
+
         ValidateTrackingCode(trackingCode);
 
         TourId = tourId;
         TrackingCode = trackingCode.Trim().ToUpperInvariant();
+        ExternalUserId = externalUserId;
         Status = ReservationStatus.Draft; // Start in Draft state
         ReservationDate = DateTime.UtcNow;
-        ExpiryDate = expiryDate ?? DateTime.UtcNow.AddMinutes(15); // Default 15 minutes expiry
+        ExpiryDate = expiryDate ?? DateTime.UtcNow.AddHours(2); // Default 15 minutes expiry
         Notes = notes?.Trim();
         CapacityId = capacityId;
         MemberId = memberId;
@@ -122,6 +129,22 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
 
         Status = ReservationStatus.Held;
         ExpiryDate ??= DateTime.UtcNow.AddMinutes(15); // Set expiry if not already set
+        
+        // Publish domain event
+        AddDomainEvent(new TourReservationCreatedEvent
+        {
+            ReservationId = Id,
+            TourId = TourId,
+            TourTitle = Tour?.Title ?? string.Empty,
+            TrackingCode = TrackingCode,
+            ExternalUserId = ExternalUserId,
+            ReservationDate = ReservationDate,
+            TourStartDate = Tour?.TourStart ?? DateTime.MinValue,
+            TourEndDate = Tour?.TourEnd ?? DateTime.MinValue,
+            ParticipantCount = _participants.Count,
+            TotalPrice = TotalAmount?.AmountRials ?? 0,
+            Status = Status.ToString()
+        });
     }
 
     /// <summary>
@@ -160,6 +183,21 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
         ConfirmationDate = DateTime.UtcNow;
         TotalAmount = totalAmount;
         ExpiryDate = null; // Clear expiry date when confirmed
+        
+        // Publish domain event
+        AddDomainEvent(new TourReservationConfirmedEvent
+        {
+            ReservationId = Id,
+            TourId = TourId,
+            TourTitle = Tour?.Title ?? string.Empty,
+            TrackingCode = TrackingCode,
+            ExternalUserId = ExternalUserId,
+            TourStartDate = Tour?.TourStart ?? DateTime.MinValue,
+            TourEndDate = Tour?.TourEnd ?? DateTime.MinValue,
+            ParticipantCount = _participants.Count,
+            TotalPrice = TotalAmount?.AmountRials ?? 0,
+            ConfirmedAt = ConfirmationDate.Value
+        });
     }
 
     /// <summary>
@@ -182,6 +220,20 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
         {
             Notes = string.IsNullOrWhiteSpace(Notes) ? reason : $"{Notes} | Cancelled: {reason}";
         }
+        
+        // Publish domain event
+        AddDomainEvent(new TourReservationCancelledEvent
+        {
+            ReservationId = Id,
+            TourId = TourId,
+            TourTitle = Tour?.Title ?? string.Empty,
+            TrackingCode = TrackingCode,
+            ExternalUserId = ExternalUserId,
+            CancellationReason = reason ?? "UserRequest",
+            CancelledAt = CancellationDate.Value,
+            RefundAmount = TotalAmount?.AmountRials ?? 0,
+            RefundProcessed = false // Will be updated when refund is processed
+        });
     }
 
     /// <summary>

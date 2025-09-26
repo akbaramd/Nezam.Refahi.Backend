@@ -56,6 +56,37 @@ public record GetBillPaymentStatusByNumberQuery : IRequest<ApplicationResult<Bil
 }
 
 /// <summary>
+/// Query to get bill payment status by tracking code (for wallet deposits)
+/// </summary>
+public record GetBillPaymentStatusByTrackingCodeQuery : IRequest<ApplicationResult<BillPaymentStatusResponse>>
+{
+    /// <summary>
+    /// Tracking code to check status for (e.g., WD202501151430521234)
+    /// </summary>
+    public string TrackingCode { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Bill type to search for (default: "WalletDeposit")
+    /// </summary>
+    public string BillType { get; init; } = "WalletDeposit";
+
+    /// <summary>
+    /// Include payment history details
+    /// </summary>
+    public bool IncludePaymentHistory { get; init; } = false;
+
+    /// <summary>
+    /// Include refund history details
+    /// </summary>
+    public bool IncludeRefundHistory { get; init; } = false;
+
+    /// <summary>
+    /// Include bill items details
+    /// </summary>
+    public bool IncludeBillItems { get; init; } = false;
+}
+
+/// <summary>
 /// Response for bill payment status queries
 /// </summary>
 public record BillPaymentStatusResponse
@@ -64,10 +95,12 @@ public record BillPaymentStatusResponse
     public string BillNumber { get; init; } = string.Empty;
     public string Title { get; init; } = string.Empty;
     public string ReferenceId { get; init; } = string.Empty;
-    public string BillType { get; init; } = string.Empty;
-    public string UserNationalNumber { get; init; } = string.Empty;
+    public string? TrackingCode { get; init; }  // For wallet deposits, this will be the tracking code
+        public string BillType { get; init; } = string.Empty;
+    public Guid UserExternalUserId { get; init; }
     public string? UserFullName { get; init; }
     public string Status { get; init; } = string.Empty;
+    public string StatusText { get; init; } = string.Empty;  // Persian status text
     public bool IsPaid { get; init; }
     public bool IsPartiallyPaid { get; init; }
     public bool IsOverdue { get; init; }
@@ -101,6 +134,7 @@ public record BillPaymentHistoryDto
     public decimal AmountRials { get; init; }
     public string Method { get; init; } = string.Empty;
     public string Status { get; init; } = string.Empty;
+    public string StatusText { get; init; } = string.Empty;  // Persian status text
     public string? Gateway { get; init; }
     public string? GatewayTransactionId { get; init; }
     public string? GatewayReference { get; init; }
@@ -118,7 +152,8 @@ public record BillRefundHistoryDto
     public decimal AmountRials { get; init; }
     public string Reason { get; init; } = string.Empty;
     public string Status { get; init; } = string.Empty;
-    public string RequestedByNationalNumber { get; init; } = string.Empty;
+    public string StatusText { get; init; } = string.Empty;  // Persian status text
+    public Guid RequestedByExternalUserId { get; init; }
     public DateTime RequestedAt { get; init; }
     public DateTime? CompletedAt { get; init; }
     public string? GatewayRefundId { get; init; }

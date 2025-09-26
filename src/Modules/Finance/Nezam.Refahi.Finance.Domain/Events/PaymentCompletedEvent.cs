@@ -10,7 +10,7 @@ public class PaymentCompletedEvent : DomainEvent
     public Guid PaymentId { get; }
     public string ReferenceId { get; }
     public string ReferenceType { get; }
-    public string UserNationalNumber { get; }
+    public Guid ExternalUserId { get; }
     public decimal AmountRials { get; }
     public string? GatewayTransactionId { get; }
     public DateTime CompletedAt { get; }
@@ -19,7 +19,7 @@ public class PaymentCompletedEvent : DomainEvent
         Guid paymentId,
         string referenceId,
         string referenceType,
-        string userNationalNumber,
+        Guid externalUserId,
         decimal amountRials,
         string? gatewayTransactionId,
         DateTime completedAt)
@@ -27,7 +27,7 @@ public class PaymentCompletedEvent : DomainEvent
         PaymentId = paymentId;
         ReferenceId = referenceId;
         ReferenceType = referenceType;
-        UserNationalNumber = userNationalNumber;
+        ExternalUserId = externalUserId;
         AmountRials = amountRials;
         GatewayTransactionId = gatewayTransactionId;
         CompletedAt = completedAt;

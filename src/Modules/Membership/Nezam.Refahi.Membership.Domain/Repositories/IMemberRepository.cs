@@ -93,12 +93,6 @@ public interface IMemberRepository : IRepository<Member, Guid>
     /// <returns>Collection of members matching the national codes</returns>
     Task<IEnumerable<Member>> GetByNationalCodesAsync(IEnumerable<NationalId> nationalCodes);
 
-    /// <summary>
-    /// Gets members by claim type through their capabilities
-    /// </summary>
-    /// <param name="claimTypeId">The claim type ID</param>
-    /// <returns>Collection of members with the specified claim type through capabilities</returns>
-    Task<IEnumerable<Member>> GetMembersByFeatureAsync(string featureId);
 
     /// <summary>
     /// Gets a member with their capabilities by ID

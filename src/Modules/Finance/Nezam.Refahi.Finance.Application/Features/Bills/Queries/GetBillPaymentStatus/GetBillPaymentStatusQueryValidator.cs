@@ -32,3 +32,24 @@ public class GetBillPaymentStatusByNumberQueryValidator : AbstractValidator<GetB
             .WithMessage("Bill number cannot exceed 50 characters");
     }
 }
+
+/// <summary>
+/// Validator for GetBillPaymentStatusByTrackingCodeQuery
+/// </summary>
+public class GetBillPaymentStatusByTrackingCodeQueryValidator : AbstractValidator<GetBillPaymentStatusByTrackingCodeQuery>
+{
+    public GetBillPaymentStatusByTrackingCodeQueryValidator()
+    {
+        RuleFor(x => x.TrackingCode)
+            .NotEmpty()
+            .WithMessage("Tracking code is required")
+            .MaximumLength(20)
+            .WithMessage("Tracking code cannot exceed 20 characters");
+
+        RuleFor(x => x.BillType)
+            .NotEmpty()
+            .WithMessage("Bill type is required")
+            .MaximumLength(50)
+            .WithMessage("Bill type cannot exceed 50 characters");
+    }
+}

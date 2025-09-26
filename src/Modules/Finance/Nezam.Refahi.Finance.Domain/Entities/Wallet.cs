@@ -11,17 +11,24 @@ namespace Nezam.Refahi.Finance.Domain.Entities;
 /// </summary>
 public sealed class Wallet : FullAggregateRoot<Guid>
 {
-    public string NationalNumber { get; private set; } = null!;
-    public Money Balance { get; private set; } = null!;
+    public Guid ExternalUserId { get; private set; }
     public WalletStatus Status { get; private set; }
     public string? WalletName { get; private set; }
     public string? Description { get; private set; }
     public DateTime? LastTransactionAt { get; private set; }
     public Dictionary<string, string> Metadata { get; private set; } = new();
 
+    /// <summary>
+    /// Get current wallet balance calculated from snapshots and transactions
+    /// </summary>
+    public Money Balance => CalculateCurrentBalance();
+
     // Navigation properties
     private readonly List<WalletTransaction> _transactions = new();
     public IReadOnlyCollection<WalletTransaction> Transactions => _transactions.AsReadOnly();
+    
+    private readonly List<WalletSnapshot> _snapshots = new();
+    public IReadOnlyCollection<WalletSnapshot> Snapshots => _snapshots.AsReadOnly();
 
     // Private constructor for EF Core
     private Wallet() : base() { }
@@ -31,7 +38,7 @@ public sealed class Wallet : FullAggregateRoot<Guid>
     /// </summary>
     /// <remarks>
     /// <para>توضیح رفتار:</para>
-    /// این رفتار یک کیف پول جدید برای کاربر با کد ملی مشخص ایجاد می‌کند
+    /// این رفتار یک کیف پول جدید برای کاربر با شناسه خارجی مشخص ایجاد می‌کند
     /// که شامل موجودی اولیه، نام کیف پول و سایر تنظیمات اولیه است.
     ///
     /// <para>کاربرد در دنیای واقعی:</para>
@@ -39,31 +46,29 @@ public sealed class Wallet : FullAggregateRoot<Guid>
     /// برای مدیریت مالی شخصی دارد، این رفتار استفاده می‌شود.
     ///
     /// <para>قوانین:</para>
-    /// - کد ملی کاربر اجباری و معتبر باشد.
+    /// - شناسه خارجی کاربر اجباری و معتبر باشد.
     /// - موجودی اولیه معمولاً صفر است.
     /// - وضعیت اولیه همیشه فعال خواهد بود.
     /// - نام کیف پول اختیاری است.
     /// - زمان ایجاد به صورت خودکار ثبت می‌شود.
     ///
     /// <para>بایدها و نبایدها:</para>
-    /// - باید: کد ملی معتبر ارائه شود.
+    /// - باید: شناسه خارجی معتبر ارائه شود.
     /// - باید: موجودی اولیه معتبر باشد.
-    /// - نباید: کیف پول بدون کد ملی ایجاد شود.
+    /// - نباید: کیف پول بدون شناسه خارجی ایجاد شود.
     /// - نباید: موجودی اولیه منفی باشد.
     /// </remarks>
     public Wallet(
-        string nationalNumber,
-        Money? initialBalance = null,
+        Guid externalUserId,
         string? walletName = null,
         string? description = null,
         Dictionary<string, string>? metadata = null)
         : base(Guid.NewGuid())
     {
-        if (string.IsNullOrWhiteSpace(nationalNumber))
-            throw new ArgumentException("National number cannot be empty", nameof(nationalNumber));
+        if (externalUserId == Guid.Empty)
+            throw new ArgumentException("External user ID cannot be empty", nameof(externalUserId));
 
-        NationalNumber = nationalNumber.Trim();
-        Balance = initialBalance ?? Money.Zero;
+        ExternalUserId = externalUserId;
         Status = WalletStatus.Active;
         WalletName = walletName?.Trim();
         Description = description?.Trim();
@@ -73,7 +78,7 @@ public sealed class Wallet : FullAggregateRoot<Guid>
         // Raise domain event
         AddDomainEvent(new WalletCreatedEvent(
             Id,
-            NationalNumber,
+            ExternalUserId,
             Balance,
             CreatedAt));
     }
@@ -114,15 +119,16 @@ public sealed class Wallet : FullAggregateRoot<Guid>
         if (amount.AmountRials <= 0)
             throw new ArgumentException("Deposit amount must be positive", nameof(amount));
 
-        var previousBalance = Balance;
-        Balance = Balance.Add(amount);
         LastTransactionAt = DateTime.UtcNow;
+
+        // Calculate balance before transaction
+        var previousBalance = CalculateCurrentBalance();
 
         var transaction = new WalletTransaction(
             Id,
             WalletTransactionType.Deposit,
             amount,
-            Balance,
+            previousBalance, // Previous balance before this transaction
             referenceId,
             description,
             externalReference,
@@ -130,13 +136,16 @@ public sealed class Wallet : FullAggregateRoot<Guid>
 
         _transactions.Add(transaction);
 
+        // Calculate new balance after transaction
+        var newBalance = CalculateCurrentBalance();
+
         // Raise domain events
         AddDomainEvent(new WalletBalanceChangedEvent(
             Id,
-            NationalNumber,
+            ExternalUserId,
             WalletTransactionType.Deposit,
             previousBalance,
-            Balance,
+            newBalance,
             amount,
             referenceId,
             DateTime.UtcNow));
@@ -144,10 +153,10 @@ public sealed class Wallet : FullAggregateRoot<Guid>
         AddDomainEvent(new WalletTransactionCompletedEvent(
             transaction.Id,
             Id,
-            NationalNumber,
+            ExternalUserId,
             WalletTransactionType.Deposit,
             amount,
-            Balance,
+            newBalance,
             referenceId,
             description,
             DateTime.UtcNow));
@@ -189,31 +198,34 @@ public sealed class Wallet : FullAggregateRoot<Guid>
             throw new InvalidOperationException("Cannot withdraw from inactive wallet");
         if (amount.AmountRials <= 0)
             throw new ArgumentException("Withdrawal amount must be positive", nameof(amount));
-        if (Balance.IsLessThan(amount))
-            throw new InvalidOperationException("Insufficient balance");
+        // Note: Balance check will be done at application layer using snapshots + transactions
 
-        var previousBalance = Balance;
-        Balance = Balance.Subtract(amount);
         LastTransactionAt = DateTime.UtcNow;
+
+        // Calculate balance before transaction
+        var previousBalance = CalculateCurrentBalance();
 
         var transaction = new WalletTransaction(
             Id,
             WalletTransactionType.Withdrawal,
             amount,
-            Balance,
+            previousBalance, // Previous balance before this transaction
             referenceId,
             description,
             externalReference);
 
         _transactions.Add(transaction);
 
+        // Calculate new balance after transaction
+        var newBalance = CalculateCurrentBalance();
+
         // Raise domain events
         AddDomainEvent(new WalletBalanceChangedEvent(
             Id,
-            NationalNumber,
+            ExternalUserId,
             WalletTransactionType.Withdrawal,
             previousBalance,
-            Balance,
+            newBalance,
             amount,
             referenceId,
             DateTime.UtcNow));
@@ -221,10 +233,10 @@ public sealed class Wallet : FullAggregateRoot<Guid>
         AddDomainEvent(new WalletTransactionCompletedEvent(
             transaction.Id,
             Id,
-            NationalNumber,
+            ExternalUserId,
             WalletTransactionType.Withdrawal,
             amount,
-            Balance,
+            newBalance,
             referenceId,
             description,
             DateTime.UtcNow));
@@ -269,18 +281,17 @@ public sealed class Wallet : FullAggregateRoot<Guid>
             throw new ArgumentException("Transfer amount must be positive", nameof(amount));
         if (destinationWalletId == Id)
             throw new ArgumentException("Cannot transfer to the same wallet", nameof(destinationWalletId));
-        if (Balance.IsLessThan(amount))
-            throw new InvalidOperationException("Insufficient balance");
-
-        var previousBalance = Balance;
-        Balance = Balance.Subtract(amount);
+        // Note: Balance check will be done at application layer using snapshots + transactions 
         LastTransactionAt = DateTime.UtcNow;
+
+        // Calculate balance before transaction
+        var previousBalance = CalculateCurrentBalance();
 
         var transaction = new WalletTransaction(
             Id,
             WalletTransactionType.TransferOut,
             amount,
-            Balance,
+            previousBalance, // Previous balance before this transaction
             referenceId,
             description,
             externalReference);
@@ -289,13 +300,16 @@ public sealed class Wallet : FullAggregateRoot<Guid>
 
         _transactions.Add(transaction);
 
+        // Calculate new balance after transaction
+        var newBalance = CalculateCurrentBalance();
+
         // Raise domain events
         AddDomainEvent(new WalletBalanceChangedEvent(
             Id,
-            NationalNumber,
+            ExternalUserId,
             WalletTransactionType.TransferOut,
             previousBalance,
-            Balance,
+            newBalance,
             amount,
             referenceId,
             DateTime.UtcNow));
@@ -303,10 +317,10 @@ public sealed class Wallet : FullAggregateRoot<Guid>
         AddDomainEvent(new WalletTransactionCompletedEvent(
             transaction.Id,
             Id,
-            NationalNumber,
+            ExternalUserId,
             WalletTransactionType.TransferOut,
             amount,
-            Balance,
+            newBalance,
             referenceId,
             description,
             DateTime.UtcNow));
@@ -350,15 +364,16 @@ public sealed class Wallet : FullAggregateRoot<Guid>
         if (amount.AmountRials <= 0)
             throw new ArgumentException("Transfer amount must be positive", nameof(amount));
 
-        var previousBalance = Balance;
-        Balance = Balance.Add(amount);
         LastTransactionAt = DateTime.UtcNow;
+
+        // Calculate balance before transaction
+        var previousBalance = CalculateCurrentBalance();
 
         var transaction = new WalletTransaction(
             Id,
             WalletTransactionType.TransferIn,
             amount,
-            Balance,
+            previousBalance, // Previous balance before this transaction
             referenceId,
             description,
             externalReference);
@@ -367,13 +382,16 @@ public sealed class Wallet : FullAggregateRoot<Guid>
 
         _transactions.Add(transaction);
 
+        // Calculate new balance after transaction
+        var newBalance = CalculateCurrentBalance();
+
         // Raise domain events
         AddDomainEvent(new WalletBalanceChangedEvent(
             Id,
-            NationalNumber,
+            ExternalUserId,
             WalletTransactionType.TransferIn,
             previousBalance,
-            Balance,
+            newBalance,
             amount,
             referenceId,
             DateTime.UtcNow));
@@ -381,10 +399,10 @@ public sealed class Wallet : FullAggregateRoot<Guid>
         AddDomainEvent(new WalletTransactionCompletedEvent(
             transaction.Id,
             Id,
-            NationalNumber,
+            ExternalUserId,
             WalletTransactionType.TransferIn,
             amount,
-            Balance,
+            newBalance,
             referenceId,
             description,
             DateTime.UtcNow));
@@ -430,18 +448,17 @@ public sealed class Wallet : FullAggregateRoot<Guid>
             throw new ArgumentException("Payment amount must be positive", nameof(amount));
         if (billId == Guid.Empty)
             throw new ArgumentException("Bill ID cannot be empty", nameof(billId));
-        if (Balance.IsLessThan(amount))
-            throw new InvalidOperationException("Insufficient balance");
-
-        var previousBalance = Balance;
-        Balance = Balance.Subtract(amount);
+        // Note: Balance check will be done at application layer using snapshots + transactions
         LastTransactionAt = DateTime.UtcNow;
+
+        // Calculate balance before transaction
+        var previousBalance = CalculateCurrentBalance();
 
         var transaction = new WalletTransaction(
             Id,
             WalletTransactionType.Payment,
             amount,
-            Balance,
+            previousBalance, // Previous balance before this transaction
             referenceId,
             description,
             externalReference);
@@ -451,13 +468,16 @@ public sealed class Wallet : FullAggregateRoot<Guid>
 
         _transactions.Add(transaction);
 
+        // Calculate new balance after transaction
+        var newBalance = CalculateCurrentBalance();
+
         // Raise domain events
         AddDomainEvent(new WalletBalanceChangedEvent(
             Id,
-            NationalNumber,
+            ExternalUserId,
             WalletTransactionType.Payment,
             previousBalance,
-            Balance,
+            newBalance,
             amount,
             referenceId,
             DateTime.UtcNow));
@@ -465,10 +485,10 @@ public sealed class Wallet : FullAggregateRoot<Guid>
         AddDomainEvent(new WalletTransactionCompletedEvent(
             transaction.Id,
             Id,
-            NationalNumber,
+            ExternalUserId,
             WalletTransactionType.Payment,
             amount,
-            Balance,
+            newBalance,
             referenceId,
             description,
             DateTime.UtcNow));
@@ -513,15 +533,16 @@ public sealed class Wallet : FullAggregateRoot<Guid>
         if (amount.AmountRials <= 0)
             throw new ArgumentException("Refund amount must be positive", nameof(amount));
 
-        var previousBalance = Balance;
-        Balance = Balance.Add(amount);
         LastTransactionAt = DateTime.UtcNow;
+
+        // Calculate balance before transaction
+        var previousBalance = CalculateCurrentBalance();
 
         var transaction = new WalletTransaction(
             Id,
             WalletTransactionType.Refund,
             amount,
-            Balance,
+            previousBalance, // Previous balance before this transaction
             referenceId,
             description,
             externalReference);
@@ -531,13 +552,16 @@ public sealed class Wallet : FullAggregateRoot<Guid>
 
         _transactions.Add(transaction);
 
+        // Calculate new balance after transaction
+        var newBalance = CalculateCurrentBalance();
+
         // Raise domain events
         AddDomainEvent(new WalletBalanceChangedEvent(
             Id,
-            NationalNumber,
+            ExternalUserId,
             WalletTransactionType.Refund,
             previousBalance,
-            Balance,
+            newBalance,
             amount,
             referenceId,
             DateTime.UtcNow));
@@ -545,10 +569,10 @@ public sealed class Wallet : FullAggregateRoot<Guid>
         AddDomainEvent(new WalletTransactionCompletedEvent(
             transaction.Id,
             Id,
-            NationalNumber,
+            ExternalUserId,
             WalletTransactionType.Refund,
             amount,
-            Balance,
+            newBalance,
             referenceId,
             description,
             DateTime.UtcNow));
@@ -594,43 +618,47 @@ public sealed class Wallet : FullAggregateRoot<Guid>
         if (string.IsNullOrWhiteSpace(reason))
             throw new ArgumentException("Adjustment reason is required", nameof(reason));
 
-        var previousBalance = Balance;
-        var difference = Money.FromRials(newBalance.AmountRials - Balance.AmountRials);
-        Balance = newBalance;
+        // Calculate balance before transaction
+        var previousBalance = CalculateCurrentBalance();
+        var adjustmentAmount = newBalance.Subtract(previousBalance);
+
         LastTransactionAt = DateTime.UtcNow;
 
         var transaction = new WalletTransaction(
             Id,
             WalletTransactionType.Adjustment,
-            difference,
-            Balance,
+            adjustmentAmount, // Difference between old and new balance
+            previousBalance, // Previous balance before this transaction
             referenceId,
             description,
             externalReference);
 
         transaction.AddMetadata("Reason", reason);
-        transaction.AddMetadata("PreviousBalance", previousBalance.AmountRials.ToString());
+        transaction.AddMetadata("NewBalance", newBalance.AmountRials.ToString());
 
         _transactions.Add(transaction);
+
+        // Calculate new balance after transaction
+        var calculatedNewBalance = CalculateCurrentBalance();
 
         // Raise domain events
         AddDomainEvent(new WalletBalanceChangedEvent(
             Id,
-            NationalNumber,
+            ExternalUserId,
             WalletTransactionType.Adjustment,
             previousBalance,
-            Balance,
-            difference,
+            calculatedNewBalance,
+            adjustmentAmount,
             referenceId,
             DateTime.UtcNow));
 
         AddDomainEvent(new WalletTransactionCompletedEvent(
             transaction.Id,
             Id,
-            NationalNumber,
+            ExternalUserId,
             WalletTransactionType.Adjustment,
-            difference,
-            Balance,
+            adjustmentAmount,
+            calculatedNewBalance,
             referenceId,
             description,
             DateTime.UtcNow));
@@ -678,7 +706,7 @@ public sealed class Wallet : FullAggregateRoot<Guid>
         // Raise domain event
         AddDomainEvent(new WalletStatusChangedEvent(
             Id,
-            NationalNumber,
+            ExternalUserId,
             previousStatus,
             Status,
             reason,
@@ -711,12 +739,11 @@ public sealed class Wallet : FullAggregateRoot<Guid>
 
     /// <summary>
     /// بستن دائمی کیف پول
+    /// Note: Balance check should be done at application layer using snapshots + transactions
     /// </summary>
     public void Close(string? reason = null)
     {
-        if (Balance.AmountRials > 0)
-            throw new InvalidOperationException("Cannot close wallet with remaining balance");
-
+        // Note: Balance check will be done at application layer using snapshots + transactions
         ChangeStatus(WalletStatus.Closed, reason ?? "Wallet closed");
     }
 
@@ -728,23 +755,200 @@ public sealed class Wallet : FullAggregateRoot<Guid>
         return Status == WalletStatus.Active;
     }
 
+
     /// <summary>
-    /// بررسی اینکه آیا موجودی کافی برای مبلغ مشخص وجود دارد
+    /// Check if wallet has sufficient balance for a given amount
     /// </summary>
+    /// <param name="amount">Amount to check</param>
+    /// <returns>True if sufficient balance, false otherwise</returns>
     public bool HasSufficientBalance(Money amount)
     {
-        return Balance.IsGreaterThan(amount) || Balance.Equals(amount);
+        if (amount == null)
+            throw new ArgumentNullException(nameof(amount));
+
+        var currentBalance = CalculateCurrentBalance();
+        return currentBalance.IsGreaterThan(amount) || currentBalance.Equals(amount);
     }
 
     /// <summary>
-    /// دریافت موجودی قابل استفاده (موجودی منهای مبالغ مسدود شده)
+    /// Get current available balance
     /// </summary>
+    /// <returns>Current wallet balance</returns>
     public Money GetAvailableBalance()
     {
-        // For now, available balance equals current balance
-        // In future, this can be extended to account for frozen amounts
-        return Balance;
+        return CalculateCurrentBalance();
     }
+
+    /// <summary>
+    /// Add a snapshot to the wallet
+    /// </summary>
+    /// <param name="snapshot">Snapshot to add</param>
+    public void AddSnapshot(WalletSnapshot snapshot)
+    {
+        if (snapshot == null)
+            throw new ArgumentNullException(nameof(snapshot));
+        if (snapshot.WalletId != Id)
+            throw new ArgumentException("Snapshot wallet ID does not match this wallet", nameof(snapshot));
+
+        _snapshots.Add(snapshot);
+    }
+
+    /// <summary>
+    /// Get the latest snapshot for this wallet
+    /// </summary>
+    /// <returns>Latest snapshot or null if none exists</returns>
+    public WalletSnapshot? GetLatestSnapshot()
+    {
+        return _snapshots
+            .OrderByDescending(s => s.SnapshotDate)
+            .FirstOrDefault();
+    }
+
+    /// <summary>
+    /// Get snapshots within a date range
+    /// </summary>
+    /// <param name="fromDate">Start date</param>
+    /// <param name="toDate">End date</param>
+    /// <returns>Snapshots within the date range</returns>
+    public IEnumerable<WalletSnapshot> GetSnapshotsInRange(DateTime fromDate, DateTime toDate)
+    {
+        return _snapshots
+            .Where(s => s.SnapshotDate >= fromDate.Date && s.SnapshotDate <= toDate.Date)
+            .OrderBy(s => s.SnapshotDate);
+    }
+
+    /// <summary>
+    /// Calculate current balance from snapshots and transactions
+    /// This method calculates the current balance from the latest snapshot + subsequent transactions
+    /// </summary>
+    public Money CalculateCurrentBalance()
+    {
+        var latestSnapshot = GetLatestSnapshot();
+        Money currentBalance = latestSnapshot?.Balance ?? Money.Zero;
+        DateTime? snapshotDate = latestSnapshot?.SnapshotDate;
+
+        // Get transactions after the latest snapshot
+        var transactionsAfterSnapshot = _transactions
+            .Where(t => snapshotDate == null || t.CreatedAt.Date > snapshotDate.Value.Date)
+            .OrderBy(t => t.CreatedAt);
+
+        // Apply transactions to the snapshot balance
+        foreach (var transaction in transactionsAfterSnapshot)
+        {
+            if (transaction.IsIn())
+            {
+                // Deposit, TransferIn, Refund, Interest, positive Adjustment
+                currentBalance = currentBalance.Add(transaction.Amount);
+            }
+            else if (transaction.IsOut())
+            {
+                // Withdrawal, TransferOut, Payment, Fee, negative Adjustment
+                currentBalance = currentBalance.Subtract(transaction.Amount);
+            }
+        }
+
+        return currentBalance;
+    }
+
+
+    /// <summary>
+    /// Calculate balance at a specific point in time using snapshots and transactions
+    /// </summary>
+    /// <param name="pointInTime">Date and time to calculate balance for</param>
+    /// <returns>Balance at the specified point in time</returns>
+    public Money CalculateBalanceAtPointInTime(DateTime pointInTime)
+    {
+        // Get the latest snapshot before or on the point in time
+        var latestSnapshot = _snapshots
+            .Where(s => s.SnapshotDate <= pointInTime.Date)
+            .OrderByDescending(s => s.SnapshotDate)
+            .FirstOrDefault();
+
+        Money currentBalance = latestSnapshot?.Balance ?? Money.Zero;
+        DateTime? snapshotDate = latestSnapshot?.SnapshotDate;
+
+        // Get transactions after the snapshot date up to the point in time
+        var transactionsAfterSnapshot = _transactions
+            .Where(t => (snapshotDate == null || t.CreatedAt.Date > snapshotDate.Value.Date) && 
+                       t.CreatedAt <= pointInTime)
+            .OrderBy(t => t.CreatedAt);
+
+        // Apply transactions to the snapshot balance
+        foreach (var transaction in transactionsAfterSnapshot)
+        {
+            if (transaction.IsIn())
+            {
+                // Deposit, TransferIn, Refund, Interest, positive Adjustment
+                currentBalance = currentBalance.Add(transaction.Amount);
+            }
+            else if (transaction.IsOut())
+            {
+                // Withdrawal, TransferOut, Payment, Fee, negative Adjustment
+                currentBalance = currentBalance.Subtract(transaction.Amount);
+            }
+        }
+
+        return currentBalance;
+    }
+
+    /// <summary>
+    /// Get transaction summary by type for this wallet
+    /// </summary>
+    /// <returns>Dictionary of transaction types and their counts</returns>
+    public Dictionary<WalletTransactionType, int> GetTransactionTypeSummary()
+    {
+        return _transactions
+            .GroupBy(t => t.TransactionType)
+            .ToDictionary(g => g.Key, g => g.Count());
+    }
+
+    /// <summary>
+    /// Get transaction summary by type for a specific date range
+    /// </summary>
+    /// <param name="fromDate">Start date</param>
+    /// <param name="toDate">End date</param>
+    /// <returns>Dictionary of transaction types and their counts</returns>
+    public Dictionary<WalletTransactionType, int> GetTransactionTypeSummaryInRange(DateTime fromDate, DateTime toDate)
+    {
+        return _transactions
+            .Where(t => t.CreatedAt.Date >= fromDate.Date && t.CreatedAt.Date <= toDate.Date)
+            .GroupBy(t => t.TransactionType)
+            .ToDictionary(g => g.Key, g => g.Count());
+    }
+
+    /// <summary>
+    /// Get total amount by transaction type
+    /// </summary>
+    /// <returns>Dictionary of transaction types and their total amounts</returns>
+    public Dictionary<WalletTransactionType, Money> GetTransactionTypeAmounts()
+    {
+        return _transactions
+            .GroupBy(t => t.TransactionType)
+            .ToDictionary(g => g.Key, g => 
+            {
+                var totalRials = g.Sum(t => t.Amount.AmountRials);
+                return Money.FromRials(totalRials);
+            });
+    }
+
+    /// <summary>
+    /// Get total amount by transaction type for a specific date range
+    /// </summary>
+    /// <param name="fromDate">Start date</param>
+    /// <param name="toDate">End date</param>
+    /// <returns>Dictionary of transaction types and their total amounts</returns>
+    public Dictionary<WalletTransactionType, Money> GetTransactionTypeAmountsInRange(DateTime fromDate, DateTime toDate)
+    {
+        return _transactions
+            .Where(t => t.CreatedAt.Date >= fromDate.Date && t.CreatedAt.Date <= toDate.Date)
+            .GroupBy(t => t.TransactionType)
+            .ToDictionary(g => g.Key, g => 
+            {
+                var totalRials = g.Sum(t => t.Amount.AmountRials);
+                return Money.FromRials(totalRials);
+            });
+    }
+
 
     /// <summary>
     /// دریافت تعداد تراکنش‌ها

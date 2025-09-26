@@ -1,6 +1,8 @@
 using FluentValidation;
 using MediatR;
+using Nezam.Refahi.Finance.Application.Services;
 using Nezam.Refahi.Finance.Contracts.Queries.Wallets;
+using Nezam.Refahi.Finance.Domain.Entities;
 using Nezam.Refahi.Finance.Domain.Repositories;
 using Nezam.Refahi.Finance.Domain.Services;
 using Nezam.Refahi.Shared.Application.Common.Models;
@@ -16,17 +18,20 @@ public class GetWalletBalanceQueryHandler : IRequestHandler<GetWalletBalanceQuer
     private readonly IWalletTransactionRepository _walletTransactionRepository;
     private readonly IValidator<GetWalletBalanceQuery> _validator;
     private readonly WalletDomainService _walletDomainService;
+    private readonly IFinanceUnitOfWork _unitOfWork;
 
     public GetWalletBalanceQueryHandler(
         IWalletRepository walletRepository,
         IWalletTransactionRepository walletTransactionRepository,
         IValidator<GetWalletBalanceQuery> validator,
-        WalletDomainService walletDomainService)
+        WalletDomainService walletDomainService,
+        IFinanceUnitOfWork unitOfWork)
     {
         _walletRepository = walletRepository ?? throw new ArgumentNullException(nameof(walletRepository));
         _walletTransactionRepository = walletTransactionRepository ?? throw new ArgumentNullException(nameof(walletTransactionRepository));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         _walletDomainService = walletDomainService ?? throw new ArgumentNullException(nameof(walletDomainService));
+        _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
     }
 
     public async Task<ApplicationResult<WalletBalanceResponse>> Handle(
@@ -45,21 +50,33 @@ public class GetWalletBalanceQueryHandler : IRequestHandler<GetWalletBalanceQuer
                     );
             }
 
-            // Get wallet by national number
-            var wallet = await _walletRepository.GetByNationalNumberAsync(
-                request.UserNationalNumber, cancellationToken);
+            // Get wallet by national number with refreshed balance
+            var wallet = await _walletRepository.GetByExternalUserIdWithRefreshedBalanceAsync(
+                request.ExternalUserId, cancellationToken);
             
+            // If wallet doesn't exist, create a new blank wallet for the user
             if (wallet == null)
             {
-                return ApplicationResult<WalletBalanceResponse>.Failure(
-                    "Wallet not found for this user");
+                wallet = new Wallet(
+                    externalUserId: request.ExternalUserId,
+                    walletName: $"کیف پول {request.ExternalUserId}",
+                    description: "کیف پول پیش‌فرض کاربر",
+                    metadata: new Dictionary<string, string>
+                    {
+                        { "created_by", "system" },
+                        { "created_reason", "auto_created_on_balance_check" }
+                    });
+
+                // Save the new wallet
+                await _walletRepository.AddAsync(wallet, cancellationToken: cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
             }
 
             // Build response
             var response = new WalletBalanceResponse
             {
                 WalletId = wallet.Id,
-                UserNationalNumber = wallet.NationalNumber,
+                UserExternalUserId = wallet.ExternalUserId,
                 UserFullName = wallet.WalletName ?? string.Empty,
                 CurrentBalanceRials = wallet.Balance.AmountRials,
                 Status = wallet.Status.ToString(),
@@ -80,7 +97,7 @@ public class GetWalletBalanceQueryHandler : IRequestHandler<GetWalletBalanceQuer
                         TransactionId = t.Id,
                         TransactionType = t.TransactionType.ToString(),
                         AmountRials = t.Amount.AmountRials,
-                        BalanceAfterRials = t.BalanceAfter.AmountRials,
+                        PreviousBalanceRials = t.PreviousBalance.AmountRials,
                         Status = "Completed", // Wallet transactions are always completed when created
                         CreatedAt = t.CreatedAt,
                         ReferenceId = t.ReferenceId ?? string.Empty,
@@ -100,7 +117,7 @@ public class GetWalletBalanceQueryHandler : IRequestHandler<GetWalletBalanceQuer
                             TransactionId = lastTransaction.Id,
                             TransactionType = lastTransaction.TransactionType.ToString(),
                             AmountRials = lastTransaction.Amount.AmountRials,
-                            BalanceAfterRials = lastTransaction.BalanceAfter.AmountRials,
+                            PreviousBalanceRials = lastTransaction.PreviousBalance.AmountRials,
                             Status = "Completed", // Wallet transactions are always completed when created
                             CreatedAt = lastTransaction.CreatedAt,
                             ReferenceId = lastTransaction.ReferenceId ?? string.Empty,
@@ -143,7 +160,7 @@ public class GetWalletBalanceQueryHandler : IRequestHandler<GetWalletBalanceQuer
         {
             return ApplicationResult<WalletBalanceResponse>.Failure(
                 ex,
-                "Failed to retrieve wallet balance"
+                "خطا در دریافت موجودی کیف پول"
                 );
         }
     }

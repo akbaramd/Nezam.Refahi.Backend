@@ -14,6 +14,7 @@
           "Microsoft.EntityFrameworkCore.SqlServer": "8.0.18",
           "Microsoft.EntityFrameworkCore.Sqlite": "8.0.18",
           "Microsoft.Extensions.Http": "8.0.0",
+          "Nezam.Refahi.BasicDefinitions.Contracts": "1.0.0",
           "Nezam.Refahi.Membership.Contracts": "1.0.0"
         },
         "runtime": {
@@ -1570,6 +1571,29 @@
           }
         }
       },
+      "Nezam.Refahi.BasicDefinitions.Contracts/1.0.0": {
+        "dependencies": {
+          "Nezam.Refahi.BasicDefinitions.Domain": "1.0.0"
+        },
+        "runtime": {
+          "Nezam.Refahi.BasicDefinitions.Contracts.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Nezam.Refahi.BasicDefinitions.Domain/1.0.0": {
+        "dependencies": {
+          "AkbarAmd.SharedKernel.Domain": "1.0.13",
+          "Nezam.Refahi.Shared.Domain": "1.0.0"
+        },
+        "runtime": {
+          "Nezam.Refahi.BasicDefinitions.Domain.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
       "Nezam.Refahi.Membership.Contracts/1.0.0": {
         "dependencies": {
           "Nezam.Refahi.Membership.Domain": "1.0.0"
@@ -2346,6 +2370,16 @@
       "sha512": "sha512-IXoJOXIqc39AIe+CIR7koBtRGMiCt/LPM3lI+PELtDIy9XdyeSrwXFdWV9dzJ2Awl0paLWUaknLxFQ5HpHZUog==",
       "path": "system.windows.extensions/6.0.0",
       "hashPath": "system.windows.extensions.6.0.0.nupkg.sha512"
+    },
+    "Nezam.Refahi.BasicDefinitions.Contracts/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Nezam.Refahi.BasicDefinitions.Domain/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
     },
     "Nezam.Refahi.Membership.Contracts/1.0.0": {
       "type": "project",

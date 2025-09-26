@@ -11,7 +11,7 @@ public record ChargeWalletCommand : IRequest<ApplicationResult<ChargeWalletRespo
     /// <summary>
     /// User's national number
     /// </summary>
-    public string UserNationalNumber { get; init; } = string.Empty;
+    public Guid ExternalUserId { get; init; }
 
     /// <summary>
     /// Amount to charge in rials
@@ -46,7 +46,7 @@ public record ChargeWalletResponse
 {
     public Guid WalletId { get; init; }
     public Guid TransactionId { get; init; }
-    public string UserNationalNumber { get; init; } = string.Empty;
+    public Guid UserExternalUserId { get; init; }
     public decimal AmountRials { get; init; }
     public decimal PreviousBalanceRials { get; init; }
     public decimal NewBalanceRials { get; init; }

@@ -13,7 +13,7 @@ public class BillCreatedEvent : DomainEvent
     public string Title { get; }
     public string ReferenceId { get; }
     public string BillType { get; }
-    public string UserNationalNumber { get; }
+    public Guid ExternalUserId { get; }
     public string? UserFullName { get; }
     public Money TotalAmount { get; }
     public DateTime IssueDate { get; }
@@ -26,7 +26,7 @@ public class BillCreatedEvent : DomainEvent
         string title,
         string referenceId,
         string billType,
-        string userNationalNumber,
+        Guid externalUserId,
         string? userFullName,
         Money totalAmount,
         DateTime issueDate,
@@ -38,7 +38,7 @@ public class BillCreatedEvent : DomainEvent
         Title = title;
         ReferenceId = referenceId;
         BillType = billType;
-        UserNationalNumber = userNationalNumber;
+        ExternalUserId = externalUserId;
         UserFullName = userFullName;
         TotalAmount = totalAmount;
         IssueDate = issueDate;

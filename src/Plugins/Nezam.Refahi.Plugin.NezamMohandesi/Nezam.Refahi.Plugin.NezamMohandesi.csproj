@@ -20,6 +20,7 @@
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\..\Modules\Membership\Nezam.Refahi.Membership.Contracts\Nezam.Refahi.Membership.Contracts.csproj" />
+      <ProjectReference Include="..\..\Modules\BasicDefinitions\Nezam.Refahi.BasicDefinitions.Contracts\Nezam.Refahi.BasicDefinitions.Contracts.csproj" />
     </ItemGroup>
 
     <!-- Generate plugin.json manifest file -->

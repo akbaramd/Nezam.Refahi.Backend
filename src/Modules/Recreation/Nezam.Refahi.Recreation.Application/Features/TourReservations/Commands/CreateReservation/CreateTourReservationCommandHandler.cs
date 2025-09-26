@@ -263,6 +263,7 @@ public class CreateTourReservationCommandHandler
             var reservation = new TourReservation(
                 tourId: request.TourId,
                 trackingCode: trackingCode,
+                externalUserId: userId.Value,
                 capacityId: request.CapacityId != Guid.Empty ? request.CapacityId : null,
                 memberId: memebr.Id,
                 expiryDate: expiryDate,

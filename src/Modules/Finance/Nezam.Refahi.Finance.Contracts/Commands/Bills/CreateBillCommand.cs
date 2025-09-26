@@ -27,7 +27,7 @@ public record CreateBillCommand : IRequest<ApplicationResult<CreateBillResponse>
     /// <summary>
     /// National number of the user
     /// </summary>
-    public string UserNationalNumber { get; init; } = string.Empty;
+    public Guid ExternalUserId { get; init; }
 
     /// <summary>
     /// Full name of the user (optional)

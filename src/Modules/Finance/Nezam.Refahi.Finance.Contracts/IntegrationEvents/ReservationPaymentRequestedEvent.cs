@@ -6,7 +6,7 @@ namespace Nezam.Refahi.Finance.Contracts.IntegrationEvents;
 public class ReservationPaymentRequestedEvent
 {
     public Guid ReservationId { get; set; }
-    public string UserNationalNumber { get; set; } = string.Empty;
+    public Guid ExternalUserId { get; set; }
     public long AmountRials { get; set; }
     public string CallbackUrl { get; set; } = string.Empty;
     public Dictionary<string, string> Metadata { get; set; } = new();

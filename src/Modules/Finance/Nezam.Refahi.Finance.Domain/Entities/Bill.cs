@@ -15,7 +15,7 @@ public sealed class Bill : FullAggregateRoot<Guid>
     public string Title { get; private set; } = null!;
     public string ReferenceId { get; private set; } = null!;
     public string BillType { get; private set; } = null!;
-    public string UserNationalNumber { get; private set; } = null!;
+    public Guid ExternalUserId { get; private set; }
     public string? UserFullName { get; private set; }
     public BillStatus Status { get; private set; }
     public Money TotalAmount { get; private set; } = null!;
@@ -69,11 +69,12 @@ public sealed class Bill : FullAggregateRoot<Guid>
         string title,
         string referenceId,
         string billType,
-        string userNationalNumber,
+        Guid externalUserId,
         string? userFullName = null,
         string? description = null,
         DateTime? dueDate = null,
-        Dictionary<string, string>? metadata = null)
+        Dictionary<string, string>? metadata = null,
+        List<BillItem>? items = null)
         : base(Guid.NewGuid())
     {
         if (string.IsNullOrWhiteSpace(title))
@@ -82,14 +83,14 @@ public sealed class Bill : FullAggregateRoot<Guid>
             throw new ArgumentException("Reference ID cannot be empty", nameof(referenceId));
         if (string.IsNullOrWhiteSpace(billType))
             throw new ArgumentException("Bill type cannot be empty", nameof(billType));
-        if (string.IsNullOrWhiteSpace(userNationalNumber))
-            throw new ArgumentException("User national number cannot be empty", nameof(userNationalNumber));
+        if (externalUserId == Guid.Empty)
+            throw new ArgumentException("External user ID cannot be empty", nameof(externalUserId));
 
         BillNumber = GenerateBillNumber();
         Title = title.Trim();
         ReferenceId = referenceId.Trim();
         BillType = billType.Trim();
-        UserNationalNumber = userNationalNumber.Trim();
+        ExternalUserId = externalUserId;
         UserFullName = userFullName?.Trim();
         Description = description?.Trim();
         Status = BillStatus.Draft;
@@ -99,15 +100,17 @@ public sealed class Bill : FullAggregateRoot<Guid>
         PaidAmount = Money.Zero;
         RemainingAmount = Money.Zero;
         Metadata = metadata ?? new Dictionary<string, string>();
+        _items = items ?? new List<BillItem>();
 
-        // Raise domain event
+        RecalculateAmounts();
+                // Raise domain event
         AddDomainEvent(new BillCreatedEvent(
             Id,
             BillNumber,
             Title,
             ReferenceId,
             BillType,
-            UserNationalNumber,
+            ExternalUserId,
             UserFullName,
             TotalAmount,
             IssueDate,
@@ -115,76 +118,8 @@ public sealed class Bill : FullAggregateRoot<Guid>
             Description));
     }
 
-    /// <summary>
-    /// افزودن قلم جدید به صورت حساب
-    /// </summary>
-    /// <remarks>
-    /// <para>توضیح رفتار:</para>
-    /// این رفتار یک قلم (ردیف) جدید به صورت حساب اضافه می‌کند و به صورت خودکار
-    /// مبلغ کل صورت حساب را بر اساس قیمت، تعداد و تخفیف محاسبه مجدد می‌نماید.
-    ///
-    /// <para>کاربرد در دنیای واقعی:</para>
-    /// زمانی که در فروشگاه کالایی به سبد خرید اضافه می‌شود یا در دفتر خدماتی
-    /// یک خدمت به فاکتور مشتری افزوده می‌شود، این رفتار استفاده می‌شود.
-    ///
-    /// <para>قوانین:</para>
-    /// - فقط در وضعیت پیش‌نویس قابل اجرا است.
-    /// - عنوان و قیمت واحد اجباری هستند.
-    /// - تعداد باید عددی مثبت باشد.
-    /// - درصد تخفیف در صورت وجود باید بین 0 تا 100 باشد.
-    /// - محاسبه مجدد مبلغ کل به صورت خودکار انجام می‌شود.
-    ///
-    /// <para>بایدها و نبایدها:</para>
-    /// - باید: اطلاعات قلم کامل و معتبر باشد.
-    /// - باید: محاسبه مجدد مبلغ کل انجام شود.
-    /// - نباید: به صورتحساب‌های صادر شده قلم اضافه شود.
-    /// - نباید: اطلاعات ناقص یا نامعتبر پذیرفته شود.
-    /// </remarks>
-    public void AddItem(string title, string? description, Money unitPrice, int quantity = 1, decimal? discountPercentage = null)
-    {
-        if (Status != BillStatus.Draft)
-            throw new InvalidOperationException("Can only add items to draft bills");
 
-        var item = new BillItem(Id, title, description, unitPrice, quantity, discountPercentage);
-        _items.Add(item);
-        RecalculateAmounts();
-    }
-
-    /// <summary>
-    /// حذف قلم از صورت حساب
-    /// </summary>
-    /// <remarks>
-    /// <para>توضیح رفتار:</para>
-    /// این رفتار یک قلم (ردیف) را از صورت حساب حذف کرده و به صورت خودکار
-    /// مبلغ کل صورت حساب را مجدداً محاسبه می‌نماید.
-    ///
-    /// <para>کاربرد در دنیای واقعی:</para>
-    /// زمانی که مشتری در فروشگاه یا دفتر خدماتی از خرید کالا یا خدمتی منصرف شود
-    /// و قبل از نهایی کردن فاکتور آن را حذف کند، این رفتار استفاده می‌شود.
-    ///
-    /// <para>قوانین:</para>
-    /// - فقط در وضعیت پیش‌نویس قابل اجرا است.
-    /// - قلم باید وجود داشته باشد تا قابل حذف باشد.
-    /// - محاسبه مجدد مبلغ کل بعد از حذف ضروری است.
-    ///
-    /// <para>بایدها و نبایدها:</para>
-    /// - باید: فقط از وضعیت پیش‌نویس قابل حذف باشد.
-    /// - باید: محاسبه مجدد مبلغ انجام شود.
-    /// - نباید: از صورتحساب‌های صادر شده حذف شود.
-    /// - نباید: قلم ناموجود حذف شود.
-    /// </remarks>
-    public void RemoveItem(Guid itemId)
-    {
-        if (Status != BillStatus.Draft)
-            throw new InvalidOperationException("Can only remove items from draft bills");
-
-        var item = _items.FirstOrDefault(i => i.Id == itemId);
-        if (item != null)
-        {
-            _items.Remove(item);
-            RecalculateAmounts();
-        }
-    }
+   
 
     /// <summary>
     /// صدور و نهایی کردن صورت حساب
@@ -279,7 +214,7 @@ public sealed class Bill : FullAggregateRoot<Guid>
             BillNumber,
             ReferenceId,
             BillType,
-            UserNationalNumber,
+            ExternalUserId,
             amount,
             method,
             gateway,
@@ -313,7 +248,7 @@ public sealed class Bill : FullAggregateRoot<Guid>
             payment.Id,
             ReferenceId,
             BillType,
-            UserNationalNumber,
+            ExternalUserId,
             payment.Amount.AmountRials,
             gatewayTransactionId,
             payment.CompletedAt!.Value));
@@ -337,7 +272,7 @@ public sealed class Bill : FullAggregateRoot<Guid>
             payment.Id,
             ReferenceId,
             BillType,
-            UserNationalNumber,
+            ExternalUserId,
             failureReason));
     }
 
@@ -346,7 +281,7 @@ public sealed class Bill : FullAggregateRoot<Guid>
     /// در دنیای واقعی: عودت کالا، لغو سفارش یا عدم رضایت مشتری
     /// قوانین: فقط برای اسناد پرداخت شده، مبلغ برگشت نباید از پرداختی بیشتر باشد
     /// </summary>
-    public Refund CreateRefund(Money refundAmount, string reason, string? requestedByNationalNumber = null)
+    public Refund CreateRefund(Money refundAmount, string reason, Guid? requestedByExternalUserId = null)
     {
         if (Status != BillStatus.FullyPaid && Status != BillStatus.PartiallyPaid)
             throw new InvalidOperationException("Can only refund paid bills");
@@ -357,7 +292,7 @@ public sealed class Bill : FullAggregateRoot<Guid>
         if (totalRefunded + refundAmount.AmountRials > PaidAmount.AmountRials)
             throw new InvalidOperationException("Refund amount exceeds paid amount");
 
-        var refund = new Refund(Id, refundAmount, reason, requestedByNationalNumber ?? UserNationalNumber);
+        var refund = new Refund(Id, refundAmount, reason, requestedByExternalUserId ?? ExternalUserId);
         _refunds.Add(refund);
 
         // Raise domain event
@@ -369,7 +304,7 @@ public sealed class Bill : FullAggregateRoot<Guid>
             ReferenceId,
             BillType,
             refundAmount,
-            refund.RequestedByNationalNumber,
+            refund.RequestedByExternalUserId,
             reason));
 
         return refund;
@@ -400,7 +335,7 @@ public sealed class Bill : FullAggregateRoot<Guid>
             ReferenceId,
             BillType,
             refund.Amount.AmountRials,
-            refund.RequestedByNationalNumber,
+            refund.RequestedByExternalUserId,
             refund.CompletedAt!.Value));
     }
 
@@ -454,7 +389,7 @@ public sealed class Bill : FullAggregateRoot<Guid>
             BillNumber, 
             ReferenceId,
             BillType,
-            UserNationalNumber,
+            ExternalUserId,
             TotalAmount,
             PaidAmount,
             PaidAmount, // Refund amount equals paid amount for cancelled bills
@@ -711,7 +646,7 @@ public sealed class Bill : FullAggregateRoot<Guid>
 
 
     // Private methods
-    private void RecalculateAmounts()
+    public void RecalculateAmounts()
     {
         var total = _items.Sum(item => item.GetTotalAmount().AmountRials);
         TotalAmount = Money.FromRials(total);
@@ -774,7 +709,7 @@ public sealed class Bill : FullAggregateRoot<Guid>
                 BillNumber,
                 ReferenceId,
                 BillType,
-                UserNationalNumber,
+                ExternalUserId,
                 TotalAmount,
                 PaidAmount,
                 FullyPaidDate!.Value,
@@ -791,7 +726,7 @@ public sealed class Bill : FullAggregateRoot<Guid>
                 BillNumber,
                 ReferenceId,
                 BillType,
-                UserNationalNumber,
+                ExternalUserId,
                 TotalAmount,        
                 RemainingAmount,
                 DueDate!.Value,

@@ -12,7 +12,7 @@ public class BillFullyPaidEvent : DomainEvent
     public string BillNumber { get; }
     public string ReferenceId { get; }
     public string ReferenceType { get; }
-    public string UserNationalNumber { get; }
+    public Guid ExternalUserId { get; }
     public Money TotalAmount { get; }
     public Money PaidAmount { get; }
     public DateTime FullyPaidDate { get; }
@@ -25,7 +25,7 @@ public class BillFullyPaidEvent : DomainEvent
         string billNumber,
         string referenceId,
         string referenceType,
-        string userNationalNumber,
+        Guid externalUserId,
         Money totalAmount,
         Money paidAmount,
         DateTime fullyPaidDate,
@@ -37,7 +37,7 @@ public class BillFullyPaidEvent : DomainEvent
         BillNumber = billNumber;
         ReferenceId = referenceId;
         ReferenceType = referenceType;
-        UserNationalNumber = userNationalNumber;
+        ExternalUserId = externalUserId;
         TotalAmount = totalAmount;
         PaidAmount = paidAmount;
         FullyPaidDate = fullyPaidDate;

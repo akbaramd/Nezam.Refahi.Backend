@@ -35,7 +35,7 @@ public class NezamRefahiMembershipApplicationModule : BonModule
     context.Services.AddScoped<IMemberService, MemberService>();
 
     // Register membership seeding hosted service
-    context.Services.AddHostedService<MembershipSeedingHostedService>();
+    // MembershipSeedingHostedService moved to Hangfire jobs - runs at 1:30 AM daily
     return base.OnConfigureAsync(context);
   }
 }

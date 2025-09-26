@@ -38,7 +38,7 @@ public class GetUserBillsQueryHandler : IRequestHandler<GetUserBillsQuery, Appli
             }
 
             // Get all bills for the user
-            var allBills = await _billRepository.GetByUserNationalNumberAsync(request.UserNationalNumber, cancellationToken);
+            var allBills = await _billRepository.GetByExternalUserIdAsync(request.ExternalUserId, cancellationToken);
             var billsList = allBills.ToList();
 
             // Apply filters
@@ -61,7 +61,7 @@ public class GetUserBillsQueryHandler : IRequestHandler<GetUserBillsQuery, Appli
             // Build response
             var response = new UserBillsResponse
             {
-                UserNationalNumber = request.UserNationalNumber,
+                UserExternalUserId = request.ExternalUserId,
                 TotalCount = totalCount,
                 PageNumber = request.PageNumber,
                 PageSize = request.PageSize,

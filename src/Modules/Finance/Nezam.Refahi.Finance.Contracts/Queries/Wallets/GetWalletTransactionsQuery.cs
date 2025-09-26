@@ -11,7 +11,7 @@ public record GetWalletTransactionsQuery : IRequest<ApplicationResult<WalletTran
     /// <summary>
     /// User's national number
     /// </summary>
-    public string UserNationalNumber { get; init; } = string.Empty;
+    public Guid ExternalUserId { get; init; }
 
     /// <summary>
     /// Filter by transaction type (optional)
@@ -65,7 +65,7 @@ public record GetWalletTransactionsQuery : IRequest<ApplicationResult<WalletTran
 public record WalletTransactionsResponse
 {
     public Guid WalletId { get; init; }
-    public string UserNationalNumber { get; init; } = string.Empty;
+    public Guid UserExternalUserId { get; init; }
     public int TotalCount { get; init; }
     public int PageNumber { get; init; }
     public int PageSize { get; init; }
@@ -83,7 +83,7 @@ public record WalletTransactionDetailDto
     public string TransactionType { get; init; } = string.Empty;
     public decimal AmountRials { get; init; }
     public decimal BalanceBeforeRials { get; init; }
-    public decimal BalanceAfterRials { get; init; }
+    public decimal PreviousBalanceRials { get; init; }
     public string Status { get; init; } = string.Empty;
     public DateTime CreatedAt { get; init; }
     public string ReferenceId { get; init; } = string.Empty;

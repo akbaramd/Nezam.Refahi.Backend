@@ -26,7 +26,7 @@ public record CreateRefundCommand : IRequest<ApplicationResult<CreateRefundRespo
     /// <summary>
     /// National number of the person requesting the refund (optional, defaults to bill owner)
     /// </summary>
-    public string? RequestedByNationalNumber { get; init; }
+    public Guid? RequestedByExternalUserId { get; init; }
 }
 
 /// <summary>

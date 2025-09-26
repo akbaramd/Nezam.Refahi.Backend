@@ -14,6 +14,7 @@ using Nezam.Refahi.Recreation.Application.Features.TourReservations.Queries.GetR
 using Nezam.Refahi.Recreation.Application.Features.TourReservations.Queries.GetUserReservations;
 using Nezam.Refahi.Recreation.Domain.Enums;
 using Nezam.Refahi.Recreation.Contracts.Dtos;
+using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
 namespace Nezam.Refahi.Recreation.Presentation.Endpoints;
@@ -133,10 +134,12 @@ public static class ReservationEndpoints
             [FromRoute] Guid reservationId,
             [FromBody] InitiatePaymentRequest? request,
             [FromServices] IMediator mediator,
+            [FromServices] ICurrentUserService userService,
             CancellationToken cancellationToken) =>
         {
             var command = new InitiatePaymentCommand
             {
+              ExternalUserId =userService.UserId!.Value,
                 ReservationId = reservationId,
                 PaymentMethod = request?.PaymentMethod
             };

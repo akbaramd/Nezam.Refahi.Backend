@@ -8,14 +8,14 @@ namespace Nezam.Refahi.Finance.Domain.Events;
 /// </summary>
         public sealed class WalletStatusChangedEvent(
     Guid WalletId,
-    string NationalNumber,
+    Guid ExternalUserId,
     WalletStatus PreviousStatus,
     WalletStatus NewStatus,
     string? Reason,
     DateTime ChangedAt) : DomainEvent
 {
     public Guid WalletId { get; } = WalletId;
-    public string NationalNumber { get; } = NationalNumber;
+    public Guid ExternalUserId { get; } = ExternalUserId;
     public WalletStatus PreviousStatus { get; } = PreviousStatus;
     public WalletStatus NewStatus { get; } = NewStatus;
     public string? Reason { get; } = Reason;

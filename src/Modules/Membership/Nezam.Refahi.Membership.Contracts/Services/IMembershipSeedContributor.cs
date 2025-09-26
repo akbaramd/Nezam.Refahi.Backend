@@ -25,6 +25,7 @@ public interface IMembershipSeedContributor
 
     /// <summary>
     /// Seeds capabilities that group claim types together
+    /// Note: Returns capability keys only, not full entities
     /// </summary>
-    Task<List<Capability>> SeedCapabilitiesAsync(CancellationToken cancellationToken = default);
+    Task<List<string>> SeedCapabilityKeysAsync(CancellationToken cancellationToken = default);
 }

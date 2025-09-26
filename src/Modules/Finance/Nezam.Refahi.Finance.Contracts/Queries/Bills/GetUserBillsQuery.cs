@@ -11,7 +11,7 @@ public record GetUserBillsQuery : IRequest<ApplicationResult<UserBillsResponse>>
     /// <summary>
     /// User's national number
     /// </summary>
-    public string UserNationalNumber { get; init; } = string.Empty;
+    public Guid ExternalUserId { get; init; }
 
     /// <summary>
     /// Filter by bill status (optional)
@@ -59,7 +59,7 @@ public record GetUserBillsQuery : IRequest<ApplicationResult<UserBillsResponse>>
 /// </summary>
 public record UserBillsResponse
 {
-    public string UserNationalNumber { get; init; } = string.Empty;
+    public Guid UserExternalUserId { get; init; } 
     public int TotalCount { get; init; }
     public int PageNumber { get; init; }
     public int PageSize { get; init; }

@@ -114,10 +114,10 @@ public class WalletTransactionRepository : EfRepository<FinanceDbContext, Wallet
 
         var transactions = await query
             .OrderBy(t => t.CreatedAt)
-            .Select(t => new { t.CreatedAt, t.BalanceAfter })
+            .Select(t => new { t.CreatedAt, t.PreviousBalance })
             .ToListAsync(cancellationToken);
 
-        return transactions.Select(t => (t.CreatedAt.Date, t.BalanceAfter.AmountRials)).ToList();
+        return transactions.Select(t => (t.CreatedAt.Date, t.PreviousBalance.AmountRials)).ToList();
     }
 
     protected override IQueryable<WalletTransaction> PrepareQuery(IQueryable<WalletTransaction> query)

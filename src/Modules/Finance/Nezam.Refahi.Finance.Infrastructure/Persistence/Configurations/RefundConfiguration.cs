@@ -32,7 +32,7 @@ public class RefundConfiguration : IEntityTypeConfiguration<Refund>
             .IsRequired()
             .HasMaxLength(500);
 
-        builder.Property(r => r.RequestedByNationalNumber)
+        builder.Property(r => r.RequestedByExternalUserId)
             .IsRequired()
             .HasMaxLength(10)
             .IsFixedLength();
@@ -76,7 +76,7 @@ public class RefundConfiguration : IEntityTypeConfiguration<Refund>
 
         builder.HasIndex(r => r.Status);
 
-        builder.HasIndex(r => r.RequestedByNationalNumber);
+        builder.HasIndex(r => r.RequestedByExternalUserId);
 
         builder.HasIndex(r => r.RequestedAt);
 

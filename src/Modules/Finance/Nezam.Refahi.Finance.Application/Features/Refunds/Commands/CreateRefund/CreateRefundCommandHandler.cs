@@ -61,7 +61,7 @@ public class CreateRefundCommandHandler : IRequestHandler<CreateRefundCommand, A
             var refund = bill.CreateRefund(
                 refundAmount: refundAmount,
                 reason: request.Reason,
-                requestedByNationalNumber: request.RequestedByNationalNumber
+                requestedByExternalUserId: request.RequestedByExternalUserId
             );
 
             // Save changes

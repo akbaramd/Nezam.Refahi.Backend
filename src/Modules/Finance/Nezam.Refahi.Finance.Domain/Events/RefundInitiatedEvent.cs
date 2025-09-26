@@ -16,7 +16,7 @@ public class RefundInitiatedEvent : DomainEvent
     public string ReferenceId { get; }
     public string ReferenceType { get; }
     public Money RefundAmount { get; }
-    public string RequestedByNationalNumber { get; }
+    public Guid RequestedByExternalUserId { get; }
     public string Reason { get; }
     public DateTime InitiatedAt { get; }
     public string? RequestedBy { get; }
@@ -30,7 +30,7 @@ public class RefundInitiatedEvent : DomainEvent
         string referenceId,
         string referenceType,
         Money refundAmount,
-        string requestedByNationalNumber,
+        Guid requestedByExternalUserId,
         string reason,
         string? requestedBy = null,
         string? notes = null)
@@ -42,7 +42,7 @@ public class RefundInitiatedEvent : DomainEvent
         ReferenceId = referenceId;
         ReferenceType = referenceType;
         RefundAmount = refundAmount;
-        RequestedByNationalNumber = requestedByNationalNumber;
+        RequestedByExternalUserId = requestedByExternalUserId;
         Reason = reason;
         InitiatedAt = DateTime.UtcNow;
         RequestedBy = requestedBy;

@@ -43,15 +43,16 @@ public class NezamMohandesiSeedContributor : IMembershipSeedContributor
         return Task.FromResult(roles);
     }
 
-  
-    public Task<List<Capability>> SeedCapabilitiesAsync(CancellationToken cancellationToken = default)
+    public Task<List<string>> SeedCapabilityKeysAsync(CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Seeding capabilities for {PluginName}", Name);
+        _logger.LogInformation("Seeding capability keys for {PluginName}", Name);
 
-        // Get all predefined capabilities from constants (includes all combinations and special capabilities)
-        var capabilities = NezamMohandesiConstants.AllPredefinedCapabilities.ToList();
+        // Get all predefined capability keys from constants
+        var capabilityKeys = NezamMohandesiConstants.AllPredefinedCapabilities
+            .Select(c => c.Id)
+            .ToList();
 
-        _logger.LogInformation("Created {Count} capabilities for {PluginName}", capabilities.Count, Name);
-        return Task.FromResult(capabilities);
+        _logger.LogInformation("Created {Count} capability keys for {PluginName}", capabilityKeys.Count, Name);
+        return Task.FromResult(capabilityKeys);
     }
 }

@@ -76,6 +76,9 @@ public class TourReservationConfiguration : IEntityTypeConfiguration<TourReserva
         builder.Property(r => r.MemberId)
             .IsRequired(false);
 
+        builder.Property(r => r.ExternalUserId)
+            .IsRequired();
+
         // Multi-tenancy support
         builder.Property(r => r.TenantId)
             .IsRequired(false)
@@ -131,6 +134,9 @@ public class TourReservationConfiguration : IEntityTypeConfiguration<TourReserva
 
         builder.HasIndex(r => new { r.TenantId, r.MemberId, r.ReservationDate })
             .HasDatabaseName("IX_TourReservations_TenantMemberDate");
+
+        builder.HasIndex(r => new { r.TenantId, r.ExternalUserId, r.ReservationDate })
+            .HasDatabaseName("IX_TourReservations_TenantExternalUserDate");
 
         builder.HasIndex(r => r.ReservationDate)
             .HasDatabaseName("IX_TourReservations_ReservationDate");

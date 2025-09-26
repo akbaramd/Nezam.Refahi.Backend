@@ -32,11 +32,11 @@ public class RefundRepository : EfRepository<FinanceDbContext, Refund, Guid>, IR
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<Refund>> GetByRequesterAsync(string nationalNumber, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Refund>> GetByRequesterAsync(Guid externalUserId, CancellationToken cancellationToken = default)
     {
         return await PrepareQuery(_dbSet)
-            .Where(r => r.RequestedByNationalNumber == nationalNumber)
-            .OrderByDescending(r => r.RequestedAt)
+            .Where(r => r.RequestedByExternalUserId == externalUserId)
+            .OrderByDescending(r => r.RequestedAt)  
             .ToListAsync(cancellationToken);
     }
 
