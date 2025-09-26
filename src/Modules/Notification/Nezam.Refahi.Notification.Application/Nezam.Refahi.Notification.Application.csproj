@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>Nezam.Refahi.Notifications.Application</AssemblyName>
+    <RootNamespace>Nezam.Refahi.Notifications.Application</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AkbarAmd.SharedKernel.Application" Version="1.0.13" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+    <PackageReference Include="FluentValidation" Version="11.8.1" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.8.1" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Finance\Nezam.Refahi.Finance.Contracts\Nezam.Refahi.Finance.Contracts.csproj" />
+    <ProjectReference Include="..\..\Identity\Nezam.Refahi.Identity.Contracts\Nezam.Refahi.Identity.Contracts.csproj" />
+    <ProjectReference Include="..\..\Membership\Nezam.Refahi.Membership.Contracts\Nezam.Refahi.Membership.Contracts.csproj" />
+    <ProjectReference Include="..\..\Recreation\Nezam.Refahi.Recreation.Contracts\Nezam.Refahi.Recreation.Contracts.csproj" />
+    <ProjectReference Include="..\..\Recreation\Nezam.Refahi.Recreation.Domain\Nezam.Refahi.Recreation.Domain.csproj" />
+    <ProjectReference Include="..\..\Settings\Nezam.Refahi.Settings.Contracts\Nezam.Refahi.Settings.Contracts.csproj" />
+    <ProjectReference Include="..\Nezam.Refahi.Notification.Domain\Nezam.Refahi.Notification.Domain.csproj" />
+    <ProjectReference Include="..\..\..\Nezam.Refahi.Shared.Application\Nezam.Refahi.Shared.Application.csproj" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <Folder Include="Common\" />
+  </ItemGroup>
+
+</Project>

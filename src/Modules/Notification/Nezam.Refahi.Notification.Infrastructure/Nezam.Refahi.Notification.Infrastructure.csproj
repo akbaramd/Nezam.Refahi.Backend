@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>Nezam.Refahi.Notifications.Infrastructure</AssemblyName>
+    <RootNamespace>Nezam.Refahi.Notifications.Infrastructure</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AkbarAmd.SharedKernel.Infrastructure" Version="1.0.13" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.18" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.18" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.18">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.18" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.18" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.18" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.18">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Nezam.Refahi.Notification.Domain\Nezam.Refahi.Notification.Domain.csproj" />
+    <ProjectReference Include="..\Nezam.Refahi.Notification.Application\Nezam.Refahi.Notification.Application.csproj" />
+    <ProjectReference Include="..\..\..\Nezam.Refahi.Shared.Infrastructure\Nezam.Refahi.Shared.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
