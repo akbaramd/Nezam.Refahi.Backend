@@ -3211,7 +3211,8 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "Nezam.Refahi.BasicDefinitions.Domain": "1.0.0"
+          "Nezam.Refahi.BasicDefinitions.Domain": "1.0.0",
+          "Nezam.Refahi.Shared.Application": "1.0.0"
         },
         "compile": {
           "bin/placeholder/Nezam.Refahi.BasicDefinitions.Contracts.dll": {}
@@ -3262,6 +3263,7 @@
           "Bonyan.AspNetCore": "1.5.7",
           "MediatR": "12.5.0",
           "Microsoft.AspNetCore.OpenApi": "8.0.0",
+          "Nezam.Refahi.BasicDefinitions.Contracts": "1.0.0",
           "Nezam.Refahi.BasicDefinitions.Infrastructure": "1.0.0",
           "Nezam.Refahi.Shared.Application": "1.0.0",
           "Swashbuckle.AspNetCore": "6.5.0"
@@ -3299,7 +3301,6 @@
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
           "AkbarAmd.SharedKernel.Application": "1.0.13",
-          "Nezam.Refahi.Finance.Domain": "1.0.0",
           "Nezam.Refahi.Shared.Application": "1.0.0"
         },
         "compile": {
@@ -8683,36 +8684,25 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\akbar\\.nuget\\packages\\": {},
-    "C:\\Program Files\\DevExpress 24.2\\Components\\Offline Packages": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\ahmadi\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\Nezam.Refahi.WebApi.csproj",
+      "projectUniqueName": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\Nezam.Refahi.WebApi.csproj",
       "projectName": "Nezam.Refahi.WebApi",
-      "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\Nezam.Refahi.WebApi.csproj",
-      "packagesPath": "C:\\Users\\akbar\\.nuget\\packages\\",
-      "outputPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\obj\\",
+      "projectPath": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\Nezam.Refahi.WebApi.csproj",
+      "packagesPath": "C:\\Users\\ahmadi\\.nuget\\packages\\",
+      "outputPath": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files\\DevExpress 24.2\\Components\\Offline Packages",
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\akbar\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.1.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.2.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "C:\\Users\\ahmadi\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Program Files\\DevExpress 24.2\\Components\\System\\Components\\Packages": {},
         "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
@@ -8720,32 +8710,31 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\BasicDefinitions\\Nezam.Refahi.BasicDefinitions.Presentation\\Nezam.Refahi.BasicDefinitions.Presentation.csproj": {
-              "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\BasicDefinitions\\Nezam.Refahi.BasicDefinitions.Presentation\\Nezam.Refahi.BasicDefinitions.Presentation.csproj"
+            "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Modules\\BasicDefinitions\\Nezam.Refahi.BasicDefinitions.Presentation\\Nezam.Refahi.BasicDefinitions.Presentation.csproj": {
+              "projectPath": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Modules\\BasicDefinitions\\Nezam.Refahi.BasicDefinitions.Presentation\\Nezam.Refahi.BasicDefinitions.Presentation.csproj"
             },
-            "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Finance\\Nezam.Refahi.Finance.Presentation\\Nezam.Refahi.Finance.Presentation.csproj": {
-              "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Finance\\Nezam.Refahi.Finance.Presentation\\Nezam.Refahi.Finance.Presentation.csproj"
+            "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Modules\\Finance\\Nezam.Refahi.Finance.Presentation\\Nezam.Refahi.Finance.Presentation.csproj": {
+              "projectPath": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Modules\\Finance\\Nezam.Refahi.Finance.Presentation\\Nezam.Refahi.Finance.Presentation.csproj"
             },
-            "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Presentation\\Nezam.Refahi.Identity.Presentation.csproj": {
-              "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Presentation\\Nezam.Refahi.Identity.Presentation.csproj"
+            "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Presentation\\Nezam.Refahi.Identity.Presentation.csproj": {
+              "projectPath": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Presentation\\Nezam.Refahi.Identity.Presentation.csproj"
             },
-            "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Membership\\Nezam.Refahi.Membership.Presentation\\Nezam.Refahi.Membership.Presentation.csproj": {
-              "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Membership\\Nezam.Refahi.Membership.Presentation\\Nezam.Refahi.Membership.Presentation.csproj"
+            "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Modules\\Membership\\Nezam.Refahi.Membership.Presentation\\Nezam.Refahi.Membership.Presentation.csproj": {
+              "projectPath": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Modules\\Membership\\Nezam.Refahi.Membership.Presentation\\Nezam.Refahi.Membership.Presentation.csproj"
             },
-            "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Notification\\Nezam.Refahi.Notification.Presentation\\Nezam.Refahi.Notification.Presentation.csproj": {
-              "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Notification\\Nezam.Refahi.Notification.Presentation\\Nezam.Refahi.Notification.Presentation.csproj"
+            "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Modules\\Notification\\Nezam.Refahi.Notification.Presentation\\Nezam.Refahi.Notification.Presentation.csproj": {
+              "projectPath": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Modules\\Notification\\Nezam.Refahi.Notification.Presentation\\Nezam.Refahi.Notification.Presentation.csproj"
             },
-            "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Recreation\\Nezam.Refahi.Recreation.Presentation\\Nezam.Refahi.Recreation.Presentation.csproj": {
-              "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Recreation\\Nezam.Refahi.Recreation.Presentation\\Nezam.Refahi.Recreation.Presentation.csproj"
+            "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Modules\\Recreation\\Nezam.Refahi.Recreation.Presentation\\Nezam.Refahi.Recreation.Presentation.csproj": {
+              "projectPath": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Modules\\Recreation\\Nezam.Refahi.Recreation.Presentation\\Nezam.Refahi.Recreation.Presentation.csproj"
             },
-            "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Presentation\\Nezam.Refahi.Settings.Presentation.csproj": {
-              "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Presentation\\Nezam.Refahi.Settings.Presentation.csproj"
+            "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Presentation\\Nezam.Refahi.Settings.Presentation.csproj": {
+              "projectPath": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Presentation\\Nezam.Refahi.Settings.Presentation.csproj"
             }
           }
         }
       },
       "warningProperties": {
-        "allWarningsAsErrors": true,
         "warnAsError": [
           "NU1605"
         ]
@@ -8755,7 +8744,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "10.0.100"
+      "SdkAnalysisLevel": "9.0.200"
     },
     "frameworks": {
       "net8.0": {
@@ -8807,7 +8796,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100-rc.1.25451.107/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.205/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

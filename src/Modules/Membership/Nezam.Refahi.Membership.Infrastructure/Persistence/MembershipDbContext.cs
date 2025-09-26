@@ -13,6 +13,7 @@ public class MembershipDbContext(DbContextOptions<MembershipDbContext> options) 
     // Membership bounded context
     public DbSet<Member> Members { get; set; } = default!;
     public DbSet<MemberCapability> MemberCapabilities { get; set; } = default!;
+    public DbSet<MemberAgency> MemberAgencies { get; set; } = default!;
     public DbSet<Role> Roles { get; set; } = default!;
     public DbSet<MemberRole> MemberRoles { get; set; } = default!;
 

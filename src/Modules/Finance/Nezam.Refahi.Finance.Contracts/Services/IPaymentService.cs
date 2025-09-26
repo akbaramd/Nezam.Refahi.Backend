@@ -1,6 +1,4 @@
-using Nezam.Refahi.Finance.Domain.Enums;
 using Nezam.Refahi.Shared.Application.Common.Models;
-using Nezam.Refahi.Shared.Domain.ValueObjects;
 
 namespace Nezam.Refahi.Finance.Contracts.Services;
 
@@ -50,8 +48,8 @@ public interface IPaymentService
 public class PaymentGatewayRequest
 {
     public long TrackingNumber { get; set; }
-    public Money Amount { get; set; } = null!;
-    public PaymentGateway Gateway { get; set; }
+    public long AmountRials { get; set; } // Using primitive long instead of Money value object
+    public string Gateway { get; set; } = string.Empty; // PaymentGateway as string
     public string CallbackUrl { get; set; } = string.Empty;
     public string? Description { get; set; }
     public Dictionary<string, string> AdditionalData { get; set; } = new();
@@ -66,8 +64,8 @@ public class PaymentProcessingResult
     public string? RedirectUrl { get; set; }
     public bool IsSucceed { get; set; }
     public string? Message { get; set; }
-    public PaymentGateway Gateway { get; set; }
-    public Money Amount { get; set; } = null!;
+    public string Gateway { get; set; } = string.Empty; // PaymentGateway as string
+    public long AmountRials { get; set; } // Using primitive long instead of Money value object
     public DateTime RequestedAt { get; set; }
 }
 
@@ -80,7 +78,7 @@ public class GatewayCallbackResult
     public bool IsSuccessful { get; set; }
     public string? Message { get; set; }
     public string? GatewayName { get; set; }
-    public Money Amount { get; set; } = null!;
+    public long AmountRials { get; set; } // Using primitive long instead of Money value object
     public DateTime ProcessedAt { get; set; }
     public Dictionary<string, string> AdditionalData { get; set; } = new();
 }
@@ -96,7 +94,7 @@ public class PaymentVerificationResult
     public string? Message { get; set; }
     public string? ReferenceNumber { get; set; }
     public string? TransactionId { get; set; }
-    public Money Amount { get; set; } = null!;
+    public long AmountRials { get; set; } // Using primitive long instead of Money value object
     public DateTime VerifiedAt { get; set; }
 }
 
@@ -105,7 +103,7 @@ public class PaymentVerificationResult
 /// </summary>
 public class PaymentGatewayInfo
 {
-    public PaymentGateway Gateway { get; set; }
+    public string Gateway { get; set; } = string.Empty; // PaymentGateway as string
     public string Name { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;
     public bool IsEnabled { get; set; }

@@ -1,12 +1,37 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Nezam.Refahi.Finance.Contracts.Commands.Wallets;
-using Nezam.Refahi.Finance.Contracts.Dtos;
 using Nezam.Refahi.Finance.Contracts.Queries.Wallets;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
 namespace Nezam.Refahi.Finance.Presentation.Endpoints;
+
+/// <summary>
+/// Request DTO for creating a wallet deposit
+/// </summary>
+public record CreateWalletDepositRequest
+{
+    /// <summary>
+    /// Amount to deposit in rials
+    /// </summary>
+    public decimal AmountRials { get; init; }
+
+    /// <summary>
+    /// Description for the deposit
+    /// </summary>
+    public string? Description { get; init; }
+
+    /// <summary>
+    /// External reference (e.g., bank transaction ID)
+    /// </summary>
+    public string? ExternalReference { get; init; }
+
+    /// <summary>
+    /// Additional metadata for the deposit
+    /// </summary>
+    public Dictionary<string, string>? Metadata { get; init; }
+}
 
 public static class WalletEndpoints
 {

@@ -56,9 +56,9 @@ public class CreateBillCommandValidator : AbstractValidator<CreateBillCommand>
 }
 
 /// <summary>
-/// Validator for CreateBillItemDto
+/// Validator for CreateBillItemRequest
 /// </summary>
-public class CreateBillItemValidator : AbstractValidator<Nezam.Refahi.Finance.Contracts.Dtos.CreateBillItemDto>
+public class CreateBillItemValidator : AbstractValidator<CreateBillItemRequest>
 {
     public CreateBillItemValidator()
     {

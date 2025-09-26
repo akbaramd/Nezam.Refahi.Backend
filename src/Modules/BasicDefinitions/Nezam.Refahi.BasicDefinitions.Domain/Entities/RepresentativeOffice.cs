@@ -1,5 +1,6 @@
 using MCA.SharedKernel.Domain.AggregateRoots;
 using Nezam.Refahi.Shared.Domain.Entities;
+using Nezam.Refahi.BasicDefinitions.Domain.Events;
 
 namespace Nezam.Refahi.BasicDefinitions.Domain.Entities;
 
@@ -78,6 +79,35 @@ public sealed class RepresentativeOffice : FullAggregateRoot<Guid>
         Address = address;
         ManagerName = managerName;
         ManagerPhone = managerPhone;
+        
+        // Raise domain event for office update
+        AddDomainEvent(new RepresentativeOfficeUpdatedEvent(
+            Id, Code, Name, ExternalCode, Address, ManagerName, ManagerPhone, IsActive, EstablishedDate));
+    }
+
+    /// <summary>
+    /// Update all office details
+    /// </summary>
+    public void UpdateDetails(
+        string code,
+        string externalCode,
+        string name,
+        string address,
+        string? managerName = null,
+        string? managerPhone = null,
+        DateTime? establishedDate = null)
+    {
+        Code = code;
+        ExternalCode = externalCode;
+        Name = name;
+        Address = address;
+        ManagerName = managerName;
+        ManagerPhone = managerPhone;
+        EstablishedDate = establishedDate;
+        
+        // Raise domain event for office update
+        AddDomainEvent(new RepresentativeOfficeUpdatedEvent(
+            Id, Code, Name, ExternalCode, Address, ManagerName, ManagerPhone, IsActive, EstablishedDate));
     }
 
     /// <summary>
@@ -86,6 +116,10 @@ public sealed class RepresentativeOffice : FullAggregateRoot<Guid>
     public void UpdateExternalCode(string externalCode)
     {
         ExternalCode = externalCode;
+        
+        // Raise domain event for office update
+        AddDomainEvent(new RepresentativeOfficeUpdatedEvent(
+            Id, Code, Name, ExternalCode, Address, ManagerName, ManagerPhone, IsActive, EstablishedDate));
     }
 
     /// <summary>
@@ -94,6 +128,10 @@ public sealed class RepresentativeOffice : FullAggregateRoot<Guid>
     public void Activate()
     {
         IsActive = true;
+        
+        // Raise domain event for office update
+        AddDomainEvent(new RepresentativeOfficeUpdatedEvent(
+            Id, Code, Name, ExternalCode, Address, ManagerName, ManagerPhone, IsActive, EstablishedDate));
     }
 
     /// <summary>
@@ -102,5 +140,9 @@ public sealed class RepresentativeOffice : FullAggregateRoot<Guid>
     public void Deactivate()
     {
         IsActive = false;
+        
+        // Raise domain event for office update
+        AddDomainEvent(new RepresentativeOfficeUpdatedEvent(
+            Id, Code, Name, ExternalCode, Address, ManagerName, ManagerPhone, IsActive, EstablishedDate));
     }
 }

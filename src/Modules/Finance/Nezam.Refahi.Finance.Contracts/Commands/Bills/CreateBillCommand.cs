@@ -1,5 +1,4 @@
 using MediatR;
-using Nezam.Refahi.Finance.Contracts.Dtos;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
 namespace Nezam.Refahi.Finance.Contracts.Commands.Bills;
@@ -52,7 +51,19 @@ public record CreateBillCommand : IRequest<ApplicationResult<CreateBillResponse>
     /// <summary>
     /// List of items to include in the bill
     /// </summary>
-    public List<CreateBillItemDto>? Items { get; init; }
+    public List<CreateBillItemRequest>? Items { get; init; }
+}
+
+/// <summary>
+/// Request for creating a bill item
+/// </summary>
+public record CreateBillItemRequest
+{
+    public string Title { get; init; } = string.Empty;
+    public string? Description { get; init; }
+    public decimal UnitPriceRials { get; init; }
+    public int Quantity { get; init; } = 1;
+    public decimal? DiscountPercentage { get; init; }
 }
 
 /// <summary>

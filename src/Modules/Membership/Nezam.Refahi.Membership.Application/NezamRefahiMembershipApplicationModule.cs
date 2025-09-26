@@ -3,6 +3,7 @@ using Bonyan.Modularity;
 using Bonyan.Modularity.Abstractions;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using Nezam.Refahi.BasicDefinitions.Contracts;
 using Nezam.Refahi.Membership.Application.HostedServices;
 using Nezam.Refahi.Membership.Application.Services;
 using Nezam.Refahi.Membership.Contracts;
@@ -19,6 +20,7 @@ public class NezamRefahiMembershipApplicationModule : BonModule
     DependOn<NezamRefahiSharedApplicationModule>();
     DependOn<NezamRefahiMembershipContractsModule>();
     DependOn<NezamRefahiMembershipDomainModule>();
+    DependOn<NezamRefahiBasicDefinitionsContractsModule>();
      
     
   }
@@ -33,6 +35,9 @@ public class NezamRefahiMembershipApplicationModule : BonModule
 
     // Register Membership service for inter-context communication
     context.Services.AddScoped<IMemberService, MemberService>();
+
+    // Register representative office validation service
+    context.Services.AddScoped<IRepresentativeOfficeValidationService, RepresentativeOfficeValidationService>();
 
     // Register membership seeding hosted service
     // MembershipSeedingHostedService moved to Hangfire jobs - runs at 1:30 AM daily

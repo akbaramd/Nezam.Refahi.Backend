@@ -1,5 +1,6 @@
 using MCA.SharedKernel.Domain;
 using MCA.SharedKernel.Domain.AggregateRoots;
+using Nezam.Refahi.BasicDefinitions.Domain.Events;
 
 namespace Nezam.Refahi.BasicDefinitions.Domain.Entities;
 
@@ -45,6 +46,9 @@ public sealed class Features : FullAggregateRoot<string>
 
         Title = title.Trim();
         Type = type.Trim();
+        
+        // Raise domain event for feature update
+        AddDomainEvent(new FeaturesUpdatedEvent(Id, Title, Type));
     }
 
 

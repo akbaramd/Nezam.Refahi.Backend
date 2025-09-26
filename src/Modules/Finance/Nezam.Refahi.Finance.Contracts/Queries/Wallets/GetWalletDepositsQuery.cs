@@ -1,5 +1,4 @@
 using MediatR;
-using Nezam.Refahi.Finance.Contracts.Dtos;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
 namespace Nezam.Refahi.Finance.Contracts.Queries.Wallets;

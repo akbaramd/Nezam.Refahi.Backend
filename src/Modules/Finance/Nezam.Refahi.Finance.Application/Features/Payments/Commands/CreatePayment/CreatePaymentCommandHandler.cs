@@ -203,8 +203,8 @@ public class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand,
                 var gatewayRequest = new PaymentGatewayRequest
                 {
                     TrackingNumber = traclingNumber,
-                    Amount = amount,
-                    Gateway = paymentGateway!.Value,
+                    AmountRials = amount.AmountRials,
+                    Gateway = paymentGateway!.Value.ToString(),
                     CallbackUrl = request.CallbackUrl,
                     Description = request.Description,
                     AdditionalData = new Dictionary<string, string>

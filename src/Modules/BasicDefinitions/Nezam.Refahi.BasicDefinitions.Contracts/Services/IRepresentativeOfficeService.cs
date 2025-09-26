@@ -1,4 +1,4 @@
-using Nezam.Refahi.BasicDefinitions.Domain.Entities;
+﻿using Nezam.Refahi.BasicDefinitions.Contracts.DTOs;
 
 namespace Nezam.Refahi.BasicDefinitions.Contracts.Services;
 
@@ -26,22 +26,24 @@ public interface IRepresentativeOfficeService
     /// Get all active offices
     /// </summary>
     Task<IEnumerable<RepresentativeOfficeDto>> GetActiveOfficesAsync();
-}
 
-/// <summary>
-/// DTO for RepresentativeOffice
-/// </summary>
-public class RepresentativeOfficeDto
-{
-    public Guid Id { get; set; }
-    public string Code { get; set; } = string.Empty;
-    public string ExternalCode { get; set; } = string.Empty;
-    public string Name { get; set; } = string.Empty;
-    public string Address { get; set; } = string.Empty;
-    public string? ManagerName { get; set; }
-    public string? ManagerPhone { get; set; }
-    public bool IsActive { get; set; }
-    public DateTime? EstablishedDate { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public string CreatedBy { get; set; } = string.Empty;
+    /// <summary>
+    /// Get all offices (including inactive)
+    /// </summary>
+    Task<IEnumerable<RepresentativeOfficeDto>> GetAllOfficesAsync();
+
+    /// <summary>
+    /// Create a new representative office
+    /// </summary>
+    Task<RepresentativeOfficeDto?> CreateOfficeAsync(RepresentativeOfficeDto officeDto);
+
+    /// <summary>
+    /// Update an existing representative office
+    /// </summary>
+    Task<RepresentativeOfficeDto?> UpdateOfficeAsync(RepresentativeOfficeDto officeDto);
+
+    /// <summary>
+    /// Delete a representative office
+    /// </summary>
+    Task<bool> DeleteOfficeAsync(Guid officeId);
 }

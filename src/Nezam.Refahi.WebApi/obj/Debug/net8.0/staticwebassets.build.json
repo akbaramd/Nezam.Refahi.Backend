@@ -1,1 +1,328 @@
-{"Version":1,"Hash":"WYluK1+Ce7ak1BuM0zUvyn+jO+J7LdpkaspmVMgWb7I=","Source":"Nezam.Refahi.WebApi","BasePath":"/","Mode":"Root","ManifestType":"Build","ReferencedProjectsConfiguration":[{"Identity":"D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\BasicDefinitions\\Nezam.Refahi.BasicDefinitions.Presentation\\Nezam.Refahi.BasicDefinitions.Presentation.csproj","Version":2,"Source":"Nezam.Refahi.BasicDefinitions.Presentation","GetPublishAssetsTargets":"ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems","AdditionalPublishProperties":"Configuration=Debug;Platform=AnyCPU","AdditionalPublishPropertiesToRemove":"WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained","GetBuildAssetsTargets":"GetCurrentProjectBuildStaticWebAssetItems","AdditionalBuildProperties":"Configuration=Debug;Platform=AnyCPU","AdditionalBuildPropertiesToRemove":"WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"},{"Identity":"D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Finance\\Nezam.Refahi.Finance.Presentation\\Nezam.Refahi.Finance.Presentation.csproj","Version":2,"Source":"Nezam.Refahi.Finance.Presentation","GetPublishAssetsTargets":"ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems","AdditionalPublishProperties":"Configuration=Debug;Platform=AnyCPU","AdditionalPublishPropertiesToRemove":"WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained","GetBuildAssetsTargets":"GetCurrentProjectBuildStaticWebAssetItems","AdditionalBuildProperties":"Configuration=Debug;Platform=AnyCPU","AdditionalBuildPropertiesToRemove":"WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"},{"Identity":"D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Presentation\\Nezam.Refahi.Identity.Presentation.csproj","Version":2,"Source":"Nezam.Refahi.Identity.Presentation","GetPublishAssetsTargets":"ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems","AdditionalPublishProperties":"Configuration=Debug;Platform=AnyCPU","AdditionalPublishPropertiesToRemove":"WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained","GetBuildAssetsTargets":"GetCurrentProjectBuildStaticWebAssetItems","AdditionalBuildProperties":"Configuration=Debug;Platform=AnyCPU","AdditionalBuildPropertiesToRemove":"WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"},{"Identity":"D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Membership\\Nezam.Refahi.Membership.Presentation\\Nezam.Refahi.Membership.Presentation.csproj","Version":2,"Source":"Nezam.Refahi.Membership.Presentation","GetPublishAssetsTargets":"ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems","AdditionalPublishProperties":"Configuration=Debug;Platform=AnyCPU","AdditionalPublishPropertiesToRemove":"WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained","GetBuildAssetsTargets":"GetCurrentProjectBuildStaticWebAssetItems","AdditionalBuildProperties":"Configuration=Debug;Platform=AnyCPU","AdditionalBuildPropertiesToRemove":"WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"},{"Identity":"D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Notification\\Nezam.Refahi.Notification.Presentation\\Nezam.Refahi.Notification.Presentation.csproj","Version":2,"Source":"Nezam.Refahi.Notifications.Presentation","GetPublishAssetsTargets":"ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems","AdditionalPublishProperties":"Configuration=Debug;Platform=AnyCPU","AdditionalPublishPropertiesToRemove":"WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained","GetBuildAssetsTargets":"GetCurrentProjectBuildStaticWebAssetItems","AdditionalBuildProperties":"Configuration=Debug;Platform=AnyCPU","AdditionalBuildPropertiesToRemove":"WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"},{"Identity":"D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Recreation\\Nezam.Refahi.Recreation.Application\\Nezam.Refahi.Recreation.Application.csproj","Version":2,"Source":"Nezam.Refahi.Recreation.Application","GetPublishAssetsTargets":"ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems","AdditionalPublishProperties":"Configuration=Debug;Platform=AnyCPU","AdditionalPublishPropertiesToRemove":"WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained","GetBuildAssetsTargets":"GetCurrentProjectBuildStaticWebAssetItems","AdditionalBuildProperties":"Configuration=Debug;Platform=AnyCPU","AdditionalBuildPropertiesToRemove":"WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"},{"Identity":"D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Recreation\\Nezam.Refahi.Recreation.Presentation\\Nezam.Refahi.Recreation.Presentation.csproj","Version":2,"Source":"Nezam.Refahi.Recreation.Presentation","GetPublishAssetsTargets":"ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems","AdditionalPublishProperties":"Configuration=Debug;Platform=AnyCPU","AdditionalPublishPropertiesToRemove":"WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained","GetBuildAssetsTargets":"GetCurrentProjectBuildStaticWebAssetItems","AdditionalBuildProperties":"Configuration=Debug;Platform=AnyCPU","AdditionalBuildPropertiesToRemove":"WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"},{"Identity":"D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Presentation\\Nezam.Refahi.Settings.Presentation.csproj","Version":2,"Source":"Nezam.Refahi.Settings.Presentation","GetPublishAssetsTargets":"ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems","AdditionalPublishProperties":"Configuration=Debug;Platform=AnyCPU","AdditionalPublishPropertiesToRemove":"WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained","GetBuildAssetsTargets":"GetCurrentProjectBuildStaticWebAssetItems","AdditionalBuildProperties":"Configuration=Debug;Platform=AnyCPU","AdditionalBuildPropertiesToRemove":"WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"},{"Identity":"D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj","Version":2,"Source":"Nezam.Refahi.Shared.Infrastructure","GetPublishAssetsTargets":"ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems","AdditionalPublishProperties":"Configuration=Debug;Platform=AnyCPU","AdditionalPublishPropertiesToRemove":"WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained","GetBuildAssetsTargets":"GetCurrentProjectBuildStaticWebAssetItems","AdditionalBuildProperties":"Configuration=Debug;Platform=AnyCPU","AdditionalBuildPropertiesToRemove":"WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"}],"DiscoveryPatterns":[{"Name":"Nezam.Refahi.WebApi\\wwwroot","Source":"Nezam.Refahi.WebApi","ContentRoot":"D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\wwwroot\\","BasePath":"/","Pattern":"**"}],"Assets":[{"Identity":"D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\wwwroot\\images\\image.jpg","SourceId":"Nezam.Refahi.WebApi","SourceType":"Discovered","ContentRoot":"D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\wwwroot\\","BasePath":"/","RelativePath":"images/image#[.{fingerprint}]?.jpg","AssetKind":"All","AssetMode":"All","AssetRole":"Primary","AssetMergeBehavior":"","AssetMergeSource":"","RelatedAsset":"","AssetTraitName":"","AssetTraitValue":"","Fingerprint":"qtq32vf1l7","Integrity":"jvhQarWiKrpn42w5wudUv6CmpxABdG2pKDDZKCEEbMw=","CopyToOutputDirectory":"Never","CopyToPublishDirectory":"PreserveNewest","OriginalItemSpec":"wwwroot\\images\\image.jpg","FileLength":13946,"LastWriteTime":"2025-09-17T08:11:02+00:00"},{"Identity":"D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\wwwroot\\images\\image2.jpg","SourceId":"Nezam.Refahi.WebApi","SourceType":"Discovered","ContentRoot":"D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\wwwroot\\","BasePath":"/","RelativePath":"images/image2#[.{fingerprint}]?.jpg","AssetKind":"All","AssetMode":"All","AssetRole":"Primary","AssetMergeBehavior":"","AssetMergeSource":"","RelatedAsset":"","AssetTraitName":"","AssetTraitValue":"","Fingerprint":"5g6x5zya6y","Integrity":"GzDXgJf0O53aB2zUcWOgY2Rsmmh1eJlLIOgo1SjYMoU=","CopyToOutputDirectory":"Never","CopyToPublishDirectory":"PreserveNewest","OriginalItemSpec":"wwwroot\\images\\image2.jpg","FileLength":129589,"LastWriteTime":"2025-09-17T08:10:57+00:00"}],"Endpoints":[{"Route":"images/image.jpg","AssetFile":"D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\wwwroot\\images\\image.jpg","Selectors":[],"ResponseHeaders":[{"Name":"Cache-Control","Value":"max-age=3600, must-revalidate"},{"Name":"Content-Length","Value":"13946"},{"Name":"Content-Type","Value":"image/jpeg"},{"Name":"ETag","Value":"\"jvhQarWiKrpn42w5wudUv6CmpxABdG2pKDDZKCEEbMw=\""},{"Name":"Last-Modified","Value":"Wed, 17 Sep 2025 08:11:02 GMT"}],"EndpointProperties":[{"Name":"integrity","Value":"sha256-jvhQarWiKrpn42w5wudUv6CmpxABdG2pKDDZKCEEbMw="}]},{"Route":"images/image.qtq32vf1l7.jpg","AssetFile":"D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\wwwroot\\images\\image.jpg","Selectors":[],"ResponseHeaders":[{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"13946"},{"Name":"Content-Type","Value":"image/jpeg"},{"Name":"ETag","Value":"\"jvhQarWiKrpn42w5wudUv6CmpxABdG2pKDDZKCEEbMw=\""},{"Name":"Last-Modified","Value":"Wed, 17 Sep 2025 08:11:02 GMT"}],"EndpointProperties":[{"Name":"fingerprint","Value":"qtq32vf1l7"},{"Name":"integrity","Value":"sha256-jvhQarWiKrpn42w5wudUv6CmpxABdG2pKDDZKCEEbMw="},{"Name":"label","Value":"images/image.jpg"}]},{"Route":"images/image2.5g6x5zya6y.jpg","AssetFile":"D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\wwwroot\\images\\image2.jpg","Selectors":[],"ResponseHeaders":[{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"129589"},{"Name":"Content-Type","Value":"image/jpeg"},{"Name":"ETag","Value":"\"GzDXgJf0O53aB2zUcWOgY2Rsmmh1eJlLIOgo1SjYMoU=\""},{"Name":"Last-Modified","Value":"Wed, 17 Sep 2025 08:10:57 GMT"}],"EndpointProperties":[{"Name":"fingerprint","Value":"5g6x5zya6y"},{"Name":"integrity","Value":"sha256-GzDXgJf0O53aB2zUcWOgY2Rsmmh1eJlLIOgo1SjYMoU="},{"Name":"label","Value":"images/image2.jpg"}]},{"Route":"images/image2.jpg","AssetFile":"D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\wwwroot\\images\\image2.jpg","Selectors":[],"ResponseHeaders":[{"Name":"Cache-Control","Value":"max-age=3600, must-revalidate"},{"Name":"Content-Length","Value":"129589"},{"Name":"Content-Type","Value":"image/jpeg"},{"Name":"ETag","Value":"\"GzDXgJf0O53aB2zUcWOgY2Rsmmh1eJlLIOgo1SjYMoU=\""},{"Name":"Last-Modified","Value":"Wed, 17 Sep 2025 08:10:57 GMT"}],"EndpointProperties":[{"Name":"integrity","Value":"sha256-GzDXgJf0O53aB2zUcWOgY2Rsmmh1eJlLIOgo1SjYMoU="}]}]}
+{
+  "Version": 1,
+  "Hash": "IDJJUv6Dz/c/FQOPW8ojt/gKfk8ILlxhXc/v6/AZSP4=",
+  "Source": "Nezam.Refahi.WebApi",
+  "BasePath": "_content/Nezam.Refahi.WebApi",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [
+    {
+      "Identity": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Modules\\BasicDefinitions\\Nezam.Refahi.BasicDefinitions.Presentation\\Nezam.Refahi.BasicDefinitions.Presentation.csproj",
+      "Version": 2,
+      "Source": "Nezam.Refahi.BasicDefinitions.Presentation",
+      "GetPublishAssetsTargets": "ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems",
+      "AdditionalPublishProperties": "Configuration=Debug;Platform=AnyCPU",
+      "AdditionalPublishPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained",
+      "GetBuildAssetsTargets": "GetCurrentProjectBuildStaticWebAssetItems",
+      "AdditionalBuildProperties": "Configuration=Debug;Platform=AnyCPU",
+      "AdditionalBuildPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"
+    },
+    {
+      "Identity": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Modules\\Finance\\Nezam.Refahi.Finance.Presentation\\Nezam.Refahi.Finance.Presentation.csproj",
+      "Version": 2,
+      "Source": "Nezam.Refahi.Finance.Presentation",
+      "GetPublishAssetsTargets": "ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems",
+      "AdditionalPublishProperties": "Configuration=Debug;Platform=AnyCPU",
+      "AdditionalPublishPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained",
+      "GetBuildAssetsTargets": "GetCurrentProjectBuildStaticWebAssetItems",
+      "AdditionalBuildProperties": "Configuration=Debug;Platform=AnyCPU",
+      "AdditionalBuildPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"
+    },
+    {
+      "Identity": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Presentation\\Nezam.Refahi.Identity.Presentation.csproj",
+      "Version": 2,
+      "Source": "Nezam.Refahi.Identity.Presentation",
+      "GetPublishAssetsTargets": "ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems",
+      "AdditionalPublishProperties": "Configuration=Debug;Platform=AnyCPU",
+      "AdditionalPublishPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained",
+      "GetBuildAssetsTargets": "GetCurrentProjectBuildStaticWebAssetItems",
+      "AdditionalBuildProperties": "Configuration=Debug;Platform=AnyCPU",
+      "AdditionalBuildPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"
+    },
+    {
+      "Identity": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Modules\\Membership\\Nezam.Refahi.Membership.Presentation\\Nezam.Refahi.Membership.Presentation.csproj",
+      "Version": 2,
+      "Source": "Nezam.Refahi.Membership.Presentation",
+      "GetPublishAssetsTargets": "ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems",
+      "AdditionalPublishProperties": "Configuration=Debug;Platform=AnyCPU",
+      "AdditionalPublishPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained",
+      "GetBuildAssetsTargets": "GetCurrentProjectBuildStaticWebAssetItems",
+      "AdditionalBuildProperties": "Configuration=Debug;Platform=AnyCPU",
+      "AdditionalBuildPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"
+    },
+    {
+      "Identity": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Modules\\Notification\\Nezam.Refahi.Notification.Presentation\\Nezam.Refahi.Notification.Presentation.csproj",
+      "Version": 2,
+      "Source": "Nezam.Refahi.Notifications.Presentation",
+      "GetPublishAssetsTargets": "ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems",
+      "AdditionalPublishProperties": "Configuration=Debug;Platform=AnyCPU",
+      "AdditionalPublishPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained",
+      "GetBuildAssetsTargets": "GetCurrentProjectBuildStaticWebAssetItems",
+      "AdditionalBuildProperties": "Configuration=Debug;Platform=AnyCPU",
+      "AdditionalBuildPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"
+    },
+    {
+      "Identity": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Modules\\Recreation\\Nezam.Refahi.Recreation.Application\\Nezam.Refahi.Recreation.Application.csproj",
+      "Version": 2,
+      "Source": "Nezam.Refahi.Recreation.Application",
+      "GetPublishAssetsTargets": "ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems",
+      "AdditionalPublishProperties": "Configuration=Debug;Platform=AnyCPU",
+      "AdditionalPublishPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained",
+      "GetBuildAssetsTargets": "GetCurrentProjectBuildStaticWebAssetItems",
+      "AdditionalBuildProperties": "Configuration=Debug;Platform=AnyCPU",
+      "AdditionalBuildPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"
+    },
+    {
+      "Identity": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Modules\\Recreation\\Nezam.Refahi.Recreation.Presentation\\Nezam.Refahi.Recreation.Presentation.csproj",
+      "Version": 2,
+      "Source": "Nezam.Refahi.Recreation.Presentation",
+      "GetPublishAssetsTargets": "ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems",
+      "AdditionalPublishProperties": "Configuration=Debug;Platform=AnyCPU",
+      "AdditionalPublishPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained",
+      "GetBuildAssetsTargets": "GetCurrentProjectBuildStaticWebAssetItems",
+      "AdditionalBuildProperties": "Configuration=Debug;Platform=AnyCPU",
+      "AdditionalBuildPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"
+    },
+    {
+      "Identity": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Presentation\\Nezam.Refahi.Settings.Presentation.csproj",
+      "Version": 2,
+      "Source": "Nezam.Refahi.Settings.Presentation",
+      "GetPublishAssetsTargets": "ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems",
+      "AdditionalPublishProperties": "Configuration=Debug;Platform=AnyCPU",
+      "AdditionalPublishPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained",
+      "GetBuildAssetsTargets": "GetCurrentProjectBuildStaticWebAssetItems",
+      "AdditionalBuildProperties": "Configuration=Debug;Platform=AnyCPU",
+      "AdditionalBuildPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"
+    },
+    {
+      "Identity": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj",
+      "Version": 2,
+      "Source": "Nezam.Refahi.Shared.Infrastructure",
+      "GetPublishAssetsTargets": "ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems",
+      "AdditionalPublishProperties": "Configuration=Debug;Platform=AnyCPU",
+      "AdditionalPublishPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained",
+      "GetBuildAssetsTargets": "GetCurrentProjectBuildStaticWebAssetItems",
+      "AdditionalBuildProperties": "Configuration=Debug;Platform=AnyCPU",
+      "AdditionalBuildPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"
+    }
+  ],
+  "DiscoveryPatterns": [
+    {
+      "Name": "Nezam.Refahi.WebApi\\wwwroot",
+      "Source": "Nezam.Refahi.WebApi",
+      "ContentRoot": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\wwwroot\\",
+      "BasePath": "_content/Nezam.Refahi.WebApi",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\wwwroot\\images\\image.jpg",
+      "SourceId": "Nezam.Refahi.WebApi",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\wwwroot\\",
+      "BasePath": "_content/Nezam.Refahi.WebApi",
+      "RelativePath": "images/image#[.{fingerprint}]?.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "qtq32vf1l7",
+      "Integrity": "jvhQarWiKrpn42w5wudUv6CmpxABdG2pKDDZKCEEbMw=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\images\\image.jpg"
+    },
+    {
+      "Identity": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\wwwroot\\images\\image2.jpg",
+      "SourceId": "Nezam.Refahi.WebApi",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\wwwroot\\",
+      "BasePath": "_content/Nezam.Refahi.WebApi",
+      "RelativePath": "images/image2#[.{fingerprint}]?.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "5g6x5zya6y",
+      "Integrity": "GzDXgJf0O53aB2zUcWOgY2Rsmmh1eJlLIOgo1SjYMoU=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\images\\image2.jpg"
+    }
+  ],
+  "Endpoints": [
+    {
+      "Route": "images/image.jpg",
+      "AssetFile": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\wwwroot\\images\\image.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "13946"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"jvhQarWiKrpn42w5wudUv6CmpxABdG2pKDDZKCEEbMw=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Fri, 26 Sep 2025 18:59:20 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-jvhQarWiKrpn42w5wudUv6CmpxABdG2pKDDZKCEEbMw="
+        }
+      ]
+    },
+    {
+      "Route": "images/image.qtq32vf1l7.jpg",
+      "AssetFile": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\wwwroot\\images\\image.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "13946"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"jvhQarWiKrpn42w5wudUv6CmpxABdG2pKDDZKCEEbMw=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Fri, 26 Sep 2025 18:59:20 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "qtq32vf1l7"
+        },
+        {
+          "Name": "label",
+          "Value": "images/image.jpg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-jvhQarWiKrpn42w5wudUv6CmpxABdG2pKDDZKCEEbMw="
+        }
+      ]
+    },
+    {
+      "Route": "images/image2.5g6x5zya6y.jpg",
+      "AssetFile": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\wwwroot\\images\\image2.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "129589"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"GzDXgJf0O53aB2zUcWOgY2Rsmmh1eJlLIOgo1SjYMoU=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Fri, 26 Sep 2025 18:59:20 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "5g6x5zya6y"
+        },
+        {
+          "Name": "label",
+          "Value": "images/image2.jpg"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-GzDXgJf0O53aB2zUcWOgY2Rsmmh1eJlLIOgo1SjYMoU="
+        }
+      ]
+    },
+    {
+      "Route": "images/image2.jpg",
+      "AssetFile": "D:\\Projects\\Company\\NM\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\wwwroot\\images\\image2.jpg",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "129589"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/jpeg"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"GzDXgJf0O53aB2zUcWOgY2Rsmmh1eJlLIOgo1SjYMoU=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Fri, 26 Sep 2025 18:59:20 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-GzDXgJf0O53aB2zUcWOgY2Rsmmh1eJlLIOgo1SjYMoU="
+        }
+      ]
+    }
+  ]
+}

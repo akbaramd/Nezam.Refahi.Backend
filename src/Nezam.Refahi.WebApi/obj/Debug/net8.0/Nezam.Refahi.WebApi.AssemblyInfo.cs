@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Nezam.Refahi.WebApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+22d57748f3236bed13c94ab01e851bcbc5d500aa")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2a15e53339a999dcbe6fbb6d6e16757e18e72a6d")]
 [assembly: System.Reflection.AssemblyProductAttribute("Nezam.Refahi.WebApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Nezam.Refahi.WebApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

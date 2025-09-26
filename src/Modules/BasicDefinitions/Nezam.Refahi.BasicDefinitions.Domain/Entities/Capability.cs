@@ -1,5 +1,6 @@
 using MCA.SharedKernel.Domain;
 using MCA.SharedKernel.Domain.AggregateRoots;
+using Nezam.Refahi.BasicDefinitions.Domain.Events;
 
 namespace Nezam.Refahi.BasicDefinitions.Domain.Entities;
 
@@ -54,6 +55,9 @@ public sealed class Capability : FullAggregateRoot<string>
         Description = description.Trim();
         ValidFrom = validFrom;
         ValidTo = validTo;
+        
+        // Raise domain event for capability update
+        AddDomainEvent(new CapabilityUpdatedEvent(Id, Name, Description, IsActive, ValidFrom, ValidTo));
     }
 
     /// <summary>
@@ -112,6 +116,9 @@ public sealed class Capability : FullAggregateRoot<string>
     public void Activate()
     {
         IsActive = true;
+        
+        // Raise domain event for capability update
+        AddDomainEvent(new CapabilityUpdatedEvent(Id, Name, Description, IsActive, ValidFrom, ValidTo));
     }
 
     /// <summary>
@@ -120,6 +127,9 @@ public sealed class Capability : FullAggregateRoot<string>
     public void Deactivate()
     {
         IsActive = false;
+        
+        // Raise domain event for capability update
+        AddDomainEvent(new CapabilityUpdatedEvent(Id, Name, Description, IsActive, ValidFrom, ValidTo));
     }
 
     /// <summary>

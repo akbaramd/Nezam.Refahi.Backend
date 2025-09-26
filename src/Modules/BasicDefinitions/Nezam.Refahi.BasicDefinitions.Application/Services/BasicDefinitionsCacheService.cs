@@ -8,17 +8,19 @@ namespace Nezam.Refahi.BasicDefinitions.Application.Services;
 
 /// <summary>
 /// Implementation of basic definitions cache service using memory cache
-/// Provides fast access to capabilities and features with automatic refresh
+/// Provides fast access to capabilities, features, and representative offices with automatic refresh
 /// </summary>
 public class BasicDefinitionsCacheService : IBasicDefinitionsCacheService
 {
     private readonly IMemoryCache _cache;
     private readonly ICapabilityRepository _capabilityRepository;
     private readonly IFeaturesRepository _featuresRepository;
+    private readonly IRepresentativeOfficeRepository _representativeOfficeRepository;
     private readonly ILogger<BasicDefinitionsCacheService> _logger;
     
     private const string CAPABILITIES_CACHE_KEY = "BasicDefinitions_Capabilities";
     private const string FEATURES_CACHE_KEY = "BasicDefinitions_Features";
+    private const string REPRESENTATIVE_OFFICES_CACHE_KEY = "BasicDefinitions_RepresentativeOffices";
     private const string CAPABILITY_FEATURES_CACHE_KEY = "BasicDefinitions_CapabilityFeatures_{0}";
     private const string LAST_REFRESH_CACHE_KEY = "BasicDefinitions_LastRefresh";
     
@@ -29,11 +31,13 @@ public class BasicDefinitionsCacheService : IBasicDefinitionsCacheService
         IMemoryCache cache,
         ICapabilityRepository capabilityRepository,
         IFeaturesRepository featuresRepository,
+        IRepresentativeOfficeRepository representativeOfficeRepository,
         ILogger<BasicDefinitionsCacheService> logger)
     {
         _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         _capabilityRepository = capabilityRepository ?? throw new ArgumentNullException(nameof(capabilityRepository));
         _featuresRepository = featuresRepository ?? throw new ArgumentNullException(nameof(featuresRepository));
+        _representativeOfficeRepository = representativeOfficeRepository ?? throw new ArgumentNullException(nameof(representativeOfficeRepository));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -120,16 +124,21 @@ public class BasicDefinitionsCacheService : IBasicDefinitionsCacheService
             var features = await _featuresRepository.FindAsync(f => !f.IsDeleted);
             var featureDict = features.ToDictionary(f => f.Id, f => f);
 
+            // Load representative offices from database
+            var offices = await _representativeOfficeRepository.GetActiveOfficesAsync();
+            var officeDict = offices.ToDictionary(o => o.Id, o => o);
+
             // Update cache
             _cache.Set(CAPABILITIES_CACHE_KEY, capabilityDict, _cacheExpiration);
             _cache.Set(FEATURES_CACHE_KEY, featureDict, _cacheExpiration);
+            _cache.Set(REPRESENTATIVE_OFFICES_CACHE_KEY, officeDict, _cacheExpiration);
             _cache.Set(LAST_REFRESH_CACHE_KEY, DateTime.UtcNow, _cacheExpiration);
 
             // Clear capability-feature mappings cache
             ClearCapabilityFeatureMappings();
 
-            _logger.LogInformation("Cache refresh completed. Capabilities: {CapabilityCount}, Features: {FeatureCount}", 
-                capabilityDict.Count, featureDict.Count);
+            _logger.LogInformation("Cache refresh completed. Capabilities: {CapabilityCount}, Features: {FeatureCount}, Offices: {OfficeCount}", 
+                capabilityDict.Count, featureDict.Count, officeDict.Count);
         }
         catch (Exception ex)
         {
@@ -226,16 +235,104 @@ public class BasicDefinitionsCacheService : IBasicDefinitionsCacheService
         }
     }
 
+    public async Task<IEnumerable<RepresentativeOffice>> GetRepresentativeOfficesAsync()
+    {
+        var offices = await GetCachedRepresentativeOfficesAsync();
+        return offices.Values;
+    }
+
+    public async Task<RepresentativeOffice?> GetRepresentativeOfficeAsync(Guid officeId)
+    {
+        if (officeId == Guid.Empty)
+            return null;
+
+        try
+        {
+            var offices = await GetCachedRepresentativeOfficesAsync();
+            return offices.TryGetValue(officeId, out var office) ? office : null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting representative office {OfficeId} from cache", officeId);
+            return null;
+        }
+    }
+
+    public async Task<IEnumerable<RepresentativeOffice>> GetActiveRepresentativeOfficesAsync()
+    {
+        var offices = await GetCachedRepresentativeOfficesAsync();
+        return offices.Values.Where(o => o.IsActive);
+    }
+
+    public async Task<bool> RepresentativeOfficeExistsAsync(Guid officeId)
+    {
+        if (officeId == Guid.Empty)
+            return false;
+
+        try
+        {
+            var offices = await GetCachedRepresentativeOfficesAsync();
+            return offices.TryGetValue(officeId, out var office) && office.IsActive;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error checking representative office existence {OfficeId} in cache", officeId);
+            return false;
+        }
+    }
+
+    public async Task UpdateRepresentativeOfficeInCacheAsync(RepresentativeOffice office)
+    {
+        if (office == null)
+            return;
+
+        try
+        {
+            var offices = await GetCachedRepresentativeOfficesAsync();
+            offices[office.Id] = office;
+            
+            _cache.Set(REPRESENTATIVE_OFFICES_CACHE_KEY, offices, _cacheExpiration);
+            
+            _logger.LogDebug("Updated representative office {OfficeId} in cache", office.Id);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating representative office {OfficeId} in cache", office.Id);
+        }
+    }
+
+    public async Task RemoveRepresentativeOfficeFromCacheAsync(Guid officeId)
+    {
+        if (officeId == Guid.Empty)
+            return;
+
+        try
+        {
+            var offices = await GetCachedRepresentativeOfficesAsync();
+            offices.Remove(officeId);
+            
+            _cache.Set(REPRESENTATIVE_OFFICES_CACHE_KEY, offices, _cacheExpiration);
+            
+            _logger.LogDebug("Removed representative office {OfficeId} from cache", officeId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error removing representative office {OfficeId} from cache", officeId);
+        }
+    }
+
     public async Task<CacheStatistics> GetCacheStatisticsAsync()
     {
         var capabilities = await GetCachedCapabilitiesAsync();
         var features = await GetCachedFeaturesAsync();
+        var offices = await GetCachedRepresentativeOfficesAsync();
         var lastRefresh = _cache.Get<DateTime?>(LAST_REFRESH_CACHE_KEY);
 
         return new CacheStatistics
         {
             CapabilityCount = capabilities.Count,
             FeatureCount = features.Count,
+            RepresentativeOfficeCount = offices.Count,
             LastRefreshTime = lastRefresh ?? DateTime.MinValue,
             CacheAge = lastRefresh.HasValue ? DateTime.UtcNow - lastRefresh.Value : TimeSpan.Zero,
             IsCacheValid = lastRefresh.HasValue && DateTime.UtcNow - lastRefresh.Value < _cacheExpiration
@@ -266,6 +363,18 @@ public class BasicDefinitionsCacheService : IBasicDefinitionsCacheService
         }
 
         return features ?? new Dictionary<string, Features>();
+    }
+
+    private async Task<Dictionary<Guid, RepresentativeOffice>> GetCachedRepresentativeOfficesAsync()
+    {
+        if (!_cache.TryGetValue(REPRESENTATIVE_OFFICES_CACHE_KEY, out Dictionary<Guid, RepresentativeOffice>? offices))
+        {
+            _logger.LogDebug("Representative offices cache miss, refreshing...");
+            await RefreshCacheAsync();
+            offices = _cache.Get<Dictionary<Guid, RepresentativeOffice>>(REPRESENTATIVE_OFFICES_CACHE_KEY) ?? new Dictionary<Guid, RepresentativeOffice>();
+        }
+
+        return offices ?? new Dictionary<Guid, RepresentativeOffice>();
     }
 
     private void ClearCapabilityFeatureMappings()

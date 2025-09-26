@@ -53,6 +53,11 @@ public class MemberCapabilityConfiguration : IEntityTypeConfiguration<MemberCapa
             .HasMaxLength(500)
             .IsRequired(false);
 
+        // Cached capability information configuration
+        builder.Property(mc => mc.CapabilityName)
+            .HasMaxLength(200)
+            .IsRequired();
+
         // Composite unique index to prevent duplicate assignments
         builder.HasIndex(mc => new { mc.MemberId, mc.CapabilityId })
             .IsUnique()

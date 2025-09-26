@@ -12,6 +12,9 @@ public sealed class MemberCapability : Entity<Guid>
     public string CapabilityId { get; private set; } = string.Empty;
     public bool IsActive { get; private set; } = true;
 
+    // Cached capability information for performance
+    public string CapabilityName { get; private set; } = string.Empty;
+
     public DateTime? ValidFrom { get; private set; }
     public DateTime? ValidTo { get; private set; }
     public string? AssignedBy { get; private set; }      // Who assigned this capability
@@ -25,7 +28,7 @@ public sealed class MemberCapability : Entity<Guid>
     // Private constructor for EF Core
     private MemberCapability() : base() { }
 
-    public MemberCapability(Guid memberId, string capabilityId,
+    public MemberCapability(Guid memberId, string capabilityId, string capabilityName,
         DateTime? validFrom = null, DateTime? validTo = null,
         string? assignedBy = null, string? notes = null)
         : base(Guid.NewGuid())
@@ -34,9 +37,12 @@ public sealed class MemberCapability : Entity<Guid>
             throw new ArgumentException("Member ID cannot be empty", nameof(memberId));
         if (capabilityId == string.Empty)
             throw new ArgumentException("Capability ID cannot be empty", nameof(capabilityId));
+        if (string.IsNullOrWhiteSpace(capabilityName))
+            throw new ArgumentException("Capability Name cannot be empty", nameof(capabilityName));
 
         MemberId = memberId;
         CapabilityId = capabilityId;
+        CapabilityName = capabilityName.Trim();
         ValidFrom = validFrom;
         ValidTo = validTo;
         AssignedBy = assignedBy?.Trim();
@@ -98,6 +104,17 @@ public sealed class MemberCapability : Entity<Guid>
     public void UpdateNotes(string? notes)
     {
         Notes = notes?.Trim();
+    }
+
+    /// <summary>
+    /// Updates the cached capability information when capability details change
+    /// </summary>
+    public void UpdateCapabilityInformation(string capabilityName)
+    {
+        if (string.IsNullOrWhiteSpace(capabilityName))
+            throw new ArgumentException("Capability Name cannot be empty", nameof(capabilityName));
+
+        CapabilityName = capabilityName.Trim();
     }
 
     /// <summary>

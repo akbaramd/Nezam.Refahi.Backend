@@ -24,6 +24,10 @@ public sealed class Member : FullAggregateRoot<Guid>
     private readonly List<MemberCapability> _capabilities = new();
     public IReadOnlyCollection<MemberCapability> Capabilities => _capabilities.AsReadOnly();
 
+    // Member can have access to multiple representative offices (many-to-many relationship)
+    private readonly List<MemberAgency> _agencies = new();
+    public IReadOnlyCollection<MemberAgency> Agencies => _agencies.AsReadOnly();
+
     // Private constructor for EF Core
     private Member() : base() { }
 
@@ -97,7 +101,7 @@ public sealed class Member : FullAggregateRoot<Guid>
     /// <summary>
     /// Assigns a capability to the member
     /// </summary>
-    public void AssignCapability(string capabilityId, DateTime? validFrom = null, DateTime? validTo = null,
+    public void AssignCapability(string capabilityId, string capabilityName, DateTime? validFrom = null, DateTime? validTo = null,
         string? assignedBy = null, string? notes = null)
     {
         if (capabilityId == string.Empty)
@@ -107,7 +111,7 @@ public sealed class Member : FullAggregateRoot<Guid>
         if (_capabilities.Any(c => c.CapabilityId == capabilityId && c.IsValid()))
             return;
 
-        _capabilities.Add(new MemberCapability(Id, capabilityId, validFrom, validTo, assignedBy, notes));
+        _capabilities.Add(new MemberCapability(Id, capabilityId, capabilityName, validFrom, validTo, assignedBy, notes));
     }
 
     /// <summary>
@@ -168,5 +172,94 @@ public sealed class Member : FullAggregateRoot<Guid>
             !c.IsExpired()).ToList();
     }
 
+    /// <summary>
+    /// Assigns access to a representative office
+    /// </summary>
+    public void AssignOfficeAccess(Guid representativeOfficeId, string officeCode, string officeTitle,
+        DateTime? validFrom = null, DateTime? validTo = null,
+        string? assignedBy = null, string? notes = null, string? accessLevel = null)
+    {
+        if (representativeOfficeId == Guid.Empty)
+            throw new ArgumentException("Representative Office ID cannot be empty", nameof(representativeOfficeId));
 
+        // Check if office access is already assigned and active
+        if (_agencies.Any(a => a.RepresentativeOfficeId == representativeOfficeId && a.IsValid()))
+            return;
+
+        _agencies.Add(new MemberAgency(Id, representativeOfficeId, officeCode, officeTitle, validFrom, validTo, assignedBy, notes, accessLevel));
+    }
+
+    /// <summary>
+    /// Removes access to a representative office by deactivating it
+    /// </summary>
+    public void RemoveOfficeAccess(Guid representativeOfficeId)
+    {
+        if (representativeOfficeId == Guid.Empty)
+            return;
+
+        var activeAgencies = _agencies.Where(a => a.RepresentativeOfficeId == representativeOfficeId && a.IsActive).ToList();
+        foreach (var agency in activeAgencies)
+        {
+            agency.Deactivate();
+        }
+    }
+
+    /// <summary>
+    /// Gets all valid (active and within validity period) office accesses for the member
+    /// </summary>
+    public IEnumerable<MemberAgency> GetValidOfficeAccesses()
+    {
+        return _agencies.Where(a => a.IsValid()).ToList();
+    }
+
+    /// <summary>
+    /// Checks if member has access to a specific representative office
+    /// </summary>
+    public bool HasOfficeAccess(Guid representativeOfficeId)
+    {
+        return _agencies.Any(a => a.RepresentativeOfficeId == representativeOfficeId && a.IsValid());
+    }
+
+    /// <summary>
+    /// Gets office accesses that are expiring soon
+    /// </summary>
+    public IEnumerable<MemberAgency> GetExpiringOfficeAccesses(TimeSpan timeThreshold)
+    {
+        var cutoffTime = DateTimeOffset.UtcNow.Add(timeThreshold);
+        return _agencies.Where(a =>
+            a.IsActive &&
+            a.ValidTo.HasValue &&
+            a.ValidTo.Value <= cutoffTime &&
+            !a.IsExpired()).ToList();
+    }
+
+    /// <summary>
+    /// Gets all representative office IDs that the member has access to
+    /// </summary>
+    public IEnumerable<Guid> GetAccessibleOfficeIds()
+    {
+        return GetValidOfficeAccesses().Select(a => a.RepresentativeOfficeId);
+    }
+
+    /// <summary>
+    /// Checks if member has full access to a specific representative office
+    /// </summary>
+    public bool HasFullOfficeAccess(Guid representativeOfficeId)
+    {
+        return _agencies.Any(a => 
+            a.RepresentativeOfficeId == representativeOfficeId && 
+            a.IsValid() && 
+            a.HasFullAccess());
+    }
+
+    /// <summary>
+    /// Checks if member has read-only access to a specific representative office
+    /// </summary>
+    public bool HasReadOnlyOfficeAccess(Guid representativeOfficeId)
+    {
+        return _agencies.Any(a => 
+            a.RepresentativeOfficeId == representativeOfficeId && 
+            a.IsValid() && 
+            a.HasReadOnlyAccess());
+    }
 }
