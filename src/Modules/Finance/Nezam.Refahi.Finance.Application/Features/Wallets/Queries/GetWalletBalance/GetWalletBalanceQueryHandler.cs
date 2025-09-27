@@ -1,7 +1,7 @@
 using FluentValidation;
 using MediatR;
 using Nezam.Refahi.Finance.Application.Services;
-using Nezam.Refahi.Finance.Contracts.Queries.Wallets;
+using Nezam.Refahi.Finance.Application.Queries.Wallets;
 using Nezam.Refahi.Finance.Domain.Entities;
 using Nezam.Refahi.Finance.Domain.Repositories;
 using Nezam.Refahi.Finance.Domain.Services;

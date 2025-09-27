@@ -2,13 +2,12 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Nezam.Refahi.Finance.Application.Services;
-using Nezam.Refahi.Finance.Contracts.Services;
 using Nezam.Refahi.Finance.Domain.Repositories;
 using Nezam.Refahi.Finance.Domain.Enums;
 using Nezam.Refahi.Shared.Application.Common.Models;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Finance.Application.Features.Payments.Commands.CompletePayment;
-using Nezam.Refahi.Finance.Contracts.Commands.Payments;
+using Nezam.Refahi.Finance.Application.Commands.Payments;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
 using Nezam.Refahi.Finance.Application.Configuration;
 

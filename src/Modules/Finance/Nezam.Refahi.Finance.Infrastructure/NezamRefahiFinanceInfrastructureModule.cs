@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Nezam.Refahi.Finance.Application;
 using Nezam.Refahi.Finance.Application.Consumers;
 using Nezam.Refahi.Finance.Application.Services;
-using Nezam.Refahi.Finance.Contracts.Services;
 using Nezam.Refahi.Finance.Domain.Repositories;
 using Nezam.Refahi.Finance.Domain.Services;
 using Nezam.Refahi.Finance.Infrastructure.Persistence;

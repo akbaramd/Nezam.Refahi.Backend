@@ -1,7 +1,7 @@
 using MediatR;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
-namespace Nezam.Refahi.Finance.Contracts.Commands.Bills;
+namespace Nezam.Refahi.Finance.Application.Commands.Bills;
 
 /// <summary>
 /// Command to issue a bill (finalize it and make it ready for payment)

@@ -7,7 +7,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Nezam.Refahi.Notifications.Application;
 using Nezam.Refahi.Notifications.Application.Services;
-using Nezam.Refahi.Finance.Contracts.Services;
 using Nezam.Refahi.Finance.Domain.Repositories;
 using Nezam.Refahi.Finance.Domain.Services;
 using Nezam.Refahi.Notifications.Domain.Repositories;

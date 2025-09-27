@@ -1,6 +1,6 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Nezam.Refahi.Finance.Contracts.Commands.Wallets;
+using Nezam.Refahi.Finance.Application.Commands.Wallets;
 using Nezam.Refahi.Finance.Domain.Events;
 using Nezam.Refahi.Finance.Domain.Repositories;
 

@@ -14,7 +14,8 @@
     <PackageReference Include="MediatR" Version="12.5.0" />
   </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\Nezam.Refahi.Finance.Infrastructure\Nezam.Refahi.Finance.Infrastructure.csproj" />
+      <ProjectReference Include="..\Nezam.Refahi.Finance.Application\Nezam.Refahi.Finance.Application.csproj" />
+      <ProjectReference Include="..\Nezam.Refahi.Finance.Contracts\Nezam.Refahi.Finance.Contracts.csproj" />
     </ItemGroup>
 
 </Project>

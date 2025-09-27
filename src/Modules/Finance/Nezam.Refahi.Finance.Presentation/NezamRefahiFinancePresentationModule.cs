@@ -1,5 +1,5 @@
 using Bonyan.Modularity;
-using Nezam.Refahi.Finance.Infrastructure;
+using Nezam.Refahi.Finance.Application;
 using Nezam.Refahi.Finance.Presentation.Endpoints;
 
 namespace Nezam.Refahi.Finance.Presentation;
@@ -8,7 +8,7 @@ public class NezamRefahiFinancePresentationModule : BonWebModule
 {
     public NezamRefahiFinancePresentationModule()
     {
-        DependOn<NezamRefahiFinanceInfrastructureModule>();
+        DependOn<NezamRefahiFinanceApplicationModule>();
     }
 
     public override Task OnPostApplicationAsync(BonWebApplicationContext context)

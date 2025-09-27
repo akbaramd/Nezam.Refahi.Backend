@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Nezam.Refahi.Finance.Contracts.Services;
+using Nezam.Refahi.Finance.Application.Services;
 using Nezam.Refahi.Finance.Domain.Enums;
 using Nezam.Refahi.Shared.Application.Common.Models;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
@@ -38,7 +38,7 @@ public class PaymentService : IPaymentService
         try
         {
             _logger.LogInformation("Processing payment gateway request - TrackingNumber: {TrackingNumber}, Amount: {Amount}, Gateway: {Gateway}",
-                request.TrackingNumber, request.Amount.AmountRials, request.Gateway);
+                request.TrackingNumber, request.AmountRials, request.Gateway);
 
             // Generate proper callback URL if not provided or relative
             var finalCallbackUrl = GenerateCallbackUrl(request.CallbackUrl);
@@ -79,7 +79,7 @@ public class PaymentService : IPaymentService
                 IsSucceed = payResult.IsSucceed,
                 Message = payResult.Message,
                 Gateway = request.Gateway,
-                Amount = request.Amount,
+                AmountRials = request.AmountRials,
                 RequestedAt = DateTime.UtcNow
             };
 
@@ -116,7 +116,7 @@ public class PaymentService : IPaymentService
                 IsSuccessful = paymentResult.IsSucceed,
                 Message = paymentResult.Message,
                 GatewayName = paymentResult.GatewayName,
-                Amount = Nezam.Refahi.Shared.Domain.ValueObjects.Money.FromRials(paymentResult.Amount.Value),
+                AmountRials = (long)paymentResult.Amount.Value,
                 ProcessedAt = DateTime.UtcNow,
                 AdditionalData = new Dictionary<string, string>
                 {
@@ -161,7 +161,7 @@ public class PaymentService : IPaymentService
                 Message = verifyResult.Message,
                 ReferenceNumber = verifyResult.TransactionCode,
                 TransactionId = verifyResult.TransactionCode,
-                Amount = Nezam.Refahi.Shared.Domain.ValueObjects.Money.FromRials(verifyResult.Amount.Value),
+                AmountRials = (long)verifyResult.Amount.Value,
                 VerifiedAt = DateTime.UtcNow
             };
 
@@ -182,7 +182,7 @@ public class PaymentService : IPaymentService
         {
             new PaymentGatewayInfo
             {
-                Gateway = PaymentGateway.Parsian,
+                Gateway = PaymentGateway.Parsian.ToString(),
                 Name = "Parsian",
                 DisplayName = "بانک پارسیان",
                 IsEnabled = true,
@@ -192,7 +192,7 @@ public class PaymentService : IPaymentService
             },
             new PaymentGatewayInfo
             {
-                Gateway = PaymentGateway.Mellat,
+                Gateway = PaymentGateway.Mellat.ToString(),
                 Name = "Mellat",
                 DisplayName = "بانک ملت",
                 IsEnabled = true,
@@ -202,7 +202,7 @@ public class PaymentService : IPaymentService
             },
             new PaymentGatewayInfo
             {
-                Gateway = PaymentGateway.Zarinpal,
+                Gateway = PaymentGateway.Zarinpal.ToString(),
                 Name = "Zarinpal",
                 DisplayName = "زرین‌پال",
                 IsEnabled = true,
@@ -213,7 +213,7 @@ public class PaymentService : IPaymentService
         };
     }
 
-    private void ConfigureGateway(IInvoiceBuilder invoice, PaymentGateway gateway)
+    private void ConfigureGateway(IInvoiceBuilder invoice, string gateway)
     {
         if (_environment.IsDevelopment())
         {
@@ -224,13 +224,13 @@ public class PaymentService : IPaymentService
         {
             switch (gateway)
             {
-                case PaymentGateway.Parsian:
+                case "Parsian":
                     invoice.UseParsian();
                     break;
-                case PaymentGateway.Mellat:
+                case "Mellat":
                     invoice.UseMellat();
                     break;
-                case PaymentGateway.Zarinpal:
+                case "Zarinpal":
                     // invoice.UseZarinPal(); // Not available in current Parbad version
                     invoice.UseParsian(); // Use Parsian as fallback
                     break;

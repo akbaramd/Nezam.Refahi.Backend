@@ -1,7 +1,7 @@
 using MediatR;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
-namespace Nezam.Refahi.Finance.Contracts.Commands.Wallets;
+namespace Nezam.Refahi.Finance.Application.Commands.Wallets;
 
 /// <summary>
 /// Command to charge a wallet with a specific amount

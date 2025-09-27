@@ -98,10 +98,7 @@ public class MemberAgencyConfiguration : IEntityTypeConfiguration<MemberAgency>
             .HasForeignKey(ma => ma.MemberId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // RepresentativeOffice relation - only store the key
-        // No foreign key relationship with RepresentativeOffice entity (cross-module)
-        // But we can add a check constraint to ensure the office exists
-        builder.HasCheckConstraint("CK_MemberAgencies_RepresentativeOfficeId_NotEmpty", 
-            "[RepresentativeOfficeId] != '00000000-0000-0000-0000-000000000000'");
+  
+       
     }
 }

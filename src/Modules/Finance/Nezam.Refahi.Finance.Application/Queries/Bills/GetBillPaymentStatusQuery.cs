@@ -1,7 +1,7 @@
 using MediatR;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
-namespace Nezam.Refahi.Finance.Contracts.Queries.Bills;
+namespace Nezam.Refahi.Finance.Application.Queries.Bills;
 
 /// <summary>
 /// Query to get bill payment status and related information

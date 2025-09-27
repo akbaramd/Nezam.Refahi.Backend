@@ -1,7 +1,7 @@
 using MediatR;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
-namespace Nezam.Refahi.Finance.Contracts.Commands.Payments;
+namespace Nezam.Refahi.Finance.Application.Commands.Payments;
 
 /// <summary>
 /// Command to create a payment for a bill with optional bill item additions

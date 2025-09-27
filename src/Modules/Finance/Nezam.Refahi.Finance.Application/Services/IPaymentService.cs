@@ -1,6 +1,6 @@
 using Nezam.Refahi.Shared.Application.Common.Models;
 
-namespace Nezam.Refahi.Finance.Contracts.Services;
+namespace Nezam.Refahi.Finance.Application.Services;
 
 /// <summary>
 /// Service for handling payment gateway operations only

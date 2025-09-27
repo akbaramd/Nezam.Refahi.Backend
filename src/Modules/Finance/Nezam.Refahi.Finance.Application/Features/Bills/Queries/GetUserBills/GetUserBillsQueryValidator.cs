@@ -1,5 +1,5 @@
 using FluentValidation;
-using Nezam.Refahi.Finance.Contracts.Queries.Bills;
+using Nezam.Refahi.Finance.Application.Queries.Bills;
 
 namespace Nezam.Refahi.Finance.Application.Features.Bills.Queries.GetUserBills;
 

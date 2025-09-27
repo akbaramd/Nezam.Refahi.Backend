@@ -2,7 +2,7 @@ using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Nezam.Refahi.Finance.Application.Services;
-using Nezam.Refahi.Finance.Contracts.Commands.Wallets;
+using Nezam.Refahi.Finance.Application.Commands.Wallets;
 using Nezam.Refahi.Finance.Domain.Entities;
 using Nezam.Refahi.Finance.Domain.Enums;
 using Nezam.Refahi.Finance.Domain.Repositories;

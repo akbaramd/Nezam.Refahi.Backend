@@ -1,6 +1,6 @@
 using FluentValidation;
 using MediatR;
-using Nezam.Refahi.Finance.Contracts.Queries.Bills;
+using Nezam.Refahi.Finance.Application.Queries.Bills;
 using Nezam.Refahi.Finance.Domain.Repositories;
 using Nezam.Refahi.Finance.Domain.Enums;
 using Nezam.Refahi.Shared.Application.Common.Models;

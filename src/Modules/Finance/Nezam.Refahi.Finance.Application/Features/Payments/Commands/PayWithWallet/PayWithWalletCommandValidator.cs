@@ -1,11 +1,12 @@
 using FluentValidation;
+using Nezam.Refahi.Finance.Application.Commands.Payments;
 
 namespace Nezam.Refahi.Finance.Application.Features.Payments.Commands.PayWithWallet;
 
 /// <summary>
 /// Validator for PayWithWalletCommand
 /// </summary>
-public class PayWithWalletCommandValidator : AbstractValidator<Contracts.Commands.Payments.PayWithWalletCommand>
+public class PayWithWalletCommandValidator : AbstractValidator<PayWithWalletCommand>
 {
     public PayWithWalletCommandValidator()
     {

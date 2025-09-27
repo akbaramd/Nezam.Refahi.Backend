@@ -1,7 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Nezam.Refahi.Finance.Contracts.Commands.Bills;
-using Nezam.Refahi.Finance.Contracts.Queries.Bills;
+using Nezam.Refahi.Finance.Application.Commands.Bills;
+using Nezam.Refahi.Finance.Application.Queries.Bills;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
 namespace Nezam.Refahi.Finance.Presentation.Endpoints;

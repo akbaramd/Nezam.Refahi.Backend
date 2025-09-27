@@ -1,17 +1,17 @@
 using MediatR;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
-namespace Nezam.Refahi.Finance.Contracts.Commands.Bills;
+namespace Nezam.Refahi.Finance.Application.Commands.Payments;
 
 /// <summary>
-/// Command to cancel a bill
+/// Command to cancel a payment
 /// </summary>
-public record CancelBillCommand : IRequest<ApplicationResult<CancelBillResponse>>
+public record CancelPaymentCommand : IRequest<ApplicationResult<CancelPaymentResponse>>
 {
     /// <summary>
-    /// ID of the bill to cancel
+    /// ID of the payment to cancel
     /// </summary>
-    public Guid BillId { get; init; }
+    public Guid PaymentId { get; init; }
 
     /// <summary>
     /// Reason for cancellation (optional)
@@ -20,10 +20,11 @@ public record CancelBillCommand : IRequest<ApplicationResult<CancelBillResponse>
 }
 
 /// <summary>
-/// Response for CancelBillCommand
+/// Response for CancelPaymentCommand
 /// </summary>
-public record CancelBillResponse
+public record CancelPaymentResponse
 {
+    public Guid PaymentId { get; init; }
     public Guid BillId { get; init; }
     public string Status { get; init; } = string.Empty;
     public string? CancellationReason { get; init; }

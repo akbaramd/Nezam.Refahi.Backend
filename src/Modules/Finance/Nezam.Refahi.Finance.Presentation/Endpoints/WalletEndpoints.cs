@@ -1,7 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Nezam.Refahi.Finance.Contracts.Commands.Wallets;
-using Nezam.Refahi.Finance.Contracts.Queries.Wallets;
+using Nezam.Refahi.Finance.Application.Commands.Wallets;
+using Nezam.Refahi.Finance.Application.Queries.Wallets;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
 

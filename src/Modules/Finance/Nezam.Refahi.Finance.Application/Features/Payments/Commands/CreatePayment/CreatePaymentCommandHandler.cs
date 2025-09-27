@@ -1,8 +1,7 @@
 using FluentValidation;
 using MediatR;
+using Nezam.Refahi.Finance.Application.Commands.Payments;
 using Nezam.Refahi.Finance.Application.Services;
-using Nezam.Refahi.Finance.Contracts.Commands.Payments;
-using Nezam.Refahi.Finance.Contracts.Services;
 using Nezam.Refahi.Finance.Domain.Enums;
 using Nezam.Refahi.Finance.Domain.Repositories;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
@@ -203,7 +202,7 @@ public class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand,
                 var gatewayRequest = new PaymentGatewayRequest
                 {
                     TrackingNumber = traclingNumber,
-                    AmountRials = amount.AmountRials,
+                    AmountRials = (long)amount.AmountRials,
                     Gateway = paymentGateway!.Value.ToString(),
                     CallbackUrl = request.CallbackUrl,
                     Description = request.Description,

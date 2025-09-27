@@ -337,7 +337,7 @@ public sealed class CapabilityApplicationService : ICapabilityApplicationService
         }
     }
 
-    private async Task<CapabilityDto> MapToDtoAsync(Capability capability)
+    private Task<CapabilityDto> MapToDtoAsync(Capability capability)
     {
         var features = new List<FeaturesDto>();
         
@@ -356,19 +356,19 @@ public sealed class CapabilityApplicationService : ICapabilityApplicationService
             features.AddRange(featureDtos);
         }
 
-        return new CapabilityDto
+        return Task.FromResult(new CapabilityDto
         {
-            Id = capability.Id,
-            Name = capability.Name,
-            Description = capability.Description,
-            IsActive = capability.IsActive,
-            ValidFrom = capability.ValidFrom,
-            ValidTo = capability.ValidTo,
-            Features = features,
-            CreatedAt = capability.CreatedAt,
-            CreatedBy = capability.CreatedBy,
-            UpdatedAt = capability.LastModifiedAt,
-            UpdatedBy = capability.LastModifiedBy
-        };
+          Id = capability.Id,
+          Name = capability.Name,
+          Description = capability.Description,
+          IsActive = capability.IsActive,
+          ValidFrom = capability.ValidFrom,
+          ValidTo = capability.ValidTo,
+          Features = features,
+          CreatedAt = capability.CreatedAt,
+          CreatedBy = capability.CreatedBy,
+          UpdatedAt = capability.LastModifiedAt,
+          UpdatedBy = capability.LastModifiedBy
+        });
     }
 }

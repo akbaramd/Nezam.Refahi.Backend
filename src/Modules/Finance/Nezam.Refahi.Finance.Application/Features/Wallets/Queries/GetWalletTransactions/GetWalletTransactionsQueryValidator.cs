@@ -1,5 +1,5 @@
 using FluentValidation;
-using Nezam.Refahi.Finance.Contracts.Queries.Wallets;
+using Nezam.Refahi.Finance.Application.Queries.Wallets;
 using Nezam.Refahi.Finance.Domain.Enums;
 
 namespace Nezam.Refahi.Finance.Application.Features.Wallets.Queries.GetWalletTransactions;

@@ -1,5 +1,5 @@
 using FluentValidation;
-using Nezam.Refahi.Finance.Contracts.Commands.Refunds;
+using Nezam.Refahi.Finance.Application.Commands.Refunds;
 
 namespace Nezam.Refahi.Finance.Application.Features.Refunds.Commands.CompleteRefund;
 

@@ -5,10 +5,10 @@ using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Nezam.Refahi.Finance.Application.Features.Payments.Commands.HandleCallback;
 using Nezam.Refahi.Finance.Application.Configuration;
-using Nezam.Refahi.Finance.Contracts.Commands.Bills;
-using Nezam.Refahi.Finance.Contracts.Commands.Payments;
-using Nezam.Refahi.Finance.Contracts.Queries.Bills;
-using Nezam.Refahi.Finance.Contracts.Services;
+using Nezam.Refahi.Finance.Application.Commands.Bills;
+using Nezam.Refahi.Finance.Application.Commands.Payments;
+using Nezam.Refahi.Finance.Application.Queries.Bills;
+using Nezam.Refahi.Finance.Application.Services;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
 namespace Nezam.Refahi.Finance.Presentation.Endpoints;

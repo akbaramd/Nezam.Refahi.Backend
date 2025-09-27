@@ -1,5 +1,5 @@
 using FluentValidation;
-using Nezam.Refahi.Finance.Contracts.Commands.Payments;
+using Nezam.Refahi.Finance.Application.Commands.Payments;
 
 namespace Nezam.Refahi.Finance.Application.Features.Payments.Commands.CompletePayment;
 

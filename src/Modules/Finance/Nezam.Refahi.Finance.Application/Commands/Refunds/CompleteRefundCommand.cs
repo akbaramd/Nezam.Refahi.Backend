@@ -1,7 +1,7 @@
 using MediatR;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
-namespace Nezam.Refahi.Finance.Contracts.Commands.Refunds;
+namespace Nezam.Refahi.Finance.Application.Commands.Refunds;
 
 /// <summary>
 /// Command to complete a refund (mark as successful)

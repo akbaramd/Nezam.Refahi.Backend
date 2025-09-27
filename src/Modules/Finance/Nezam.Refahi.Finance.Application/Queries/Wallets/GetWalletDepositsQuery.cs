@@ -1,7 +1,7 @@
 using MediatR;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
-namespace Nezam.Refahi.Finance.Contracts.Queries.Wallets;
+namespace Nezam.Refahi.Finance.Application.Queries.Wallets;
 
 /// <summary>
 /// Query to get wallet deposits for a user
