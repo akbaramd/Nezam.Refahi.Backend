@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
+using Nezam.Refahi.Membership.Contracts.Dtos;
 using Nezam.Refahi.Membership.Contracts.Services;
-using Nezam.Refahi.Recreation.Contracts.Dtos;
+using Nezam.Refahi.Recreation.Application.Dtos;
 using Nezam.Refahi.Recreation.Domain.Enums;
 using Nezam.Refahi.Shared.Application.Common.Models;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
@@ -12,14 +13,14 @@ namespace Nezam.Refahi.Recreation.Application.Services;
 /// </summary>
 public class ParticipantValidationService
 {
-    private readonly IMemberService _memberService;
+    private readonly IMemberInfoService _memberInfoService;
     private readonly ILogger<ParticipantValidationService> _logger;
 
     public ParticipantValidationService(
-        IMemberService memberService,
+        IMemberInfoService memberInfoService,
         ILogger<ParticipantValidationService> logger)
     {
-        _memberService = memberService ?? throw new ArgumentNullException(nameof(memberService));
+        _memberInfoService = memberInfoService ?? throw new ArgumentNullException(nameof(memberInfoService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -79,9 +80,9 @@ public class ParticipantValidationService
                 participant.NationalNumber);
 
             var nationalId = new NationalId(participant.NationalNumber);
-            var member = await _memberService.GetMemberByNationalCodeAsync(nationalId);
+            var memberInfo = await _memberInfoService.GetMemberInfoAsync(nationalId);
 
-            if (member == null)
+            if (memberInfo == null)
             {
                 _logger.LogWarning("Member not found for national number: {NationalNumber}", 
                     participant.NationalNumber);
@@ -90,10 +91,10 @@ public class ParticipantValidationService
                     $"شخص با کد ملی {participant.NationalNumber} عضو نظام نیست و می‌تواند به عنوان مهمان اضافه شود");
             }
 
-            _logger.LogInformation("Member found: {MemberName} ({MembershipNumber})", 
-                member.FullName, member.MembershipNumber);
+            _logger.LogInformation("Member found: {MemberName} ({MembershipNumber}) with {CapabilityCount} capabilities and {FeatureCount} features", 
+                memberInfo.FullName, memberInfo.MembershipNumber, memberInfo.Capabilities.Count, memberInfo.Features.Count);
 
-            return ParticipantValidationResult.Success(ParticipantType.Member, member);
+            return ParticipantValidationResult.Success(ParticipantType.Member, memberInfo);
         }
         catch (Exception ex)
         {
@@ -114,9 +115,9 @@ public class ParticipantValidationResult
     public bool IsValid { get; private set; }
     public ParticipantType ParticipantType { get; private set; }
     public string? ErrorMessage { get; private set; }
-    public object? MemberInfo { get; private set; }
+    public MemberInfoDto? MemberInfo { get; private set; }
 
-    private ParticipantValidationResult(bool isValid, ParticipantType participantType, string? errorMessage = null, object? memberInfo = null)
+    private ParticipantValidationResult(bool isValid, ParticipantType participantType, string? errorMessage = null, MemberInfoDto? memberInfo = null)
     {
         IsValid = isValid;
         ParticipantType = participantType;
@@ -124,7 +125,7 @@ public class ParticipantValidationResult
         MemberInfo = memberInfo;
     }
 
-    public static ParticipantValidationResult Success(ParticipantType participantType, object? memberInfo = null)
+    public static ParticipantValidationResult Success(ParticipantType participantType, MemberInfoDto? memberInfo = null)
     {
         return new ParticipantValidationResult(true, participantType, null, memberInfo);
     }

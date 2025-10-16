@@ -13,7 +13,6 @@ using Nezam.Refahi.Identity.Application.Features.Roles.Commands.UpdateRole;
 using Nezam.Refahi.Identity.Application.Features.Roles.Queries.GetAllRoles;
 using Nezam.Refahi.Identity.Application.Features.Roles.Queries.GetRoleById;
 using Nezam.Refahi.Identity.Application.Features.Roles.Queries.GetRolesPaginated;
-using Nezam.Refahi.Identity.Contracts.Dtos;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
 namespace Nezam.Refahi.Identity.Presentation.Endpoints;

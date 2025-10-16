@@ -116,4 +116,14 @@ public interface IUserRepository : IRepository<User, Guid>
     /// <param name="toDate">End date for the range</param>
     /// <returns>Collection of users verified in the specified range</returns>
     Task<IEnumerable<User>> GetByPhoneVerificationDateRangeAsync(DateTime fromDate, DateTime toDate);
+
+    /// <summary>
+    /// Gets a user by external user id from source systems
+    /// </summary>
+    Task<User?> GetByExternalIdAsync(Guid externalUserId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets a user by email address
+    /// </summary>
+    Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
 }

@@ -1,13 +1,15 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Nezam.Refahi.Recreation.Application.Services;
+using Nezam.Refahi.Recreation.Contracts.IntegrationEvents;
 using Nezam.Refahi.Recreation.Domain.Entities;
 using Nezam.Refahi.Recreation.Domain.Enums;
 using Nezam.Refahi.Recreation.Domain.Repositories;
+using Nezam.Refahi.Shared.Application;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
-using Nezam.Refahi.Membership.Contracts.Services;
+using Nezam.Refahi.Shared.Infrastructure.Outbox;
 
 namespace Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.CancelReservation;
 
@@ -20,23 +22,26 @@ public class CancelReservationCommandHandler : IRequestHandler<CancelReservation
     private readonly ITourRepository _tourRepository;
     private readonly IRecreationUnitOfWork _unitOfWork;
     private readonly ICurrentUserService _currentUserService;
-    private readonly IMemberService _memberService;
+    private readonly MemberValidationService _memberValidationService;
     private readonly ILogger<CancelReservationCommandHandler> _logger;
+    private readonly IOutboxPublisher _outboxPublisher;
 
     public CancelReservationCommandHandler(
         ITourReservationRepository reservationRepository,
         ITourRepository tourRepository,
         IRecreationUnitOfWork unitOfWork,
         ICurrentUserService currentUserService,
-        IMemberService memberService,
-        ILogger<CancelReservationCommandHandler> logger)
+        MemberValidationService memberValidationService,
+        ILogger<CancelReservationCommandHandler> logger,
+        IOutboxPublisher outboxPublisher)
     {
         _reservationRepository = reservationRepository;
         _tourRepository = tourRepository;
         _unitOfWork = unitOfWork;
         _currentUserService = currentUserService;
-        _memberService = memberService;
+        _memberValidationService = memberValidationService;
         _logger = logger;
+        _outboxPublisher = outboxPublisher ?? throw new ArgumentNullException(nameof(outboxPublisher));
     }
 
     public async Task<ApplicationResult<CancelReservationResponse>> Handle(CancelReservationCommand request, CancellationToken cancellationToken)
@@ -147,6 +152,36 @@ public class CancelReservationCommandHandler : IRequestHandler<CancelReservation
                     request.ReservationId);
             }
 
+            // Publish ReservationCancelledIntegrationEvent
+            var reservationCancelledEvent = new ReservationCancelledIntegrationEvent
+            {
+                ReservationId = request.ReservationId,
+                TrackingCode = trackingCode,
+                TourId = reservation.TourId,
+                TourTitle = tour.Title,
+                ReservationDate = reservation.ReservationDate,
+                CancelledAt = cancellationDate,
+                ExternalUserId = memberId ?? Guid.Empty,
+                UserFullName = string.Empty, // Would need to get from member service
+                UserNationalCode = string.Empty, // Would need to get from member service
+                CancellationReason = request.Reason ?? string.Empty,
+                Status = reservation.Status.ToString(),
+                WasDeleted = request.PermanentDelete,
+                RefundableAmountRials = refundableAmount?.AmountRials,
+                PaidAmountRials = reservation.PaidAmount?.AmountRials,
+                Currency = "IRR",
+                ParticipantCount = participantCount,
+                Metadata = new Dictionary<string, string>
+                {
+                    ["TourId"] = tour.Id.ToString(),
+                    ["TourTitle"] = tour.Title,
+                    ["CancelledAt"] = cancellationDate.ToString("O"),
+                    ["WasDeleted"] = request.PermanentDelete.ToString(),
+                    ["CancellationReason"] = request.Reason ?? string.Empty
+                }
+            };
+            await _outboxPublisher.PublishAsync(reservationCancelledEvent, cancellationToken);
+
             return ApplicationResult<CancelReservationResponse>.Success(response);
         }
         catch (Exception ex)
@@ -239,7 +274,7 @@ public class CancelReservationCommandHandler : IRequestHandler<CancelReservation
         {
             try
             {
-                var member = await _memberService.GetMemberByExternalIdAsync(_currentUserService.UserId.Value.ToString());
+                var member = await _memberValidationService.GetMemberInfoAsync(_currentUserService.UserNationalNumber ?? string.Empty);
                 return member?.Id;
             }
             catch (Exception ex)

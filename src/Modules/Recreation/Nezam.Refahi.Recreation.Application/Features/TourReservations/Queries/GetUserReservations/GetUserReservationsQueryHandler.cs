@@ -1,8 +1,8 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Nezam.Refahi.Membership.Contracts.Services;
-using Nezam.Refahi.Recreation.Contracts.Dtos;
+using Nezam.Refahi.Recreation.Application.Dtos;
+using Nezam.Refahi.Recreation.Application.Services;
 using Nezam.Refahi.Recreation.Domain.Entities;
 using Nezam.Refahi.Recreation.Domain.Enums;
 using Nezam.Refahi.Recreation.Domain.Repositories;
@@ -16,18 +16,18 @@ public class GetUserReservationsQueryHandler : IRequestHandler<GetUserReservatio
 {
     private readonly ITourReservationRepository _reservationRepository;
     private readonly ICurrentUserService _currentUserService;
-    private readonly IMemberService _memberService;
+    private readonly MemberValidationService _memberValidationService;
     private readonly ILogger<GetUserReservationsQueryHandler> _logger;
 
     public GetUserReservationsQueryHandler(
         ITourReservationRepository reservationRepository,
         ICurrentUserService currentUserService,
-        IMemberService memberService,
+        MemberValidationService memberValidationService,
         ILogger<GetUserReservationsQueryHandler> logger)
     {
         _reservationRepository = reservationRepository;
         _currentUserService = currentUserService;
-        _memberService = memberService;
+        _memberValidationService = memberValidationService;
         _logger = logger;
     }
 
@@ -120,7 +120,7 @@ public class GetUserReservationsQueryHandler : IRequestHandler<GetUserReservatio
     {
         try
         {
-            var member = await _memberService.GetMemberByExternalIdAsync(_currentUserService.UserId!.Value.ToString());
+            var member = await _memberValidationService.GetMemberInfoByExternalIdAsync(_currentUserService.UserId!.Value.ToString());
             return member?.NationalCode;
         }
         catch (Exception ex)

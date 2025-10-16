@@ -18,5 +18,5 @@ public partial class DeletedAttendee
 
     public Guid HoldingMemberId { get; set; }
 
-    public long Amount { get; set; }
+    public decimal Amount { get; set; }
 }

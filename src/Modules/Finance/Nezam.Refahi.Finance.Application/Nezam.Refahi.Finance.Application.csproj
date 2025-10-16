@@ -11,6 +11,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Nezam.Refahi.Shared.Application\Nezam.Refahi.Shared.Application.csproj" />
+    <ProjectReference Include="..\..\..\Nezam.Refahi.Shared.Infrastructure\Nezam.Refahi.Shared.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Recreation\Nezam.Refahi.Recreation.Contracts\Nezam.Refahi.Recreation.Contracts.csproj" />
     <ProjectReference Include="..\Nezam.Refahi.Finance.Contracts\Nezam.Refahi.Finance.Contracts.csproj" />
     <ProjectReference Include="..\Nezam.Refahi.Finance.Domain\Nezam.Refahi.Finance.Domain.csproj" />
   </ItemGroup>

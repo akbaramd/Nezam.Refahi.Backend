@@ -1,8 +1,8 @@
 ﻿using FluentValidation;
 using MediatR;
+using Nezam.Refahi.Identity.Application.Features.Users.Commands.CreateUser;
 using Nezam.Refahi.Identity.Application.Services;
 using Nezam.Refahi.Identity.Application.Services.Contracts;
-using Nezam.Refahi.Identity.Contracts.Pool;
 using Nezam.Refahi.Identity.Domain.Entities;
 using Nezam.Refahi.Identity.Domain.Repositories;
 using Nezam.Refahi.Identity.Domain.ValueObjects;
@@ -12,12 +12,10 @@ using Nezam.Refahi.Shared.Domain.ValueObjects;
 namespace Nezam.Refahi.Identity.Application.Features.Authentication.Commands.SendOtp;
 
 /// <summary>
-/// Handler for the SendOtpCommand. Creates OTP challenges and manages user creation/synchronization.
-/// Uses UserIntegrationPool to fetch user data from external contexts (like Membership).
+/// Handler for the SendOtpCommand. Creates OTP challenges and manages user creation.
 /// </summary>
 public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, ApplicationResult<SendOtpResponse>>
 {
-    private readonly IUserIntegrationPool _userIntegrationPool;
     private readonly IOtpGeneratorService _otpGeneratorService;
     private readonly IOtpHasherService _otpHasherService;
     private readonly IUserRepository _userRepository;
@@ -25,21 +23,21 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Application
     private readonly IOtpChallengeRepository _otpChallengeRepository;
     private readonly IValidator<SendOtpCommand> _validator;
     private readonly IIdentityUnitOfWork _unitOfWork;
+    private readonly IMediator _mediator;
 
     private const int ExpiryMinutes = 5;
     private const int OtpLength = 6;
 
     public SendOtpCommandHandler(
-        IUserIntegrationPool userIntegrationPool,
         IOtpGeneratorService otpGeneratorService,
         IOtpHasherService otpHasherService,
         IUserRepository userRepository,
         IRoleRepository roleRepository,
         IOtpChallengeRepository otpChallengeRepository,
         IValidator<SendOtpCommand> validator,
-        IIdentityUnitOfWork unitOfWork)
+        IIdentityUnitOfWork unitOfWork,
+        IMediator mediator)
     {
-        _userIntegrationPool = userIntegrationPool ?? throw new ArgumentNullException(nameof(userIntegrationPool));
         _otpGeneratorService = otpGeneratorService ?? throw new ArgumentNullException(nameof(otpGeneratorService));
         _otpHasherService = otpHasherService ?? throw new ArgumentNullException(nameof(otpHasherService));
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
@@ -47,6 +45,7 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Application
         _otpChallengeRepository = otpChallengeRepository ?? throw new ArgumentNullException(nameof(otpChallengeRepository));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
     }
 
     public async Task<ApplicationResult<SendOtpResponse>> Handle(
@@ -71,71 +70,12 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Application
             var user = await _userRepository.GetByNationalIdAsync(nationalId);
             bool userExists = user != null;
 
-            // If not local, fetch from external sources and create
+            // If user doesn't exist, return error - don't create user automatically
             if (user == null)
             {
-                var externalUserInfo = await _userIntegrationPool.GetExternalUserInfoAsync(nationalId, cancellationToken:cancellationToken);
-                if (externalUserInfo == null || !externalUserInfo.CanCreateAccount)
-                {
-                    await _unitOfWork.RollbackAsync(cancellationToken);
-                    return ApplicationResult<SendOtpResponse>.Failure(
-                        $"No eligible user found with national code '{request.NationalCode}' or user is not active.");
-                }
-
-                // Create user directly using constructor
-                user = new User(
-                    externalUserInfo.FirstName,
-                    externalUserInfo.LastName,
-                    externalUserInfo.NationalCode,
-                    externalUserInfo.PhoneNumber ?? string.Empty
-                );
-                
-                await _userRepository.AddAsync(user, cancellationToken:cancellationToken);
-
-                // Always assign Member role as default
-                var memberRole = await _roleRepository.GetByNameAsync("Member", cancellationToken:cancellationToken);
-                if (memberRole != null)
-                {
-                    user.AssignRole(memberRole);
-                }
-
-                // Additionally assign specific role if available (user can have multiple roles)
-                if (!string.IsNullOrWhiteSpace(externalUserInfo.UserRole) &&
-                    !externalUserInfo.UserRole.Equals("Member", StringComparison.OrdinalIgnoreCase))
-                {
-                    var specificRole = await _roleRepository.GetByNameAsync(externalUserInfo.UserRole, cancellationToken:cancellationToken);
-                    if (specificRole != null)
-                    {
-                        user.AssignRole(specificRole);
-                    }
-                }
-            }
-            else
-            {
-                // If local exists, optionally sync updated info from external sources
-                // sum 1 + 1 in varaible a
-
-
-                
-
-                var externalUserInfo = await _userIntegrationPool.GetExternalUserInfoAsync(nationalId, cancellationToken:cancellationToken);
-                if (externalUserInfo != null)
-                {
-                    // Update user information if changed
-                    user.UpdateName(externalUserInfo.FirstName, externalUserInfo.LastName);
-                    if (!string.IsNullOrWhiteSpace(externalUserInfo.PhoneNumber))
-                        user.UpdatePhoneNumber(externalUserInfo.PhoneNumber);
-                    
-                    // Check if user still has active status in external system
-                    if (!externalUserInfo.IsActiveUser)
-                    {
-                        await _unitOfWork.RollbackAsync(cancellationToken);
-                        return ApplicationResult<SendOtpResponse>.Failure(
-                            "UserDetail account is not active in external system.");
-                    }
-                }
-                
-                await _userRepository.UpdateAsync(user, cancellationToken:cancellationToken);
+                await _unitOfWork.RollbackAsync(cancellationToken);
+                return ApplicationResult<SendOtpResponse>.Failure(
+                    $"کاربری با کد ملی '{request.NationalCode}' یافت نشد.");
             }
 
             // Check phone number
@@ -143,7 +83,7 @@ public class SendOtpCommandHandler : IRequestHandler<SendOtpCommand, Application
             if (string.IsNullOrWhiteSpace(phone))
             {
                 await _unitOfWork.RollbackAsync(cancellationToken);
-                return ApplicationResult<SendOtpResponse>.Failure("UserDetail has no valid phone number.");
+                return ApplicationResult<SendOtpResponse>.Failure("User has no valid phone number.");
             }
 
             // Check rate limiting

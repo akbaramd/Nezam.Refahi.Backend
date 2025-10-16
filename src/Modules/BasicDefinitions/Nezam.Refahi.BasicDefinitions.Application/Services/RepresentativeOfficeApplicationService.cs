@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Nezam.Refahi.BasicDefinitions.Contracts.DTOs;
+using Nezam.Refahi.BasicDefinitions.Contracts.Services;
 using Nezam.Refahi.BasicDefinitions.Domain.Entities;
 using Nezam.Refahi.BasicDefinitions.Domain.Repositories;
 using Nezam.Refahi.Shared.Application.Common.Models;
@@ -7,130 +8,130 @@ using Nezam.Refahi.Shared.Application.Common.Models;
 namespace Nezam.Refahi.BasicDefinitions.Application.Services;
 
 /// <summary>
-/// Application service implementation for RepresentativeOffice operations
+/// Application service implementation for Agency operations
 /// </summary>
-public sealed class RepresentativeOfficeApplicationService : IRepresentativeOfficeApplicationService
+public sealed class AgencyApplicationService : IAgencyApplicationService
 {
-    private readonly IRepresentativeOfficeRepository _officeRepository;
+    private readonly IAgencyRepository _officeRepository;
     private readonly IBasicDefinitionsUnitOfWork _unitOfWork;
-    private readonly ILogger<RepresentativeOfficeApplicationService> _logger;
+    private readonly ILogger<AgencyApplicationService> _logger;
 
-    public RepresentativeOfficeApplicationService(
-        IRepresentativeOfficeRepository officeRepository,
+    public AgencyApplicationService(
+        IAgencyRepository officeRepository,
         IBasicDefinitionsUnitOfWork unitOfWork,
-        ILogger<RepresentativeOfficeApplicationService> logger)
+        ILogger<AgencyApplicationService> logger)
     {
         _officeRepository = officeRepository ?? throw new ArgumentNullException(nameof(officeRepository));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task<ApplicationResult<RepresentativeOfficeDto>> GetOfficeByIdAsync(Guid officeId)
+    public async Task<ApplicationResult<AgencyDto>> GetOfficeByIdAsync(Guid officeId)
     {
         try
         {
             var office = await _officeRepository.FindOneAsync(x => x.Id == officeId);
             if (office == null)
             {
-                return ApplicationResult<RepresentativeOfficeDto>.Failure(
+                return ApplicationResult<AgencyDto>.Failure(
                     "دفتر نمایندگی با شناسه مشخص شده یافت نشد");
             }
 
             var dto = MapToDto(office);
-            return ApplicationResult<RepresentativeOfficeDto>.Success(dto, "اطلاعات دفتر نمایندگی با موفقیت دریافت شد");
+            return ApplicationResult<AgencyDto>.Success(dto, "اطلاعات دفتر نمایندگی با موفقیت دریافت شد");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting office by ID {OfficeId}", officeId);
-            return ApplicationResult<RepresentativeOfficeDto>.Failure(ex, "خطا در دریافت اطلاعات دفتر نمایندگی");
+            return ApplicationResult<AgencyDto>.Failure(ex, "خطا در دریافت اطلاعات دفتر نمایندگی");
         }
     }
 
-    public async Task<ApplicationResult<RepresentativeOfficeDto>> GetOfficeByCodeAsync(string officeCode)
+    public async Task<ApplicationResult<AgencyDto>> GetOfficeByCodeAsync(string officeCode)
     {
         try
         {
             if (string.IsNullOrWhiteSpace(officeCode))
             {
-                return ApplicationResult<RepresentativeOfficeDto>.Failure(
+                return ApplicationResult<AgencyDto>.Failure(
                     "کد دفتر نمایندگی نمی‌تواند خالی باشد");
             }
 
             var office = await _officeRepository.GetByCodeAsync(officeCode);
             if (office == null)
             {
-                return ApplicationResult<RepresentativeOfficeDto>.Failure(
+                return ApplicationResult<AgencyDto>.Failure(
                     "دفتر نمایندگی با کد مشخص شده یافت نشد");
             }
 
             var dto = MapToDto(office);
-            return ApplicationResult<RepresentativeOfficeDto>.Success(dto, "اطلاعات دفتر نمایندگی با موفقیت دریافت شد");
+            return ApplicationResult<AgencyDto>.Success(dto, "اطلاعات دفتر نمایندگی با موفقیت دریافت شد");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting office by code {OfficeCode}", officeCode);
-            return ApplicationResult<RepresentativeOfficeDto>.Failure(ex, "خطا در دریافت اطلاعات دفتر نمایندگی");
+            return ApplicationResult<AgencyDto>.Failure(ex, "خطا در دریافت اطلاعات دفتر نمایندگی");
         }
     }
 
-    public async Task<ApplicationResult<RepresentativeOfficeDto>> GetOfficeByExternalCodeAsync(string externalCode)
+    public async Task<ApplicationResult<AgencyDto>> GetOfficeByExternalCodeAsync(string externalCode)
     {
         try
         {
             if (string.IsNullOrWhiteSpace(externalCode))
             {
-                return ApplicationResult<RepresentativeOfficeDto>.Failure(
+                return ApplicationResult<AgencyDto>.Failure(
                     "کد خارجی دفتر نمایندگی نمی‌تواند خالی باشد");
             }
 
             var office = await _officeRepository.GetByExternalCodeAsync(externalCode);
             if (office == null)
             {
-                return ApplicationResult<RepresentativeOfficeDto>.Failure(
+                return ApplicationResult<AgencyDto>.Failure(
                     "دفتر نمایندگی با کد خارجی مشخص شده یافت نشد");
             }
 
             var dto = MapToDto(office);
-            return ApplicationResult<RepresentativeOfficeDto>.Success(dto, "اطلاعات دفتر نمایندگی با موفقیت دریافت شد");
+            return ApplicationResult<AgencyDto>.Success(dto, "اطلاعات دفتر نمایندگی با موفقیت دریافت شد");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting office by external code {ExternalCode}", externalCode);
-            return ApplicationResult<RepresentativeOfficeDto>.Failure(ex, "خطا در دریافت اطلاعات دفتر نمایندگی");
+            return ApplicationResult<AgencyDto>.Failure(ex, "خطا در دریافت اطلاعات دفتر نمایندگی");
         }
     }
 
-    public async Task<ApplicationResult<IEnumerable<RepresentativeOfficeDto>>> GetActiveOfficesAsync()
+    public async Task<ApplicationResult<IEnumerable<AgencyDto>>> GetActiveOfficesAsync()
     {
         try
         {
             var offices = await _officeRepository.GetActiveOfficesAsync();
             var dtos = offices.Select(MapToDto);
-            return ApplicationResult<IEnumerable<RepresentativeOfficeDto>>.Success(dtos, "لیست دفاتر نمایندگی فعال با موفقیت دریافت شد");
+            return ApplicationResult<IEnumerable<AgencyDto>>.Success(dtos, "لیست دفاتر نمایندگی فعال با موفقیت دریافت شد");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting active offices");
-            return ApplicationResult<IEnumerable<RepresentativeOfficeDto>>.Failure(ex, "خطا در دریافت لیست دفاتر نمایندگی فعال");
+            return ApplicationResult<IEnumerable<AgencyDto>>.Failure(ex, "خطا در دریافت لیست دفاتر نمایندگی فعال");
         }
     }
 
-    public async Task<ApplicationResult<IEnumerable<RepresentativeOfficeDto>>> GetAllOfficesAsync()
+    public async Task<ApplicationResult<IEnumerable<AgencyDto>>> GetAllOfficesAsync()
     {
         try
         {
             var offices = await _officeRepository.GetActiveOfficesAsync();
             var dtos = offices.Select(MapToDto);
-            return ApplicationResult<IEnumerable<RepresentativeOfficeDto>>.Success(dtos, "لیست تمام دفاتر نمایندگی با موفقیت دریافت شد");
+            return ApplicationResult<IEnumerable<AgencyDto>>.Success(dtos, "لیست تمام دفاتر نمایندگی با موفقیت دریافت شد");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting all offices");
-            return ApplicationResult<IEnumerable<RepresentativeOfficeDto>>.Failure(ex, "خطا در دریافت لیست تمام دفاتر نمایندگی");
+            return ApplicationResult<IEnumerable<AgencyDto>>.Failure(ex, "خطا در دریافت لیست تمام دفاتر نمایندگی");
         }
     }
 
-    public async Task<ApplicationResult<RepresentativeOfficeDto>> CreateOfficeAsync(RepresentativeOfficeDto officeDto)
+    public async Task<ApplicationResult<AgencyDto>> CreateOfficeAsync(AgencyDto officeDto)
     {
         try
         {
@@ -138,19 +139,19 @@ public sealed class RepresentativeOfficeApplicationService : IRepresentativeOffi
             var existingOfficeByCode = await _officeRepository.GetByCodeAsync(officeDto.Code);
             if (existingOfficeByCode != null)
             {
-                return ApplicationResult<RepresentativeOfficeDto>.Failure(
+                return ApplicationResult<AgencyDto>.Failure(
                     "دفتر نمایندگی با این کد قبلاً وجود دارد");
             }
 
             var existingOfficeByExternalCode = await _officeRepository.GetByExternalCodeAsync(officeDto.ExternalCode);
             if (existingOfficeByExternalCode != null)
             {
-                return ApplicationResult<RepresentativeOfficeDto>.Failure(
+                return ApplicationResult<AgencyDto>.Failure(
                     "دفتر نمایندگی با این کد خارجی قبلاً وجود دارد");
             }
 
             // Create new office
-            var office = new RepresentativeOffice(
+            var office = new Agency(
                 officeDto.Code,
                 officeDto.ExternalCode,
                 officeDto.Name,
@@ -163,23 +164,23 @@ public sealed class RepresentativeOfficeApplicationService : IRepresentativeOffi
             await _unitOfWork.SaveChangesAsync();
 
             var result = MapToDto(office);
-            return ApplicationResult<RepresentativeOfficeDto>.Success(result, "دفتر نمایندگی با موفقیت ایجاد شد");
+            return ApplicationResult<AgencyDto>.Success(result, "دفتر نمایندگی با موفقیت ایجاد شد");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating office with code {Code}", officeDto.Code);
-            return ApplicationResult<RepresentativeOfficeDto>.Failure(ex, "خطا در ایجاد دفتر نمایندگی");
+            return ApplicationResult<AgencyDto>.Failure(ex, "خطا در ایجاد دفتر نمایندگی");
         }
     }
 
-    public async Task<ApplicationResult<RepresentativeOfficeDto>> UpdateOfficeAsync(RepresentativeOfficeDto officeDto)
+    public async Task<ApplicationResult<AgencyDto>> UpdateOfficeAsync(AgencyDto officeDto)
     {
         try
         {
             var office = await _officeRepository.FindOneAsync(x => x.Id == officeDto.Id);
             if (office == null)
             {
-                return ApplicationResult<RepresentativeOfficeDto>.Failure(
+                return ApplicationResult<AgencyDto>.Failure(
                     "دفتر نمایندگی مورد نظر یافت نشد");
             }
 
@@ -187,14 +188,14 @@ public sealed class RepresentativeOfficeApplicationService : IRepresentativeOffi
             var existingOfficeByCode = await _officeRepository.GetByCodeAsync(officeDto.Code);
             if (existingOfficeByCode != null && existingOfficeByCode.Id != officeDto.Id)
             {
-                return ApplicationResult<RepresentativeOfficeDto>.Failure(
+                return ApplicationResult<AgencyDto>.Failure(
                     "دفتر نمایندگی با این کد قبلاً وجود دارد");
             }
 
             var existingOfficeByExternalCode = await _officeRepository.GetByExternalCodeAsync(officeDto.ExternalCode);
             if (existingOfficeByExternalCode != null && existingOfficeByExternalCode.Id != officeDto.Id)
             {
-                return ApplicationResult<RepresentativeOfficeDto>.Failure(
+                return ApplicationResult<AgencyDto>.Failure(
                     "دفتر نمایندگی با این کد خارجی قبلاً وجود دارد");
             }
 
@@ -220,12 +221,12 @@ public sealed class RepresentativeOfficeApplicationService : IRepresentativeOffi
             await _unitOfWork.SaveChangesAsync();
 
             var result = MapToDto(office);
-            return ApplicationResult<RepresentativeOfficeDto>.Success(result, "دفتر نمایندگی با موفقیت به‌روزرسانی شد");
+            return ApplicationResult<AgencyDto>.Success(result, "دفتر نمایندگی با موفقیت به‌روزرسانی شد");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating office {OfficeId}", officeDto.Id);
-            return ApplicationResult<RepresentativeOfficeDto>.Failure(ex, "خطا در به‌روزرسانی دفتر نمایندگی");
+            return ApplicationResult<AgencyDto>.Failure(ex, "خطا در به‌روزرسانی دفتر نمایندگی");
         }
     }
 
@@ -254,9 +255,9 @@ public sealed class RepresentativeOfficeApplicationService : IRepresentativeOffi
         }
     }
 
-    private static RepresentativeOfficeDto MapToDto(RepresentativeOffice office)
+    private static AgencyDto MapToDto(Agency office)
     {
-        return new RepresentativeOfficeDto
+        return new AgencyDto
         {
             Id = office.Id,
             Code = office.Code,

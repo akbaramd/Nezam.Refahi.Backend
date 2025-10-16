@@ -21,7 +21,7 @@ public class PaymentCallbackResult
 {
     // Payment Information
     public Guid PaymentId { get; set; }
-    public long TrackingNumber { get; set; }
+    public decimal TrackingNumber { get; set; }
     public bool IsSuccessful { get; set; }
     public string? Message { get; set; }
     public string? TransactionCode { get; set; }

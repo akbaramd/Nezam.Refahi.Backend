@@ -1,6 +1,6 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Nezam.Refahi.Finance.Domain.Events;
+using Nezam.Refahi.Finance.Contracts.IntegrationEvents;
 using Nezam.Refahi.Notifications.Application.Features.Notifications.Commands.CreateNotification;
 using Nezam.Refahi.Notifications.Application.Services;
 
@@ -9,7 +9,7 @@ namespace Nezam.Refahi.Notifications.Application.EventHandlers.Finance;
 /// <summary>
 /// Event handler for payment completed events from Finance context
 /// </summary>
-public class PaymentCompletedEventHandler : INotificationHandler<PaymentCompletedEvent>
+public class PaymentCompletedEventHandler : INotificationHandler<PaymentCompletedIntegrationEvent>
 {
     private readonly INotificationService _notificationService;
     private readonly ILogger<PaymentCompletedEventHandler> _logger;
@@ -22,7 +22,7 @@ public class PaymentCompletedEventHandler : INotificationHandler<PaymentComplete
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
     
-    public async Task Handle(PaymentCompletedEvent notification, CancellationToken cancellationToken)
+    public async Task Handle(PaymentCompletedIntegrationEvent notification, CancellationToken cancellationToken)
     {
         try
         {
@@ -40,10 +40,11 @@ public class PaymentCompletedEventHandler : INotificationHandler<PaymentComplete
                 Data = System.Text.Json.JsonSerializer.Serialize(new
                 {
                     paymentId = notification.PaymentId,
-                    amount = notification.AmountRials,
+                    amountRials = notification.AmountRials,
                     currency = "IRR",
                     completedAt = notification.CompletedAt,
                     gatewayTransactionId = notification.GatewayTransactionId,
+                    gatewayReference = notification.GatewayReference,
                     referenceId = notification.ReferenceId,
                     referenceType = notification.ReferenceType
                 }),

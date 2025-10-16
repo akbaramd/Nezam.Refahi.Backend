@@ -2,10 +2,13 @@ using FluentValidation;
 using MediatR;
 using Nezam.Refahi.Finance.Application.Services;
 using Nezam.Refahi.Finance.Application.Commands.Refunds;
+using Nezam.Refahi.Finance.Contracts.IntegrationEvents;
 using Nezam.Refahi.Finance.Domain.Repositories;
+using Nezam.Refahi.Shared.Application;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
+using Nezam.Refahi.Shared.Infrastructure.Outbox;
 
 namespace Nezam.Refahi.Finance.Application.Features.Refunds.Commands.CreateRefund;
 
@@ -18,17 +21,20 @@ public class CreateRefundCommandHandler : IRequestHandler<CreateRefundCommand, A
     private readonly IRefundRepository _refundRepository;
     private readonly IValidator<CreateRefundCommand> _validator;
     private readonly IFinanceUnitOfWork _unitOfWork;
+    private readonly IOutboxPublisher _outboxPublisher;
 
     public CreateRefundCommandHandler(
         IBillRepository billRepository,
         IRefundRepository refundRepository,
         IValidator<CreateRefundCommand> validator,
-        IFinanceUnitOfWork unitOfWork)
+        IFinanceUnitOfWork unitOfWork,
+        IOutboxPublisher outboxPublisher)
     {
         _billRepository = billRepository ?? throw new ArgumentNullException(nameof(billRepository));
         _refundRepository = refundRepository ?? throw new ArgumentNullException(nameof(refundRepository));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+        _outboxPublisher = outboxPublisher ?? throw new ArgumentNullException(nameof(outboxPublisher));
     }
 
     public async Task<ApplicationResult<CreateRefundResponse>> Handle(
@@ -68,6 +74,20 @@ public class CreateRefundCommandHandler : IRequestHandler<CreateRefundCommand, A
             await _billRepository.UpdateAsync(bill, cancellationToken:cancellationToken);
             await _unitOfWork.SaveAsync(cancellationToken);
             await _unitOfWork.CommitAsync(cancellationToken);
+
+            // Publish RefundRequestedIntegrationEvent
+            var refundRequestedEvent = new RefundRequestedIntegrationEvent
+            {
+                RefundId = refund.Id,
+                PaymentId = bill.Payments.FirstOrDefault()?.Id ?? Guid.Empty,
+                ReferenceId = bill.ReferenceId,
+                ReferenceType = bill.BillType,
+                RefundAmountRials = (long)refund.Amount.AmountRials,
+                Reason = refund.Reason,
+                RequestedByNationalNumber = request.RequestedByExternalUserId?.ToString() ?? string.Empty, // Assuming this is the national number
+                RequestedAt = refund.RequestedAt
+            };
+            await _outboxPublisher.PublishAsync(refundRequestedEvent, cancellationToken);
 
             // Prepare response
             var response = new CreateRefundResponse

@@ -5,13 +5,13 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
+using Nezam.Refahi.Recreation.Application.Dtos;
 using Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.AddGuest;
 using Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.CreateReservation;
 using Nezam.Refahi.Recreation.Application.Features.TourReservations.Queries;
 using Nezam.Refahi.Recreation.Application.Features.TourReservations.Queries.GetReservationPricing;
 using Nezam.Refahi.Recreation.Application.Features.Tours.Queries.GetToursPaginated;
 using Nezam.Refahi.Recreation.Application.Features.Tours.Queries.GetTourDetail;
-using Nezam.Refahi.Recreation.Contracts.Dtos;
 using Nezam.Refahi.Recreation.Domain.Entities;
 using Nezam.Refahi.Shared.Application.Common.Models;
 

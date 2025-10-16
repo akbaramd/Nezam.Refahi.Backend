@@ -2,14 +2,14 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Nezam.Refahi.Notifications.Application.Features.Notifications.Commands.CreateNotification;
 using Nezam.Refahi.Notifications.Application.Services;
-using Nezam.Refahi.Recreation.Domain.Events;
+using Nezam.Refahi.Recreation.Contracts.IntegrationEvents;
 
 namespace Nezam.Refahi.Notifications.Application.EventHandlers.Recreation;
 
 /// <summary>
 /// Event handler for tour reservation created events from Recreation context
 /// </summary>
-public class TourReservationCreatedEventHandler : INotificationHandler<TourReservationCreatedEvent>
+public class TourReservationCreatedEventHandler : INotificationHandler<ReservationCreatedIntegrationEvent>
 {
     private readonly INotificationService _notificationService;
     private readonly ILogger<TourReservationCreatedEventHandler> _logger;
@@ -22,7 +22,7 @@ public class TourReservationCreatedEventHandler : INotificationHandler<TourReser
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
     
-    public async Task Handle(TourReservationCreatedEvent notification, CancellationToken cancellationToken)
+    public async Task Handle(ReservationCreatedIntegrationEvent notification, CancellationToken cancellationToken)
     {
         try
         {
@@ -44,14 +44,13 @@ public class TourReservationCreatedEventHandler : INotificationHandler<TourReser
                     tourTitle = notification.TourTitle,
                     trackingCode = notification.TrackingCode,
                     reservationDate = notification.ReservationDate,
-                    tourStartDate = notification.TourStartDate,
-                    tourEndDate = notification.TourEndDate,
+                    expiryDate = notification.ExpiryDate,
                     participantCount = notification.ParticipantCount,
-                    totalPrice = notification.TotalPrice,
-                    currency = "IRR",
+                    totalAmountRials = notification.TotalAmountRials,
+                    currency = notification.Currency,
                     status = notification.Status
                 }),
-                ExpiresAt = notification.TourStartDate.AddDays(-1) // Expire one day before tour starts
+                ExpiresAt = notification.ExpiryDate?.AddDays(-1) ?? DateTime.UtcNow.AddDays(1) // Expire one day before expiry
             };
             
             // Create notification

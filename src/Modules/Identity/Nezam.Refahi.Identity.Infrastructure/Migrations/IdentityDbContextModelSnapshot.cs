@@ -276,6 +276,12 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(100)");
 
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("ExternalUserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("FailedAttempts")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
@@ -338,14 +344,29 @@ namespace Nezam.Refahi.Identity.Infrastructure.Migrations
                     b.Property<DateTime?>("PhoneVerifiedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("ProfileSnapshot")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
+                    b.Property<string>("SourceChecksum")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SourceSystem")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SourceVersion")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("UnlockAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Username")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("Version")
                         .HasColumnType("bigint");

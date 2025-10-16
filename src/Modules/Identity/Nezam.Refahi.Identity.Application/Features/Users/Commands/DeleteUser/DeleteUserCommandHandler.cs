@@ -2,8 +2,11 @@ using MCA.SharedKernel.Application.Contracts;
 using MediatR;
 using Nezam.Refahi.Identity.Application.Services;
 using Nezam.Refahi.Identity.Application.Services.Contracts;
+using Nezam.Refahi.Identity.Contracts.IntegrationEvents;
 using Nezam.Refahi.Identity.Domain.Repositories;
+using Nezam.Refahi.Shared.Application;
 using Nezam.Refahi.Shared.Application.Common.Models;
+using Nezam.Refahi.Shared.Infrastructure.Outbox;
 
 namespace Nezam.Refahi.Identity.Application.Features.Users.Commands.DeleteUser;
 
@@ -11,11 +14,16 @@ public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Appli
 {
     private readonly IUserRepository _userRepository;
     private readonly IIdentityUnitOfWork _unitOfWork;
+    private readonly IOutboxPublisher _outboxPublisher;
 
-    public DeleteUserCommandHandler(IUserRepository userRepository, IIdentityUnitOfWork unitOfWork)
+    public DeleteUserCommandHandler(
+        IUserRepository userRepository, 
+        IIdentityUnitOfWork unitOfWork,
+        IOutboxPublisher outboxPublisher)
     {
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;
+        _outboxPublisher = outboxPublisher ?? throw new ArgumentNullException(nameof(outboxPublisher));
     }
 
     public async Task<ApplicationResult> Handle(DeleteUserCommand request, CancellationToken cancellationToken)
@@ -28,6 +36,16 @@ public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Appli
             {
                 return ApplicationResult.Failure("کاربر یافت نشد");
             }
+
+            // Store user info for integration event
+            var userInfo = new
+            {
+                UserId = user.Id,
+                PhoneNumber = user.PhoneNumber?.Value,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                NationalCode = user.NationalId?.Value
+            };
 
             // Check if user has active tokens or active sessions that might prevent deletion
             var activeTokens = user.GetActiveTokensForUserAsync(request.Id);
@@ -57,6 +75,21 @@ public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Appli
             // Save changes
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _unitOfWork.CommitAsync(cancellationToken);
+
+            // Publish UserDeletedIntegrationEvent
+            var userDeletedEvent = new UserDeletedIntegrationEvent
+            {
+                UserId = userInfo.UserId,
+                PhoneNumber = userInfo.PhoneNumber,
+                FirstName = userInfo.FirstName,
+                LastName = userInfo.LastName,
+                NationalCode = userInfo.NationalCode,
+                DeletedAt = DateTime.UtcNow,
+                DeletedBy = "System", // TODO: Get from current user context
+                Reason = request.DeleteReason ?? (request.SoftDelete ? "Soft delete by system" : "Hard delete by system")
+            };
+
+            await _outboxPublisher.PublishAsync(userDeletedEvent, cancellationToken);
 
             var successMessage = request.SoftDelete 
                 ? "کاربر با موفقیت غیرفعال شد" 

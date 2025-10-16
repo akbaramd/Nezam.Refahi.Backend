@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.18" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.18">
             <PrivateAssets>all</PrivateAssets>
@@ -19,6 +19,7 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.18"/>
     </ItemGroup>
     <ItemGroup>
+      <ProjectReference Include="..\..\Modules\Identity\Nezam.Refahi.Identity.Infrastructure\Nezam.Refahi.Identity.Infrastructure.csproj" />
       <ProjectReference Include="..\..\Modules\Membership\Nezam.Refahi.Membership.Contracts\Nezam.Refahi.Membership.Contracts.csproj" />
       <ProjectReference Include="..\..\Modules\BasicDefinitions\Nezam.Refahi.BasicDefinitions.Contracts\Nezam.Refahi.BasicDefinitions.Contracts.csproj" />
     </ItemGroup>
@@ -51,47 +52,62 @@
         <Message Text="Generated plugin.json for $(MSBuildProjectName)" Importance="high" />
     </Target>
 
-    <!-- Copy plugin files to WebApi Plugins directory -->
+    <!-- Copy plugin files to both WebApi and Identity Worker Plugins directories -->
     <Target Name="CopyPluginToWebApi" AfterTargets="Build" DependsOnTargets="GeneratePluginJson">
         <PropertyGroup>
-            <PluginOutputDir>..\..\Nezam.Refahi.WebApi\Plugins\$(AssemblyName)</PluginOutputDir>
+            <WebApiPluginDir>..\..\Nezam.Refahi.WebApi\Plugins\$(AssemblyName)</WebApiPluginDir>
+            <IdentityWorkerPluginDir>..\..\Modules\Identity\Nezam.Refahi.Identity.Worker\Plugins\$(AssemblyName)</IdentityWorkerPluginDir>
+            <PluginJsonPath>$(MSBuildProjectDirectory)\plugin.json</PluginJsonPath>
+        </PropertyGroup>
+        
+        <!-- Copy to WebApi Plugins directory -->
+        <MSBuild Projects="$(MSBuildProjectFile)" Targets="CopyPluginFiles" Properties="TargetDir=$(WebApiPluginDir)" />
+        
+        <!-- Copy to Identity Worker Plugins directory -->
+        <MSBuild Projects="$(MSBuildProjectFile)" Targets="CopyPluginFiles" Properties="TargetDir=$(IdentityWorkerPluginDir)" />
+        
+        <Message Text="Plugin files copied to both WebApi and Identity Worker Plugins directories" Importance="high" />
+    </Target>
+
+    <!-- Helper target to copy plugin files to a specific directory -->
+    <Target Name="CopyPluginFiles">
+        <PropertyGroup>
             <PluginJsonPath>$(MSBuildProjectDirectory)\plugin.json</PluginJsonPath>
         </PropertyGroup>
         
         <!-- Remove old plugin files -->
         <ItemGroup>
-            <OldPluginFiles Include="$(PluginOutputDir)\**\*.*" />
+            <OldPluginFiles Include="$(TargetDir)\**\*.*" />
         </ItemGroup>
         <Delete Files="@(OldPluginFiles)" ContinueOnError="true" />
-        <RemoveDir Directories="$(PluginOutputDir)" ContinueOnError="true" />
+        <RemoveDir Directories="$(TargetDir)" ContinueOnError="true" />
         
         <!-- Create plugin directory -->
-        <MakeDir Directories="$(PluginOutputDir)" />
+        <MakeDir Directories="$(TargetDir)" />
         
         <!-- Copy plugin.json manifest -->
-        <Copy SourceFiles="$(PluginJsonPath)" DestinationFolder="$(PluginOutputDir)" Condition="Exists('$(PluginJsonPath)')" />
+        <Copy SourceFiles="$(PluginJsonPath)" DestinationFolder="$(TargetDir)" Condition="Exists('$(PluginJsonPath)')" />
         
         <!-- Copy all DLL files from output directory -->
         <ItemGroup>
             <DllFiles Include="$(OutputPath)*.dll" />
         </ItemGroup>
-        <Copy SourceFiles="@(DllFiles)" DestinationFolder="$(PluginOutputDir)" />
+        <Copy SourceFiles="@(DllFiles)" DestinationFolder="$(TargetDir)" />
         
         <!-- Copy PDB files for debugging -->
         <ItemGroup>
             <PdbFiles Include="$(OutputPath)*.pdb" />
         </ItemGroup>
-        <Copy SourceFiles="@(PdbFiles)" DestinationFolder="$(PluginOutputDir)" ContinueOnError="true" />
+        <Copy SourceFiles="@(PdbFiles)" DestinationFolder="$(TargetDir)" ContinueOnError="true" />
         
         <!-- Copy any additional files -->
         <ItemGroup>
             <AdditionalFiles Include="$(OutputPath)*.json" Exclude="$(OutputPath)*plugin.json" />
             <AdditionalFiles Include="$(OutputPath)*.xml" />
         </ItemGroup>
-        <Copy SourceFiles="@(AdditionalFiles)" DestinationFolder="$(PluginOutputDir)" ContinueOnError="true" />
+        <Copy SourceFiles="@(AdditionalFiles)" DestinationFolder="$(TargetDir)" ContinueOnError="true" />
         
-        <Message Text="Plugin files copied to: $(PluginOutputDir)" Importance="high" />
-        <Message Text="Plugin manifest copied: plugin.json" Importance="high" />
+        <Message Text="Plugin files copied to: $(TargetDir)" Importance="high" />
     </Target>
 
 </Project>

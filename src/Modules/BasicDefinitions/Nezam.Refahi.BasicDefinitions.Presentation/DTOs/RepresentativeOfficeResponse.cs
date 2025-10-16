@@ -3,9 +3,9 @@ using Nezam.Refahi.BasicDefinitions.Contracts.DTOs;
 namespace Nezam.Refahi.BasicDefinitions.Presentation.DTOs;
 
 /// <summary>
-/// Response DTO for RepresentativeOffice API operations
+/// Response DTO for Agency API operations
 /// </summary>
-public sealed class RepresentativeOfficeResponse
+public sealed class AgencyResponse
 {
     /// <summary>
     /// Indicates if the operation was successful
@@ -20,7 +20,7 @@ public sealed class RepresentativeOfficeResponse
     /// <summary>
     /// The office data (null if operation failed)
     /// </summary>
-    public RepresentativeOfficeDto? Data { get; set; }
+    public AgencyDto? Data { get; set; }
 
     /// <summary>
     /// List of validation errors (if any)
@@ -30,9 +30,9 @@ public sealed class RepresentativeOfficeResponse
     /// <summary>
     /// Creates a successful response
     /// </summary>
-    public static RepresentativeOfficeResponse SuccessResult(RepresentativeOfficeDto data, string message = "Operation completed successfully")
+    public static AgencyResponse SuccessResult(AgencyDto data, string message = "Operation completed successfully")
     {
-        return new RepresentativeOfficeResponse
+        return new AgencyResponse
         {
             Success = true,
             Message = message,
@@ -44,9 +44,9 @@ public sealed class RepresentativeOfficeResponse
     /// <summary>
     /// Creates a failed response
     /// </summary>
-    public static RepresentativeOfficeResponse FailureResult(string message, List<string>? errors = null)
+    public static AgencyResponse FailureResult(string message, List<string>? errors = null)
     {
-        return new RepresentativeOfficeResponse
+        return new AgencyResponse
         {
             Success = false,
             Message = message,

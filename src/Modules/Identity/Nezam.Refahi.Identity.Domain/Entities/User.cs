@@ -1,6 +1,6 @@
 using MCA.SharedKernel.Domain.AggregateRoots;
-using Nezam.Refahi.Identity.Contracts.Events;
 using Nezam.Refahi.Identity.Domain.Enums;
+using Nezam.Refahi.Identity.Domain.Events;
 using Nezam.Refahi.Identity.Domain.ValueObjects;
 using Nezam.Refahi.Identity.Domain.Services;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
@@ -16,6 +16,9 @@ public class User : FullAggregateRoot<Guid>
     public string LastName { get; private set; } = string.Empty;
     public NationalId? NationalId { get; private set; }
     public PhoneNumber PhoneNumber { get; private set; } = null!;
+    public string? Email { get; private set; }
+    public string? Username { get; private set; }
+    public Guid? ExternalUserId { get; private set; }
     // Role is now managed through UserRole entity (many-to-many relationship)
     public DateTime? LastLoginAt { get; private set; }
 
@@ -31,6 +34,12 @@ public class User : FullAggregateRoot<Guid>
     public DeviceFingerprint? LastDeviceFingerprint { get; private set; }
     public string? LastIpAddress { get; private set; }
     public string? LastUserAgent { get; private set; }
+
+    // External source metadata for seeding/audit
+    public string? SourceSystem { get; private set; }
+    public string? SourceVersion { get; private set; }
+    public string? SourceChecksum { get; private set; }
+    public string? ProfileSnapshot { get; private set; }
 
     private readonly List<UserToken> _tokens = new();
     public IReadOnlyCollection<UserToken> Tokens => _tokens.AsReadOnly();
@@ -66,6 +75,9 @@ public class User : FullAggregateRoot<Guid>
         LastName = lastName;
         NationalId = new NationalId(nationalId);
         PhoneNumber = new PhoneNumber(phoneNumber ?? string.Empty);
+        Email = null;
+        Username = null;
+        ExternalUserId = null;
         // Role will be assigned through UserRole entity
         
         // Initialize OTP authentication fields
@@ -79,6 +91,44 @@ public class User : FullAggregateRoot<Guid>
         // Raise domain event
         AddDomainEvent(new UserCreatedEvent(Id, PhoneNumber.Value, nationalId));
     } 
+
+    /// <summary>
+    /// Creates a new user with extended fields used in seeding scenarios
+    /// </summary>
+    public User(
+        string firstName,
+        string lastName,
+        string nationalId,
+        string? phoneNumber,
+        string? email,
+        string? username,
+        Guid? externalUserId)
+        : base(Guid.NewGuid())
+    {
+        if (string.IsNullOrWhiteSpace(firstName))
+            throw new ArgumentException("First name cannot be empty", nameof(firstName));
+
+        if (string.IsNullOrWhiteSpace(lastName))
+            throw new ArgumentException("Last name cannot be empty", nameof(lastName));
+
+        if (string.IsNullOrWhiteSpace(nationalId))
+            throw new ArgumentException("National ID cannot be empty", nameof(nationalId));
+
+        FirstName = firstName;
+        LastName = lastName;
+        NationalId = new NationalId(nationalId);
+        PhoneNumber = new PhoneNumber(phoneNumber ?? string.Empty);
+        Email = string.IsNullOrWhiteSpace(email) ? null : email.Trim();
+        Username = string.IsNullOrWhiteSpace(username) ? null : username.Trim();
+        ExternalUserId = externalUserId;
+
+        // Initialize OTP authentication fields
+        IsPhoneVerified = false;
+        IsActive = true;
+        FailedAttempts = 0;
+
+        AddDomainEvent(new UserCreatedEvent(Id, PhoneNumber.Value, nationalId));
+    }
 
     /// <summary>
     /// Creates a new user with just a phone number (for OTP authentication)
@@ -200,6 +250,40 @@ public class User : FullAggregateRoot<Guid>
         
         // Raise domain event
         AddDomainEvent(new UserProfileUpdatedEvent(Id, firstName, lastName, nationalId.Value));
+    }
+
+    /// <summary>
+    /// Sets external source metadata for audit and reconciliation
+    /// </summary>
+    public void SetSourceMetadata(string sourceSystem, string? sourceVersion, string? sourceChecksum)
+    {
+        if (string.IsNullOrWhiteSpace(sourceSystem))
+            throw new ArgumentException("Source system cannot be empty", nameof(sourceSystem));
+
+        SourceSystem = sourceSystem.Trim();
+        SourceVersion = string.IsNullOrWhiteSpace(sourceVersion) ? null : sourceVersion.Trim();
+        SourceChecksum = string.IsNullOrWhiteSpace(sourceChecksum) ? null : sourceChecksum.Trim();
+    }
+
+    /// <summary>
+    /// Sets profile snapshot payload for audit purposes
+    /// </summary>
+    public void SetProfileSnapshot(string profileSnapshot)
+    {
+        ProfileSnapshot = string.IsNullOrWhiteSpace(profileSnapshot) ? null : profileSnapshot;
+    }
+
+    /// <summary>
+    /// Adds a direct claim to the user
+    /// </summary>
+    public void AddClaim(string type, string value, DateTime? expiresAt = null, string? assignedBy = null, string? notes = null)
+    {
+        if (string.IsNullOrWhiteSpace(type) || string.IsNullOrWhiteSpace(value))
+            throw new ArgumentException("Claim type and value cannot be empty");
+
+        var claim = new Shared.Domain.ValueObjects.Claim(type.Trim(), value.Trim());
+        var userClaim = new UserClaim(Id, claim, expiresAt, assignedBy, notes);
+        _userClaims.Add(userClaim);
     }
 
     /// <summary>

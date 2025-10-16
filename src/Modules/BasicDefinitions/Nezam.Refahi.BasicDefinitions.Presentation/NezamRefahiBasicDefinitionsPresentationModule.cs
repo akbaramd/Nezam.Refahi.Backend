@@ -17,7 +17,7 @@ public class NezamRefahiBasicDefinitionsPresentationModule : BonWebModule
         var app = context.Application;
         
         // Map endpoints
-        app.MapRepresentativeOfficeEndpoints();
+        app.MapAgencyEndpoints();
         
         return base.OnPostApplicationAsync(context);
     }

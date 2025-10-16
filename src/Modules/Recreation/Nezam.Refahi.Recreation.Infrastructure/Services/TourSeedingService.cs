@@ -306,7 +306,7 @@ public class TourSeedingService : ITourSeedingService
     private record PricingSeedData
     {
         public ParticipantType ParticipantType { get; init; }
-        public long PriceInRials { get; init; }
+        public decimal PriceInRials { get; init; }
     }
 
     #endregion

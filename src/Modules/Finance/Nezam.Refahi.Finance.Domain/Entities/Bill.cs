@@ -238,8 +238,12 @@ public sealed class Bill : FullAggregateRoot<Guid>
 
         payment.MarkAsCompleted(gatewayTransactionId, gatewayReference);
 
-        PaidAmount = Money.FromRials(PaidAmount.AmountRials + payment.Amount.AmountRials);
-        RemainingAmount = Money.FromRials(TotalAmount.AmountRials - PaidAmount.AmountRials);
+        // Update Money values by creating new instances (EF Core will handle the change tracking)
+        var newPaidAmount = PaidAmount.Add(payment.Amount);
+        var newRemainingAmount = TotalAmount.Subtract(newPaidAmount);
+        
+        PaidAmount = newPaidAmount;
+        RemainingAmount = newRemainingAmount;
 
         UpdateBillStatus();
 
@@ -650,7 +654,7 @@ public sealed class Bill : FullAggregateRoot<Guid>
     {
         var total = _items.Sum(item => item.GetTotalAmount().AmountRials);
         TotalAmount = Money.FromRials(total);
-        RemainingAmount = Money.FromRials(TotalAmount.AmountRials - PaidAmount.AmountRials);
+        RemainingAmount = TotalAmount.Subtract(PaidAmount);
     }
 
     private void UpdateBillStatus()

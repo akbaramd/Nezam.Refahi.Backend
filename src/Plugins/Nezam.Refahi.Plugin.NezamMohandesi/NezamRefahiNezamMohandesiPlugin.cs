@@ -4,7 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Nezam.Refahi.BasicDefinitions.Contracts.Services;
+using Nezam.Refahi.Identity.Infrastructure.ACL.Contracts;
 using Nezam.Refahi.Membership.Contracts.Services;
+using Nezam.Refahi.Plugin.NezamMohandesi.Adapters;
 using Nezam.Refahi.Plugin.NezamMohandesi.Cedo;
 using Nezam.Refahi.Plugin.NezamMohandesi.Seeding;
 using Nezam.Refahi.Plugin.NezamMohandesi.Services;
@@ -24,6 +26,9 @@ public class NezamRefahiNezamMohandesiPlugin : BonModule
 
     // Register services
     context.Services.AddScoped<IExternalMemberStorage, ExternalMemberStorage>();
+    
+    // Register user seed sources
+    context.Services.AddScoped<IUserSeedSource, CedoUserSeedSource>();
     
     // Register seed contributors
     context.Services.AddScoped<IMembershipSeedContributor, NezamMohandesiSeedContributor>();

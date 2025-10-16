@@ -61,6 +61,9 @@ public sealed class Tour : FullAggregateRoot<Guid>
     private readonly List<TourCapacity> _capacities = new();
     public IReadOnlyCollection<TourCapacity> Capacities => _capacities.AsReadOnly();
 
+    private readonly List<TourAgency> _tourAgencies = new();
+    public IReadOnlyCollection<TourAgency> TourAgencies => _tourAgencies.AsReadOnly();
+
     // Private constructor for EF Core
     private Tour() : base() { }
 
@@ -582,6 +585,83 @@ public sealed class Tour : FullAggregateRoot<Guid>
     public IEnumerable<TourFeature> GetTourFeatures()
     {
         return _tourFeatures.ToList();
+    }
+
+    // Tour Agency management methods
+
+    /// <summary>
+    /// Adds an agency to the tour
+    /// </summary>
+    public void AddAgency(Guid AgencyId, string agencyCode, string agencyName, 
+        DateTime? validFrom = null, DateTime? validTo = null, string? assignedBy = null, 
+        string? notes = null, string? accessLevel = null, int? maxReservations = null, 
+        int? maxParticipants = null)
+    {
+        if (AgencyId == Guid.Empty)
+            throw new ArgumentException("Representative Office ID cannot be empty", nameof(AgencyId));
+
+        // Check if agency already exists
+        if (_tourAgencies.Any(ta => ta.AgencyId == AgencyId))
+            return;
+
+        var tourAgency = new TourAgency(
+            Id, 
+            AgencyId, 
+            agencyCode, 
+            agencyName, 
+            validFrom, 
+            validTo, 
+            assignedBy, 
+            notes, 
+            accessLevel, 
+            maxReservations, 
+            maxParticipants);
+
+        _tourAgencies.Add(tourAgency);
+    }
+
+    /// <summary>
+    /// Removes an agency from the tour
+    /// </summary>
+    public void RemoveAgency(Guid AgencyId)
+    {
+        var agencyToRemove = _tourAgencies.FirstOrDefault(ta => ta.AgencyId == AgencyId);
+        if (agencyToRemove != null)
+        {
+            _tourAgencies.Remove(agencyToRemove);
+        }
+    }
+
+    /// <summary>
+    /// Gets all agency IDs assigned to this tour
+    /// </summary>
+    public IEnumerable<Guid> GetAssignedAgencyIds()
+    {
+        return _tourAgencies.Select(ta => ta.AgencyId);
+    }
+
+    /// <summary>
+    /// Gets all active agencies for this tour
+    /// </summary>
+    public IEnumerable<TourAgency> GetActiveAgencies()
+    {
+        return _tourAgencies.Where(ta => ta.IsValid());
+    }
+
+    /// <summary>
+    /// Checks if a specific agency has access to this tour
+    /// </summary>
+    public bool HasAgencyAccess(Guid AgencyId)
+    {
+        return _tourAgencies.Any(ta => ta.AgencyId == AgencyId && ta.IsValid());
+    }
+
+    /// <summary>
+    /// Gets tour agency assignment for a specific agency
+    /// </summary>
+    public TourAgency? GetAgencyAssignment(Guid AgencyId)
+    {
+        return _tourAgencies.FirstOrDefault(ta => ta.AgencyId == AgencyId);
     }
 
 

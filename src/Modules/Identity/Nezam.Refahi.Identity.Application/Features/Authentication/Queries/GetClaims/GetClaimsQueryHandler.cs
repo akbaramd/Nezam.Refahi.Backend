@@ -2,7 +2,7 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Nezam.Refahi.Identity.Application.Services;
 using Nezam.Refahi.Identity.Application.Services.Contracts;
-using Nezam.Refahi.Identity.Contracts.Dtos;
+using Nezam.Refahi.Identity.Domain.Dtos;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
 namespace Nezam.Refahi.Identity.Application.Features.Authentication.Queries.GetClaims;

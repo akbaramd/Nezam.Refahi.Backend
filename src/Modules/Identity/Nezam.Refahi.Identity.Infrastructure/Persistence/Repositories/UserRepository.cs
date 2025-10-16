@@ -115,4 +115,18 @@ return await PrepareQuery(_dbSet)
     .Include(u => u.Preferences);
     return base.PrepareQuery(query);
   }
+
+  public async Task<User?> GetByExternalIdAsync(Guid externalUserId, CancellationToken cancellationToken = default)
+  {
+    return await PrepareQuery(_dbSet)
+      .FirstOrDefaultAsync(u => u.ExternalUserId == externalUserId, cancellationToken);
+  }
+
+  public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
+  {
+    if (string.IsNullOrWhiteSpace(email)) return null;
+    var normalized = email.Trim();
+    return await PrepareQuery(_dbSet)
+      .FirstOrDefaultAsync(u => u.Email != null && u.Email == normalized, cancellationToken);
+  }
 }

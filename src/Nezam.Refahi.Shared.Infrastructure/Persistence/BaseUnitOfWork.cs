@@ -4,6 +4,7 @@ using MCA.SharedKernel.Domain.Contracts.AggregateRoots;
 using MCA.SharedKernel.Domain.Contracts.Repositories;
 using MCA.SharedKernel.Domain.Events;
 using MediatR;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
@@ -141,6 +142,27 @@ public abstract class BaseUnitOfWork<TContext> : IUnitOfWork where TContext : Db
             _logger.LogError(ex, "Failed to save changes to database");
             // Clear events on failure
             ClearDomainEvents();
+            
+            // Provide more specific error information for constraint violations
+            if (ex is DbUpdateException dbEx && dbEx.InnerException is SqlException sqlEx)
+            {
+                switch (sqlEx.Number)
+                {
+                    case 2627: // Primary key constraint violation
+                        _logger.LogWarning("Primary key constraint violation: {Message}", sqlEx.Message);
+                        break;
+                    case 2601: // Unique constraint violation
+                        _logger.LogWarning("Unique constraint violation: {Message}", sqlEx.Message);
+                        break;
+                    case 547: // Foreign key constraint violation
+                        _logger.LogWarning("Foreign key constraint violation: {Message}", sqlEx.Message);
+                        break;
+                    default:
+                        _logger.LogError(sqlEx, "SQL Server error {Number}: {Message}", sqlEx.Number, sqlEx.Message);
+                        break;
+                }
+            }
+            
             throw;
         }
     }

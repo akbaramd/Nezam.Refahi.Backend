@@ -2,9 +2,12 @@ using FluentValidation;
 using MediatR;
 using Nezam.Refahi.Finance.Application.Services;
 using Nezam.Refahi.Finance.Application.Commands.Refunds;
+using Nezam.Refahi.Finance.Contracts.IntegrationEvents;
 using Nezam.Refahi.Finance.Domain.Repositories;
+using Nezam.Refahi.Shared.Application;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
+using Nezam.Refahi.Shared.Infrastructure.Outbox;
 
 namespace Nezam.Refahi.Finance.Application.Features.Refunds.Commands.CompleteRefund;
 
@@ -17,17 +20,20 @@ public class CompleteRefundCommandHandler : IRequestHandler<CompleteRefundComman
     private readonly IRefundRepository _refundRepository;
     private readonly IValidator<CompleteRefundCommand> _validator;
     private readonly IFinanceUnitOfWork _unitOfWork;
+    private readonly IOutboxPublisher _outboxPublisher;
 
     public CompleteRefundCommandHandler(
         IBillRepository billRepository,
         IRefundRepository refundRepository,
         IValidator<CompleteRefundCommand> validator,
-        IFinanceUnitOfWork unitOfWork)
+        IFinanceUnitOfWork unitOfWork,
+        IOutboxPublisher outboxPublisher)
     {
         _billRepository = billRepository ?? throw new ArgumentNullException(nameof(billRepository));
         _refundRepository = refundRepository ?? throw new ArgumentNullException(nameof(refundRepository));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+        _outboxPublisher = outboxPublisher ?? throw new ArgumentNullException(nameof(outboxPublisher));
     }
 
     public async Task<ApplicationResult<CompleteRefundResponse>> Handle(
@@ -75,6 +81,20 @@ public class CompleteRefundCommandHandler : IRequestHandler<CompleteRefundComman
 
             // Get updated refund
             var updatedRefund = bill.Refunds.First(r => r.Id == request.RefundId);
+
+            // Publish RefundCompletedIntegrationEvent
+            var refundCompletedEvent = new RefundCompletedIntegrationEvent
+            {
+                RefundId = updatedRefund.Id,
+                PaymentId = bill.Payments.FirstOrDefault()?.Id ?? Guid.Empty,
+                ReferenceId = bill.ReferenceId,
+                ReferenceType = bill.BillType,
+                RefundAmountRials = (long)updatedRefund.Amount.AmountRials,
+                RequestedByNationalNumber = bill.ExternalUserId.ToString(),
+                GatewayRefundId = request.GatewayRefundId,
+                CompletedAt = updatedRefund.CompletedAt!.Value
+            };
+            await _outboxPublisher.PublishAsync(refundCompletedEvent, cancellationToken);
 
             // Prepare response
             var response = new CompleteRefundResponse

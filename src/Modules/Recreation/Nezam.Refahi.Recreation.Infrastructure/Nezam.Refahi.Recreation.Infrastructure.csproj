@@ -25,5 +25,6 @@
       <ProjectReference Include="..\..\..\Nezam.Refahi.Shared.Infrastructure\Nezam.Refahi.Shared.Infrastructure.csproj" />
       <ProjectReference Include="..\Nezam.Refahi.Recreation.Application\Nezam.Refahi.Recreation.Application.csproj" />
       <ProjectReference Include="..\Nezam.Refahi.Recreation.Domain\Nezam.Refahi.Recreation.Domain.csproj" />
+      <ProjectReference Include="..\..\BasicDefinitions\Nezam.Refahi.BasicDefinitions.Contracts\Nezam.Refahi.BasicDefinitions.Contracts.csproj" />
     </ItemGroup>
 </Project>

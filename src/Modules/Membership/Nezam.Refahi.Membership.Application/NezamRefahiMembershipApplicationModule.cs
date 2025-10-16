@@ -36,8 +36,11 @@ public class NezamRefahiMembershipApplicationModule : BonModule
     // Register Membership service for inter-context communication
     context.Services.AddScoped<IMemberService, MemberService>();
 
-    // Register representative office validation service
-    context.Services.AddScoped<IRepresentativeOfficeValidationService, RepresentativeOfficeValidationService>();
+    // Register MemberInfo service for inter-context communication
+    context.Services.AddScoped<IMemberInfoService, MemberInfoService>();
+
+    // Register User-Member mapping service
+    context.Services.AddScoped<IUserMemberMappingService, UserMemberMappingService>();
 
     // Register membership seeding hosted service
     // MembershipSeedingHostedService moved to Hangfire jobs - runs at 1:30 AM daily

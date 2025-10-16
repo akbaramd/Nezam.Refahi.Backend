@@ -2,7 +2,7 @@
 
 public partial class Payment
 {
-    public long Amount { get; set; }
+    public decimal Amount { get; set; }
 
     public string? Rrn { get; set; }
 

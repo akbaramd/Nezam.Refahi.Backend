@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Nezam.Refahi.Shared.Application\Nezam.Refahi.Shared.Application.csproj" />
-    <ProjectReference Include="..\Nezam.Refahi.Recreation.Domain\Nezam.Refahi.Recreation.Domain.csproj" />
   </ItemGroup>
 
 </Project>

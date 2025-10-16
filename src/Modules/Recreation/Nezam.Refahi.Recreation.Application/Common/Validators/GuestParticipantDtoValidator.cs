@@ -1,5 +1,5 @@
 using FluentValidation;
-using Nezam.Refahi.Recreation.Contracts.Dtos;
+using Nezam.Refahi.Recreation.Application.Dtos;
 using Nezam.Refahi.Recreation.Domain.Enums;
 
 namespace Nezam.Refahi.Recreation.Application.Common.Validators;

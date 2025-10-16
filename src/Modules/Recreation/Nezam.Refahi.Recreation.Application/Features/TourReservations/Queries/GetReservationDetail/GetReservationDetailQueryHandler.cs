@@ -1,12 +1,12 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Nezam.Refahi.Recreation.Contracts.Dtos;
+using Nezam.Refahi.Recreation.Application.Dtos;
 using Nezam.Refahi.Recreation.Domain.Entities;
 using Nezam.Refahi.Recreation.Domain.Enums;
 using Nezam.Refahi.Recreation.Domain.Repositories;
 using Nezam.Refahi.Shared.Application.Common.Models;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
-using Nezam.Refahi.Membership.Contracts.Services;
+using Nezam.Refahi.Recreation.Application.Services;
 
 namespace Nezam.Refahi.Recreation.Application.Features.TourReservations.Queries.GetReservationDetail;
 
@@ -20,7 +20,7 @@ public class GetReservationDetailQueryHandler
     private readonly ITourRepository _tourRepository;
     private readonly ITourCapacityRepository _capacityRepository;
     private readonly ICurrentUserService _currentUserService;
-    private readonly IMemberService _memberService;
+    private readonly MemberValidationService _memberValidationService;
     private readonly ILogger<GetReservationDetailQueryHandler> _logger;
 
     public GetReservationDetailQueryHandler(
@@ -28,14 +28,14 @@ public class GetReservationDetailQueryHandler
         ITourRepository tourRepository,
         ITourCapacityRepository capacityRepository,
         ICurrentUserService currentUserService,
-        IMemberService memberService,
+        MemberValidationService memberValidationService,
         ILogger<GetReservationDetailQueryHandler> logger)
     {
         _reservationRepository = reservationRepository;
         _tourRepository = tourRepository;
         _capacityRepository = capacityRepository;
         _currentUserService = currentUserService;
-        _memberService = memberService;
+        _memberValidationService = memberValidationService;
         _logger = logger;
     }
 
@@ -223,7 +223,7 @@ public class GetReservationDetailQueryHandler
         {
             try
             {
-                var member = await _memberService.GetMemberByExternalIdAsync(_currentUserService.UserId.Value.ToString());
+                var member = await _memberValidationService.GetMemberInfoByExternalIdAsync(_currentUserService.UserId.Value.ToString());
                 return member?.NationalCode;
             }
             catch (Exception ex)

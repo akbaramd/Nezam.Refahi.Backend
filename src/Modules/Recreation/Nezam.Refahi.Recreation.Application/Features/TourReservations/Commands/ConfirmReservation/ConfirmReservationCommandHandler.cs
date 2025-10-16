@@ -1,11 +1,13 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Nezam.Refahi.Recreation.Contracts.IntegrationEvents;
 using Nezam.Refahi.Recreation.Domain.Repositories;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
-using Nezam.Refahi.Membership.Contracts.Services;
 using Nezam.Refahi.Recreation.Application.Services;
+using Nezam.Refahi.Shared.Application;
+using Nezam.Refahi.Shared.Infrastructure.Outbox;
 
 namespace Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.ConfirmReservation;
 
@@ -17,21 +19,24 @@ public class ConfirmReservationCommandHandler : IRequestHandler<ConfirmReservati
     private readonly ITourReservationRepository _reservationRepository;
     private readonly IRecreationUnitOfWork _unitOfWork;
     private readonly ICurrentUserService _currentUserService;
-    private readonly IMemberService _memberService;
+    private readonly MemberValidationService _memberValidationService;
     private readonly ILogger<ConfirmReservationCommandHandler> _logger;
+    private readonly IOutboxPublisher _outboxPublisher;
 
     public ConfirmReservationCommandHandler(
         ITourReservationRepository reservationRepository,
         IRecreationUnitOfWork unitOfWork,
         ICurrentUserService currentUserService,
-        IMemberService memberService,
-        ILogger<ConfirmReservationCommandHandler> logger)
+        MemberValidationService memberValidationService,
+        ILogger<ConfirmReservationCommandHandler> logger,
+        IOutboxPublisher outboxPublisher)
     {
         _reservationRepository = reservationRepository;
         _unitOfWork = unitOfWork;
         _currentUserService = currentUserService;
-        _memberService = memberService;
+        _memberValidationService = memberValidationService;
         _logger = logger;
+        _outboxPublisher = outboxPublisher ?? throw new ArgumentNullException(nameof(outboxPublisher));
     }
 
     public async Task<ApplicationResult> Handle(ConfirmReservationCommand request, CancellationToken cancellationToken)
@@ -104,6 +109,18 @@ public class ConfirmReservationCommandHandler : IRequestHandler<ConfirmReservati
 
             _logger.LogInformation("Successfully confirmed reservation - ReservationId: {ReservationId}",
                 request.ReservationId);
+
+            // Publish ReservationPaymentCompletedIntegrationEvent
+            var paymentCompletedEvent = new ReservationPaymentCompletedIntegrationEvent
+            {
+                ReservationId = reservation.Id,
+                BillId = reservation.BillId ?? Guid.Empty,
+                BillNumber = reservation.BillId?.ToString() ?? string.Empty,
+                AmountRials = (totalAmount?.AmountRials ?? 0),
+                PaidAt = DateTime.UtcNow,
+                ExternalUserId = reservation.ExternalUserId
+            };
+            await _outboxPublisher.PublishAsync(paymentCompletedEvent, cancellationToken);
 
             return ApplicationResult.Success();
         }

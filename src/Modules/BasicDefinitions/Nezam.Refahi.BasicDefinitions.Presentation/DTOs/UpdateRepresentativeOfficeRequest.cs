@@ -3,9 +3,9 @@ using System.ComponentModel.DataAnnotations;
 namespace Nezam.Refahi.BasicDefinitions.Presentation.DTOs;
 
 /// <summary>
-/// Request DTO for updating an existing RepresentativeOffice
+/// Request DTO for updating an existing Agency
 /// </summary>
-public sealed class UpdateRepresentativeOfficeRequest
+public sealed class UpdateAgencyRequest
 {
     /// <summary>
     /// Unique identifier of the office

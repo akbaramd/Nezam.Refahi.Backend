@@ -9,9 +9,14 @@ namespace Nezam.Refahi.Identity.Application.Features.Authentication.Commands.Sen
 public record SendOtpCommand : IRequest<ApplicationResult<SendOtpResponse>>
 {
     /// <summary>
-    /// The phone number to send the OTP to
+    /// The national code of the user
     /// </summary>
     public string NationalCode { get; init; } = string.Empty;
+    
+    /// <summary>
+    /// The phone number to send the OTP to
+    /// </summary>
+    public string? PhoneNumber { get; init; }
     
     /// <summary>
     /// The purpose of the OTP (e.g., "login", "reset-password")

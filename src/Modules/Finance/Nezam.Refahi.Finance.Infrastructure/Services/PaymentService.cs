@@ -46,7 +46,7 @@ public class PaymentService : IPaymentService
             // Prepare payment request using Parbad
             var payResult = await _onlinePayment.RequestAsync(invoice =>
             {
-                invoice.SetTrackingNumber(request.TrackingNumber)
+                invoice.SetTrackingNumber((long)request.TrackingNumber)
                     .SetAmount(10000)
                     .SetCallbackUrl(finalCallbackUrl);
 

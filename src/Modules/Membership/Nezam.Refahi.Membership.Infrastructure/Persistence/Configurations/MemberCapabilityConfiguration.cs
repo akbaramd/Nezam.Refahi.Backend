@@ -20,7 +20,7 @@ public class MemberCapabilityConfiguration : IEntityTypeConfiguration<MemberCapa
         builder.Property(mc => mc.MemberId)
             .IsRequired();
 
-        builder.Property(mc => mc.CapabilityId)
+        builder.Property(mc => mc.CapabilityKey)
             .IsRequired();
 
         // IsActive configuration
@@ -54,12 +54,12 @@ public class MemberCapabilityConfiguration : IEntityTypeConfiguration<MemberCapa
             .IsRequired(false);
 
         // Cached capability information configuration
-        builder.Property(mc => mc.CapabilityName)
+        builder.Property(mc => mc.CapabilityTitle)
             .HasMaxLength(200)
             .IsRequired();
 
         // Composite unique index to prevent duplicate assignments
-        builder.HasIndex(mc => new { mc.MemberId, mc.CapabilityId })
+        builder.HasIndex(mc => new { mc.MemberId, mc.CapabilityKey })
             .IsUnique()
             .HasFilter("[IsActive] = 1")
             .HasDatabaseName("IX_MemberCapabilities_Member_Capability_Active");
@@ -68,8 +68,8 @@ public class MemberCapabilityConfiguration : IEntityTypeConfiguration<MemberCapa
         builder.HasIndex(mc => mc.MemberId)
             .HasDatabaseName("IX_MemberCapabilities_MemberId");
 
-        builder.HasIndex(mc => mc.CapabilityId)
-            .HasDatabaseName("IX_MemberCapabilities_CapabilityId");
+        builder.HasIndex(mc => mc.CapabilityKey)
+            .HasDatabaseName("IX_MemberCapabilities_CapabilityCapabilityKey");
 
         builder.HasIndex(mc => mc.IsActive)
             .HasDatabaseName("IX_MemberCapabilities_IsActive");

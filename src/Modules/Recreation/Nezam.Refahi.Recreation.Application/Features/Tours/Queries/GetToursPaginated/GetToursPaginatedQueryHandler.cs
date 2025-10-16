@@ -1,13 +1,12 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Nezam.Refahi.Recreation.Contracts.Dtos;
+using Nezam.Refahi.Recreation.Application.Dtos;
 using Nezam.Refahi.Recreation.Domain.Entities;
 using Nezam.Refahi.Recreation.Domain.Enums;
 using Nezam.Refahi.Recreation.Domain.Repositories;
 using Nezam.Refahi.Recreation.Application.Services;
 using Nezam.Refahi.Shared.Application.Common.Models;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
-using Nezam.Refahi.Membership.Contracts.Services;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
 
 namespace Nezam.Refahi.Recreation.Application.Features.Tours.Queries.GetToursPaginated;
@@ -22,7 +21,7 @@ public class GetToursPaginatedQueryHandler
     private readonly ITourReservationRepository _tourReservationRepository;
     private readonly ITourCapacityRepository _tourCapacityRepository;
     private readonly ICurrentUserService _currentUserService;
-    private readonly IMemberService _memberService;
+    private readonly MemberValidationService _memberValidationService;
     private readonly TourCapacityCalculationService _capacityCalculationService;
     private readonly TourDtoCalculationService _dtoCalculationService;
     private readonly ILogger<GetToursPaginatedQueryHandler> _logger;
@@ -32,14 +31,14 @@ public class GetToursPaginatedQueryHandler
         ITourReservationRepository tourReservationRepository,
         ITourCapacityRepository tourCapacityRepository,
         ICurrentUserService currentUserService,
-        IMemberService memberService,
+        MemberValidationService memberValidationService,
         ILogger<GetToursPaginatedQueryHandler> logger)
     {
         _tourRepository = tourRepository;
         _tourReservationRepository = tourReservationRepository;
         _tourCapacityRepository = tourCapacityRepository;
         _currentUserService = currentUserService;
-        _memberService = memberService;
+        _memberValidationService = memberValidationService;
         _capacityCalculationService = new TourCapacityCalculationService(_tourReservationRepository);
         _dtoCalculationService = new TourDtoCalculationService(_tourReservationRepository);
         _logger = logger;
@@ -499,7 +498,7 @@ public class GetToursPaginatedQueryHandler
         {
             try
             {
-                var member = await _memberService.GetMemberByExternalIdAsync(_currentUserService.UserId.Value.ToString());
+                var member = await _memberValidationService.GetMemberInfoByExternalIdAsync(_currentUserService.UserId.Value.ToString());
                 return member?.NationalCode;
             }
             catch (Exception ex)

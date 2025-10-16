@@ -1,6 +1,6 @@
 using MCA.SharedKernel.Domain.AggregateRoots;
 using MCA.SharedKernel.Domain.Contracts.Repositories;
-using Nezam.Refahi.Identity.Contracts.Events;
+using Nezam.Refahi.Identity.Domain.Events;
 using Nezam.Refahi.Identity.Domain.ValueObjects;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
 

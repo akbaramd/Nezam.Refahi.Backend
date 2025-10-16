@@ -477,6 +477,212 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     }
 
     /// <summary>
+    /// Checks if this reservation conflicts with creating a new reservation
+    /// Business rules: Only Paying and Confirmed reservations prevent new reservations
+    /// </summary>
+    public bool HasConflictingReservation()
+    {
+        // Paying and Confirmed reservations always prevent new reservations
+        if (Status == ReservationStatus.Paying || Status == ReservationStatus.Confirmed)
+        {
+            return true;
+        }
+
+        // All other states (Draft, Held, Expired, Cancelled, SystemCancelled, PaymentFailed, 
+        // Refunding, Refunded, Waitlisted, CancelRequested, AmendRequested, NoShow, Rejected)
+        // do not prevent new reservations - they can be renewed instead
+        return false;
+    }
+
+    /// <summary>
+    /// Checks if this reservation can be reused to add new participants
+    /// Business rules: Draft, Held, and Expired reservations can be reused
+    /// </summary>
+    public bool CanBeReused()
+    {
+        // Draft reservations can always be reused
+        if (Status == ReservationStatus.Draft)
+        {
+            return true;
+        }
+
+        // Expired reservations can be reused (will be renewed to Held)
+        if (Status == ReservationStatus.Expired)
+        {
+            return true;
+        }
+
+        // Held reservations can be reused if not expired
+        if (Status == ReservationStatus.Held)
+        {
+            return IsExpired();
+        }
+
+        // Confirmed reservations can be reused if not expired
+        if (Status == ReservationStatus.Confirmed)
+        {
+            return false;
+        }
+
+        // All other states cannot be reused
+        return false;
+    }
+
+    /// <summary>
+    /// Checks if this reservation can accommodate additional participants
+    /// </summary>
+    public bool CanAddParticipants(int additionalCount, Tour tour)
+    {
+        if (additionalCount <= 0)
+            return true;
+
+        if (tour == null)
+            throw new ArgumentNullException(nameof(tour));
+
+        // Check if reservation can be reused
+        if (!CanBeReused())
+            return false;
+
+        // Check tour capacity limits
+        var currentParticipantCount = _participants.Count;
+        var totalAfterAddition = currentParticipantCount + additionalCount;
+        
+        // Check overall tour capacity
+        if (totalAfterAddition > tour.MaxParticipants)
+            return false;
+
+        // Check guest limits per reservation
+        var currentGuestCount = _participants.Count(p => p.ParticipantType == ParticipantType.Guest);
+        var newGuestCount = additionalCount; // Assuming all new participants are guests for now
+        
+        if (tour.MaxGuestsPerReservation.HasValue && 
+            currentGuestCount + newGuestCount > tour.MaxGuestsPerReservation.Value)
+            return false;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Gets the number of additional participants this reservation can accommodate
+    /// </summary>
+    public int GetAvailableParticipantSlots(Tour tour)
+    {
+        if (tour == null)
+            throw new ArgumentNullException(nameof(tour));
+
+        if (!CanBeReused())
+            return 0;
+
+        // Calculate based on tour capacity
+        var currentCount = _participants.Count;
+        var maxFromTour = tour.MaxParticipants - currentCount;
+
+        // Calculate based on guest limits
+        var currentGuestCount = _participants.Count(p => p.ParticipantType == ParticipantType.Guest);
+        var maxGuests = tour.MaxGuestsPerReservation ?? int.MaxValue;
+        var maxFromGuestLimit = maxGuests - currentGuestCount;
+
+        // Return the minimum of both limits
+        return Math.Max(0, Math.Min(maxFromTour, maxFromGuestLimit));
+    }
+
+    /// <summary>
+    /// Finds the best reusable reservation from a collection of reservations
+    /// Priority: Draft > Expired > Held > Confirmed (most recent first within each status)
+    /// Always validates capacity before selecting
+    /// </summary>
+    public static TourReservation? FindBestReusableReservation(IEnumerable<TourReservation> reservations, Tour tour, int requiredSlots)
+    {
+        if (reservations == null)
+            throw new ArgumentNullException(nameof(reservations));
+        if (tour == null)
+            throw new ArgumentNullException(nameof(tour));
+
+        var reusableReservations = reservations
+            .Where(r => 
+            {
+                // Check if reservation can be reused
+                if (!r.CanBeReused())
+                    return false;
+
+                // For expired reservations, check if they can be renewed with capacity
+                if (r.Status == ReservationStatus.Expired)
+                {
+                    return r.CanBeRenewed(tour, requiredSlots);
+                }
+
+                // For other states, check if they can add participants
+                return r.CanAddParticipants(requiredSlots, tour);
+            })
+            .OrderBy(r => r.Status switch
+            {
+                ReservationStatus.Draft => 1,      // Highest priority - can always be renewed
+                ReservationStatus.Expired => 2,    // Second priority - can be renewed if capacity allows
+                ReservationStatus.Held => 3,       // Third priority - can be renewed if not expired
+                ReservationStatus.Confirmed => 4,  // Lowest priority - can be renewed if not expired
+                _ => 999
+            })
+            .ThenByDescending(r => r.ReservationDate) // Most recent first within same status
+            .ToList();
+
+        return reusableReservations.FirstOrDefault();
+    }
+
+    /// <summary>
+    /// Updates the expiry date of the reservation
+    /// </summary>
+    public void UpdateExpiryDate(DateTime newExpiryDate)
+    {
+        if (newExpiryDate <= DateTime.UtcNow)
+            throw new ArgumentException("Expiry date must be in the future", nameof(newExpiryDate));
+
+        ExpiryDate = newExpiryDate;
+    }
+
+    /// <summary>
+    /// Checks if this reservation can be renewed considering tour capacity
+    /// </summary>
+    public bool CanBeRenewed(Tour tour, int additionalParticipants = 0)
+    {
+        if (tour == null)
+            throw new ArgumentNullException(nameof(tour));
+
+        // Only expired reservations can be renewed
+        if (Status != ReservationStatus.Expired)
+            return false;
+
+        // Check if tour has capacity for current participants + additional participants
+        var totalParticipants = _participants.Count + additionalParticipants;
+        
+        // Check overall tour capacity
+        if (totalParticipants > tour.MaxParticipants)
+            return false;
+
+        // Check guest limits per reservation
+        var currentGuestCount = _participants.Count(p => p.ParticipantType == ParticipantType.Guest);
+        var additionalGuests = additionalParticipants; // Assuming all additional are guests for now
+        
+        if (tour.MaxGuestsPerReservation.HasValue && 
+            currentGuestCount + additionalGuests > tour.MaxGuestsPerReservation.Value)
+            return false;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Renews an expired reservation by changing its status to Held
+    /// </summary>
+    public void Renew()
+    {
+        if (Status != ReservationStatus.Expired)
+            throw new InvalidOperationException($"Cannot renew reservation in {Status} state. Only expired reservations can be renewed.");
+
+        // Change status to Held and update expiry date
+        Status = ReservationStatus.Held;
+        ExpiryDate = DateTime.UtcNow.AddMinutes(15); // Default 15 minutes hold time
+    }
+
+    /// <summary>
     /// Adds a price snapshot for this reservation
     /// </summary>
     public void AddPriceSnapshot(ReservationPriceSnapshot priceSnapshot)

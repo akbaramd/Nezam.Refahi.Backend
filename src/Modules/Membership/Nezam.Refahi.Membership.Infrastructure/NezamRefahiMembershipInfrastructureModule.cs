@@ -48,6 +48,7 @@ public class NezamRefahiMembershipInfrastructureModule : BonModule
     context.Services.AddScoped<IRoleRepository, RoleRepository>();
     context.Services.AddScoped<IMemberRoleRepository, MemberRoleRepository>();
     context.Services.AddScoped<IMemberCapabilityRepository, MemberCapabilityRepository>();
+    context.Services.AddScoped<IMemberFeatureRepository, MemberFeatureRepository>();
     context.Services.AddScoped<IMemberAgencyRepository, MemberAgencyRepository>();
     
     // Register Unit of Work

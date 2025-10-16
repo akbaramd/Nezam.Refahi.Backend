@@ -1,0 +1,133 @@
+---
+globs: **/**.Application/**/*.cs,**/**.Contracts/**/*.cs
+alwaysApply: false
+---
+# DDD Application Layer Rulebook
+
+⚠️ هر چیزی خارج از این قوانین باید بررسی و به تصویب برسد.  
+⚠️ طراحی لایه Application باید سخت‌گیرانه انجام شود.  
+⚠️ مدل‌سازی و قراردادهای Application نباید خودسرانه تغییر کنند؛ با گفت‌وگو و هماهنگی تیم دامنه و مصرف‌کنندگان API تصمیم‌گیری شود.
+
+---
+
+## 1) دامنه مسئولیت
+- MUST: لایه Application فقط هماهنگ‌کننده Use Case باشد؛ هیچ منطق دامنه‌ای در این لایه مجاز نیست.
+- MUST: دسترسی به مدل دامنه صرفاً از طریق Repositoryهای مربوط به Aggregate Root.
+- MUST: مدیریت تراکنش، انتشار رویدادها، اعتبارسنجی ورودی، احراز/اجازه، نگاشت به DTO و مدیریت خطاها در این لایه انجام شود.
+- MUST: جداسازی کامل Command/Query (CQRS). Query از Read Model؛ Mutation فقط از طریق Use Caseهای Command.
+
+## 2) قراردادهای Command / Query
+- MUST: هر Use Case یک Command/Query صریح، Immutable و با نام مبتنی بر Ubiquitous Language داشته باشد.
+- MUST: Commands/Queries ورژن‌دار شوند در صورت تغییر ناسازگار (`v1`, `v2`).
+- MUST: Commands حساس، کلید Idempotency داشته باشند.
+- SHOULD: Commands فقط داده‌های لازم برای تصمیم دامنه را حمل کنند؛ محاسبات و مشتقات در DTO پاسخ.
+
+## 3) خروجی استاندارد
+- MUST: همه Use Caseها `ApplicationResult<T>` برگردانند با:
+  - `IsSuccess`, `Data`, `ErrorCode`, `ErrorMessageFa`, `Meta`.
+- MUST: پیام‌های خطا فارسی، دقیق، و قابل‌مصرف برای UX.  
+- SHOULD: `Meta` شامل سرنخ‌های دیباگ غیرحساس و شناسه همبستگی (CorrelationId).
+
+## 4) طراحی DTO (غنی و هدفمند)
+- MUST: DTOها برای **مصرف‌کننده** طراحی شوند، نه کپی از Entity.
+- MUST: فیلدهای کمکی مشتق‌شده اضافه شوند، نمونه‌ها:
+  - Enumها: مقدار عددی + `enumText` (محلی‌سازی‌شده به فارسی).
+  - تاریخ‌ها: `createdAtUtc`, `createdAtLocal`, `expiresAtUtc`, `expiresAtLocal`.
+  - زمان‌های نسبی: `remainingToExpire`, `elapsedFromCreation`, `startsIn`, `isExpired`, `progressPct`.
+  - برچسب‌های وضعیت: `statusTextFa`, `badges[]`.
+- MUST: اگر DTO به Entity/Relation مربوط به «اقدامات کاربر» اشاره کرد، خلاصه‌ی اقدام مرتبط افزوده شود (مثال: `lastUserAction`, `performedBy`, `performedAtLocal`).
+- SHOULD: در پاسخ‌های **لیستی/صفحه‌بندی** فقط فیلدهای ضروری؛ در **جزئیات** روابط و مشتقات تکمیلی.
+- MUST: DTOها از Domain جدا باشند؛ هیچ نشتی نوع دامنه (Entity/VO) به بیرون.
+
+## 5) صفحه‌بندی/مرتب‌سازی/فیلتر
+- MUST: الگوی ثابت صفحه‌بندی: `page`, `pageSize`, `totalItems`, `totalPages`, `items[]`.
+- SHOULD: مرتب‌سازی صریح با `sortBy`, `sortDir`.
+- SHOULD: فیلترها شفاف و قابل‌ترکیب؛ مقادیر تاریخ به UTC.
+
+## 6) نگاشت‌ها (Mapping)
+- MUST: مپرهای **دستی و واحد** (Single Source of Truth) برای Domain→DTO و DTO→Domain در صورت نیاز.
+- MUST: همه نگاشت‌ها پوشش تست داشته باشند.
+- MUST: محاسبات مشتق (enumText، زمان‌های نسبی، برچسب‌ها) در لایه Application و داخل Mapper/Composer انجام شود.
+- SHOULD: کامپوزیت مپینگ‌ها برای پاسخ‌های **Details** به‌صورت ماژولار (ترکیب‌پذیر).
+
+## 7) اعتبارسنجی (Validation)
+- MUST: اعتبارسنجی ورودی‌ها قبل از اجرای Use Case؛ پیام‌های فارسی و دقیق.
+- MUST: اعتبارسنجی‌های سطح دامنه در Domain حفظ شوند؛ Application فقط Ruleهای کاربردی/سیاستی (مانند MaxPageSize).
+- SHOULD: سناریوهای خطاها واضح: `VALIDATION_FAILED`, `NOT_FOUND`, `CONFLICT`, `FORBIDDEN`, `UNAUTHORIZED`, `GONE`, `RATE_LIMITED`.
+
+## 8) تراکنش و سازگاری
+- MUST: هر تراکنش فقط یک Aggregate Root را تغییر دهد.
+- MUST: استفاده از خوش‌بینی هم‌زمانی (Optimistic Concurrency) و مدیریت تضاد با پیام فارسی روشن.
+- MUST: رویدادها با Outbox منتشر شوند؛ ارسال برون‌مرزی غیرتراکنشی و قابل‌اعتماد.
+
+## 9) زمان و محلی‌سازی
+- MUST: همه زمان‌ها در لایه Application به UTC پردازش شوند؛ تبدیل به محلی (`*Local`) فقط در DTO.
+- MUST: منبع زمان از `IDateTimeProvider` تزریق شود.
+- SHOULD: فرمت‌های نمایش در کلاینت اعمال شوند؛ Application فقط فیلدهای کمکی و محاسبات زمانی را اضافه کند.
+
+## 10) امنیت و مجوز
+- MUST: احراز هویت و اجازه (Authorization/Policies) در ابتدای Use Case بررسی شود.
+- MUST: داده‌های حساس در DTO حذف یا ماسک شوند.
+- SHOULD: ردگیری اقدامات (Audit) با CorrelationId و UserId.
+
+## 11) رویدادها و یکپارچگی
+- MUST: رویدادهای دامنه پس از Commit ذخیره شوند و از Outbox انتشار یابند.
+- SHOULD: مصرف رویدادها با Retry و Idempotency.
+- MUST: ارتباط بین Aggregateها از طریق Domain Service/Events؛ فراخوانی مستقیم Aggregate دیگر ممنوع.
+
+## 12) کارایی و مقیاس‌پذیری
+- MUST: Queryها فقط Read Model/Projection؛ بدون بارگذاری Aggregate برای خواندن عمومی.
+- SHOULD: انتخاب فیلدها (Projection) برای DTOهای لیستی؛ منع Eager Include غیرضروری.
+- SHOULD: محدودیت `pageSize` منطقی و شاخص‌گذاری مناسب در Read Store.
+
+## 13) نسخه‌بندی و سازگاری
+- MUST: نسخه‌بندی DTO/Endpoint هنگام تغییر ناسازگار.
+- SHOULD: افزودن فیلدهای جدید به‌صورت سازگار با گذشته.
+- MUST: حذف فیلد یا تغییر معنایی فقط با نسخه‌ی جدید.
+
+## 14) ثبت، پایش، خطاپذیری
+- MUST: لاگ ساخت‌یافته در مرز Use Case؛ شامل `UseCase`, `CorrelationId`, `UserId`, `Latency`.
+- SHOULD: متریک‌های کلیدی (موفق/ناموفق، تأخیر، نرخ تضاد هم‌زمانی).
+- SHOULD: کدهای خطا ثابت و مستندسازی‌شده.
+
+## 15) قواعد ویژه سناریوهای روابط
+- MUST: اگر DTO به موجودیتی مرتبط با کاربر اشاره می‌کند، خلاصه اقدام یا وضعیت کاربر برای آن موجودیت نیز در **Details DTO** افزوده شود.
+- SHOULD: در DTOهای لیستی، این خلاصه فقط در صورت نیاز UX و با هزینه‌ی پرس‌وجو قابل‌قبول.
+
+## 16) قوانین تفکیک خروجی‌ها
+- MUST: برای هر Use Case، **DTO مجزا** طراحی شود (ListItemDto, DetailsDto, SummaryDto).
+- SHOULD: از اشتراک مدل بین Use Caseها اجتناب شود مگر با قرارداد پایدار و ثابت.
+
+## 17) ضدالگوها (ممنوع)
+- ❌ قراردادن منطق دامنه در Application.
+- ❌ بازگرداندن Entity/VO دامنه به کلاینت.
+- ❌ استفاده مستقیم از `DateTime.UtcNow` بدون Provider.
+- ❌ مپینگ ضمنی و پراکنده در سطح Use Caseها.
+- ❌ افزودن Includeهای دیتابیسی سنگین برای پاسخ لیستی.
+- ❌ تغییر Shape DTO بدون نسخه‌بندی و اطلاع.
+- ❌ پیام خطای مبهم یا غیرفارسی.
+
+## 18) حاکمیت تغییر
+- MUST: هر تغییر در DTO/Use Case/Contracts با تیم دامنه و مصرف‌کنندگان هماهنگ و مستند شود.
+- MUST: بررسی سازگاری عقب‌رو (Backward Compatibility) قبل از انتشار.
+- SHOULD: Feature Flags برای rollout امن در تغییرات حساس.
+
+## 19) چک‌لیست قبل از نوشتن Service/Command Handler
+- MUST: قبل از پیاده‌سازی، موجودی «منابع دامنه» را بررسی کن:
+  - Aggregate Rootهای درگیر، Entityها و ValueObjectهای مربوط.
+  - **Domain Service**های موجود که منطق مشابه/مرتبط دارند.
+  - Invariantهایی که باید در Aggregate enforce شوند.
+- MUST: اگر Domain Service موجود منطق موردنظر را پوشش می‌دهد، **از همان استفاده کن**؛ از تکرار منطق در Application پرهیز کن.
+- MUST: اگر منطق بین چند Aggregate نیاز به هماهنگی دارد، **Domain Service جدید** تعریف کن؛ Application فقط orchestrator.
+- MUST: ورودی را به Command دامنه/متدهای Aggregate ترجمه کن؛ از فراخوانی مستقیم فیلدها/تنظیم propertyها خودداری کن.
+- MUST: Idempotency, Concurrency, Authorization، و خطاهای فارسی را پیش از فراخوانی دامنه تعیین تکلیف کن.
+- SHOULD: حداقل‌بارگذاری داده (Minimal Load): فقط Aggregate لازم و با Projectionهای هدفمند برای Query.
+- SHOULD: رویدادهای لازم، Side Effectها و Outbox را از ابتدا مشخص کن.
+
+### تصمیم‌درخت اجرای Use Case
+1) **آیا منطق در Domain Service موجود است؟** → استفاده کن.  
+2) **آیا نیاز به هماهنگی چند Aggregate است؟** → Domain Service جدید + Orchestration در Application.  
+3) **آیا Invariant داخل Aggregate تعریف شده؟** → تغییر از طریق متدهای Aggregate؛ نه در Application.  
+4) **آیا خروجی به DTO غنی نیاز دارد؟** → مپینگ دستی + مشتقات زمانی/متنی + enumText.  
+5) **آیا عملیات حساس است؟** → Idempotency + Concurrency + پیام فارسی شفاف.
+

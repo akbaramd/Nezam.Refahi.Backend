@@ -3,13 +3,13 @@ using MCA.SharedKernel.Domain;
 namespace Nezam.Refahi.Membership.Domain.Entities;
 
 /// <summary>
-/// Junction entity representing the many-to-many relationship between Member and RepresentativeOffice
+/// Junction entity representing the many-to-many relationship between Member and Agency
 /// Tracks office access assignments with validity periods and provenance
 /// </summary>
 public sealed class MemberAgency : Entity<Guid>
 {
     public Guid MemberId { get; private set; }
-    public Guid RepresentativeOfficeId { get; private set; }
+    public Guid AgencyId { get; private set; }
     public bool IsActive { get; private set; } = true;
 
     // Cached office information for performance
@@ -25,12 +25,12 @@ public sealed class MemberAgency : Entity<Guid>
 
     // Navigation properties
     public Member Member { get; private set; } = null!;
-    // RepresentativeOffice relation will be handled through BasicDefinitions context
+    // Agency relation will be handled through BasicDefinitions context
 
     // Private constructor for EF Core
     private MemberAgency() : base() { }
 
-    public MemberAgency(Guid memberId, Guid representativeOfficeId,
+    public MemberAgency(Guid memberId, Guid agencyId,
         string officeCode, string officeTitle,
         DateTime? validFrom = null, DateTime? validTo = null,
         string? assignedBy = null, string? notes = null, string? accessLevel = null)
@@ -38,15 +38,15 @@ public sealed class MemberAgency : Entity<Guid>
     {
         if (memberId == Guid.Empty)
             throw new ArgumentException("Member ID cannot be empty", nameof(memberId));
-        if (representativeOfficeId == Guid.Empty)
-            throw new ArgumentException("Representative Office ID cannot be empty", nameof(representativeOfficeId));
+        if (agencyId == Guid.Empty)
+            throw new ArgumentException("Representative Office ID cannot be empty", nameof(agencyId));
         if (string.IsNullOrWhiteSpace(officeCode))
             throw new ArgumentException("Office Code cannot be empty", nameof(officeCode));
         if (string.IsNullOrWhiteSpace(officeTitle))
             throw new ArgumentException("Office Title cannot be empty", nameof(officeTitle));
 
         MemberId = memberId;
-        RepresentativeOfficeId = representativeOfficeId;
+        AgencyId = agencyId;
         OfficeCode = officeCode.Trim();
         OfficeTitle = officeTitle.Trim();
         ValidFrom = validFrom;

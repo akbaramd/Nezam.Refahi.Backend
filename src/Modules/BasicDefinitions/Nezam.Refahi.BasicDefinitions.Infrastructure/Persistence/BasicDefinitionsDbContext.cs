@@ -17,7 +17,7 @@ public class BasicDefinitionsDbContext : DbContext
     /// <summary>
     /// Representative offices
     /// </summary>
-    public DbSet<RepresentativeOffice> RepresentativeOffices { get; set; } = null!;
+    public DbSet<Agency> Agencyies { get; set; } = null!;
 
     /// <summary>
     /// Features catalog
@@ -34,7 +34,7 @@ public class BasicDefinitionsDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         // Apply configurations
-        modelBuilder.ApplyConfiguration(new RepresentativeOfficeConfiguration());
+        modelBuilder.ApplyConfiguration(new AgencyConfiguration());
         modelBuilder.ApplyConfiguration(new FeaturesConfiguration());
         modelBuilder.ApplyConfiguration(new CapabilityConfiguration());
 

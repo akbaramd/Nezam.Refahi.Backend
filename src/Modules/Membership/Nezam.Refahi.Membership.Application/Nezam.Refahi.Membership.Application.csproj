@@ -26,7 +26,6 @@
 
 
     <ItemGroup>
-      <Folder Include="Dtos\" />
       <Folder Include="Features\Members\Queries\" />
     </ItemGroup>
 </Project>

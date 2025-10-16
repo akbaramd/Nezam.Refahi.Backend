@@ -8,19 +8,19 @@ public partial class BillDetailItem
 
     public int TariffDetailItemId { get; set; }
 
-    public long Amount { get; set; }
+    public decimal Amount { get; set; }
 
-    public long Tax { get; set; }
+    public decimal Tax { get; set; }
 
-    public long Tool { get; set; }
+    public decimal Tool { get; set; }
 
     public string? Description { get; set; }
 
-    public long DiscountAmount { get; set; }
+    public decimal DiscountAmount { get; set; }
 
-    public long TaxDiscount { get; set; }
+    public decimal TaxDiscount { get; set; }
 
-    public long ToolDiscount { get; set; }
+    public decimal ToolDiscount { get; set; }
 
     public virtual BillDetail BillDetail { get; set; } = null!;
 

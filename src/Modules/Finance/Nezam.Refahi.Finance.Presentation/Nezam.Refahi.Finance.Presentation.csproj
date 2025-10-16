@@ -9,13 +9,14 @@
     </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Bonyan.AspNetCore" Version="1.5.7" />
+    <PackageReference Include="Hangfire.Core" Version="1.8.6" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     <PackageReference Include="MediatR" Version="12.5.0" />
   </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\Nezam.Refahi.Finance.Application\Nezam.Refahi.Finance.Application.csproj" />
       <ProjectReference Include="..\Nezam.Refahi.Finance.Contracts\Nezam.Refahi.Finance.Contracts.csproj" />
+      <ProjectReference Include="..\Nezam.Refahi.Finance.Infrastructure\Nezam.Refahi.Finance.Infrastructure.csproj" />
     </ItemGroup>
 
 </Project>

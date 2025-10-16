@@ -469,6 +469,79 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
                     b.ToTable("Tours", "recreation");
                 });
 
+            modelBuilder.Entity("Nezam.Refahi.Recreation.Domain.Entities.TourAgency", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AccessLevel")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("AgencyCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("AgencyName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("AssignedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("AssignedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<int?>("MaxParticipants")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("MaxReservations")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<Guid>("AgencyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TourId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("ValidFrom")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ValidTo")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AgencyCode");
+
+                    b.HasIndex("IsActive");
+
+                    b.HasIndex("AgencyId");
+
+                    b.HasIndex("TourId");
+
+                    b.HasIndex("ValidFrom");
+
+                    b.HasIndex("ValidTo");
+
+                    b.HasIndex("TourId", "AgencyId")
+                        .IsUnique();
+
+                    b.ToTable("TourAgencies", "recreation");
+                });
+
             modelBuilder.Entity("Nezam.Refahi.Recreation.Domain.Entities.TourCapacity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1069,6 +1142,17 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
                     b.Navigation("Reservation");
                 });
 
+            modelBuilder.Entity("Nezam.Refahi.Recreation.Domain.Entities.TourAgency", b =>
+                {
+                    b.HasOne("Nezam.Refahi.Recreation.Domain.Entities.Tour", "Tour")
+                        .WithMany("TourAgencies")
+                        .HasForeignKey("TourId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tour");
+                });
+
             modelBuilder.Entity("Nezam.Refahi.Recreation.Domain.Entities.TourCapacity", b =>
                 {
                     b.HasOne("Nezam.Refahi.Recreation.Domain.Entities.Tour", "Tour")
@@ -1265,6 +1349,8 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
                     b.Navigation("Pricing");
 
                     b.Navigation("Reservations");
+
+                    b.Navigation("TourAgencies");
 
                     b.Navigation("TourFeatures");
 

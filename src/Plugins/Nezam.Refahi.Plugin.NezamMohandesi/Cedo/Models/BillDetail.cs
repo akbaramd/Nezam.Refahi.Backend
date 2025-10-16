@@ -8,9 +8,9 @@ public partial class BillDetail
 
     public int CostTypeId { get; set; }
 
-    public long Amount { get; set; }
+    public decimal Amount { get; set; }
 
-    public long Tax { get; set; }
+    public decimal Tax { get; set; }
 
     public virtual Bill Bill { get; set; } = null!;
 

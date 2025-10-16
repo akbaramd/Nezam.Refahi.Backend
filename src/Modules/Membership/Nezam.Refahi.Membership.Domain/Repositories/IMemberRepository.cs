@@ -38,6 +38,14 @@ public interface IMemberRepository : IRepository<Member, Guid>
     Task<Member?> GetByEmailAsync(string email);
 
     /// <summary>
+    /// Gets a member by their external user ID (from Identity context)
+    /// </summary>
+    /// <param name="externalUserId">The external user ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The member if found, null otherwise</returns>
+    Task<Member?> GetByExternalUserIdAsync(Guid externalUserId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Gets active members only
     /// </summary>
     /// <returns>Collection of active members</returns>

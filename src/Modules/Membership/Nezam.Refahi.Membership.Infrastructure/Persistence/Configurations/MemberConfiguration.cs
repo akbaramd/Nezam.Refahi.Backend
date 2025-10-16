@@ -17,9 +17,9 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
         builder.Property(m => m.Id)
             .ValueGeneratedNever(); // Client generates ID in constructor
         
-        // UserId - Optional link to Auth module
-        builder.Property(m => m.UserId)
-            .IsRequired(false);
+        // ExternalUserId - Required link to Identity context
+        builder.Property(m => m.ExternalUserId)
+            .IsRequired(true);
             
         // Configure NationalCode as owned value object
         builder.OwnsOne(m => m.NationalCode, nationalId =>
@@ -90,10 +90,10 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
             .IsRequired(false);
             
         // Indexes for performance
-        builder.HasIndex(m => m.UserId)
+        builder.HasIndex(m => m.ExternalUserId)
             .IsUnique()
-            .HasFilter("[UserId] IS NOT NULL")
-            .HasDatabaseName("IX_Members_UserId");
+            .HasFilter("[ExternalUserId] IS NOT NULL")
+            .HasDatabaseName("IX_Members_ExternalUserId");
  
         // Audit properties (inherited from FullAggregateRoot)
         builder.ConfigureFullAuditableEntity();

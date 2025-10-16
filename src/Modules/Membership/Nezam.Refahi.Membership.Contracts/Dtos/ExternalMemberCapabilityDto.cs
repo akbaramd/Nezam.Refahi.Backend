@@ -5,8 +5,6 @@ namespace Nezam.Refahi.Membership.Contracts.Dtos;
 /// </summary>
 public class ExternalMemberCapabilityDto
 {
-    public Guid Id { get; set; }
-    public Guid CapabilityId { get; set; }
     public ExternalCapabilityDto Capability { get; set; } = new();
     public bool IsActive { get; set; }
     public DateTime? ValidFrom { get; set; }

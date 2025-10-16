@@ -7,11 +7,11 @@ namespace Nezam.Refahi.BasicDefinitions.Domain.Entities;
 /// <summary>
 /// Represents a representative office/branch in the system
 /// </summary>
-public sealed class RepresentativeOffice : FullAggregateRoot<Guid>
+public sealed class Agency : FullAggregateRoot<Guid>
 {
-    private RepresentativeOffice() { } // EF Core constructor
+    private Agency() { } // EF Core constructor
 
-    public RepresentativeOffice(
+    public Agency(
         string code,
         string externalCode,
         string name,
@@ -81,7 +81,7 @@ public sealed class RepresentativeOffice : FullAggregateRoot<Guid>
         ManagerPhone = managerPhone;
         
         // Raise domain event for office update
-        AddDomainEvent(new RepresentativeOfficeUpdatedEvent(
+        AddDomainEvent(new AgencyUpdatedEvent(
             Id, Code, Name, ExternalCode, Address, ManagerName, ManagerPhone, IsActive, EstablishedDate));
     }
 
@@ -106,7 +106,7 @@ public sealed class RepresentativeOffice : FullAggregateRoot<Guid>
         EstablishedDate = establishedDate;
         
         // Raise domain event for office update
-        AddDomainEvent(new RepresentativeOfficeUpdatedEvent(
+        AddDomainEvent(new AgencyUpdatedEvent(
             Id, Code, Name, ExternalCode, Address, ManagerName, ManagerPhone, IsActive, EstablishedDate));
     }
 
@@ -118,7 +118,7 @@ public sealed class RepresentativeOffice : FullAggregateRoot<Guid>
         ExternalCode = externalCode;
         
         // Raise domain event for office update
-        AddDomainEvent(new RepresentativeOfficeUpdatedEvent(
+        AddDomainEvent(new AgencyUpdatedEvent(
             Id, Code, Name, ExternalCode, Address, ManagerName, ManagerPhone, IsActive, EstablishedDate));
     }
 
@@ -130,7 +130,7 @@ public sealed class RepresentativeOffice : FullAggregateRoot<Guid>
         IsActive = true;
         
         // Raise domain event for office update
-        AddDomainEvent(new RepresentativeOfficeUpdatedEvent(
+        AddDomainEvent(new AgencyUpdatedEvent(
             Id, Code, Name, ExternalCode, Address, ManagerName, ManagerPhone, IsActive, EstablishedDate));
     }
 
@@ -142,7 +142,7 @@ public sealed class RepresentativeOffice : FullAggregateRoot<Guid>
         IsActive = false;
         
         // Raise domain event for office update
-        AddDomainEvent(new RepresentativeOfficeUpdatedEvent(
+        AddDomainEvent(new AgencyUpdatedEvent(
             Id, Code, Name, ExternalCode, Address, ManagerName, ManagerPhone, IsActive, EstablishedDate));
     }
 }

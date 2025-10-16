@@ -10,7 +10,7 @@ public partial class VwIncompleteBill
 
     public int CostTypeId { get; set; }
 
-    public long Amount { get; set; }
+    public decimal Amount { get; set; }
 
     public int CityId { get; set; }
 }

@@ -2,9 +2,12 @@
 using Microsoft.Extensions.Logging;
 using Nezam.Refahi.Identity.Application.Services;
 using Nezam.Refahi.Identity.Application.Services.Contracts;
+using Nezam.Refahi.Identity.Contracts.IntegrationEvents;
 using Nezam.Refahi.Identity.Domain.Entities;
 using Nezam.Refahi.Identity.Domain.Repositories;
+using Nezam.Refahi.Shared.Application;
 using Nezam.Refahi.Shared.Application.Common.Models;
+using Nezam.Refahi.Shared.Infrastructure.Outbox;
 
 namespace Nezam.Refahi.Identity.Application.Features.Users.Commands.AddRole;
 
@@ -18,19 +21,22 @@ public class AddRoleToUserCommandHandler : IRequestHandler<AddRoleToUserCommand,
     private readonly IUserRoleRepository _userRoleRepository;
     private readonly IIdentityUnitOfWork _unitOfWork;
     private readonly ILogger<AddRoleToUserCommandHandler> _logger;
+    private readonly IOutboxPublisher _outboxPublisher;
 
     public AddRoleToUserCommandHandler(
         IUserRepository userRepository,
         IRoleRepository roleRepository,
         IUserRoleRepository userRoleRepository,
         IIdentityUnitOfWork unitOfWork,
-        ILogger<AddRoleToUserCommandHandler> logger)
+        ILogger<AddRoleToUserCommandHandler> logger,
+        IOutboxPublisher outboxPublisher)
     {
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         _roleRepository = roleRepository ?? throw new ArgumentNullException(nameof(roleRepository));
         _userRoleRepository = userRoleRepository ?? throw new ArgumentNullException(nameof(userRoleRepository));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _outboxPublisher = outboxPublisher ?? throw new ArgumentNullException(nameof(outboxPublisher));
     }
 
     public async Task<ApplicationResult> Handle(AddRoleToUserCommand request, CancellationToken cancellationToken)
@@ -83,6 +89,23 @@ public class AddRoleToUserCommandHandler : IRequestHandler<AddRoleToUserCommand,
             // 5. Save changes
             await _unitOfWork.SaveAsync(cancellationToken);
             await _unitOfWork.CommitAsync(cancellationToken);
+
+            // Publish UserRoleChangedIntegrationEvent
+            var userRoleChangedEvent = new UserRoleChangedIntegrationEvent
+            {
+                UserId = user.Id,
+                PhoneNumber = user.PhoneNumber?.Value,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                NationalCode = user.NationalId?.Value,
+                AddedRoles = new List<string> { role.Name },
+                RemovedRoles = new List<string>(),
+                CurrentRoles = user.UserRoles.Select(ur => ur.Role?.Name ?? string.Empty).Where(r => !string.IsNullOrEmpty(r)).ToList(),
+                ChangedAt = DateTime.UtcNow,
+                ChangedBy = request.AssignedBy?.ToString() ?? "System"
+            };
+
+            await _outboxPublisher.PublishAsync(userRoleChangedEvent, cancellationToken);
 
             _logger.LogInformation("Successfully assigned role {RoleId} to user {UserId}", 
                 request.RoleId, request.UserId);

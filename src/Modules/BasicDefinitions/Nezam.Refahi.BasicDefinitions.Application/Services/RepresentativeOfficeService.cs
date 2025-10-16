@@ -7,25 +7,25 @@ using Nezam.Refahi.BasicDefinitions.Domain.Repositories;
 namespace Nezam.Refahi.BasicDefinitions.Application.Services;
 
 /// <summary>
-/// Implementation of IRepresentativeOfficeService for inter-context communication
+/// Implementation of IAgencyService for inter-context communication
 /// </summary>
-public sealed class RepresentativeOfficeService : IRepresentativeOfficeService
+public sealed class AgencyService : IAgencyService
 {
-    private readonly IRepresentativeOfficeRepository _officeRepository;
+    private readonly IAgencyRepository _officeRepository;
     private readonly IBasicDefinitionsUnitOfWork _unitOfWork;
-    private readonly ILogger<RepresentativeOfficeService> _logger;
+    private readonly ILogger<AgencyService> _logger;
 
-    public RepresentativeOfficeService(
-        IRepresentativeOfficeRepository officeRepository,
+    public AgencyService(
+        IAgencyRepository officeRepository,
         IBasicDefinitionsUnitOfWork unitOfWork,
-        ILogger<RepresentativeOfficeService> logger)
+        ILogger<AgencyService> logger)
     {
         _officeRepository = officeRepository ?? throw new ArgumentNullException(nameof(officeRepository));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task<RepresentativeOfficeDto?> GetOfficeByIdAsync(Guid officeId)
+    public async Task<AgencyDto?> GetOfficeByIdAsync(Guid officeId)
     {
         try
         {
@@ -39,7 +39,7 @@ public sealed class RepresentativeOfficeService : IRepresentativeOfficeService
         }
     }
 
-    public async Task<RepresentativeOfficeDto?> GetOfficeByCodeAsync(string officeCode)
+    public async Task<AgencyDto?> GetOfficeByCodeAsync(string officeCode)
     {
         try
         {
@@ -53,7 +53,7 @@ public sealed class RepresentativeOfficeService : IRepresentativeOfficeService
         }
     }
 
-    public async Task<RepresentativeOfficeDto?> GetOfficeByExternalCodeAsync(string externalCode)
+    public async Task<AgencyDto?> GetOfficeByExternalCodeAsync(string externalCode)
     {
         try
         {
@@ -67,7 +67,7 @@ public sealed class RepresentativeOfficeService : IRepresentativeOfficeService
         }
     }
 
-    public async Task<IEnumerable<RepresentativeOfficeDto>> GetActiveOfficesAsync()
+    public async Task<IEnumerable<AgencyDto>> GetActiveOfficesAsync()
     {
         try
         {
@@ -77,11 +77,11 @@ public sealed class RepresentativeOfficeService : IRepresentativeOfficeService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting active offices");
-            return Enumerable.Empty<RepresentativeOfficeDto>();
+            return Enumerable.Empty<AgencyDto>();
         }
     }
 
-    public async Task<IEnumerable<RepresentativeOfficeDto>> GetAllOfficesAsync()
+    public async Task<IEnumerable<AgencyDto>> GetAllOfficesAsync()
     {
         try
         {
@@ -91,11 +91,11 @@ public sealed class RepresentativeOfficeService : IRepresentativeOfficeService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting all offices");
-            return Enumerable.Empty<RepresentativeOfficeDto>();
+            return Enumerable.Empty<AgencyDto>();
         }
     }
 
-    public async Task<RepresentativeOfficeDto?> CreateOfficeAsync(RepresentativeOfficeDto officeDto)
+    public async Task<AgencyDto?> CreateOfficeAsync(AgencyDto officeDto)
     {
         try
         {
@@ -115,7 +115,7 @@ public sealed class RepresentativeOfficeService : IRepresentativeOfficeService
             }
 
             // Create new office
-            var office = new RepresentativeOffice(
+            var office = new Agency(
                 officeDto.Code,
                 officeDto.ExternalCode,
                 officeDto.Name,
@@ -136,7 +136,7 @@ public sealed class RepresentativeOfficeService : IRepresentativeOfficeService
         }
     }
 
-    public async Task<RepresentativeOfficeDto?> UpdateOfficeAsync(RepresentativeOfficeDto officeDto)
+    public async Task<AgencyDto?> UpdateOfficeAsync(AgencyDto officeDto)
     {
         try
         {
@@ -217,9 +217,9 @@ public sealed class RepresentativeOfficeService : IRepresentativeOfficeService
         }
     }
 
-    private static RepresentativeOfficeDto MapToDto(RepresentativeOffice office)
+    private static AgencyDto MapToDto(Agency office)
     {
-        return new RepresentativeOfficeDto
+        return new AgencyDto
         {
             Id = office.Id,
             Code = office.Code,

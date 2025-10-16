@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using Nezam.Refahi.Identity.Contracts.Dtos;
+using Nezam.Refahi.Identity.Domain.Dtos;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
 namespace Nezam.Refahi.Identity.Application.Features.Users.Queries.GetUsersPaginated;

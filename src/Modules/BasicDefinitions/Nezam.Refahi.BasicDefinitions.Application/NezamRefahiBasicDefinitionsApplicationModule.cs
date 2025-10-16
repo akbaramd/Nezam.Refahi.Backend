@@ -29,8 +29,8 @@ public class NezamRefahiBasicDefinitionsApplicationModule : BonModule
     context.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(assembly));
     context.Services.AddValidatorsFromAssembly(assembly);
 
-    // Register RepresentativeOffice service for inter-context communication
-    context.Services.AddScoped<IRepresentativeOfficeService, RepresentativeOfficeService>();
+    // Register Agency service for inter-context communication
+    context.Services.AddScoped<IAgencyService, AgencyService>();
 
     // Register cache service
     context.Services.AddMemoryCache();

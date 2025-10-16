@@ -111,6 +111,12 @@ public class NezamRefahiIdentityInfrastructureModule : BonModule
         // Register user validation service
         context.Services.AddScoped<IUserValidationService, UserValidationService>();
         
+        // Register user seed orchestrator
+        context.Services.AddScoped<IUserSeedOrchestrator, UserSeedOrchestrator>();
+        
+        // Register user seeding hosted service
+        // context.Services.AddHostedService<UserSeedingHostedService>();
+        
     return base.OnConfigureAsync(context);
   }
 }

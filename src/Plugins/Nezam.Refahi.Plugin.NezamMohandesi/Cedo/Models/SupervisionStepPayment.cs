@@ -12,7 +12,7 @@ public partial class SupervisionStepPayment
 
     public DateTime? PayDate { get; set; }
 
-    public long Amount { get; set; }
+    public decimal Amount { get; set; }
 
     public bool IsCoordinatorPayment { get; set; }
 
@@ -24,7 +24,7 @@ public partial class SupervisionStepPayment
 
     public int PaymentStatusId { get; set; }
 
-    public long RemainingAmount { get; set; }
+    public decimal RemainingAmount { get; set; }
 
     public double PaymentPercent { get; set; }
 

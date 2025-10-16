@@ -3,9 +3,9 @@ using System.ComponentModel.DataAnnotations;
 namespace Nezam.Refahi.BasicDefinitions.Contracts.DTOs;
 
 /// <summary>
-/// Data Transfer Object for RepresentativeOffice entity
+/// Data Transfer Object for Agency entity
 /// </summary>
-public sealed class RepresentativeOfficeDto
+public sealed class AgencyDto
 {
     /// <summary>
     /// Unique identifier of the office

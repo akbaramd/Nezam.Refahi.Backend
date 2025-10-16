@@ -15,12 +15,12 @@ public class BasicDefinitionsCacheService : IBasicDefinitionsCacheService
     private readonly IMemoryCache _cache;
     private readonly ICapabilityRepository _capabilityRepository;
     private readonly IFeaturesRepository _featuresRepository;
-    private readonly IRepresentativeOfficeRepository _representativeOfficeRepository;
+    private readonly IAgencyRepository _AgencyRepository;
     private readonly ILogger<BasicDefinitionsCacheService> _logger;
     
     private const string CAPABILITIES_CACHE_KEY = "BasicDefinitions_Capabilities";
     private const string FEATURES_CACHE_KEY = "BasicDefinitions_Features";
-    private const string REPRESENTATIVE_OFFICES_CACHE_KEY = "BasicDefinitions_RepresentativeOffices";
+    private const string REPRESENTATIVE_OFFICES_CACHE_KEY = "BasicDefinitions_Agencyies";
     private const string CAPABILITY_FEATURES_CACHE_KEY = "BasicDefinitions_CapabilityFeatures_{0}";
     private const string LAST_REFRESH_CACHE_KEY = "BasicDefinitions_LastRefresh";
     
@@ -31,13 +31,13 @@ public class BasicDefinitionsCacheService : IBasicDefinitionsCacheService
         IMemoryCache cache,
         ICapabilityRepository capabilityRepository,
         IFeaturesRepository featuresRepository,
-        IRepresentativeOfficeRepository representativeOfficeRepository,
+        IAgencyRepository AgencyRepository,
         ILogger<BasicDefinitionsCacheService> logger)
     {
         _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         _capabilityRepository = capabilityRepository ?? throw new ArgumentNullException(nameof(capabilityRepository));
         _featuresRepository = featuresRepository ?? throw new ArgumentNullException(nameof(featuresRepository));
-        _representativeOfficeRepository = representativeOfficeRepository ?? throw new ArgumentNullException(nameof(representativeOfficeRepository));
+        _AgencyRepository = AgencyRepository ?? throw new ArgumentNullException(nameof(AgencyRepository));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -125,7 +125,7 @@ public class BasicDefinitionsCacheService : IBasicDefinitionsCacheService
             var featureDict = features.ToDictionary(f => f.Id, f => f);
 
             // Load representative offices from database
-            var offices = await _representativeOfficeRepository.GetActiveOfficesAsync();
+            var offices = await _AgencyRepository.GetActiveOfficesAsync();
             var officeDict = offices.ToDictionary(o => o.Id, o => o);
 
             // Update cache
@@ -235,20 +235,20 @@ public class BasicDefinitionsCacheService : IBasicDefinitionsCacheService
         }
     }
 
-    public async Task<IEnumerable<RepresentativeOffice>> GetRepresentativeOfficesAsync()
+    public async Task<IEnumerable<Agency>> GetAgencyiesAsync()
     {
-        var offices = await GetCachedRepresentativeOfficesAsync();
+        var offices = await GetCachedAgencyiesAsync();
         return offices.Values;
     }
 
-    public async Task<RepresentativeOffice?> GetRepresentativeOfficeAsync(Guid officeId)
+    public async Task<Agency?> GetAgencyAsync(Guid officeId)
     {
         if (officeId == Guid.Empty)
             return null;
 
         try
         {
-            var offices = await GetCachedRepresentativeOfficesAsync();
+            var offices = await GetCachedAgencyiesAsync();
             return offices.TryGetValue(officeId, out var office) ? office : null;
         }
         catch (Exception ex)
@@ -258,20 +258,20 @@ public class BasicDefinitionsCacheService : IBasicDefinitionsCacheService
         }
     }
 
-    public async Task<IEnumerable<RepresentativeOffice>> GetActiveRepresentativeOfficesAsync()
+    public async Task<IEnumerable<Agency>> GetActiveAgencyiesAsync()
     {
-        var offices = await GetCachedRepresentativeOfficesAsync();
+        var offices = await GetCachedAgencyiesAsync();
         return offices.Values.Where(o => o.IsActive);
     }
 
-    public async Task<bool> RepresentativeOfficeExistsAsync(Guid officeId)
+    public async Task<bool> AgencyExistsAsync(Guid officeId)
     {
         if (officeId == Guid.Empty)
             return false;
 
         try
         {
-            var offices = await GetCachedRepresentativeOfficesAsync();
+            var offices = await GetCachedAgencyiesAsync();
             return offices.TryGetValue(officeId, out var office) && office.IsActive;
         }
         catch (Exception ex)
@@ -281,14 +281,14 @@ public class BasicDefinitionsCacheService : IBasicDefinitionsCacheService
         }
     }
 
-    public async Task UpdateRepresentativeOfficeInCacheAsync(RepresentativeOffice office)
+    public async Task UpdateAgencyInCacheAsync(Agency office)
     {
         if (office == null)
             return;
 
         try
         {
-            var offices = await GetCachedRepresentativeOfficesAsync();
+            var offices = await GetCachedAgencyiesAsync();
             offices[office.Id] = office;
             
             _cache.Set(REPRESENTATIVE_OFFICES_CACHE_KEY, offices, _cacheExpiration);
@@ -301,14 +301,14 @@ public class BasicDefinitionsCacheService : IBasicDefinitionsCacheService
         }
     }
 
-    public async Task RemoveRepresentativeOfficeFromCacheAsync(Guid officeId)
+    public async Task RemoveAgencyFromCacheAsync(Guid officeId)
     {
         if (officeId == Guid.Empty)
             return;
 
         try
         {
-            var offices = await GetCachedRepresentativeOfficesAsync();
+            var offices = await GetCachedAgencyiesAsync();
             offices.Remove(officeId);
             
             _cache.Set(REPRESENTATIVE_OFFICES_CACHE_KEY, offices, _cacheExpiration);
@@ -325,14 +325,14 @@ public class BasicDefinitionsCacheService : IBasicDefinitionsCacheService
     {
         var capabilities = await GetCachedCapabilitiesAsync();
         var features = await GetCachedFeaturesAsync();
-        var offices = await GetCachedRepresentativeOfficesAsync();
+        var offices = await GetCachedAgencyiesAsync();
         var lastRefresh = _cache.Get<DateTime?>(LAST_REFRESH_CACHE_KEY);
 
         return new CacheStatistics
         {
             CapabilityCount = capabilities.Count,
             FeatureCount = features.Count,
-            RepresentativeOfficeCount = offices.Count,
+            AgencyCount = offices.Count,
             LastRefreshTime = lastRefresh ?? DateTime.MinValue,
             CacheAge = lastRefresh.HasValue ? DateTime.UtcNow - lastRefresh.Value : TimeSpan.Zero,
             IsCacheValid = lastRefresh.HasValue && DateTime.UtcNow - lastRefresh.Value < _cacheExpiration
@@ -365,16 +365,16 @@ public class BasicDefinitionsCacheService : IBasicDefinitionsCacheService
         return features ?? new Dictionary<string, Features>();
     }
 
-    private async Task<Dictionary<Guid, RepresentativeOffice>> GetCachedRepresentativeOfficesAsync()
+    private async Task<Dictionary<Guid, Agency>> GetCachedAgencyiesAsync()
     {
-        if (!_cache.TryGetValue(REPRESENTATIVE_OFFICES_CACHE_KEY, out Dictionary<Guid, RepresentativeOffice>? offices))
+        if (!_cache.TryGetValue(REPRESENTATIVE_OFFICES_CACHE_KEY, out Dictionary<Guid, Agency>? offices))
         {
             _logger.LogDebug("Representative offices cache miss, refreshing...");
             await RefreshCacheAsync();
-            offices = _cache.Get<Dictionary<Guid, RepresentativeOffice>>(REPRESENTATIVE_OFFICES_CACHE_KEY) ?? new Dictionary<Guid, RepresentativeOffice>();
+            offices = _cache.Get<Dictionary<Guid, Agency>>(REPRESENTATIVE_OFFICES_CACHE_KEY) ?? new Dictionary<Guid, Agency>();
         }
 
-        return offices ?? new Dictionary<Guid, RepresentativeOffice>();
+        return offices ?? new Dictionary<Guid, Agency>();
     }
 
     private void ClearCapabilityFeatureMappings()

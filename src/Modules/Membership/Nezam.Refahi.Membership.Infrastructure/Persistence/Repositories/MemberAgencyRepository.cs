@@ -30,35 +30,35 @@ public class MemberAgencyRepository : EfRepository<MembershipDbContext, MemberAg
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<MemberAgency>> GetByRepresentativeOfficeIdAsync(Guid representativeOfficeId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<MemberAgency>> GetByAgencyIdAsync(Guid AgencyId, CancellationToken cancellationToken = default)
     {
         return await this.PrepareQuery(this._dbSet)
-            .Where(ma => ma.RepresentativeOfficeId == representativeOfficeId)
+            .Where(ma => ma.AgencyId == AgencyId)
             .OrderByDescending(ma => ma.AssignedAt)
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<MemberAgency>> GetValidByRepresentativeOfficeIdAsync(Guid representativeOfficeId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<MemberAgency>> GetValidByAgencyIdAsync(Guid AgencyId, CancellationToken cancellationToken = default)
     {
         return await this.PrepareQuery(this._dbSet)
-            .Where(ma => ma.RepresentativeOfficeId == representativeOfficeId && ma.IsValid())
+            .Where(ma => ma.AgencyId == AgencyId && ma.IsValid())
             .OrderByDescending(ma => ma.AssignedAt)
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<MemberAgency?> GetByMemberAndOfficeAsync(Guid memberId, Guid representativeOfficeId, CancellationToken cancellationToken = default)
+    public async Task<MemberAgency?> GetByMemberAndOfficeAsync(Guid memberId, Guid AgencyId, CancellationToken cancellationToken = default)
     {
         return await this.PrepareQuery(this._dbSet)
             .Include(ma => ma.Member)
-            .FirstOrDefaultAsync(ma => ma.MemberId == memberId && ma.RepresentativeOfficeId == representativeOfficeId, cancellationToken:cancellationToken);
+            .FirstOrDefaultAsync(ma => ma.MemberId == memberId && ma.AgencyId == AgencyId, cancellationToken:cancellationToken);
     }
 
-    public async Task<MemberAgency?> GetActiveByMemberAndOfficeAsync(Guid memberId, Guid representativeOfficeId, CancellationToken cancellationToken = default)
+    public async Task<MemberAgency?> GetActiveByMemberAndOfficeAsync(Guid memberId, Guid AgencyId, CancellationToken cancellationToken = default)
     {
         return await this.PrepareQuery(this._dbSet)
             .Include(ma => ma.Member)
             .FirstOrDefaultAsync(ma => ma.MemberId == memberId &&
-                               ma.RepresentativeOfficeId == representativeOfficeId &&
+                               ma.AgencyId == AgencyId &&
                                ma.IsActive, cancellationToken:cancellationToken);
     }
 
@@ -121,27 +121,27 @@ public class MemberAgencyRepository : EfRepository<MembershipDbContext, MemberAg
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<bool> MemberHasOfficeAccessAsync(Guid memberId, Guid representativeOfficeId, CancellationToken cancellationToken = default)
+    public async Task<bool> MemberHasOfficeAccessAsync(Guid memberId, Guid AgencyId, CancellationToken cancellationToken = default)
     {
         return await this.PrepareQuery(this._dbSet)
             .AnyAsync(ma => ma.MemberId == memberId &&
-                           ma.RepresentativeOfficeId == representativeOfficeId &&
+                           ma.AgencyId == AgencyId &&
                            ma.IsActive, cancellationToken:cancellationToken);
     }
 
-    public async Task<bool> MemberHasOfficeAccessLevelAsync(Guid memberId, Guid representativeOfficeId, string accessLevel, CancellationToken cancellationToken = default)
+    public async Task<bool> MemberHasOfficeAccessLevelAsync(Guid memberId, Guid AgencyId, string accessLevel, CancellationToken cancellationToken = default)
     {
         return await this.PrepareQuery(this._dbSet)
             .AnyAsync(ma => ma.MemberId == memberId &&
-                           ma.RepresentativeOfficeId == representativeOfficeId &&
+                           ma.AgencyId == AgencyId &&
                            ma.AccessLevel == accessLevel &&
                            ma.IsActive, cancellationToken:cancellationToken);
     }
 
-    public async Task<(int TotalAssignments, int ActiveAssignments, int ExpiredAssignments)> GetOfficeStatsAsync(Guid representativeOfficeId, CancellationToken cancellationToken = default)
+    public async Task<(int TotalAssignments, int ActiveAssignments, int ExpiredAssignments)> GetOfficeStatsAsync(Guid AgencyId, CancellationToken cancellationToken = default)
     {
         var query = this.PrepareQuery(this._dbSet)
-            .Where(ma => ma.RepresentativeOfficeId == representativeOfficeId);
+            .Where(ma => ma.AgencyId == AgencyId);
 
         var total = await query.CountAsync(cancellationToken);
         var active = await query.CountAsync(ma => ma.IsActive, cancellationToken:cancellationToken);
@@ -173,10 +173,10 @@ public class MemberAgencyRepository : EfRepository<MembershipDbContext, MemberAg
         await this._dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task RemoveAllOfficeAssignmentsAsync(Guid representativeOfficeId, CancellationToken cancellationToken = default)
+    public async Task RemoveAllOfficeAssignmentsAsync(Guid AgencyId, CancellationToken cancellationToken = default)
     {
         var officeAssignments = await this.PrepareQuery(this._dbSet)
-            .Where(ma => ma.RepresentativeOfficeId == representativeOfficeId)
+            .Where(ma => ma.AgencyId == AgencyId)
             .ToListAsync(cancellationToken);
 
         foreach (var ma in officeAssignments)
@@ -209,21 +209,21 @@ public class MemberAgencyRepository : EfRepository<MembershipDbContext, MemberAg
     {
         return await this.PrepareQuery(this._dbSet)
             .Where(ma => ma.MemberId == memberId && ma.IsValid())
-            .Select(ma => ma.RepresentativeOfficeId)
+            .Select(ma => ma.AgencyId)
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<Guid>> GetMemberIdsWithOfficeAccessAsync(Guid representativeOfficeId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Guid>> GetMemberIdsWithOfficeAccessAsync(Guid AgencyId, CancellationToken cancellationToken = default)
     {
         return await this.PrepareQuery(this._dbSet)
-            .Where(ma => ma.RepresentativeOfficeId == representativeOfficeId && ma.IsValid())
+            .Where(ma => ma.AgencyId == AgencyId && ma.IsValid())
             .Select(ma => ma.MemberId)
             .ToListAsync(cancellationToken);
     }
 
-    public bool IsValidRepresentativeOfficeId(Guid representativeOfficeId)
+    public bool IsValidAgencyId(Guid AgencyId)
     {
-        return representativeOfficeId != Guid.Empty;
+        return AgencyId != Guid.Empty;
     }
 
     protected override IQueryable<MemberAgency> PrepareQuery(IQueryable<MemberAgency> query)

@@ -5,7 +5,7 @@ namespace Nezam.Refahi.BasicDefinitions.Domain.Events;
 /// <summary>
 /// Domain event raised when a representative office is updated
 /// </summary>
-public class RepresentativeOfficeUpdatedEvent : DomainEvent
+public class AgencyUpdatedEvent : DomainEvent
 {
     public Guid OfficeId { get; }
     public string Code { get; }
@@ -18,7 +18,7 @@ public class RepresentativeOfficeUpdatedEvent : DomainEvent
     public DateTime? EstablishedDate { get; }
     public DateTime OccurredAt { get; }
 
-    public RepresentativeOfficeUpdatedEvent(
+    public AgencyUpdatedEvent(
         Guid officeId,
         string code,
         string name,

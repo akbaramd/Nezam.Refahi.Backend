@@ -2,9 +2,12 @@ using FluentValidation;
 using MediatR;
 using Nezam.Refahi.Finance.Application.Services;
 using Nezam.Refahi.Finance.Application.Commands.Payments;
+using Nezam.Refahi.Finance.Contracts.IntegrationEvents;
 using Nezam.Refahi.Finance.Domain.Repositories;
+using Nezam.Refahi.Shared.Application;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
+using Nezam.Refahi.Shared.Infrastructure.Outbox;
 
 namespace Nezam.Refahi.Finance.Application.Features.Payments.Commands.CompletePayment;
 
@@ -17,17 +20,20 @@ public class CompletePaymentCommandHandler : IRequestHandler<CompletePaymentComm
     private readonly IPaymentRepository _paymentRepository;
     private readonly IValidator<CompletePaymentCommand> _validator;
     private readonly IFinanceUnitOfWork _unitOfWork;
+    private readonly IOutboxPublisher _outboxPublisher;
 
     public CompletePaymentCommandHandler(
         IBillRepository billRepository,
         IPaymentRepository paymentRepository,
         IValidator<CompletePaymentCommand> validator,
-        IFinanceUnitOfWork unitOfWork)
+        IFinanceUnitOfWork unitOfWork,
+        IOutboxPublisher outboxPublisher)
     {
         _billRepository = billRepository ?? throw new ArgumentNullException(nameof(billRepository));
         _paymentRepository = paymentRepository ?? throw new ArgumentNullException(nameof(paymentRepository));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+        _outboxPublisher = outboxPublisher ?? throw new ArgumentNullException(nameof(outboxPublisher));
     }
 
     public async Task<ApplicationResult<CompletePaymentResponse>> Handle(
@@ -75,6 +81,52 @@ public class CompletePaymentCommandHandler : IRequestHandler<CompletePaymentComm
 
             // Get updated payment
             var updatedPayment = bill.Payments.First(p => p.Id == request.PaymentId);
+
+            // Publish PaymentCompletedIntegrationEvent
+            var paymentCompletedEvent = new PaymentCompletedIntegrationEvent
+            {
+                PaymentId = updatedPayment.Id,
+                ReferenceId = bill.ReferenceId,
+                ReferenceType = bill.BillType,
+                ExternalUserId = bill.ExternalUserId,
+                AmountRials = (long)updatedPayment.Amount.AmountRials,
+                GatewayTransactionId = request.GatewayTransactionId,
+                GatewayReference = request.GatewayReference,
+                CompletedAt = updatedPayment.CompletedAt!.Value,
+                Metadata = new Dictionary<string, string>
+                {
+                    ["BillId"] = bill.Id.ToString(),
+                    ["BillNumber"] = bill.BillNumber,
+                    ["PaymentMethod"] = updatedPayment.Method.ToString()
+                }
+            };
+            await _outboxPublisher.PublishAsync(paymentCompletedEvent, cancellationToken);
+
+            // Check if bill is fully paid and publish BillFullyPaidIntegrationEvent
+            if (bill.Status == Nezam.Refahi.Finance.Domain.Enums.BillStatus.FullyPaid)
+            {
+                var billFullyPaidEvent = new BillFullyPaidIntegrationEvent
+                {
+                    BillId = bill.Id,
+                    BillNumber = bill.BillNumber,
+                    ReferenceId = bill.ReferenceId,
+                    ReferenceType = bill.BillType,
+                    PaidAmountRials = (long)bill.TotalAmount.AmountRials,
+                    PaidAt = updatedPayment.CompletedAt!.Value,
+                    PaymentId = updatedPayment.Id,
+                    GatewayTransactionId = request.GatewayTransactionId,
+                    GatewayReference = request.GatewayReference,
+                    Gateway = updatedPayment.Gateway?.ToString() ?? "Unknown",
+                    ExternalUserId = bill.ExternalUserId,
+                    UserFullName = bill.UserFullName ?? string.Empty,
+                    Metadata = new Dictionary<string, string>
+                    {
+                        ["PaymentMethod"] = updatedPayment.Method.ToString(),
+                        ["CompletedAt"] = updatedPayment.CompletedAt!.Value.ToString("O")
+                    }
+                };
+                await _outboxPublisher.PublishAsync(billFullyPaidEvent, cancellationToken);
+            }
 
             // Prepare response
             var response = new CompletePaymentResponse

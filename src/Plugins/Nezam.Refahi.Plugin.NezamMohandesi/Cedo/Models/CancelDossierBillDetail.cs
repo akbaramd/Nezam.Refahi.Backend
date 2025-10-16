@@ -8,11 +8,11 @@ public partial class CancelDossierBillDetail
 
     public int CostTypeId { get; set; }
 
-    public long ReturnAmount { get; set; }
+    public decimal ReturnAmount { get; set; }
 
     public string? Description { get; set; }
 
-    public long PayedAmount { get; set; }
+    public decimal PayedAmount { get; set; }
 
     public virtual CancelDossierBill CancelDossierBill { get; set; } = null!;
 

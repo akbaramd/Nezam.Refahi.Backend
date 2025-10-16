@@ -7,27 +7,27 @@ using Nezam.Refahi.BasicDefinitions.Infrastructure.Persistence;
 namespace Nezam.Refahi.BasicDefinitions.Infrastructure.Persistence.Repositories;
 
 /// <summary>
-/// Repository implementation for RepresentativeOffice
+/// Repository implementation for Agency
 /// </summary>
-public class RepresentativeOfficeRepository : EfRepository<BasicDefinitionsDbContext, RepresentativeOffice, Guid>, IRepresentativeOfficeRepository
+public class AgencyRepository : EfRepository<BasicDefinitionsDbContext, Agency, Guid>, IAgencyRepository
 {
-    public RepresentativeOfficeRepository(BasicDefinitionsDbContext context) : base(context)
+    public AgencyRepository(BasicDefinitionsDbContext context) : base(context)
     {
     }
 
-    public async Task<RepresentativeOffice?> GetByCodeAsync(string code, CancellationToken cancellationToken = default)
+    public async Task<Agency?> GetByCodeAsync(string code, CancellationToken cancellationToken = default)
     {
         return await _dbSet
             .FirstOrDefaultAsync(x => x.Code == code, cancellationToken);
     }
 
-    public async Task<RepresentativeOffice?> GetByExternalCodeAsync(string externalCode, CancellationToken cancellationToken = default)
+    public async Task<Agency?> GetByExternalCodeAsync(string externalCode, CancellationToken cancellationToken = default)
     {
         return await _dbSet
             .FirstOrDefaultAsync(x => x.ExternalCode == externalCode, cancellationToken);
     }
 
-    public async Task<IEnumerable<RepresentativeOffice>> GetActiveOfficesAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Agency>> GetActiveOfficesAsync(CancellationToken cancellationToken = default)
     {
         return await _dbSet
             .Where(x => x.IsActive)
@@ -35,7 +35,7 @@ public class RepresentativeOfficeRepository : EfRepository<BasicDefinitionsDbCon
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<RepresentativeOffice>> GetByManagerAsync(string managerName, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Agency>> GetByManagerAsync(string managerName, CancellationToken cancellationToken = default)
     {
         return await _dbSet
             .Where(x => x.ManagerName == managerName && x.IsActive)

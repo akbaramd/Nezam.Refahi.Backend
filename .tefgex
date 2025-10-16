@@ -1,0 +1,32 @@
+# Domain Library Files - Exclude from certain operations
+# This file defines patterns for domain libraries across all projects
+
+# Domain entities and value objects
+**/**.Domain/**/*.cs
+
+# Domain services
+**/**.Domain/Services/**/*.cs
+
+# Domain repositories (interfaces)
+**/**.Domain/Repositories/**/*.cs
+
+# Domain events
+**/**.Domain/Events/**/*.cs
+
+# Domain enums
+**/**.Domain/Enums/**/*.cs
+
+# Domain exceptions
+**/**.Domain/Exceptions/**/*.cs
+
+# Domain specifications
+**/**.Domain/Specifications/**/*.cs
+
+# Domain factories
+**/**.Domain/Factories/**/*.cs
+
+# Domain modules
+**/**.Domain/**/*Module.cs
+
+# Domain test files (if you want to exclude them)
+**/**.Domain.Tests/**/*.cs

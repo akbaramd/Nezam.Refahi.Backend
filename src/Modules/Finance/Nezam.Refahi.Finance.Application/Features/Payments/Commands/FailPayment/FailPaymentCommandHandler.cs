@@ -2,9 +2,12 @@ using FluentValidation;
 using MediatR;
 using Nezam.Refahi.Finance.Application.Services;
 using Nezam.Refahi.Finance.Application.Commands.Payments;
+using Nezam.Refahi.Finance.Contracts.IntegrationEvents;
 using Nezam.Refahi.Finance.Domain.Repositories;
+using Nezam.Refahi.Shared.Application;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
+using Nezam.Refahi.Shared.Infrastructure.Outbox;
 
 namespace Nezam.Refahi.Finance.Application.Features.Payments.Commands.FailPayment;
 
@@ -17,17 +20,20 @@ public class FailPaymentCommandHandler : IRequestHandler<FailPaymentCommand, App
     private readonly IPaymentRepository _paymentRepository;
     private readonly IValidator<FailPaymentCommand> _validator;
     private readonly IFinanceUnitOfWork _unitOfWork;
+    private readonly IOutboxPublisher _outboxPublisher;
 
     public FailPaymentCommandHandler(
         IBillRepository billRepository,
         IPaymentRepository paymentRepository,
         IValidator<FailPaymentCommand> validator,
-        IFinanceUnitOfWork unitOfWork)
+        IFinanceUnitOfWork unitOfWork,
+        IOutboxPublisher outboxPublisher)
     {
         _billRepository = billRepository ?? throw new ArgumentNullException(nameof(billRepository));
         _paymentRepository = paymentRepository ?? throw new ArgumentNullException(nameof(paymentRepository));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+        _outboxPublisher = outboxPublisher ?? throw new ArgumentNullException(nameof(outboxPublisher));
     }
 
     public async Task<ApplicationResult<FailPaymentResponse>> Handle(
@@ -71,6 +77,32 @@ public class FailPaymentCommandHandler : IRequestHandler<FailPaymentCommand, App
 
             // Get updated payment
             var updatedPayment = bill.Payments.First(p => p.Id == request.PaymentId);
+
+            // Publish PaymentFailedIntegrationEvent
+            var paymentFailedEvent = new PaymentFailedIntegrationEvent
+            {
+                PaymentId = updatedPayment.Id,
+                BillId = bill.Id,
+                BillNumber = bill.BillNumber,
+                ReferenceId = bill.ReferenceId,
+                ReferenceType = bill.BillType,
+                AmountRials = (long)updatedPayment.Amount.AmountRials,
+                FailedAt = DateTime.UtcNow,
+                FailureReason = updatedPayment.FailureReason ?? request.FailureReason ?? string.Empty,
+                ErrorCode = "PAYMENT_FAILED",
+                GatewayTransactionId = updatedPayment.GatewayTransactionId,
+                Gateway = updatedPayment.Gateway?.ToString() ?? "Unknown",
+                ExternalUserId = bill.ExternalUserId,
+                UserFullName = bill.UserFullName ?? string.Empty,
+                Metadata = new Dictionary<string, string>
+                {
+                    ["BillId"] = bill.Id.ToString(),
+                    ["BillNumber"] = bill.BillNumber,
+                    ["PaymentMethod"] = updatedPayment.Method.ToString(),
+                    ["FailedAt"] = DateTime.UtcNow.ToString("O")
+                }
+            };
+            await _outboxPublisher.PublishAsync(paymentFailedEvent, cancellationToken);
 
             // Prepare response
             var response = new FailPaymentResponse

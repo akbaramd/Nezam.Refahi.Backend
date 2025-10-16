@@ -1,6 +1,6 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Nezam.Refahi.Finance.Domain.Events;
+using Nezam.Refahi.Finance.Contracts.IntegrationEvents;
 using Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.ConfirmReservation;
 using Nezam.Refahi.Recreation.Application.Services;
 using Nezam.Refahi.Recreation.Domain.Repositories;
@@ -9,10 +9,10 @@ using Nezam.Refahi.Shared.Application.Common.Interfaces;
 namespace Nezam.Refahi.Recreation.Application.EventConsumers;
 
 /// <summary>
-/// Handles BillFullyPaidEvent to confirm tour reservations
+/// Handles BillFullyPaidIntegrationEvent to confirm tour reservations
 /// When a bill is fully paid, the associated tour reservation should be confirmed
 /// </summary>
-public class BillFullyPaidEventConsumer : INotificationHandler<BillFullyPaidEvent>
+public class BillFullyPaidEventConsumer : INotificationHandler<BillFullyPaidIntegrationEvent>
 {
     private readonly ITourReservationRepository _reservationRepository;
     private readonly IRecreationUnitOfWork _unitOfWork;
@@ -31,7 +31,7 @@ public class BillFullyPaidEventConsumer : INotificationHandler<BillFullyPaidEven
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task Handle(BillFullyPaidEvent notification, CancellationToken cancellationToken)
+    public async Task Handle(BillFullyPaidIntegrationEvent notification, CancellationToken cancellationToken)
     {
         try
         {
@@ -56,27 +56,14 @@ notification.BillId, notification.ReferenceId);
                 return;
             }
 
-            // Verify the bill ID matches
-            if (reservation.BillId != notification.BillId)
-            {
-                _logger.LogWarning("Bill ID mismatch for reservation {ReservationId}. Expected: {ExpectedBillId}, Actual: {ActualBillId}", 
-                    reservation.Id, notification.BillId, reservation.BillId);
-                return;
-            }
+     
 
-            // Check if reservation is in Paying status
-            if (reservation.Status != Nezam.Refahi.Recreation.Domain.Enums.ReservationStatus.Paying)
-            {
-                _logger.LogWarning("Reservation {ReservationId} is not in Paying status. Current status: {Status}", 
-                    reservation.Id, reservation.Status);
-                return;
-            }
 
             // Confirm the reservation using the existing command
             var confirmCommand = new ConfirmReservationCommand
             {
                 ReservationId = reservation.Id,
-                TotalAmountRials = (long?)notification.PaidAmount.AmountRials, // System confirmation due to payment
+                TotalAmountRials = (long?)notification.PaidAmountRials, // System confirmation due to payment
                 PaymentReference = notification.ReferenceId // System confirmation due to payment
             };
 

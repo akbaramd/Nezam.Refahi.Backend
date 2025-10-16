@@ -1,0 +1,147 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UserSecretsId>dotnet-Nezam.Refahi.Identity.Worker-12345678-1234-1234-1234-123456789012</UserSecretsId>
+    <AssemblyTitle>Nezam Refahi Identity Worker Service</AssemblyTitle>
+    <AssemblyDescription>Background worker service for Identity module operations</AssemblyDescription>
+    <AssemblyCompany>Nezam Refahi</AssemblyCompany>
+    <AssemblyProduct>Nezam Refahi Backend</AssemblyProduct>
+    <AssemblyCopyright>Copyright © Nezam Refahi 2024</AssemblyCopyright>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+    <PackageReference Include="Serilog.Sinks.Seq" Version="6.0.0" />
+    <PackageReference Include="Bonyan.AspNetCore" Version="1.5.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Nezam.Refahi.Identity.Application\Nezam.Refahi.Identity.Application.csproj" />
+    <ProjectReference Include="..\Nezam.Refahi.Identity.Infrastructure\Nezam.Refahi.Identity.Infrastructure.csproj" />
+    <ProjectReference Include="..\Nezam.Refahi.Identity.Contracts\Nezam.Refahi.Identity.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="appsettings.Development.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="appsettings.Production.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.BasicDefinitions.Contracts.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.BasicDefinitions.Contracts.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.BasicDefinitions.Domain.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.BasicDefinitions.Domain.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Identity.Application.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Identity.Application.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Identity.Contracts.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Identity.Contracts.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Identity.Domain.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Identity.Domain.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Identity.Infrastructure.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Identity.Infrastructure.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Membership.Contracts.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Membership.Contracts.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Membership.Domain.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Membership.Domain.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Plugin.NezamMohandesi.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Plugin.NezamMohandesi.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Settings.Contracts.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Settings.Contracts.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Settings.Domain.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Settings.Domain.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Shared.Application.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Shared.Application.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Shared.Domain.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Shared.Domain.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Shared.Infrastructure.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Shared.Infrastructure.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Plugin.NezamMohandesi.deps.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Plugin.NezamMohandesi.runtimeconfig.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Shared.Infrastructure.staticwebassets.endpoints.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Plugins\Nezam.Refahi.Plugin.NezamMohandesi\plugin.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Plugins\" />
+  </ItemGroup>
+
+</Project>

@@ -5,13 +5,13 @@ using Nezam.Refahi.BasicDefinitions.Domain.Entities;
 namespace Nezam.Refahi.BasicDefinitions.Infrastructure.Persistence.Configurations;
 
 /// <summary>
-/// EF Core configuration for RepresentativeOffice entity
+/// EF Core configuration for Agency entity
 /// </summary>
-public class RepresentativeOfficeConfiguration : IEntityTypeConfiguration<RepresentativeOffice>
+public class AgencyConfiguration : IEntityTypeConfiguration<Agency>
 {
-    public void Configure(EntityTypeBuilder<RepresentativeOffice> builder)
+    public void Configure(EntityTypeBuilder<Agency> builder)
     {
-        builder.ToTable("RepresentativeOffices", "definitions");
+        builder.ToTable("Agencies", "definitions");
 
         // Primary key
         builder.HasKey(x => x.Id);
@@ -49,16 +49,16 @@ public class RepresentativeOfficeConfiguration : IEntityTypeConfiguration<Repres
         // Indexes
         builder.HasIndex(x => x.Code)
             .IsUnique()
-            .HasDatabaseName("IX_RepresentativeOffices_Code");
+            .HasDatabaseName("IX_Agencyies_Code");
 
         builder.HasIndex(x => x.ExternalCode)
             .IsUnique()
-            .HasDatabaseName("IX_RepresentativeOffices_ExternalCode");
+            .HasDatabaseName("IX_Agencyies_ExternalCode");
 
         builder.HasIndex(x => x.IsActive)
-            .HasDatabaseName("IX_RepresentativeOffices_IsActive");
+            .HasDatabaseName("IX_Agencyies_IsActive");
 
         builder.HasIndex(x => x.ManagerName)
-            .HasDatabaseName("IX_RepresentativeOffices_ManagerName");
+            .HasDatabaseName("IX_Agencyies_ManagerName");
     }
 }

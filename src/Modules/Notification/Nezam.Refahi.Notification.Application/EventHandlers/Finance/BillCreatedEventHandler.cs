@@ -1,6 +1,6 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Nezam.Refahi.Finance.Domain.Events;
+using Nezam.Refahi.Finance.Contracts.IntegrationEvents;
 using Nezam.Refahi.Notifications.Application.Features.Notifications.Commands.CreateNotification;
 using Nezam.Refahi.Notifications.Application.Services;
 
@@ -9,7 +9,7 @@ namespace Nezam.Refahi.Notifications.Application.EventHandlers.Finance;
 /// <summary>
 /// Event handler for bill created events from Finance context
 /// </summary>
-public class BillCreatedEventHandler : INotificationHandler<BillCreatedEvent>
+public class BillCreatedEventHandler : INotificationHandler<BillCreatedForReservationIntegrationEvent>
 {
     private readonly INotificationService _notificationService;
     private readonly ILogger<BillCreatedEventHandler> _logger;
@@ -22,34 +22,32 @@ public class BillCreatedEventHandler : INotificationHandler<BillCreatedEvent>
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
     
-    public async Task Handle(BillCreatedEvent notification, CancellationToken cancellationToken)
+    public async Task Handle(BillCreatedForReservationIntegrationEvent notification, CancellationToken cancellationToken)
     {
         try
         {
             _logger.LogInformation("Handling bill created event for user {UserId}, bill {BillNumber}, amount {Amount}", 
-                notification.ExternalUserId, notification.BillNumber, notification.TotalAmount.AmountRials);
+                notification.ExternalUserId, notification.BillNumber, notification.TotalAmountRials);
             
             // Create notification command
             var command = new CreateNotificationCommand
             {
                 ExternalUserId = notification.ExternalUserId,
                 Title = "فاکتور جدید صادر شد",
-                Message = $"فاکتور {notification.BillNumber} با مبلغ {notification.TotalAmount.AmountRials:N0} تومان برای شما صادر شد.",
+                Message = $"فاکتور {notification.BillNumber} با مبلغ {notification.TotalAmountRials:N0} تومان برای شما صادر شد.",
                 Context = "Bill",
                 Action = "BillCreated",
                 Data = System.Text.Json.JsonSerializer.Serialize(new
                 {
                     billId = notification.BillId,
                     billNumber = notification.BillNumber,
-                    title = notification.Title,
-                    amount = notification.TotalAmount.AmountRials,
-                    currency = "IRR",
+                    amount = notification.TotalAmountRials,
+                    currency = notification.Currency,
                     issueDate = notification.IssueDate,
-                    dueDate = notification.DueDate,
-                    billType = notification.BillType,
-                    referenceId = notification.ReferenceId
+                    reservationId = notification.ReservationId,
+                    trackingCode = notification.TrackingCode
                 }),
-                ExpiresAt = notification.DueDate?.AddDays(30) // Expire 30 days after due date
+                ExpiresAt = DateTime.UtcNow.AddDays(30) // Expire 30 days after creation
             };
             
             // Create notification

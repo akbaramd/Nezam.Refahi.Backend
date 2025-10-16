@@ -3,7 +3,6 @@ using Bonyan.Modularity.Abstractions;
 using Castle.Core.Configuration;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using Nezam.Refahi.Identity.Contracts.Pool;
 using Nezam.Refahi.Recreation.Application.Services;
 using Nezam.Refahi.Recreation.Application.Configuration;
 using Nezam.Refahi.Recreation.Application.Services.Contracts;
@@ -37,6 +36,7 @@ public class NezamRefahiRecreationApplicationModule : BonModule
 
     // Register application services
     context.Services.AddScoped<ParticipantValidationService>();
+    context.Services.AddScoped<MemberValidationService>();
     context.Services.AddScoped<IValidationService, ValidationService>();
     context.Services.AddScoped<IDisplayNameService, DisplayNameService>();
 

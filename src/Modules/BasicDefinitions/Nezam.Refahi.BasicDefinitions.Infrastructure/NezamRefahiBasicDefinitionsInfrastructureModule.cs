@@ -16,24 +16,23 @@ public class NezamRefahiBasicDefinitionsInfrastructureModule : BonModule
 {
     public NezamRefahiBasicDefinitionsInfrastructureModule()
     {
+      DependOn<NezamRefahiBasicDefinitionsApplicationModule>();
         DependOn<NezamRefahiSharedInfrastructureModule>();
-        DependOn<NezamRefahiBasicDefinitionsApplicationModule>();
     }
 
     public override Task OnConfigureAsync(BonConfigurationContext context)
     {
-       
+        var configuration = context.GetRequireService<IConfiguration>();
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+        }
+
         // Register DbContext
         context.Services.AddDbContext<BasicDefinitionsDbContext>(options =>
         {
-          var configuration = context.Services.GetRequiredService<IConfiguration>();
-          var connectionString = configuration.GetConnectionString("DefaultConnection");
-
-          if (string.IsNullOrEmpty(connectionString))
-          {
-            throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-          }
-
             options.UseSqlServer(connectionString, sqlOptions =>
             {
                 sqlOptions.MigrationsAssembly(typeof(BasicDefinitionsDbContext).Assembly.FullName);
@@ -41,9 +40,11 @@ public class NezamRefahiBasicDefinitionsInfrastructureModule : BonModule
         });
 
         // Register repositories
-        context.Services.AddScoped<IRepresentativeOfficeRepository, RepresentativeOfficeRepository>();
+        context.Services.AddScoped<IAgencyRepository, AgencyRepository>();
         context.Services.AddScoped<IFeaturesRepository, FeaturesRepository>();
         context.Services.AddScoped<ICapabilityRepository, CapabilityRepository>();
+
+        // Register Unit of Work
         context.Services.AddScoped<IBasicDefinitionsUnitOfWork, BasicDefinitionsUnitOfWork>();
 
         return base.OnConfigureAsync(context);

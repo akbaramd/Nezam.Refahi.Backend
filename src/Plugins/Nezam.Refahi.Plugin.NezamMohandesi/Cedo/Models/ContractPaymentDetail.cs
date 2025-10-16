@@ -6,7 +6,7 @@ public partial class ContractPaymentDetail
 
     public int ContractId { get; set; }
 
-    public long Amount { get; set; }
+    public decimal Amount { get; set; }
 
     public int PaymentTypeId { get; set; }
 

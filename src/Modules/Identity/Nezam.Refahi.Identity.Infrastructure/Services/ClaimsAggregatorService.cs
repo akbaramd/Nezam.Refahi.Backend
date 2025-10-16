@@ -2,7 +2,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Nezam.Refahi.Identity.Application.Services;
 using Nezam.Refahi.Identity.Application.Services.Contracts;
-using Nezam.Refahi.Identity.Contracts.Dtos;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
 using Nezam.Refahi.Shared.Infrastructure.Providers;
 

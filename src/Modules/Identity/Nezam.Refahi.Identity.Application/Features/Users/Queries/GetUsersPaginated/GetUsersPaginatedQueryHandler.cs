@@ -1,6 +1,6 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Nezam.Refahi.Identity.Contracts.Dtos;
+using Nezam.Refahi.Identity.Domain.Dtos;
 using Nezam.Refahi.Identity.Domain.Repositories;
 using Nezam.Refahi.Shared.Application.Common.Models;
 

@@ -1,4 +1,4 @@
-using Nezam.Refahi.Identity.Contracts.Dtos;
+using Nezam.Refahi.Identity.Domain.Dtos;
 
 namespace Nezam.Refahi.Identity.Application.Features.Authentication.Queries.GetCurrentUser;
 

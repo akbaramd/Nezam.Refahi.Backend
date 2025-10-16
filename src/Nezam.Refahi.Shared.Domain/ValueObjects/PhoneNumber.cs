@@ -39,7 +39,7 @@ public class PhoneNumber : ValueObject
         // Remove all non-digit characters for validation
         var digitsOnly = Regex.Replace(value, @"[^\d]", "");
         
-        // Iranian mobile numbers: 09XXXXXXXXX (11 digits)
+        // Iranian mobile numbers: 09XXXXXXXXX (11 digits) - preferred format
         if (digitsOnly.StartsWith("09") && digitsOnly.Length == 11)
             return true;
             
@@ -51,40 +51,50 @@ public class PhoneNumber : ValueObject
         if (digitsOnly.StartsWith("989") && digitsOnly.Length == 12)
             return true;
             
+        // Accept 10-digit numbers (will be normalized to 09XXXXXXXXX)
+        if (digitsOnly.Length == 10 && !digitsOnly.StartsWith("0"))
+            return true;
+            
         return false;
     }
 
     private static string Normalize(string value)
     {
-        // Convert to international format
+        // Convert to simple Iranian mobile format (09XXXXXXXXX)
         var digitsOnly = Regex.Replace(value, @"[^\d]", "");
         
         // Handle Iranian mobile numbers starting with 09
-        if (digitsOnly.StartsWith("09"))
+        if (digitsOnly.StartsWith("09") && digitsOnly.Length == 11)
         {
-            return "+98" + digitsOnly.Substring(1);
+            return digitsOnly; // Already in correct format
         }
         
         // Handle international format starting with +98
         if (value.StartsWith("+98"))
         {
-            return value;
+            return "0" + digitsOnly.Substring(2); // Convert +98XXXXXXXXX to 09XXXXXXXXX
         }
         
         // Handle numbers starting with 989 (without +)
-        if (digitsOnly.StartsWith("989"))
+        if (digitsOnly.StartsWith("989") && digitsOnly.Length == 12)
         {
-            return "+" + digitsOnly;
+            return "0" + digitsOnly.Substring(2); // Convert 989XXXXXXXXX to 09XXXXXXXXX
         }
         
         // Handle numbers starting with 98 (without +)
         if (digitsOnly.StartsWith("98") && digitsOnly.Length == 11)
         {
-            return "+" + digitsOnly;
+            return "0" + digitsOnly.Substring(1); // Convert 98XXXXXXXXX to 09XXXXXXXXX
         }
         
-        // Default: assume it's an Iranian number and add +98
-        return "+98" + digitsOnly;
+        // Default: assume it's an Iranian number and add 0
+        if (digitsOnly.Length == 10)
+        {
+            return "0" + digitsOnly; // Convert XXXXXXXXX to 09XXXXXXXXX
+        }
+        
+        // If already 11 digits, return as is
+        return digitsOnly;
     }
 
     public bool Equals(PhoneNumber? other)

@@ -33,7 +33,7 @@ public class MemberCapabilityRepository : EfRepository<MembershipDbContext, Memb
     public async Task<IEnumerable<MemberCapability>> GetByCapabilityIdAsync(string capabilityId, CancellationToken cancellationToken = default)
     {
         return await this.PrepareQuery(this._dbSet)
-            .Where(mc => mc.CapabilityId == capabilityId)
+            .Where(mc => mc.CapabilityKey == capabilityId)
             .OrderByDescending(mc => mc.AssignedAt)
             .ToListAsync(cancellationToken);
     }
@@ -41,7 +41,7 @@ public class MemberCapabilityRepository : EfRepository<MembershipDbContext, Memb
     public async Task<IEnumerable<MemberCapability>> GetValidByCapabilityIdAsync(string capabilityId, CancellationToken cancellationToken = default)
     {
         return await this.PrepareQuery(this._dbSet)
-            .Where(mc => mc.CapabilityId == capabilityId && mc.IsValid())
+            .Where(mc => mc.CapabilityKey == capabilityId && mc.IsValid())
             .OrderByDescending(mc => mc.AssignedAt)
             .ToListAsync(cancellationToken);
     }
@@ -50,7 +50,7 @@ public class MemberCapabilityRepository : EfRepository<MembershipDbContext, Memb
     {
         return await this.PrepareQuery(this._dbSet)
             .Include(mc => mc.Member)
-            .FirstOrDefaultAsync(mc => mc.MemberId == memberId && mc.CapabilityId == capabilityId, cancellationToken:cancellationToken);
+            .FirstOrDefaultAsync(mc => mc.MemberId == memberId && mc.CapabilityKey == capabilityId, cancellationToken:cancellationToken);
     }
 
     public async Task<MemberCapability?> GetActiveByMemberAndCapabilityAsync(Guid memberId, string capabilityId, CancellationToken cancellationToken = default)
@@ -58,7 +58,7 @@ public class MemberCapabilityRepository : EfRepository<MembershipDbContext, Memb
         return await this.PrepareQuery(this._dbSet)
             .Include(mc => mc.Member)
             .FirstOrDefaultAsync(mc => mc.MemberId == memberId &&
-                               mc.CapabilityId == capabilityId &&
+                               mc.CapabilityKey == capabilityId &&
                                mc.IsActive, cancellationToken:cancellationToken);
     }
 
@@ -108,14 +108,14 @@ public class MemberCapabilityRepository : EfRepository<MembershipDbContext, Memb
     {
         return await this.PrepareQuery(this._dbSet)
             .AnyAsync(mc => mc.MemberId == memberId &&
-                           mc.CapabilityId == capabilityId &&
+                           mc.CapabilityKey == capabilityId &&
                            mc.IsActive, cancellationToken:cancellationToken);
     }
 
     public async Task<(int TotalAssignments, int ActiveAssignments, int ExpiredAssignments)> GetCapabilityStatsAsync(string capabilityId, CancellationToken cancellationToken = default)
     {
         var query = this.PrepareQuery(this._dbSet)
-            .Where(mc => mc.CapabilityId == capabilityId);
+            .Where(mc => mc.CapabilityKey == capabilityId);
 
         var total = await query.CountAsync(cancellationToken);
         var active = await query.CountAsync(mc => mc.IsActive, cancellationToken:cancellationToken);
@@ -150,7 +150,7 @@ public class MemberCapabilityRepository : EfRepository<MembershipDbContext, Memb
     public async Task RemoveAllCapabilityAssignmentsAsync(string capabilityId, CancellationToken cancellationToken = default)
     {
         var capabilityAssignments = await this.PrepareQuery(this._dbSet)
-            .Where(mc => mc.CapabilityId == capabilityId)
+            .Where(mc => mc.CapabilityKey == capabilityId)
             .ToListAsync(cancellationToken);
 
         foreach (var mc in capabilityAssignments)

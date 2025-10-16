@@ -6,7 +6,6 @@ using Nezam.Refahi.Recreation.Domain.Enums;
 using Nezam.Refahi.Recreation.Domain.Repositories;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
-using Nezam.Refahi.Membership.Contracts.Services;
 
 namespace Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.ReactivateExpiredReservation;
 
@@ -19,7 +18,7 @@ public class ReactivateExpiredReservationCommandHandler : IRequestHandler<Reacti
     private readonly ITourRepository _tourRepository;
     private readonly IRecreationUnitOfWork _unitOfWork;
     private readonly ICurrentUserService _currentUserService;
-    private readonly IMemberService _memberService;
+    private readonly MemberValidationService _memberValidationService;
     private readonly ILogger<ReactivateExpiredReservationCommandHandler> _logger;
 
     public ReactivateExpiredReservationCommandHandler(
@@ -27,14 +26,14 @@ public class ReactivateExpiredReservationCommandHandler : IRequestHandler<Reacti
         ITourRepository tourRepository,
         IRecreationUnitOfWork unitOfWork,
         ICurrentUserService currentUserService,
-        IMemberService memberService,
+        MemberValidationService memberValidationService,
         ILogger<ReactivateExpiredReservationCommandHandler> logger)
     {
         _reservationRepository = reservationRepository;
         _tourRepository = tourRepository;
         _unitOfWork = unitOfWork;
         _currentUserService = currentUserService;
-        _memberService = memberService;
+        _memberValidationService = memberValidationService;
         _logger = logger;
     }
 
@@ -278,7 +277,7 @@ public class ReactivateExpiredReservationCommandHandler : IRequestHandler<Reacti
         {
             try
             {
-                var member = await _memberService.GetMemberByExternalIdAsync(_currentUserService.UserId.Value.ToString());
+                var member = await _memberValidationService.GetMemberInfoByExternalIdAsync(_currentUserService.UserId.Value.ToString());
                 return member?.Id;
             }
             catch (Exception ex)

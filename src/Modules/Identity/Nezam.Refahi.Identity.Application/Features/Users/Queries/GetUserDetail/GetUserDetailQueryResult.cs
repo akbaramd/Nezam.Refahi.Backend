@@ -1,4 +1,4 @@
-﻿using Nezam.Refahi.Identity.Contracts.Dtos;
+﻿using Nezam.Refahi.Identity.Domain.Dtos;
 using Nezam.Refahi.Identity.Domain.Entities;
 using Nezam.Refahi.Identity.Domain.ValueObjects;
 using Nezam.Refahi.Shared.Domain.ValueObjects;

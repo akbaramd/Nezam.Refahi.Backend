@@ -17,11 +17,12 @@ using System.Reflection;
 using Nezam.Refahi.Finance.Presentation;
 using Nezam.Refahi.Membership.Application.HostedServices;
 using Nezam.Refahi.Recreation.Presentation;
-using Hangfire;
-using Hangfire.SqlServer;
 using Nezam.Refahi.Notifications.Presentation;
 using Nezam.Refahi.BasicDefinitions.Presentation;
-using Nezam.Refahi.WebApi.Services;
+using Nezam.Refahi.Facilities.Presentation;
+using Nezam.Refahi.Surveying.Presentation;
+using Nezam.Refahi.Shared.Infrastructure.Services;
+using Nezam.Refahi.WebApi.HealthChecks;
 
 namespace Nezam.Refahi.WebApi;
 
@@ -36,6 +37,8 @@ public class NezamWebApiModule : BonWebModule
     DependOn<NezamRefahiFinancePresentationModule>();
     DependOn<NezamRefahiNotificationPresentationModule>();
     DependOn<NezamRefahiBasicDefinitionsPresentationModule>();
+    DependOn<NezamRefahiSurveyingPresentationModule>();
+    DependOn<NezamRefahiFacilitiesPresentationModule>();
   }
 
   public override Task OnConfigureAsync(BonConfigurationContext context)
@@ -90,9 +93,6 @@ public class NezamWebApiModule : BonWebModule
     // Add example filters
     context.Services.AddSwaggerExamplesFromAssemblyOf<NezamWebApiModule>();
 
-    // Configure Hangfire
-    ConfigureHangfire(context);
-
   // Configure CORS
     context.Services.AddCors();
     ConfigureJwtAuthentication(context);
@@ -103,6 +103,10 @@ public class NezamWebApiModule : BonWebModule
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
       });
+    // Add health checks
+    context.Services.AddHealthChecks()
+      .AddCheck<DatabaseHealthCheck>("database", tags: new[] { "ready", "live" })
+      .AddCheck<OutboxHealthCheck>("outbox", tags: new[] { "ready" });
 
     context.Services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
     {
@@ -115,7 +119,7 @@ public class NezamWebApiModule : BonWebModule
     });
 
     // Register hosted services
-    context.Services.AddHostedService<WalletSnapshotHostedService>();
+
 
     return base.OnConfigureAsync(context);
   }
@@ -131,15 +135,6 @@ public class NezamWebApiModule : BonWebModule
     var app = context.Application;
       app.UseDeveloperExceptionPage();
       app.UseStaticFiles();
-      app.UseParbadVirtualGateway();
-      
-      // Configure Hangfire Dashboard
-      app.UseHangfireDashboard("/hangfire", new DashboardOptions
-      {
-        Authorization = new[] { new HangfireAuthorizationFilter() },
-        DashboardTitle = "Nezam Refahi Background Jobs",
-        DisplayStorageConnectionString = false
-      });
       
       app.UseSwagger();
       app.UseSwaggerUI(options =>
@@ -171,32 +166,6 @@ public class NezamWebApiModule : BonWebModule
     return base.OnApplicationAsync(context);
   }
 
-  private void ConfigureHangfire(BonConfigurationContext context)
-  {
-    var configuration = context.GetRequireService<IConfiguration>();
-    var connectionString = configuration.GetConnectionString("DefaultConnection") 
-      ?? throw new InvalidOperationException("DefaultConnection connection string is not configured");
-
-    // Add Hangfire services
-    context.Services.AddHangfire(config =>
-    {
-      config.UseSqlServerStorage(connectionString, new SqlServerStorageOptions
-      {
-        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-        QueuePollInterval = TimeSpan.Zero,
-        UseRecommendedIsolationLevel = true,
-        DisableGlobalLocks = true
-      });
-    });
-
-    // Add Hangfire server
-    context.Services.AddHangfireServer(options =>
-    {
-      options.WorkerCount = Environment.ProcessorCount * 5;
-      options.Queues = new[] { "default", "wallet-snapshots" };
-    });
-  }
 
   private void ConfigureJwtAuthentication(BonConfigurationContext context)
   {
@@ -226,6 +195,40 @@ public class NezamWebApiModule : BonWebModule
 
   public override Task OnPostApplicationAsync(BonWebApplicationContext context)
   {
+    var app = context.Application;
+    
+    // Map health check endpoints
+    app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+    {
+      ResponseWriter = async (context, report) =>
+      {
+        context.Response.ContentType = "application/json";
+        var response = new
+        {
+          status = report.Status.ToString(),
+          checks = report.Entries.Select(entry => new
+          {
+            name = entry.Key,
+            status = entry.Value.Status.ToString(),
+            description = entry.Value.Description,
+            duration = entry.Value.Duration.TotalMilliseconds
+          }),
+          totalDuration = report.TotalDuration.TotalMilliseconds
+        };
+        await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(response));
+      }
+    });
+    
+    app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+    {
+      Predicate = check => check.Tags.Contains("ready")
+    });
+    
+    app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+    {
+      Predicate = check => check.Tags.Contains("live")
+    });
+  
     context.Application.MapControllers();
     return base.OnPostApplicationAsync(context);
   }

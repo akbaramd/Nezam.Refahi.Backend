@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Nezam.Refahi.Recreation.Application.Dtos;
 using Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.AddGuest;
 using Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.CreateReservation;
 using Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.InitiatePayment;
@@ -13,7 +14,6 @@ using Nezam.Refahi.Recreation.Application.Features.TourReservations.Queries.GetR
 using Nezam.Refahi.Recreation.Application.Features.TourReservations.Queries.GetReservationDetail;
 using Nezam.Refahi.Recreation.Application.Features.TourReservations.Queries.GetUserReservations;
 using Nezam.Refahi.Recreation.Domain.Enums;
-using Nezam.Refahi.Recreation.Contracts.Dtos;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
 

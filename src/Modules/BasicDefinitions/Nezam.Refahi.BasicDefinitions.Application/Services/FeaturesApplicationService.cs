@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Nezam.Refahi.BasicDefinitions.Contracts.DTOs;
+using Nezam.Refahi.BasicDefinitions.Contracts.Services;
 using Nezam.Refahi.BasicDefinitions.Domain.Entities;
 using Nezam.Refahi.BasicDefinitions.Domain.Repositories;
 using Nezam.Refahi.Shared.Application.Common.Models;

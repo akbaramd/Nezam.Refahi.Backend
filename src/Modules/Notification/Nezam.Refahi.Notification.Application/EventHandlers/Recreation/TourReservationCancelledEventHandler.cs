@@ -2,14 +2,14 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Nezam.Refahi.Notifications.Application.Features.Notifications.Commands.CreateNotification;
 using Nezam.Refahi.Notifications.Application.Services;
-using Nezam.Refahi.Recreation.Domain.Events;
+using Nezam.Refahi.Recreation.Contracts.IntegrationEvents;
 
 namespace Nezam.Refahi.Notifications.Application.EventHandlers.Recreation;
 
 /// <summary>
 /// Event handler for tour reservation cancelled events from Recreation context
 /// </summary>
-public class TourReservationCancelledEventHandler : INotificationHandler<TourReservationCancelledEvent>
+public class TourReservationCancelledEventHandler : INotificationHandler<ReservationCancelledIntegrationEvent>
 {
     private readonly INotificationService _notificationService;
     private readonly ILogger<TourReservationCancelledEventHandler> _logger;
@@ -22,7 +22,7 @@ public class TourReservationCancelledEventHandler : INotificationHandler<TourRes
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
     
-    public async Task Handle(TourReservationCancelledEvent notification, CancellationToken cancellationToken)
+    public async Task Handle(ReservationCancelledIntegrationEvent notification, CancellationToken cancellationToken)
     {
         try
         {
@@ -45,9 +45,11 @@ public class TourReservationCancelledEventHandler : INotificationHandler<TourRes
                     trackingCode = notification.TrackingCode,
                     cancellationReason = notification.CancellationReason,
                     cancelledAt = notification.CancelledAt,
-                    refundAmount = notification.RefundAmount,
-                    currency = "IRR",
-                    refundProcessed = notification.RefundProcessed
+                    refundableAmountRials = notification.RefundableAmountRials,
+                    paidAmountRials = notification.PaidAmountRials,
+                    currency = notification.Currency,
+                    wasDeleted = notification.WasDeleted,
+                    participantCount = notification.ParticipantCount
                 }),
                 ExpiresAt = DateTime.UtcNow.AddDays(30) // Keep for 30 days
             };

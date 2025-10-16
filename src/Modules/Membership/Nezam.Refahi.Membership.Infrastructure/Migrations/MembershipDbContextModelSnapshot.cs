@@ -49,6 +49,9 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
                         .IsUnicode(false)
                         .HasColumnType("varchar(100)");
 
+                    b.Property<Guid>("ExternalUserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -72,9 +75,6 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<long>("Version")
                         .HasColumnType("bigint");
 
@@ -94,6 +94,11 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
                         .HasDatabaseName("IX_Member_DeletedBy")
                         .HasFilter("[DeletedBy] IS NOT NULL");
 
+                    b.HasIndex("ExternalUserId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Members_ExternalUserId")
+                        .HasFilter("[ExternalUserId] IS NOT NULL");
+
                     b.HasIndex("IsDeleted")
                         .HasDatabaseName("IX_Member_IsDeleted");
 
@@ -105,12 +110,82 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
                         .HasDatabaseName("IX_Member_LastModifiedBy")
                         .HasFilter("[LastModifiedBy] IS NOT NULL");
 
-                    b.HasIndex("UserId")
-                        .IsUnique()
-                        .HasDatabaseName("IX_Members_UserId")
-                        .HasFilter("[UserId] IS NOT NULL");
-
                     b.ToTable("Members", "membership");
+                });
+
+            modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.MemberAgency", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AccessLevel")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("AgencyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("AssignedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("AssignedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<Guid>("MemberId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("OfficeCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("OfficeTitle")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("ValidFrom")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ValidTo")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccessLevel")
+                        .HasDatabaseName("IX_MemberAgencies_AccessLevel");
+
+                    b.HasIndex("AgencyId")
+                        .HasDatabaseName("IX_MemberAgencies_AgencyId");
+
+                    b.HasIndex("AssignedAt")
+                        .HasDatabaseName("IX_MemberAgencies_AssignedAt");
+
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("IX_MemberAgencies_IsActive");
+
+                    b.HasIndex("MemberId")
+                        .HasDatabaseName("IX_MemberAgencies_MemberId");
+
+                    b.HasIndex("MemberId", "AgencyId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_MemberAgencies_Member_Office_Active")
+                        .HasFilter("[IsActive] = 1");
+
+                    b.HasIndex("ValidFrom", "ValidTo")
+                        .HasDatabaseName("IX_MemberAgencies_ValidityPeriod");
+
+                    b.ToTable("MemberAgencies", "membership");
                 });
 
             modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.MemberCapability", b =>
@@ -125,9 +200,14 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("CapabilityId")
+                    b.Property<string>("CapabilityKey")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CapabilityTitle")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -152,8 +232,8 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
                     b.HasIndex("AssignedAt")
                         .HasDatabaseName("IX_MemberCapabilities_AssignedAt");
 
-                    b.HasIndex("CapabilityId")
-                        .HasDatabaseName("IX_MemberCapabilities_CapabilityId");
+                    b.HasIndex("CapabilityKey")
+                        .HasDatabaseName("IX_MemberCapabilities_CapabilityCapabilityKey");
 
                     b.HasIndex("IsActive")
                         .HasDatabaseName("IX_MemberCapabilities_IsActive");
@@ -161,7 +241,7 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
                     b.HasIndex("MemberId")
                         .HasDatabaseName("IX_MemberCapabilities_MemberId");
 
-                    b.HasIndex("MemberId", "CapabilityId")
+                    b.HasIndex("MemberId", "CapabilityKey")
                         .IsUnique()
                         .HasDatabaseName("IX_MemberCapabilities_Member_Capability_Active")
                         .HasFilter("[IsActive] = 1");
@@ -170,6 +250,77 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
                         .HasDatabaseName("IX_MemberCapabilities_ValidityPeriod");
 
                     b.ToTable("MemberCapabilities", "membership");
+                });
+
+            modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.MemberFeature", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("AssignedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("AssignedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("FeatureKey")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("FeatureTitle")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<Guid>("MemberId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("ValidFrom")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ValidTo")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssignedAt")
+                        .HasDatabaseName("IX_MemberFeatures_AssignedAt");
+
+                    b.HasIndex("AssignedBy")
+                        .HasDatabaseName("IX_MemberFeatures_AssignedBy");
+
+                    b.HasIndex("FeatureKey")
+                        .HasDatabaseName("IX_MemberFeatures_FeatureKey");
+
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("IX_MemberFeatures_IsActive");
+
+                    b.HasIndex("MemberId")
+                        .HasDatabaseName("IX_MemberFeatures_MemberId");
+
+                    b.HasIndex("ValidFrom")
+                        .HasDatabaseName("IX_MemberFeatures_ValidFrom");
+
+                    b.HasIndex("ValidTo")
+                        .HasDatabaseName("IX_MemberFeatures_ValidTo");
+
+                    b.HasIndex("MemberId", "FeatureKey")
+                        .IsUnique()
+                        .HasDatabaseName("IX_MemberFeatures_MemberId_FeatureKey");
+
+                    b.ToTable("MemberFeatures", "membership");
                 });
 
             modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.MemberRole", b =>
@@ -292,7 +443,7 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
 
             modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.Member", b =>
                 {
-                    b.OwnsOne("Nezam.Refahi.Membership.Domain.ValueObjects.Email", "Email", b1 =>
+                    b.OwnsOne("Nezam.Refahi.Membership.Domain.Entities.Member.Email#Nezam.Refahi.Membership.Domain.ValueObjects.Email", "Email", b1 =>
                         {
                             b1.Property<Guid>("MemberId")
                                 .HasColumnType("uniqueidentifier");
@@ -314,7 +465,7 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
                                 .HasForeignKey("MemberId");
                         });
 
-                    b.OwnsOne("Nezam.Refahi.Membership.Domain.ValueObjects.FullName", "FullName", b1 =>
+                    b.OwnsOne("Nezam.Refahi.Membership.Domain.Entities.Member.FullName#Nezam.Refahi.Membership.Domain.ValueObjects.FullName", "FullName", b1 =>
                         {
                             b1.Property<Guid>("MemberId")
                                 .HasColumnType("uniqueidentifier");
@@ -343,7 +494,7 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
                                 .HasForeignKey("MemberId");
                         });
 
-                    b.OwnsOne("Nezam.Refahi.Shared.Domain.ValueObjects.NationalId", "NationalCode", b1 =>
+                    b.OwnsOne("Nezam.Refahi.Membership.Domain.Entities.Member.NationalCode#Nezam.Refahi.Shared.Domain.ValueObjects.NationalId", "NationalCode", b1 =>
                         {
                             b1.Property<Guid>("MemberId")
                                 .HasColumnType("uniqueidentifier");
@@ -366,7 +517,7 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
                                 .HasForeignKey("MemberId");
                         });
 
-                    b.OwnsOne("Nezam.Refahi.Shared.Domain.ValueObjects.PhoneNumber", "PhoneNumber", b1 =>
+                    b.OwnsOne("Nezam.Refahi.Membership.Domain.Entities.Member.PhoneNumber#Nezam.Refahi.Shared.Domain.ValueObjects.PhoneNumber", "PhoneNumber", b1 =>
                         {
                             b1.Property<Guid>("MemberId")
                                 .HasColumnType("uniqueidentifier");
@@ -401,10 +552,32 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.MemberAgency", b =>
+                {
+                    b.HasOne("Nezam.Refahi.Membership.Domain.Entities.Member", "Member")
+                        .WithMany("Agencies")
+                        .HasForeignKey("MemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Member");
+                });
+
             modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.MemberCapability", b =>
                 {
                     b.HasOne("Nezam.Refahi.Membership.Domain.Entities.Member", "Member")
                         .WithMany("Capabilities")
+                        .HasForeignKey("MemberId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Member");
+                });
+
+            modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.MemberFeature", b =>
+                {
+                    b.HasOne("Nezam.Refahi.Membership.Domain.Entities.Member", "Member")
+                        .WithMany("Features")
                         .HasForeignKey("MemberId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -433,7 +606,11 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
 
             modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.Member", b =>
                 {
+                    b.Navigation("Agencies");
+
                     b.Navigation("Capabilities");
+
+                    b.Navigation("Features");
 
                     b.Navigation("Roles");
                 });

@@ -1,13 +1,13 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Nezam.Refahi.Recreation.Contracts.Dtos;
+using Nezam.Refahi.Recreation.Application.Dtos;
 using Nezam.Refahi.Recreation.Domain.Entities;
 using Nezam.Refahi.Recreation.Domain.Enums;
 using Nezam.Refahi.Recreation.Domain.Repositories;
 using Nezam.Refahi.Recreation.Application.Features.Tours.Queries.GetToursPaginated;
 using Nezam.Refahi.Shared.Application.Common.Models;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
-using Nezam.Refahi.Membership.Contracts.Services;
+using Nezam.Refahi.Recreation.Application.Services;
 
 namespace Nezam.Refahi.Recreation.Application.Features.Tours.Queries.GetTourDetail;
 
@@ -20,7 +20,7 @@ public class GetTourDetailQueryHandler : IRequestHandler<GetTourDetailQuery, App
     private readonly ITourReservationRepository _tourReservationRepository;
     private readonly ITourCapacityRepository _tourCapacityRepository;
     private readonly ICurrentUserService _currentUserService;
-    private readonly IMemberService _memberService;
+    private readonly MemberValidationService _memberValidationService;
     private readonly TourCapacityCalculationService _capacityCalculationService;
     private readonly ILogger<GetTourDetailQueryHandler> _logger;
 
@@ -29,14 +29,14 @@ public class GetTourDetailQueryHandler : IRequestHandler<GetTourDetailQuery, App
         ITourReservationRepository tourReservationRepository,
         ITourCapacityRepository tourCapacityRepository,
         ICurrentUserService currentUserService,
-        IMemberService memberService,
+        MemberValidationService memberValidationService,
         ILogger<GetTourDetailQueryHandler> logger)
     {
         _tourRepository = tourRepository;
         _tourReservationRepository = tourReservationRepository;
         _tourCapacityRepository = tourCapacityRepository;
         _currentUserService = currentUserService;
-        _memberService = memberService;
+        _memberValidationService = memberValidationService;
         _capacityCalculationService = new TourCapacityCalculationService(_tourReservationRepository);
         _logger = logger;
     }
@@ -64,7 +64,7 @@ public class GetTourDetailQueryHandler : IRequestHandler<GetTourDetailQuery, App
             {
                 try
                 {
-                    var member = await _memberService.GetMemberByExternalIdAsync(_currentUserService.UserId.Value.ToString());
+                    var member = await _memberValidationService.GetMemberInfoByExternalIdAsync(_currentUserService.UserId.Value.ToString());
                     if (member != null)
                     {
                         userNationalNumber = member.NationalCode;

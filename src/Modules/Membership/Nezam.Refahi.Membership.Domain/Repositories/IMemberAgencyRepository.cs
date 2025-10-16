@@ -21,22 +21,22 @@ public interface IMemberAgencyRepository : IRepository<MemberAgency, Guid>
     /// <summary>
     /// Gets all member assignments for a specific representative office
     /// </summary>
-    Task<IEnumerable<MemberAgency>> GetByRepresentativeOfficeIdAsync(Guid representativeOfficeId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<MemberAgency>> GetByAgencyIdAsync(Guid AgencyId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets all valid member assignments for a specific representative office
     /// </summary>
-    Task<IEnumerable<MemberAgency>> GetValidByRepresentativeOfficeIdAsync(Guid representativeOfficeId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<MemberAgency>> GetValidByAgencyIdAsync(Guid AgencyId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets specific member-office access assignment
     /// </summary>
-    Task<MemberAgency?> GetByMemberAndOfficeAsync(Guid memberId, Guid representativeOfficeId, CancellationToken cancellationToken = default);
+    Task<MemberAgency?> GetByMemberAndOfficeAsync(Guid memberId, Guid AgencyId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets active assignment for a specific member-office pair
     /// </summary>
-    Task<MemberAgency?> GetActiveByMemberAndOfficeAsync(Guid memberId, Guid representativeOfficeId, CancellationToken cancellationToken = default);
+    Task<MemberAgency?> GetActiveByMemberAndOfficeAsync(Guid memberId, Guid AgencyId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets office access assignments that are expiring soon for a member
@@ -71,17 +71,17 @@ public interface IMemberAgencyRepository : IRepository<MemberAgency, Guid>
     /// <summary>
     /// Checks if a member has access to a specific representative office (active)
     /// </summary>
-    Task<bool> MemberHasOfficeAccessAsync(Guid memberId, Guid representativeOfficeId, CancellationToken cancellationToken = default);
+    Task<bool> MemberHasOfficeAccessAsync(Guid memberId, Guid AgencyId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Checks if a member has specific access level to a representative office
     /// </summary>
-    Task<bool> MemberHasOfficeAccessLevelAsync(Guid memberId, Guid representativeOfficeId, string accessLevel, CancellationToken cancellationToken = default);
+    Task<bool> MemberHasOfficeAccessLevelAsync(Guid memberId, Guid AgencyId, string accessLevel, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets assignment statistics for a representative office
     /// </summary>
-    Task<(int TotalAssignments, int ActiveAssignments, int ExpiredAssignments)> GetOfficeStatsAsync(Guid representativeOfficeId, CancellationToken cancellationToken = default);
+    Task<(int TotalAssignments, int ActiveAssignments, int ExpiredAssignments)> GetOfficeStatsAsync(Guid AgencyId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets expired assignments that need cleanup
@@ -96,7 +96,7 @@ public interface IMemberAgencyRepository : IRepository<MemberAgency, Guid>
     /// <summary>
     /// Removes all assignments for a specific representative office
     /// </summary>
-    Task RemoveAllOfficeAssignmentsAsync(Guid representativeOfficeId, CancellationToken cancellationToken = default);
+    Task RemoveAllOfficeAssignmentsAsync(Guid AgencyId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets members who have access to multiple offices
@@ -116,12 +116,12 @@ public interface IMemberAgencyRepository : IRepository<MemberAgency, Guid>
     /// <summary>
     /// Gets member IDs who have access to a specific office
     /// </summary>
-    Task<IEnumerable<Guid>> GetMemberIdsWithOfficeAccessAsync(Guid representativeOfficeId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Guid>> GetMemberIdsWithOfficeAccessAsync(Guid AgencyId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Validates that a representative office ID is not empty (basic validation)
     /// Note: Full office existence validation should be done in the application service
     /// by calling the BasicDefinitions module
     /// </summary>
-    bool IsValidRepresentativeOfficeId(Guid representativeOfficeId);
+    bool IsValidAgencyId(Guid AgencyId);
 }

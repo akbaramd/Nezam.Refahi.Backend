@@ -38,7 +38,7 @@ public class WalletDepositDto
     public Guid WalletId { get; set; }
     public string TrackingCode { get; set; } = string.Empty;
     public Guid ExternalUserId { get; set; }
-    public long AmountRials { get; set; }
+    public decimal AmountRials { get; set; }
     public string Status { get; set; } = string.Empty;
     public string StatusText { get; set; } = string.Empty;  // Persian status text
     public string? Description { get; set; }

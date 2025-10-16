@@ -14,9 +14,9 @@ public class BillDto : DeletableAggregateDto<Guid>
     public Guid ExternalUserId { get; set; }
     public string? UserFullName { get; set; }
     public string Status { get; set; } = string.Empty; // BillStatus as string
-    public long TotalAmountRials { get; set; }
-    public long PaidAmountRials { get; set; }
-    public long RemainingAmountRials { get; set; }
+    public decimal TotalAmountRials { get; set; }
+    public decimal PaidAmountRials { get; set; }
+    public decimal RemainingAmountRials { get; set; }
     public string? Description { get; set; }
     public DateTime IssueDate { get; set; }
     public DateTime? DueDate { get; set; }
@@ -49,9 +49,9 @@ public class BillSummaryDto
     public Guid ExternalUserId { get; set; }
     public string? UserFullName { get; set; }
     public string Status { get; set; } = string.Empty; // BillStatus as string
-    public long TotalAmountRials { get; set; }
-    public long PaidAmountRials { get; set; }
-    public long RemainingAmountRials { get; set; }
+    public decimal TotalAmountRials { get; set; }
+    public decimal PaidAmountRials { get; set; }
+    public decimal RemainingAmountRials { get; set; }
     public DateTime IssueDate { get; set; }
     public DateTime? DueDate { get; set; }
     public bool IsOverdue { get; set; }
@@ -92,8 +92,8 @@ public class BillStatisticsDto
 {
     public Dictionary<string, int> StatusCounts { get; set; } = new(); // BillStatus as string keys
     public Dictionary<string, int> TypeCounts { get; set; } = new();
-    public long TotalAmountRials { get; set; }
-    public long PaidAmountRials { get; set; }
-    public long PendingAmountRials { get; set; }
+    public decimal TotalAmountRials { get; set; }
+    public decimal PaidAmountRials { get; set; }
+    public decimal PendingAmountRials { get; set; }
     public int OverdueBillsCount { get; set; }
 }

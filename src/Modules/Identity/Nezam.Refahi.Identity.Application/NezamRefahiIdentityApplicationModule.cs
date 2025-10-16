@@ -3,10 +3,8 @@ using Bonyan.Modularity;
 using Bonyan.Modularity.Abstractions;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using Nezam.Refahi.Identity.Application.Pool;
 using Nezam.Refahi.Identity.Application.Services;
 using Nezam.Refahi.Identity.Contracts;
-using Nezam.Refahi.Identity.Contracts.Pool;
 using Nezam.Refahi.Identity.Domain;
 using Nezam.Refahi.Shared.Application;
 
@@ -32,10 +30,6 @@ public class NezamRefahiIdentityApplicationModule : BonModule
 
     // Register FluentValidation
     context.Services.AddValidatorsFromAssembly(typeof(NezamRefahiIdentityApplicationModule).Assembly);
-
-    // Register Anti-Corruption Layer for Membership context access
-    // Implementation can be easily swapped (HTTP client, message broker, etc.) without affecting Identity domain
-    context.Services.AddScoped<IUserIntegrationPool, UserIntegrationPoolService>();
 
     return base.OnConfigureAsync(context);
   }

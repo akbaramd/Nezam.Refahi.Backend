@@ -2,9 +2,12 @@ using FluentValidation;
 using MediatR;
 using Nezam.Refahi.Finance.Application.Services;
 using Nezam.Refahi.Finance.Application.Commands.Bills;
+using Nezam.Refahi.Finance.Contracts.IntegrationEvents;
 using Nezam.Refahi.Finance.Domain.Repositories;
+using Nezam.Refahi.Shared.Application;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
+using Nezam.Refahi.Shared.Infrastructure.Outbox;
 
 namespace Nezam.Refahi.Finance.Application.Features.Bills.Commands.CancelBill;
 
@@ -16,15 +19,18 @@ public class CancelBillCommandHandler : IRequestHandler<CancelBillCommand, Appli
     private readonly IBillRepository _billRepository;
     private readonly IValidator<CancelBillCommand> _validator;
     private readonly IFinanceUnitOfWork _unitOfWork;
+    private readonly IOutboxPublisher _outboxPublisher;
 
     public CancelBillCommandHandler(
         IBillRepository billRepository,
         IValidator<CancelBillCommand> validator,
-        IFinanceUnitOfWork unitOfWork)
+        IFinanceUnitOfWork unitOfWork,
+        IOutboxPublisher outboxPublisher)
     {
         _billRepository = billRepository ?? throw new ArgumentNullException(nameof(billRepository));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+        _outboxPublisher = outboxPublisher ?? throw new ArgumentNullException(nameof(outboxPublisher));
     }
 
     public async Task<ApplicationResult<CancelBillResponse>> Handle(
@@ -57,6 +63,26 @@ public class CancelBillCommandHandler : IRequestHandler<CancelBillCommand, Appli
             await _billRepository.UpdateAsync(bill, cancellationToken:cancellationToken);
             await _unitOfWork.SaveAsync(cancellationToken);
             await _unitOfWork.CommitAsync(cancellationToken);
+
+            // Publish BillCancelledIntegrationEvent
+            var billCancelledEvent = new BillCancelledIntegrationEvent
+            {
+                BillId = bill.Id,
+                BillNumber = bill.BillNumber,
+                ReferenceId = bill.ReferenceId,
+                ReferenceType = bill.BillType,
+                Reason = request.Reason ?? string.Empty,
+                CancelledAt = DateTime.UtcNow,
+                ExternalUserId = bill.ExternalUserId,
+                UserFullName = bill.UserFullName ?? string.Empty,
+                Metadata = new Dictionary<string, string>
+                {
+                    ["CancellationReason"] = request.Reason ?? string.Empty,
+                    ["CancelledAt"] = DateTime.UtcNow.ToString("O"),
+                    ["BillStatus"] = bill.Status.ToString()
+                }
+            };
+            await _outboxPublisher.PublishAsync(billCancelledEvent, cancellationToken);
 
             // Prepare response
             var response = new CancelBillResponse

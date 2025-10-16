@@ -3,9 +3,9 @@ using System.ComponentModel.DataAnnotations;
 namespace Nezam.Refahi.BasicDefinitions.Presentation.DTOs;
 
 /// <summary>
-/// Request DTO for creating a new RepresentativeOffice
+/// Request DTO for creating a new Agency
 /// </summary>
-public sealed class CreateRepresentativeOfficeRequest
+public sealed class CreateAgencyRequest
 {
     /// <summary>
     /// Unique code for the office (e.g., "URM001", "TBR002")

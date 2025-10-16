@@ -38,7 +38,13 @@ public class MemberRepository : EfRepository<MembershipDbContext, Member, Guid>,
     public async Task<Member?> GetByEmailAsync(string email)
     {
         return await this.PrepareQuery(this._dbSet)
-            .FirstOrDefaultAsync(m => m.Email == email.ToLowerInvariant());
+            .FirstOrDefaultAsync(m => m.Email != null && m.Email.Value == email.ToLowerInvariant());
+    }
+
+    public async Task<Member?> GetByExternalUserIdAsync(Guid externalUserId, CancellationToken cancellationToken = default)
+    {
+        return await PrepareQuery(_dbSet)
+            .FirstOrDefaultAsync(m => m.ExternalUserId == externalUserId, cancellationToken);
     }
 
     public async Task<IEnumerable<Member>> GetActiveMembersAsync()
@@ -154,7 +160,7 @@ public class MemberRepository : EfRepository<MembershipDbContext, Member, Guid>,
             .Include(m => m.Roles)
                 .ThenInclude(mr => mr.Role)
             .Where(m => m.Capabilities.Any(mc =>
-                mc.CapabilityId == capabilityId &&
+                mc.CapabilityKey == capabilityId &&
                 mc.IsValid()))
             .OrderBy(m => m.FullName.FirstName)
             .ThenBy(m => m.FullName.LastName)
@@ -200,7 +206,7 @@ public class MemberRepository : EfRepository<MembershipDbContext, Member, Guid>,
             .Include(m => m.Capabilities)
             .Where(m => capabilityIdsList.All(capId =>
                 m.Capabilities.Any(mc =>
-                    mc.CapabilityId == capId && mc.IsValid())))
+                    mc.CapabilityKey == capId && mc.IsValid())))
             .OrderBy(m => m.FullName.FirstName)
             .ThenBy(m => m.FullName.LastName)
             .ToListAsync();
@@ -211,7 +217,7 @@ public class MemberRepository : EfRepository<MembershipDbContext, Member, Guid>,
         return await this.PrepareQuery(this._dbSet)
             .Include(m => m.Capabilities)
             .Where(m => m.Capabilities.Any(mc =>
-                capabilityIds.Contains(mc.CapabilityId) && mc.IsValid()))
+                capabilityIds.Contains(mc.CapabilityKey) && mc.IsValid()))
             .OrderBy(m => m.FullName.FirstName)
             .ThenBy(m => m.FullName.LastName)
             .ToListAsync();

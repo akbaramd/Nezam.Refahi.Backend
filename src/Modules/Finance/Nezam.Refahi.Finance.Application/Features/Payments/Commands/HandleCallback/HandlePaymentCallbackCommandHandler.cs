@@ -137,7 +137,7 @@ public class HandlePaymentCallbackCommandHandler : IRequestHandler<HandlePayment
             if (callbackData.IsSuccessful)
             {
                 // 3. Verify payment with gateway (gateway operation)
-                var verificationResult = await _paymentService.VerifyPaymentAsync(callbackData.TrackingNumber, cancellationToken);
+                var verificationResult = await _paymentService.VerifyPaymentAsync((long)callbackData.TrackingNumber, cancellationToken);
 
                 if (verificationResult.IsSuccess && verificationResult.Data != null && verificationResult.Data.IsSuccessful)
                 {

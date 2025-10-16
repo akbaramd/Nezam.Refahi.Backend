@@ -1,7 +1,7 @@
 using Nezam.Refahi.BasicDefinitions.Contracts.DTOs;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
-namespace Nezam.Refahi.BasicDefinitions.Application.Services;
+namespace Nezam.Refahi.BasicDefinitions.Contracts.Services;
 
 /// <summary>
 /// Application service interface for Features operations

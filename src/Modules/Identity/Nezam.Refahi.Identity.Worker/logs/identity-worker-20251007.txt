@@ -1,0 +1,45 @@
+2025-10-07 10:20:42.591 +03:30 [INF] Starting Identity Worker Service
+2025-10-07 10:20:53.956 +03:30 [INF] Starting Identity Worker Service
+2025-10-07 10:23:19.264 +03:30 [INF] Starting Identity Worker Service
+2025-10-07 10:24:22.373 +03:30 [INF] Starting Identity Worker Service
+2025-10-07 10:26:51.179 +03:30 [INF] Starting Identity Worker Service
+2025-10-07 11:04:45.382 +03:30 [INF] Starting Identity Worker Service
+2025-10-07 11:05:58.162 +03:30 [INF] Starting Identity Worker Service
+2025-10-07 11:23:40.052 +03:30 [INF] Starting Identity Worker Service
+2025-10-07 11:25:41.544 +03:30 [INF] Starting Identity Worker Service
+2025-10-07 11:31:18.592 +03:30 [INF] Starting Identity Worker Service
+2025-10-07 11:32:30.552 +03:30 [INF] Starting Identity Worker Service
+2025-10-07 11:38:57.207 +03:30 [WRN] Starting Identity Worker Service
+2025-10-07 11:56:04.674 +03:30 [WRN] Starting Identity Worker Service
+2025-10-07 11:59:58.848 +03:30 [WRN] Starting Identity Worker Service
+2025-10-07 12:17:02.571 +03:30 [WRN] Starting Identity Worker Service
+2025-10-07 12:18:00.383 +03:30 [WRN] Starting Identity Worker Service
+2025-10-07 12:18:53.632 +03:30 [WRN] Starting Identity Worker Service
+2025-10-07 12:40:59.087 +03:30 [WRN] Starting Identity Worker Service
+2025-10-07 12:41:28.650 +03:30 [WRN] Starting Identity Worker Service
+2025-10-07 12:42:45.332 +03:30 [WRN] Starting Identity Worker Service
+2025-10-07 12:49:29.470 +03:30 [WRN] Starting Identity Worker Service
+2025-10-07 12:50:25.898 +03:30 [WRN] Starting Identity Worker Service
+2025-10-07 12:55:20.293 +03:30 [WRN] Starting Identity Worker Service
+2025-10-07 12:55:32.296 +03:30 [FTL] Identity Worker Service terminated unexpectedly
+System.ArgumentException: The type `System.Threading.Tasks.Task` must be derived from the `Nezam.Refahi.Identity.Worker.Services.UserSeedingJob` type. (Parameter 'type')
+   at Hangfire.Common.Job.Validate(Type type, String typeParameterName, MethodInfo method, String methodParameterName, Int32 argumentCount, String argumentParameterName)
+   at Hangfire.Common.Job..ctor(Type type, MethodInfo method, IReadOnlyList`1 args, String queue)
+   at Hangfire.Common.Job.FromExpression(LambdaExpression methodCall, Type explicitType, String queue)
+   at Hangfire.Common.Job.FromExpression[TType](Expression`1 methodCall, String queue)
+   at Hangfire.Common.Job.FromExpression[TType](Expression`1 methodCall)
+   at Hangfire.BackgroundJobClientExtensions.Create[T](IBackgroundJobClient client, Expression`1 methodCall, IState state)
+   at Hangfire.BackgroundJobClientExtensions.Enqueue[T](IBackgroundJobClient client, Expression`1 methodCall)
+   at Hangfire.BackgroundJob.Enqueue[T](Expression`1 methodCall)
+   at Nezam.Refahi.Identity.Worker.Services.UserSeedingWorkerService.ExecuteAsync(CancellationToken stoppingToken) in D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Modules\Identity\Nezam.Refahi.Identity.Worker\Services\UserSeedingWorkerService.cs:line 34
+   at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__15_1(IHostedService service, CancellationToken token)
+   at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
+   at Microsoft.Extensions.Hosting.Internal.Host.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.RunAsync(IHost host, CancellationToken token)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.RunAsync(IHost host, CancellationToken token)
+   at Nezam.Refahi.Identity.Worker.Program.Main(String[] args) in D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Modules\Identity\Nezam.Refahi.Identity.Worker\Program.cs:line 41
+2025-10-07 13:16:57.927 +03:30 [WRN] Starting Identity Worker Service
+2025-10-07 13:19:53.064 +03:30 [WRN] Starting Identity Worker Service
+2025-10-07 13:21:52.155 +03:30 [WRN] Starting Identity Worker Service
+2025-10-07 13:34:29.075 +03:30 [WRN] Starting Identity Worker Service
+2025-10-07 13:43:23.937 +03:30 [WRN] Starting Identity Worker Service

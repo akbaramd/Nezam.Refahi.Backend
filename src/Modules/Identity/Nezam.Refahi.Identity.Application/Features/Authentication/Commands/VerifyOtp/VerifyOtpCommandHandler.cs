@@ -10,6 +10,7 @@ using Nezam.Refahi.Identity.Application.Services.Contracts;
 using Nezam.Refahi.Identity.Domain.Entities;
 using Nezam.Refahi.Identity.Domain.Repositories;
 using Nezam.Refahi.Shared.Application.Common.Models;
+using Nezam.Refahi.Identity.Contracts.IntegrationEvents;
 
 namespace Nezam.Refahi.Identity.Application.Features.Authentication.Commands.VerifyOtp;
 
@@ -41,6 +42,7 @@ public class VerifyOtpCommandHandler
     private readonly IValidator<VerifyOtpCommand> _validator;
     private readonly IIdentityUnitOfWork _uow;
     private readonly ILogger<VerifyOtpCommandHandler> _logger;
+    private readonly IMediator _mediator;
 
     public VerifyOtpCommandHandler(
         IOtpHasherService otpHasherService,
@@ -52,7 +54,8 @@ public class VerifyOtpCommandHandler
         IScopeAuthorizationService scopeAuthorizationService,
         IValidator<VerifyOtpCommand> validator,
         IIdentityUnitOfWork uow,
-        ILogger<VerifyOtpCommandHandler> logger)
+        ILogger<VerifyOtpCommandHandler> logger,
+        IMediator mediator)
     {
         _otpHasherService = otpHasherService ?? throw new ArgumentNullException(nameof(otpHasherService));
         _otpChallengeRepository = otpChallengeRepository ?? throw new ArgumentNullException(nameof(otpChallengeRepository));
@@ -64,6 +67,7 @@ public class VerifyOtpCommandHandler
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         _uow = uow ?? throw new ArgumentNullException(nameof(uow));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
     }
 
     public async Task<ApplicationResult<VerifyOtpResponse>> Handle(
@@ -293,7 +297,45 @@ public class VerifyOtpCommandHandler
             }
 
             // ========================================================================
-            // 10) Build Response
+            // 10) Publish UserLoggedInIntegrationEvent
+            // ========================================================================
+            
+            try
+            {
+                var userLoggedInEvent = new UserLoggedInIntegrationEvent
+                {
+                    UserId = user.Id,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    NationalId = user.NationalId?.Value,
+                    PhoneNumber = user.PhoneNumber.Value,
+                    Email = user.Email,
+                    Username = user.Username,
+                    ExternalUserId = user.ExternalUserId,
+                    SourceSystem = "Identity",
+                    SourceVersion = "1.0",
+                    LoggedInAt = DateTime.UtcNow,
+                    CorrelationId = Guid.NewGuid().ToString(),
+                    IdempotencyKey = $"{user.Id}_{DateTime.UtcNow:yyyyMMddHHmmss}",
+                    DeviceId = request.DeviceId ?? string.Empty,
+                    IpAddress = request.IpAddress ?? string.Empty,
+                    UserAgent = request.UserAgent ?? string.Empty,
+                    Scope = request.Scope,
+                    Claims = user.UserClaims.ToDictionary(c => c.Claim.Type, c => c.Claim.Value),
+                    Roles = user.GetRoles().Select(r => r.Name).ToList()
+                };
+
+                await _mediator.Publish(userLoggedInEvent, ct);
+                _logger.LogInformation("Published UserLoggedInIntegrationEvent for UserId: {UserId}", user.Id);
+            }
+            catch (Exception ex)
+            {
+                // Log the error but don't fail the authentication process
+                _logger.LogError(ex, "Failed to publish UserLoggedInIntegrationEvent for UserId: {UserId}", user.Id);
+            }
+
+            // ========================================================================
+            // 11) Build Response
             // ========================================================================
             
             var profileDone = IsProfileComplete(user);

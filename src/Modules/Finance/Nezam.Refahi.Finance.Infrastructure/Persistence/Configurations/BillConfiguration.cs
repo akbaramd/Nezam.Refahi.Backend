@@ -62,13 +62,14 @@ public class BillConfiguration : IEntityTypeConfiguration<Bill>
 
         builder.Property(b => b.FullyPaidDate);
 
-        // Money value objects
+        // Money value objects - Configure as owned entities without keys
         builder.OwnsOne(b => b.TotalAmount, money =>
         {
             money.Property(m => m.AmountRials)
                 .HasColumnName("TotalAmountRials")
                 .HasColumnType("decimal(18,2)")
                 .IsRequired();
+            
         });
 
         builder.OwnsOne(b => b.PaidAmount, money =>
@@ -77,6 +78,8 @@ public class BillConfiguration : IEntityTypeConfiguration<Bill>
                 .HasColumnName("PaidAmountRials")
                 .HasColumnType("decimal(18,2)")
                 .IsRequired();
+            
+            // Ensure no key is configured for owned entity
         });
 
         builder.OwnsOne(b => b.RemainingAmount, money =>
@@ -85,6 +88,8 @@ public class BillConfiguration : IEntityTypeConfiguration<Bill>
                 .HasColumnName("RemainingAmountRials")
                 .HasColumnType("decimal(18,2)")
                 .IsRequired();
+            
+            // Ensure no key is configured for owned entity
         });
 
         // Metadata as JSON

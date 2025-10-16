@@ -8,50 +8,50 @@ namespace Nezam.Refahi.Membership.Application.Services;
 /// Implementation of representative office validation service
 /// Uses cache service for better performance when validating office existence
 /// </summary>
-public sealed class RepresentativeOfficeValidationService : IRepresentativeOfficeValidationService
+public sealed class AgencyValidationService : IAgencyValidationService
 {
-    private readonly IRepresentativeOfficeService _representativeOfficeService;
+    private readonly IAgencyService _AgencyService;
     private readonly IBasicDefinitionsCacheService _cacheService;
-    private readonly ILogger<RepresentativeOfficeValidationService> _logger;
+    private readonly ILogger<AgencyValidationService> _logger;
 
-    public RepresentativeOfficeValidationService(
-        IRepresentativeOfficeService representativeOfficeService,
+    public AgencyValidationService(
+        IAgencyService AgencyService,
         IBasicDefinitionsCacheService cacheService,
-        ILogger<RepresentativeOfficeValidationService> logger)
+        ILogger<AgencyValidationService> logger)
     {
-        _representativeOfficeService = representativeOfficeService ?? throw new ArgumentNullException(nameof(representativeOfficeService));
+        _AgencyService = AgencyService ?? throw new ArgumentNullException(nameof(AgencyService));
         _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task<bool> ValidateOfficeExistsAsync(Guid representativeOfficeId)
+    public async Task<bool> ValidateOfficeExistsAsync(Guid AgencyId)
     {
         try
         {
-            if (representativeOfficeId == Guid.Empty)
+            if (AgencyId == Guid.Empty)
                 return false;
 
             // Use cache service for better performance
-            return await _cacheService.RepresentativeOfficeExistsAsync(representativeOfficeId);
+            return await _cacheService.AgencyExistsAsync(AgencyId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error validating representative office existence for ID {OfficeId}", representativeOfficeId);
+            _logger.LogError(ex, "Error validating representative office existence for ID {OfficeId}", AgencyId);
             return false;
         }
     }
 
-    public async Task<Dictionary<Guid, bool>> ValidateOfficesExistAsync(IEnumerable<Guid> representativeOfficeIds)
+    public async Task<Dictionary<Guid, bool>> ValidateOfficesExistAsync(IEnumerable<Guid> AgencyIds)
     {
         var result = new Dictionary<Guid, bool>();
         
         try
         {
-            if (representativeOfficeIds == null || !representativeOfficeIds.Any())
+            if (AgencyIds == null || !AgencyIds.Any())
                 return result;
 
             // Validate each office ID using cache service
-            foreach (var officeId in representativeOfficeIds)
+            foreach (var officeId in AgencyIds)
             {
                 if (officeId == Guid.Empty)
                 {
@@ -61,7 +61,7 @@ public sealed class RepresentativeOfficeValidationService : IRepresentativeOffic
 
                 try
                 {
-                    result[officeId] = await _cacheService.RepresentativeOfficeExistsAsync(officeId);
+                    result[officeId] = await _cacheService.AgencyExistsAsync(officeId);
                 }
                 catch (Exception ex)
                 {
@@ -79,19 +79,19 @@ public sealed class RepresentativeOfficeValidationService : IRepresentativeOffic
         }
     }
 
-    public async Task<RepresentativeOfficeBasicInfo?> GetOfficeBasicInfoAsync(Guid representativeOfficeId)
+    public async Task<AgencyBasicInfo?> GetOfficeBasicInfoAsync(Guid AgencyId)
     {
         try
         {
-            if (representativeOfficeId == Guid.Empty)
+            if (AgencyId == Guid.Empty)
                 return null;
 
             // Use cache service for better performance
-            var office = await _cacheService.GetRepresentativeOfficeAsync(representativeOfficeId);
+            var office = await _cacheService.GetAgencyAsync(AgencyId);
             if (office == null)
                 return null;
 
-            return new RepresentativeOfficeBasicInfo
+            return new AgencyBasicInfo
             {
                 Id = office.Id,
                 Code = office.Code,
@@ -101,7 +101,7 @@ public sealed class RepresentativeOfficeValidationService : IRepresentativeOffic
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting basic info for representative office ID {OfficeId}", representativeOfficeId);
+            _logger.LogError(ex, "Error getting basic info for representative office ID {OfficeId}", AgencyId);
             return null;
         }
     }

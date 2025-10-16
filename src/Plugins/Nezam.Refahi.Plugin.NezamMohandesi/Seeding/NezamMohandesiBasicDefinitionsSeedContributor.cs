@@ -43,7 +43,7 @@ public class NezamMohandesiBasicDefinitionsSeedContributor : IBasicDefinitionsSe
         return Task.FromResult(capabilities);
     }
 
-    public async Task<List<RepresentativeOffice>> SeedRepresentativeOfficesAsync(CancellationToken cancellationToken = default)
+    public async Task<List<Agency>> SeedAgencyiesAsync(CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Seeding representative offices for {PluginName}", NezamMohandesiConstants.PluginInfo.Name);
 
@@ -57,7 +57,7 @@ public class NezamMohandesiBasicDefinitionsSeedContributor : IBasicDefinitionsSe
 
         _logger.LogInformation("Found {Count} cities with sync codes (excluding satellite cities) from Cedo database", cities.Count);
 
-        var offices = new List<RepresentativeOffice>();
+        var offices = new List<Agency>();
 
         // Create offices for all cities with sync codes (not just major cities)
         foreach (var city in cities)
@@ -68,7 +68,7 @@ public class NezamMohandesiBasicDefinitionsSeedContributor : IBasicDefinitionsSe
             var managerName = city.Capital ? "مدیر کل" : "مدیر منطقه";
             var managerPhone = GetCityPhoneCode(city.Name, city.Province.Name);
 
-            var office = new RepresentativeOffice(
+            var office = new Agency(
                 officeCode,
                 officeCode, // External code same as office code
                 officeName,

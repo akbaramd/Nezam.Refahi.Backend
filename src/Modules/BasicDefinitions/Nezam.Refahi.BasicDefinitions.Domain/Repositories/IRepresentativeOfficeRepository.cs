@@ -4,29 +4,29 @@ using Nezam.Refahi.BasicDefinitions.Domain.Entities;
 namespace Nezam.Refahi.BasicDefinitions.Domain.Repositories;
 
 /// <summary>
-/// Repository interface for RepresentativeOffice aggregate
+/// Repository interface for Agency aggregate
 /// </summary>
-public interface IRepresentativeOfficeRepository : IRepository<RepresentativeOffice, Guid>
+public interface IAgencyRepository : IRepository<Agency, Guid>
 {
     /// <summary>
     /// Get office by its unique code
     /// </summary>
-    Task<RepresentativeOffice?> GetByCodeAsync(string code, CancellationToken cancellationToken = default);
+    Task<Agency?> GetByCodeAsync(string code, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get office by its external code
     /// </summary>
-    Task<RepresentativeOffice?> GetByExternalCodeAsync(string externalCode, CancellationToken cancellationToken = default);
+    Task<Agency?> GetByExternalCodeAsync(string externalCode, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get all active offices
     /// </summary>
-    Task<IEnumerable<RepresentativeOffice>> GetActiveOfficesAsync(CancellationToken cancellationToken = default);
+    Task<IEnumerable<Agency>> GetActiveOfficesAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get offices by manager name
     /// </summary>
-    Task<IEnumerable<RepresentativeOffice>> GetByManagerAsync(string managerName, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Agency>> GetByManagerAsync(string managerName, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Check if office code exists

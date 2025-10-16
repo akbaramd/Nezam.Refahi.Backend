@@ -47,8 +47,8 @@ public interface IPaymentService
 /// </summary>
 public class PaymentGatewayRequest
 {
-    public long TrackingNumber { get; set; }
-    public long AmountRials { get; set; } // Using primitive long instead of Money value object
+    public decimal TrackingNumber { get; set; }
+    public decimal AmountRials { get; set; } // Using primitive long instead of Money value object
     public string Gateway { get; set; } = string.Empty; // PaymentGateway as string
     public string CallbackUrl { get; set; } = string.Empty;
     public string? Description { get; set; }
@@ -60,12 +60,12 @@ public class PaymentGatewayRequest
 /// </summary>
 public class PaymentProcessingResult
 {
-    public long TrackingNumber { get; set; }
+    public decimal TrackingNumber { get; set; }
     public string? RedirectUrl { get; set; }
     public bool IsSucceed { get; set; }
     public string? Message { get; set; }
     public string Gateway { get; set; } = string.Empty; // PaymentGateway as string
-    public long AmountRials { get; set; } // Using primitive long instead of Money value object
+    public decimal AmountRials { get; set; } // Using primitive long instead of Money value object
     public DateTime RequestedAt { get; set; }
 }
 
@@ -74,11 +74,11 @@ public class PaymentProcessingResult
 /// </summary>
 public class GatewayCallbackResult
 {
-    public long TrackingNumber { get; set; }
+    public decimal TrackingNumber { get; set; }
     public bool IsSuccessful { get; set; }
     public string? Message { get; set; }
     public string? GatewayName { get; set; }
-    public long AmountRials { get; set; } // Using primitive long instead of Money value object
+    public decimal AmountRials { get; set; } // Using primitive long instead of Money value object
     public DateTime ProcessedAt { get; set; }
     public Dictionary<string, string> AdditionalData { get; set; } = new();
 }
@@ -88,13 +88,13 @@ public class GatewayCallbackResult
 /// </summary>
 public class PaymentVerificationResult
 {
-    public long TrackingNumber { get; set; }
+    public decimal TrackingNumber { get; set; }
     public bool IsVerified { get; set; }
     public bool IsSuccessful { get; set; }
     public string? Message { get; set; }
     public string? ReferenceNumber { get; set; }
     public string? TransactionId { get; set; }
-    public long AmountRials { get; set; } // Using primitive long instead of Money value object
+    public decimal AmountRials { get; set; } // Using primitive long instead of Money value object
     public DateTime VerifiedAt { get; set; }
 }
 

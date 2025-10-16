@@ -3,7 +3,7 @@ using Nezam.Refahi.BasicDefinitions.Domain.Entities;
 namespace Nezam.Refahi.BasicDefinitions.Contracts.Services;
 
 /// <summary>
-/// Service interface for caching basic definitions (Capabilities, Features, and RepresentativeOffices)
+/// Service interface for caching basic definitions (Capabilities, Features, and Agencyies)
 /// Provides fast access to frequently used data without database hits
 /// </summary>
 public interface IBasicDefinitionsCacheService
@@ -45,20 +45,20 @@ public interface IBasicDefinitionsCacheService
     /// Gets all representative offices from cache
     /// </summary>
     /// <returns>Collection of representative offices</returns>
-    Task<IEnumerable<RepresentativeOffice>> GetRepresentativeOfficesAsync();
+    Task<IEnumerable<Agency>> GetAgencyiesAsync();
 
     /// <summary>
     /// Gets a specific representative office by ID from cache
     /// </summary>
     /// <param name="officeId">The office ID</param>
     /// <returns>Representative office if found, null otherwise</returns>
-    Task<RepresentativeOffice?> GetRepresentativeOfficeAsync(Guid officeId);
+    Task<Agency?> GetAgencyAsync(Guid officeId);
 
     /// <summary>
     /// Gets active representative offices from cache
     /// </summary>
     /// <returns>Collection of active representative offices</returns>
-    Task<IEnumerable<RepresentativeOffice>> GetActiveRepresentativeOfficesAsync();
+    Task<IEnumerable<Agency>> GetActiveAgencyiesAsync();
 
     /// <summary>
     /// Checks if a capability exists in cache
@@ -79,7 +79,7 @@ public interface IBasicDefinitionsCacheService
     /// </summary>
     /// <param name="officeId">The office ID</param>
     /// <returns>True if office exists and is active, false otherwise</returns>
-    Task<bool> RepresentativeOfficeExistsAsync(Guid officeId);
+    Task<bool> AgencyExistsAsync(Guid officeId);
 
     /// <summary>
     /// Gets features for a specific capability from cache
@@ -113,7 +113,7 @@ public interface IBasicDefinitionsCacheService
     /// </summary>
     /// <param name="office">The updated representative office</param>
     /// <returns>Task representing the update operation</returns>
-    Task UpdateRepresentativeOfficeInCacheAsync(RepresentativeOffice office);
+    Task UpdateAgencyInCacheAsync(Agency office);
 
     /// <summary>
     /// Removes a capability from cache
@@ -134,7 +134,7 @@ public interface IBasicDefinitionsCacheService
     /// </summary>
     /// <param name="officeId">The office ID to remove</param>
     /// <returns>Task representing the removal operation</returns>
-    Task RemoveRepresentativeOfficeFromCacheAsync(Guid officeId);
+    Task RemoveAgencyFromCacheAsync(Guid officeId);
 
     /// <summary>
     /// Gets cache statistics
@@ -150,7 +150,7 @@ public class CacheStatistics
 {
     public int CapabilityCount { get; set; }
     public int FeatureCount { get; set; }
-    public int RepresentativeOfficeCount { get; set; }
+    public int AgencyCount { get; set; }
     public DateTime LastRefreshTime { get; set; }
     public TimeSpan CacheAge { get; set; }
     public bool IsCacheValid { get; set; }

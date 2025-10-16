@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using Nezam.Refahi.BasicDefinitions.Application.Services;
 using Nezam.Refahi.BasicDefinitions.Contracts.DTOs;
+using Nezam.Refahi.BasicDefinitions.Contracts.Services;
 using Nezam.Refahi.BasicDefinitions.Presentation.DTOs;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
@@ -10,11 +11,11 @@ using Nezam.Refahi.Shared.Application.Common.Models;
 namespace Nezam.Refahi.BasicDefinitions.Presentation.Endpoints;
 
 /// <summary>
-/// Endpoints for RepresentativeOffice management
+/// Endpoints for Agency management
 /// </summary>
-public static class RepresentativeOfficeEndpoints
+public static class AgencyEndpoints
 {
-    public static void MapRepresentativeOfficeEndpoints(this WebApplication app)
+    public static void MapAgencyEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("/api/representative-offices")
             .WithTags("Representative Offices")
@@ -70,7 +71,7 @@ public static class RepresentativeOfficeEndpoints
     }
 
     private static async Task<IResult> GetActiveOffices(
-        [FromServices] IRepresentativeOfficeApplicationService service)
+        [FromServices] IAgencyApplicationService service)
     {
         var result = await service.GetActiveOfficesAsync();
         return result.IsSuccess 
@@ -79,7 +80,7 @@ public static class RepresentativeOfficeEndpoints
     }
 
     private static async Task<IResult> GetAllOffices(
-        [FromServices] IRepresentativeOfficeApplicationService service)
+        [FromServices] IAgencyApplicationService service)
     {
         var result = await service.GetAllOfficesAsync();
         return result.IsSuccess 
@@ -89,7 +90,7 @@ public static class RepresentativeOfficeEndpoints
 
     private static async Task<IResult> GetOfficeById(
         Guid id,
-        [FromServices] IRepresentativeOfficeApplicationService service)
+        [FromServices] IAgencyApplicationService service)
     {
         var result = await service.GetOfficeByIdAsync(id);
         return result.IsSuccess 
@@ -99,7 +100,7 @@ public static class RepresentativeOfficeEndpoints
 
     private static async Task<IResult> GetOfficeByCode(
         string code,
-        [FromServices] IRepresentativeOfficeApplicationService service)
+        [FromServices] IAgencyApplicationService service)
     {
         var result = await service.GetOfficeByCodeAsync(code);
         return result.IsSuccess 
@@ -109,7 +110,7 @@ public static class RepresentativeOfficeEndpoints
 
     private static async Task<IResult> GetOfficeByExternalCode(
         string externalCode,
-        [FromServices] IRepresentativeOfficeApplicationService service)
+        [FromServices] IAgencyApplicationService service)
     {
         var result = await service.GetOfficeByExternalCodeAsync(externalCode);
         return result.IsSuccess 
@@ -118,11 +119,11 @@ public static class RepresentativeOfficeEndpoints
     }
 
     private static async Task<IResult> CreateOffice(
-        [FromBody] CreateRepresentativeOfficeRequest request,
-        [FromServices] IRepresentativeOfficeApplicationService service)
+        [FromBody] CreateAgencyRequest request,
+        [FromServices] IAgencyApplicationService service)
     {
         // Map request to DTO
-        var officeDto = new RepresentativeOfficeDto
+        var officeDto = new AgencyDto
         {
             Id = Guid.NewGuid(),
             Code = request.Code,
@@ -145,11 +146,11 @@ public static class RepresentativeOfficeEndpoints
 
     private static async Task<IResult> UpdateOffice(
         Guid id,
-        [FromBody] UpdateRepresentativeOfficeRequest request,
-        [FromServices] IRepresentativeOfficeApplicationService service)
+        [FromBody] UpdateAgencyRequest request,
+        [FromServices] IAgencyApplicationService service)
     {
         // Map request to DTO
-        var officeDto = new RepresentativeOfficeDto
+        var officeDto = new AgencyDto
         {
             Id = id,
             Code = request.Code,
@@ -172,7 +173,7 @@ public static class RepresentativeOfficeEndpoints
 
     private static async Task<IResult> DeleteOffice(
         Guid id,
-        [FromServices] IRepresentativeOfficeApplicationService service)
+        [FromServices] IAgencyApplicationService service)
     {
         var result = await service.DeleteOfficeAsync(id);
         

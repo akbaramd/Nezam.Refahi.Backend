@@ -6,7 +6,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using Nezam.Refahi.Identity.Application.Features.Authentication.Queries.GetClaims;
-using Nezam.Refahi.Identity.Contracts.Dtos;
+using Nezam.Refahi.Identity.Domain.Dtos;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
 namespace Nezam.Refahi.Identity.Presentation.Endpoints;

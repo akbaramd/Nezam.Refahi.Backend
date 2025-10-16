@@ -1,12 +1,14 @@
 using MediatR;
-using Nezam.Refahi.Finance.Contracts.Commands.Bills;
+using Nezam.Refahi.Recreation.Application.Dtos;
 using Nezam.Refahi.Recreation.Application.Services;
-using Nezam.Refahi.Recreation.Contracts.Dtos;
+using Nezam.Refahi.Recreation.Contracts.IntegrationEvents;
 using Nezam.Refahi.Recreation.Domain.Entities;
 using Nezam.Refahi.Recreation.Domain.Enums;
 using Nezam.Refahi.Recreation.Domain.Repositories;
+using Nezam.Refahi.Shared.Application;
 using Nezam.Refahi.Shared.Application.Common.Models;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
+using Nezam.Refahi.Shared.Infrastructure.Outbox;
 
 namespace Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.InitiatePayment;
 
@@ -17,20 +19,20 @@ public class
   private readonly ITourRepository _tourRepository;
   private readonly ITourPricingRepository _pricingRepository;
   private readonly IRecreationUnitOfWork _unitOfWork;
-  private readonly IMediator _mediator;
+  private readonly IOutboxPublisher _outboxPublisher;
 
   public InitiatePaymentCommandHandler(
     ITourReservationRepository reservationRepository,
     ITourRepository tourRepository,
     ITourPricingRepository pricingRepository,
     IRecreationUnitOfWork unitOfWork,
-    IMediator mediator)
+    IOutboxPublisher outboxPublisher)
   {
     _reservationRepository = reservationRepository;
     _tourRepository = tourRepository;
     _pricingRepository = pricingRepository;
     _unitOfWork = unitOfWork;
-    _mediator = mediator;
+    _outboxPublisher = outboxPublisher;
   }
 
   public async Task<ApplicationResult<InitiatePaymentResponse>> Handle(
@@ -94,70 +96,64 @@ public class
       return ApplicationResult<InitiatePaymentResponse>.Failure("شرکت‌کننده اصلی یافت نشد");
     }
 
-    // Create bill through Finance module
-    var createBillCommand = new CreateBillCommand
+    // Create integration event for bill creation
+    var paymentRequestedEvent = new ReservationPaymentRequestedIntegrationEvent
     {
-      Title = $"فاکتور تور {tour.Title}",
-      ReferenceId = reservation.TrackingCode, // Use tracking code as reference ID
-      BillType = "TourReservation",
+      ReservationId = reservation.Id,
+      TrackingCode = reservation.TrackingCode,
+      TourId = tour.Id,
+      TourTitle = tour.Title,
+      ReservationDate = reservation.ReservationDate,
+      ExpiryDate = reservation.ExpiryDate,
       ExternalUserId = request.ExternalUserId,
       UserFullName = mainParticipant.FullName,
+      TotalAmountRials = (long)totalAmount.AmountRials,
+      BillTitle = $"فاکتور تور {tour.Title}",
+      BillType = "TourReservation",
       Description = $"پرداخت رزرو تور {tour.Title} - کد پیگیری: {reservation.TrackingCode}",
-      DueDate = reservation.ExpiryDate,
       Metadata = new Dictionary<string, string>
       {
         ["TourId"] = tour.Id.ToString(),
         ["ReservationId"] = reservation.Id.ToString(),
-        ["TrackingCode"] = reservation.TrackingCode, // Add tracking code to metadata
+        ["TrackingCode"] = reservation.TrackingCode,
         ["TourTitle"] = tour.Title,
         ["ParticipantCount"] = reservation.GetParticipantCount().ToString(),
         ["ReservationDate"] = reservation.ReservationDate.ToString("yyyy-MM-dd HH:mm:ss")
       },
-      Items = billItems
+      BillItems = billItems.Select(item => new ReservationBillItemDto
+      {
+        Title = item.Title,
+        Description = item.Description,
+        UnitPriceRials = item.UnitPriceRials,
+        Quantity = item.Quantity,
+        DiscountPercentage = item.DiscountPercentage
+      }).ToList()
     };
 
-    var billResult = await _mediator.Send(createBillCommand, cancellationToken);
-
-    if (billResult.Data == null || !billResult.IsSuccess)
-    {
-      return ApplicationResult<InitiatePaymentResponse>.Failure(
-        billResult.Errors, $"خطا در ایجاد فاکتور: {billResult.Message}");
-    }
-
-    // Update reservation status and set bill ID
     try
     {
-      var issueResult =
-        await _mediator.Send(new IssueBillCommand() { BillId = billResult.Data.BillId }, cancellationToken);
+      // Publish integration event through outbox
+      await _outboxPublisher.PublishAsync(paymentRequestedEvent, cancellationToken);
 
-      if (issueResult.Data == null || (!issueResult.IsSuccess))
-      {
-        var allErrors = new List<string>();
-        allErrors.AddRange(billResult.Errors);
-        allErrors.AddRange(issueResult.Errors);
-        return ApplicationResult<InitiatePaymentResponse>.Failure(
-          allErrors, $"خطا در تایید فاکتور: {billResult.Message} : {issueResult.Message}");
-      }
-
+      // Update reservation status to indicate payment is being processed
       reservation.SetToPaying();
-      reservation.SetBillId(billResult.Data!.BillId);
 
       await _reservationRepository.UpdateAsync(reservation, cancellationToken: cancellationToken);
       await _unitOfWork.SaveChangesAsync(cancellationToken);
 
       return ApplicationResult<InitiatePaymentResponse>.Success(new InitiatePaymentResponse
       {
-        BillId = billResult.Data.BillId,
-        BillNumber = billResult.Data.BillNumber,
+        BillId = Guid.Empty, // Will be updated when bill is created
+        BillNumber = string.Empty, // Will be updated when bill is created
         TotalAmountRials = totalAmount.AmountRials,
-        PaymentUrl = GeneratePaymentUrl(billResult.Data.BillId),
+        PaymentUrl = GeneratePaymentUrl(reservation.Id), // Use reservation ID for now
         ExpiryDate = reservation.ExpiryDate ?? DateTime.UtcNow.AddMinutes(15)
       });
     }
     catch (Exception ex)
     {
       return ApplicationResult<InitiatePaymentResponse>.Failure(
-        ex, $"خطا در به‌روزرسانی رزرو");
+        ex, $"خطا در درخواست پرداخت");
     }
   }
 
@@ -181,12 +177,12 @@ public class
     return new Money(totalRials);
   }
 
-  private List<CreateBillItemDto> CreateBillItems(
+  private List<ReservationBillItemDto> CreateBillItems(
     TourReservation reservation,
     Tour tour,
     List<TourPricing> pricing)
   {
-    var items = new List<CreateBillItemDto>();
+    var items = new List<ReservationBillItemDto>();
 
     // Group participants by type to create consolidated items
     var participantGroups = reservation.Participants
@@ -206,11 +202,11 @@ public class
       {
         var typeDescription = GetParticipantTypeDescription(participantType);
 
-        items.Add(new CreateBillItemDto
+        items.Add(new ReservationBillItemDto
         {
           Title = $"تور {tour.Title} - {typeDescription}",
           Description = $"{typeDescription} تور {tour.Title} ({count} نفر)",
-          UnitPriceRials = applicablePricing.GetEffectivePrice().AmountRials,
+          UnitPriceRials = (long)applicablePricing.GetEffectivePrice().AmountRials,
           Quantity = count,
           DiscountPercentage = null // No discount for now
         });

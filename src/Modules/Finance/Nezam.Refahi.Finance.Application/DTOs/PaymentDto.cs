@@ -9,7 +9,7 @@ public class PaymentDto : EntityDto<Guid>
 {
     public Guid BillId { get; set; }
     public string BillNumber { get; set; } = string.Empty;
-    public long AmountRials { get; set; }
+    public decimal AmountRials { get; set; }
     public string Status { get; set; } = string.Empty; // PaymentStatus as string
     public string Method { get; set; } = string.Empty; // PaymentMethod as string
     public string? Gateway { get; set; } // PaymentGateway as string
@@ -42,7 +42,7 @@ public class PaymentSummaryDto
     public Guid Id { get; set; }
     public Guid BillId { get; set; }
     public string BillNumber { get; set; } = string.Empty;
-    public long AmountRials { get; set; }
+    public decimal AmountRials { get; set; }
     public string Status { get; set; } = string.Empty; // PaymentStatus as string
     public string Method { get; set; } = string.Empty; // PaymentMethod as string
     public string? Gateway { get; set; } // PaymentGateway as string
@@ -58,7 +58,7 @@ public class PaymentSummaryDto
 public class CreatePaymentDto
 {
     public Guid BillId { get; set; }
-    public long AmountRials { get; set; }
+    public decimal AmountRials { get; set; }
     public string Method { get; set; } = "Online"; // PaymentMethod as string, default Online
     public string? Gateway { get; set; } // PaymentGateway as string
     public string? CallbackUrl { get; set; }

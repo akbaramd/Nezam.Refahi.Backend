@@ -9,7 +9,7 @@ namespace Nezam.Refahi.Membership.Domain.Entities;
 /// </summary>
 public sealed class Member : FullAggregateRoot<Guid>
 {
-    public Guid? UserId { get; private set; } // Optional link to Auth module
+    public Guid ExternalUserId { get; private set; } // Required link to Identity context
     public string MembershipNumber { get; private set; } = null!;
     public NationalId NationalCode { get; private set; } = null!;
     public FullName FullName { get; private set; } = null!;
@@ -24,6 +24,10 @@ public sealed class Member : FullAggregateRoot<Guid>
     private readonly List<MemberCapability> _capabilities = new();
     public IReadOnlyCollection<MemberCapability> Capabilities => _capabilities.AsReadOnly();
 
+    // Member can have multiple features (many-to-many relationship)
+    private readonly List<MemberFeature> _features = new();
+    public IReadOnlyCollection<MemberFeature> Features => _features.AsReadOnly();
+
     // Member can have access to multiple representative offices (many-to-many relationship)
     private readonly List<MemberAgency> _agencies = new();
     public IReadOnlyCollection<MemberAgency> Agencies => _agencies.AsReadOnly();
@@ -32,12 +36,16 @@ public sealed class Member : FullAggregateRoot<Guid>
     private Member() : base() { }
 
     /// <summary>
-    /// Creates a new member
+    /// Creates a new member with required ExternalUserId
     /// </summary>
-    public Member(string membershipNumber,NationalId nationalCode, FullName fullName, Email email, PhoneNumber phoneNumber, DateTime? birthDate = null)
+    public Member(Guid externalUserId, string membershipNumber, NationalId nationalCode, FullName fullName, Email email, PhoneNumber phoneNumber, DateTime? birthDate = null)
         : base(Guid.NewGuid())
     {
-      MembershipNumber = membershipNumber;
+        if (externalUserId == Guid.Empty)
+            throw new ArgumentException("External User ID cannot be empty", nameof(externalUserId));
+            
+        ExternalUserId = externalUserId;
+        MembershipNumber = membershipNumber;
         NationalCode = nationalCode ?? throw new ArgumentNullException(nameof(nationalCode));
         FullName = fullName ?? throw new ArgumentNullException(nameof(fullName));
         Email = email ?? throw new ArgumentNullException(nameof(email));
@@ -46,11 +54,14 @@ public sealed class Member : FullAggregateRoot<Guid>
     }
 
     /// <summary>
-    /// Sets the optional UserId for linking to Auth module
+    /// Updates the ExternalUserId (should only be called during member creation from user events)
     /// </summary>
-    public void SetUserId(Guid? userId)
+    public void UpdateExternalUserId(Guid externalUserId)
     {
-        UserId = userId;
+        if (externalUserId == Guid.Empty)
+            throw new ArgumentException("External User ID cannot be empty", nameof(externalUserId));
+            
+        ExternalUserId = externalUserId;
     }
 
     /// <summary>
@@ -101,28 +112,28 @@ public sealed class Member : FullAggregateRoot<Guid>
     /// <summary>
     /// Assigns a capability to the member
     /// </summary>
-    public void AssignCapability(string capabilityId, string capabilityName, DateTime? validFrom = null, DateTime? validTo = null,
+    public void AssignCapability(string capabilityKey, string capabilityTitle, DateTime? validFrom = null, DateTime? validTo = null,
         string? assignedBy = null, string? notes = null)
     {
-        if (capabilityId == string.Empty)
-            throw new ArgumentException("Capability ID cannot be empty", nameof(capabilityId));
+        if (string.IsNullOrWhiteSpace(capabilityKey))
+            throw new ArgumentException("Capability Key cannot be empty", nameof(capabilityKey));
 
         // Check if capability is already assigned and active
-        if (_capabilities.Any(c => c.CapabilityId == capabilityId && c.IsValid()))
+        if (_capabilities.Any(c => c.CapabilityKey == capabilityKey && c.IsValid()))
             return;
 
-        _capabilities.Add(new MemberCapability(Id, capabilityId, capabilityName, validFrom, validTo, assignedBy, notes));
+        _capabilities.Add(new MemberCapability(Id, capabilityKey, capabilityTitle, validFrom, validTo, assignedBy, notes));
     }
 
     /// <summary>
     /// Removes a capability from the member by deactivating it
     /// </summary>
-    public void RemoveCapability(string capabilityId)
+    public void RemoveCapability(string capabilityKey)
     {
-        if (capabilityId == string.Empty)
+        if (string.IsNullOrWhiteSpace(capabilityKey))
             return;
 
-        var activeCapabilities = _capabilities.Where(c => c.CapabilityId == capabilityId && c.IsActive).ToList();
+        var activeCapabilities = _capabilities.Where(c => c.CapabilityKey == capabilityKey && c.IsActive).ToList();
         foreach (var capability in activeCapabilities)
         {
             capability.Deactivate();
@@ -140,9 +151,9 @@ public sealed class Member : FullAggregateRoot<Guid>
     /// <summary>
     /// Checks if member has a specific capability
     /// </summary>
-    public bool HasCapability(string capabilityId)
+    public bool HasCapability(string capabilityKey)
     {
-        return _capabilities.Any(c => c.CapabilityId == capabilityId && c.IsValid());
+        return _capabilities.Any(c => c.CapabilityKey == capabilityKey && c.IsValid());
     }
 
 
@@ -156,7 +167,77 @@ public sealed class Member : FullAggregateRoot<Guid>
     public bool HasCapabilityKey(string capabilityKey)
     {
         return GetValidCapabilities()
-            .Any(mc => mc.CapabilityId == capabilityKey);
+            .Any(mc => mc.CapabilityKey == capabilityKey);
+    }
+
+    /// <summary>
+    /// Assigns a feature to the member
+    /// </summary>
+    public void AssignFeature(string featureKey, string featureTitle, DateTime? validFrom = null, DateTime? validTo = null,
+        string? assignedBy = null, string? notes = null)
+    {
+        if (string.IsNullOrWhiteSpace(featureKey))
+            throw new ArgumentException("Feature Key cannot be empty", nameof(featureKey));
+
+        // Check if feature is already assigned and active
+        if (_features.Any(f => f.FeatureKey == featureKey && f.IsValid()))
+            return;
+
+        _features.Add(new MemberFeature(Id, featureKey, featureTitle, validFrom, validTo, assignedBy, notes));
+    }
+
+    /// <summary>
+    /// Removes a feature from the member by deactivating it
+    /// </summary>
+    public void RemoveFeature(string featureKey)
+    {
+        if (string.IsNullOrWhiteSpace(featureKey))
+            return;
+
+        var activeFeatures = _features.Where(f => f.FeatureKey == featureKey && f.IsActive).ToList();
+        foreach (var feature in activeFeatures)
+        {
+            feature.Deactivate();
+        }
+    }
+
+    /// <summary>
+    /// Gets all valid (active and within validity period) features for the member
+    /// </summary>
+    public IEnumerable<MemberFeature> GetValidFeatures()
+    {
+        return _features.Where(f => f.IsValid()).ToList();
+    }
+
+    /// <summary>
+    /// Checks if member has a specific feature
+    /// </summary>
+    public bool HasFeature(string featureKey)
+    {
+        return _features.Any(f => f.FeatureKey == featureKey && f.IsValid());
+    }
+
+    /// <summary>
+    /// Checks if member has a specific feature key
+    /// Note: This only checks if member has a feature with the given key
+    /// </summary>
+    public bool HasFeatureKey(string featureKey)
+    {
+        return GetValidFeatures()
+            .Any(mf => mf.FeatureKey == featureKey);
+    }
+
+    /// <summary>
+    /// Gets features that are expiring soon
+    /// </summary>
+    public IEnumerable<MemberFeature> GetExpiringFeatures(TimeSpan timeThreshold)
+    {
+        var cutoffTime = DateTimeOffset.UtcNow.Add(timeThreshold);
+        return _features.Where(f =>
+            f.IsActive &&
+            f.ValidTo.HasValue &&
+            f.ValidTo.Value <= cutoffTime &&
+            !f.IsExpired()).ToList();
     }
 
     /// <summary>
@@ -175,29 +256,29 @@ public sealed class Member : FullAggregateRoot<Guid>
     /// <summary>
     /// Assigns access to a representative office
     /// </summary>
-    public void AssignOfficeAccess(Guid representativeOfficeId, string officeCode, string officeTitle,
+    public void AssignOfficeAccess(Guid AgencyId, string officeCode, string officeTitle,
         DateTime? validFrom = null, DateTime? validTo = null,
         string? assignedBy = null, string? notes = null, string? accessLevel = null)
     {
-        if (representativeOfficeId == Guid.Empty)
-            throw new ArgumentException("Representative Office ID cannot be empty", nameof(representativeOfficeId));
+        if (AgencyId == Guid.Empty)
+            throw new ArgumentException("Representative Office ID cannot be empty", nameof(AgencyId));
 
         // Check if office access is already assigned and active
-        if (_agencies.Any(a => a.RepresentativeOfficeId == representativeOfficeId && a.IsValid()))
+        if (_agencies.Any(a => a.AgencyId == AgencyId && a.IsValid()))
             return;
 
-        _agencies.Add(new MemberAgency(Id, representativeOfficeId, officeCode, officeTitle, validFrom, validTo, assignedBy, notes, accessLevel));
+        _agencies.Add(new MemberAgency(Id, AgencyId, officeCode, officeTitle, validFrom, validTo, assignedBy, notes, accessLevel));
     }
 
     /// <summary>
     /// Removes access to a representative office by deactivating it
     /// </summary>
-    public void RemoveOfficeAccess(Guid representativeOfficeId)
+    public void RemoveOfficeAccess(Guid AgencyId)
     {
-        if (representativeOfficeId == Guid.Empty)
+        if (AgencyId == Guid.Empty)
             return;
 
-        var activeAgencies = _agencies.Where(a => a.RepresentativeOfficeId == representativeOfficeId && a.IsActive).ToList();
+        var activeAgencies = _agencies.Where(a => a.AgencyId == AgencyId && a.IsActive).ToList();
         foreach (var agency in activeAgencies)
         {
             agency.Deactivate();
@@ -215,9 +296,9 @@ public sealed class Member : FullAggregateRoot<Guid>
     /// <summary>
     /// Checks if member has access to a specific representative office
     /// </summary>
-    public bool HasOfficeAccess(Guid representativeOfficeId)
+    public bool HasOfficeAccess(Guid AgencyId)
     {
-        return _agencies.Any(a => a.RepresentativeOfficeId == representativeOfficeId && a.IsValid());
+        return _agencies.Any(a => a.AgencyId == AgencyId && a.IsValid());
     }
 
     /// <summary>
@@ -238,16 +319,16 @@ public sealed class Member : FullAggregateRoot<Guid>
     /// </summary>
     public IEnumerable<Guid> GetAccessibleOfficeIds()
     {
-        return GetValidOfficeAccesses().Select(a => a.RepresentativeOfficeId);
+        return GetValidOfficeAccesses().Select(a => a.AgencyId);
     }
 
     /// <summary>
     /// Checks if member has full access to a specific representative office
     /// </summary>
-    public bool HasFullOfficeAccess(Guid representativeOfficeId)
+    public bool HasFullOfficeAccess(Guid AgencyId)
     {
         return _agencies.Any(a => 
-            a.RepresentativeOfficeId == representativeOfficeId && 
+            a.AgencyId == AgencyId && 
             a.IsValid() && 
             a.HasFullAccess());
     }
@@ -255,10 +336,10 @@ public sealed class Member : FullAggregateRoot<Guid>
     /// <summary>
     /// Checks if member has read-only access to a specific representative office
     /// </summary>
-    public bool HasReadOnlyOfficeAccess(Guid representativeOfficeId)
+    public bool HasReadOnlyOfficeAccess(Guid AgencyId)
     {
         return _agencies.Any(a => 
-            a.RepresentativeOfficeId == representativeOfficeId && 
+            a.AgencyId == AgencyId && 
             a.IsValid() && 
             a.HasReadOnlyAccess());
     }

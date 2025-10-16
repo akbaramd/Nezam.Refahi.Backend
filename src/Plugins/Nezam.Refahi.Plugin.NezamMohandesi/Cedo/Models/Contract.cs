@@ -12,7 +12,7 @@ public partial class Contract
 
     public int Duration { get; set; }
 
-    public long UnitAmount { get; set; }
+    public decimal UnitAmount { get; set; }
 
     public DateTime RegDate { get; set; }
 

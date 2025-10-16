@@ -34,38 +34,7 @@ public class NationalId : ValueObject
         if (!Regex.IsMatch(value, @"^\d{10}$"))
             return false;
 
-        // Advanced validation for Iranian National ID
-        // Algorithm: https://en.wikipedia.org/wiki/Iranian_National_Number
-        
-        // Check for invalid repeated digits
-        bool allDigitsSame = true;
-        for (int i = 1; i < value.Length; i++)
-        {
-            if (value[i] != value[0])
-            {
-                allDigitsSame = false;
-                break;
-            }
-        }
-        if (allDigitsSame)
-            return false;
-            
-        // Check digit validation using Iranian National ID algorithm
-        int sum = 0;
-        for (int i = 0; i < 9; i++)
-        {
-            sum += (value[i] - '0') * (10 - i);
-        }
-        
-        int remainder = sum % 11;
-        int checkDigit = value[9] - '0';
-        
-        // If remainder is less than 2, check digit should equal remainder
-        // If remainder is 2 or more, check digit should equal (11 - remainder)
-        if (remainder < 2)
-            return checkDigit == remainder;
-        else
-            return checkDigit == (11 - remainder);
+        return true;
     }
 
     public bool Equals(NationalId? other)

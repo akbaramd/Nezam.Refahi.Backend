@@ -9,11 +9,11 @@ namespace Nezam.Refahi.Membership.Domain.Entities;
 public sealed class MemberCapability : Entity<Guid>
 {
     public Guid MemberId { get; private set; }
-    public string CapabilityId { get; private set; } = string.Empty;
+    public string CapabilityKey { get; private set; } = string.Empty;
     public bool IsActive { get; private set; } = true;
 
     // Cached capability information for performance
-    public string CapabilityName { get; private set; } = string.Empty;
+    public string CapabilityTitle { get; private set; } = string.Empty;
 
     public DateTime? ValidFrom { get; private set; }
     public DateTime? ValidTo { get; private set; }
@@ -28,21 +28,21 @@ public sealed class MemberCapability : Entity<Guid>
     // Private constructor for EF Core
     private MemberCapability() : base() { }
 
-    public MemberCapability(Guid memberId, string capabilityId, string capabilityName,
+    public MemberCapability(Guid memberId, string capabilityKey, string capabilityTitle,
         DateTime? validFrom = null, DateTime? validTo = null,
         string? assignedBy = null, string? notes = null)
         : base(Guid.NewGuid())
     {
         if (memberId == Guid.Empty)
             throw new ArgumentException("Member ID cannot be empty", nameof(memberId));
-        if (capabilityId == string.Empty)
-            throw new ArgumentException("Capability ID cannot be empty", nameof(capabilityId));
-        if (string.IsNullOrWhiteSpace(capabilityName))
-            throw new ArgumentException("Capability Name cannot be empty", nameof(capabilityName));
+        if (string.IsNullOrWhiteSpace(capabilityKey))
+            throw new ArgumentException("Capability Key cannot be empty", nameof(capabilityKey));
+        if (string.IsNullOrWhiteSpace(capabilityTitle))
+            throw new ArgumentException("Capability Title cannot be empty", nameof(capabilityTitle));
 
         MemberId = memberId;
-        CapabilityId = capabilityId;
-        CapabilityName = capabilityName.Trim();
+        CapabilityKey = capabilityKey.Trim();
+        CapabilityTitle = capabilityTitle.Trim();
         ValidFrom = validFrom;
         ValidTo = validTo;
         AssignedBy = assignedBy?.Trim();
@@ -114,7 +114,7 @@ public sealed class MemberCapability : Entity<Guid>
         if (string.IsNullOrWhiteSpace(capabilityName))
             throw new ArgumentException("Capability Name cannot be empty", nameof(capabilityName));
 
-        CapabilityName = capabilityName.Trim();
+        CapabilityTitle = capabilityName.Trim();
     }
 
     /// <summary>

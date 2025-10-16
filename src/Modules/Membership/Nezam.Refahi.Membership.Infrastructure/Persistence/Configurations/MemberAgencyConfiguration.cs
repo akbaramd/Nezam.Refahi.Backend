@@ -20,7 +20,7 @@ public class MemberAgencyConfiguration : IEntityTypeConfiguration<MemberAgency>
         builder.Property(ma => ma.MemberId)
             .IsRequired();
 
-        builder.Property(ma => ma.RepresentativeOfficeId)
+        builder.Property(ma => ma.AgencyId)
             .IsRequired();
 
         // IsActive configuration
@@ -68,7 +68,7 @@ public class MemberAgencyConfiguration : IEntityTypeConfiguration<MemberAgency>
             .IsRequired();
 
         // Composite unique index to prevent duplicate assignments
-        builder.HasIndex(ma => new { ma.MemberId, ma.RepresentativeOfficeId })
+        builder.HasIndex(ma => new { ma.MemberId, ma.AgencyId })
             .IsUnique()
             .HasFilter("[IsActive] = 1")
             .HasDatabaseName("IX_MemberAgencies_Member_Office_Active");
@@ -77,8 +77,8 @@ public class MemberAgencyConfiguration : IEntityTypeConfiguration<MemberAgency>
         builder.HasIndex(ma => ma.MemberId)
             .HasDatabaseName("IX_MemberAgencies_MemberId");
 
-        builder.HasIndex(ma => ma.RepresentativeOfficeId)
-            .HasDatabaseName("IX_MemberAgencies_RepresentativeOfficeId");
+        builder.HasIndex(ma => ma.AgencyId)
+            .HasDatabaseName("IX_MemberAgencies_AgencyId");
 
         builder.HasIndex(ma => ma.IsActive)
             .HasDatabaseName("IX_MemberAgencies_IsActive");

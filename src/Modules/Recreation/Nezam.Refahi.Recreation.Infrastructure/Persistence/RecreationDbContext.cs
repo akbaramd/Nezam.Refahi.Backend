@@ -24,6 +24,7 @@ public class RecreationDbContext : DbContext
     public DbSet<TourMemberCapability> TourMemberCapabilities { get; set; } = null!;
     public DbSet<TourMemberFeature> TourMemberFeatures { get; set; } = null!;
     public DbSet<TourRestrictedTour> TourRestrictedTours { get; set; } = null!;
+    public DbSet<TourAgency> TourAgencies { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -6,7 +6,7 @@ public partial class PaymentReceipt
 
     public int BillId { get; set; }
 
-    public long Amount { get; set; }
+    public decimal Amount { get; set; }
 
     public DateTime RegDate { get; set; }
 

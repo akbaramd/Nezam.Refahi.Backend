@@ -14,10 +14,12 @@
     </PackageReference>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="8.0.3" />
-    <PackageReference Include="Hangfire.AspNetCore" Version="1.8.6" />
-    <PackageReference Include="Hangfire.SqlServer" Version="1.8.6" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.5.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Modules\Facilities\Nezam.Refahi.Facilities.Presentation\Nezam.Refahi.Facilities.Presentation.csproj" />
+    <ProjectReference Include="..\Modules\Survey\Nezam.Refahi.Surveying.Presentation\Nezam.Refahi.Surveying.Presentation.csproj" />
+    <ProjectReference Include="..\Nezam.Refahi.Shared.Infrastructure\Nezam.Refahi.Shared.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Finance\Nezam.Refahi.Finance.Presentation\Nezam.Refahi.Finance.Presentation.csproj" />
     <ProjectReference Include="..\Modules\Identity\Nezam.Refahi.Identity.Presentation\Nezam.Refahi.Identity.Presentation.csproj" />
     <ProjectReference Include="..\Modules\Membership\Nezam.Refahi.Membership.Presentation\Nezam.Refahi.Membership.Presentation.csproj" />
@@ -25,10 +27,10 @@
     <ProjectReference Include="..\Modules\Settings\Nezam.Refahi.Settings.Presentation\Nezam.Refahi.Settings.Presentation.csproj" />
     <ProjectReference Include="..\Modules\Notification\Nezam.Refahi.Notification.Presentation\Nezam.Refahi.Notification.Presentation.csproj" />
     <ProjectReference Include="..\Modules\BasicDefinitions\Nezam.Refahi.BasicDefinitions.Presentation\Nezam.Refahi.BasicDefinitions.Presentation.csproj" />
+    <ProjectReference Include="..\Modules\Survey\Nezam.Refahi.Surveying.Presentation\Nezam.Refahi.Surveying.Presentation.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Plugins\" />
-    <Folder Include="Services\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
   <ItemGroup>

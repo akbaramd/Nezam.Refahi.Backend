@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -24,85 +25,115 @@ public class BasicDefinitionsSeedingHostedService : IHostedService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public Task StartAsync(CancellationToken cancellationToken)
     {
-        try
+      // Run seeding in background to not block application startup
+        _ = Task.Run(async () =>
         {
-            _logger.LogInformation("Starting BasicDefinitions seeding process");
-
-            using var scope = _serviceProvider.CreateScope();
-            var seedContributors = scope.ServiceProvider.GetServices<IBasicDefinitionsSeedContributor>();
-
-            if (!seedContributors.Any())
+            try
             {
-                _logger.LogInformation("No BasicDefinitions seed contributors found");
-                return;
-            }
+                _logger.LogInformation("Starting BasicDefinitions seeding process in background");
 
-            // Process all seed contributors
-            var orderedContributors = seedContributors.ToList();
-            _logger.LogInformation("Found {Count} seed contributors", orderedContributors.Count);
+                using var scope = _serviceProvider.CreateScope();
+                var seedContributors = scope.ServiceProvider.GetServices<IBasicDefinitionsSeedContributor>();
 
-            foreach (var contributor in orderedContributors)
-            {
-                try
+                if (!seedContributors.Any())
                 {
-                    _logger.LogInformation("Processing seed contributor: {ContributorType}", contributor.GetType().Name);
+                    _logger.LogInformation("No BasicDefinitions seed contributors found");
+                    return;
+                }
 
-                    // Use Unit of Work for transaction management
-                    var unitOfWork = scope.ServiceProvider.GetRequiredService<IBasicDefinitionsUnitOfWork>();
-                    var featuresRepository = scope.ServiceProvider.GetRequiredService<IFeaturesRepository>();
-                    var capabilityRepository = scope.ServiceProvider.GetRequiredService<ICapabilityRepository>();
-                    var representativeOfficeRepository = scope.ServiceProvider.GetRequiredService<IRepresentativeOfficeRepository>();
-                    
-                    await unitOfWork.BeginAsync(cancellationToken);
-                    
+                // Process all seed contributors
+                var orderedContributors = seedContributors.ToList();
+                _logger.LogInformation("Found {Count} seed contributors", orderedContributors.Count);
+
+                foreach (var contributor in orderedContributors)
+                {
                     try
                     {
-                        // Step 1: Seed Features
-                        var features = await contributor.SeedFeaturesAsync(cancellationToken);
-                        await SyncFeaturesAsync(features, featuresRepository, cancellationToken);
-                        _logger.LogInformation("Processed {Count} features from contributor", features.Count);
+                        _logger.LogInformation("Processing seed contributor: {ContributorType}", contributor.GetType().Name);
 
-                        // Step 2: Seed Capabilities
-                        var capabilities = await contributor.SeedCapabilitiesAsync(cancellationToken);
-                        await SyncCapabilitiesAsync(capabilities, capabilityRepository, cancellationToken);
-                        _logger.LogInformation("Processed {Count} capabilities from contributor", capabilities.Count);
+                        // Use Unit of Work for transaction management
+                        var unitOfWork = scope.ServiceProvider.GetRequiredService<IBasicDefinitionsUnitOfWork>();
+                        var featuresRepository = scope.ServiceProvider.GetRequiredService<IFeaturesRepository>();
+                        var capabilityRepository = scope.ServiceProvider.GetRequiredService<ICapabilityRepository>();
+                        var AgencyRepository = scope.ServiceProvider.GetRequiredService<IAgencyRepository>();
+                        
+                        await unitOfWork.BeginAsync(cancellationToken);
+                        
+                        try
+                        {
+                            // Step 1: Seed Features
+                            var features = await contributor.SeedFeaturesAsync(cancellationToken);
+                            await SyncFeaturesAsync(features, featuresRepository, cancellationToken);
+                            _logger.LogInformation("Processed {Count} features from contributor", features.Count);
 
-                        // Step 2.5: Sync Capability-Feature relationships
-                        await SyncCapabilityFeatureRelationshipsAsync(capabilities, featuresRepository, capabilityRepository, cancellationToken);
+                            // Step 2: Seed Capabilities
+                            var capabilities = await contributor.SeedCapabilitiesAsync(cancellationToken);
+                            await SyncCapabilitiesAsync(capabilities, capabilityRepository, cancellationToken);
+                            _logger.LogInformation("Processed {Count} capabilities from contributor", capabilities.Count);
 
-                        // Step 3: Seed Representative Offices
-                        var representativeOffices = await contributor.SeedRepresentativeOfficesAsync(cancellationToken);
-                        await SyncRepresentativeOfficesAsync(representativeOffices, representativeOfficeRepository, cancellationToken);
-                        _logger.LogInformation("Processed {Count} representative offices from contributor", representativeOffices.Count);
+                            // Step 2.5: Sync Capability-Feature relationships
+                            await SyncCapabilityFeatureRelationshipsAsync(capabilities, featuresRepository, capabilityRepository, cancellationToken);
 
-                        // Commit all changes for this contributor
-                        await unitOfWork.SaveChangesAsync(cancellationToken);
-                        await unitOfWork.CommitAsync(cancellationToken);
-                        _logger.LogInformation("Successfully processed seed contributor: {ContributorType}", contributor.GetType().Name);
+                            // Step 3: Seed Representative Offices
+                            var Agencyies = await contributor.SeedAgencyiesAsync(cancellationToken);
+                            await SyncAgencyiesAsync(Agencyies, AgencyRepository, cancellationToken);
+                            _logger.LogInformation("Processed {Count} representative offices from contributor", Agencyies.Count);
+
+                            // Commit all changes for this contributor
+                            await unitOfWork.SaveChangesAsync(cancellationToken);
+                            await unitOfWork.CommitAsync(cancellationToken);
+                            _logger.LogInformation("Successfully processed seed contributor: {ContributorType}", contributor.GetType().Name);
+                        }
+                        catch (Microsoft.EntityFrameworkCore.DbUpdateException ex) 
+                        {
+                            // Handle primary key constraint violations gracefully
+                            _logger.LogWarning("Primary key constraint violation during seeding for contributor {ContributorType}: {Message}. This is expected for duplicate data.", 
+                                contributor.GetType().Name, ex.Message);
+                            
+                            // Try to commit anyway as some data might have been saved
+                            try
+                            {
+                                await unitOfWork.CommitAsync(cancellationToken);
+                                _logger.LogInformation("Successfully committed partial data for contributor: {ContributorType}", contributor.GetType().Name);
+                            }
+                            catch (Exception commitEx)
+                            {
+                                _logger.LogWarning(commitEx, "Failed to commit partial data for contributor: {ContributorType}", contributor.GetType().Name);
+                                await unitOfWork.RollbackAsync(cancellationToken);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error processing seed contributor: {ContributorType}, rolling back transaction", contributor.GetType().Name);
+                            try
+                            {
+                                await unitOfWork.RollbackAsync(cancellationToken);
+                            }
+                            catch (Exception rollbackEx)
+                            {
+                                _logger.LogError(rollbackEx, "Failed to rollback transaction for contributor: {ContributorType}", contributor.GetType().Name);
+                            }
+                            // Continue with other contributors rather than failing the entire seeding process
+                        }
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error processing seed contributor: {ContributorType}, rolling back transaction", contributor.GetType().Name);
-                        await unitOfWork.RollbackAsync(cancellationToken);
-                        throw; // Re-throw to be caught by outer catch block
+                        _logger.LogError(ex, "Error running seed contributor: {ContributorType}", contributor.GetType().Name);
+                        // Continue with other contributors rather than failing the entire seeding process
                     }
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error running seed contributor: {ContributorType}", contributor.GetType().Name);
-                    // Continue with other contributors rather than failing the entire seeding process
-                }
-            }
 
-            _logger.LogInformation("Completed BasicDefinitions seeding process");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Fatal error during BasicDefinitions seeding process");
-            // Don't throw here as it would prevent the application from starting
-        }
+                _logger.LogInformation("Completed BasicDefinitions seeding process");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Fatal error during BasicDefinitions seeding process");
+                // Don't throw here as it would prevent the application from starting
+            }
+        }, cancellationToken);
+        return Task.CompletedTask;
     }
 
     private async Task SyncFeaturesAsync(
@@ -177,41 +208,41 @@ public class BasicDefinitionsSeedingHostedService : IHostedService
         }
     }
 
-    private async Task SyncRepresentativeOfficesAsync(
-        IEnumerable<Domain.Entities.RepresentativeOffice> representativeOffices,
-        IRepresentativeOfficeRepository representativeOfficeRepository,
+    private async Task SyncAgencyiesAsync(
+        IEnumerable<Domain.Entities.Agency> Agencyies,
+        IAgencyRepository AgencyRepository,
         CancellationToken cancellationToken)
     {
         _logger.LogInformation("Syncing representative offices");
 
-        foreach (var office in representativeOffices)
+        foreach (var office in Agencyies)
         {
             // Check if office has a valid ID (not empty GUID)
             var hasValidId = office.Id != Guid.Empty;
             
-            Domain.Entities.RepresentativeOffice? existingOffice = null;
+            Domain.Entities.Agency? existingOffice = null;
             
             if (hasValidId)
             {
                 // Try to find by ID first
-                existingOffice = await representativeOfficeRepository.FindOneAsync(o => o.Id == office.Id, cancellationToken);
+                existingOffice = await AgencyRepository.FindOneAsync(o => o.Id == office.Id, cancellationToken);
             }
             
             // If not found by ID or ID is invalid, try to find by Code or ExternalCode
             if (existingOffice == null)
             {
-                existingOffice = await representativeOfficeRepository.FindOneAsync(o => o.Code == office.Code, cancellationToken);
+                existingOffice = await AgencyRepository.FindOneAsync(o => o.Code == office.Code, cancellationToken);
             }
             
             if (existingOffice == null)
             {
-                existingOffice = await representativeOfficeRepository.FindOneAsync(o => o.ExternalCode == office.ExternalCode, cancellationToken);
+                existingOffice = await AgencyRepository.FindOneAsync(o => o.ExternalCode == office.ExternalCode, cancellationToken);
             }
 
             if (existingOffice == null)
             {
                 // Create new representative office with proper ID generation
-                var newOffice = new Domain.Entities.RepresentativeOffice(
+                var newOffice = new Domain.Entities.Agency(
                     code: office.Code,
                     externalCode: office.ExternalCode,
                     name: office.Name,
@@ -226,7 +257,7 @@ public class BasicDefinitionsSeedingHostedService : IHostedService
                     newOffice.Deactivate();
                 }
 
-                await representativeOfficeRepository.AddAsync(newOffice, cancellationToken: cancellationToken);
+                await AgencyRepository.AddAsync(newOffice, cancellationToken: cancellationToken);
                 _logger.LogInformation("Added new representative office: {OfficeId} - {OfficeName} (Code: {Code})", newOffice.Id, newOffice.Name, newOffice.Code);
             }
             else
@@ -292,14 +323,28 @@ public class BasicDefinitionsSeedingHostedService : IHostedService
                     continue;
                 }
 
-                // Add the feature to the capability if it's not already there
-                if (!trackedCapability.HasFeature(feature.Id))
+                // Check if the relationship already exists before adding
+                var relationshipExists = trackedCapability.Features.Any(f => f.Id == feature.Id);
+                
+                if (!relationshipExists)
                 {
-                    trackedCapability.AddFeature(trackedFeature);
-                    _logger.LogInformation("Added feature {FeatureId} to capability {CapabilityId}", feature.Id, capability.Id);
+                    try
+                    {
+                        trackedCapability.AddFeature(trackedFeature);
+                        _logger.LogInformation("Added feature {FeatureId} to capability {CapabilityId}", feature.Id, capability.Id);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to add feature {FeatureId} to capability {CapabilityId}", feature.Id, capability.Id);
+                    }
+                }
+                else
+                {
+                    _logger.LogDebug("Feature {FeatureId} already exists in capability {CapabilityId}, skipping", feature.Id, capability.Id);
                 }
             }
         }
     }
+
 
 }

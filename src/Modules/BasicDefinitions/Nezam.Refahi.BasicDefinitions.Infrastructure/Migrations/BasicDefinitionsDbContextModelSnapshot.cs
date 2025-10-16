@@ -38,6 +38,96 @@ namespace Nezam.Refahi.BasicDefinitions.Infrastructure.Migrations
                     b.ToTable("CapabilityFeatures", "definitions");
                 });
 
+            modelBuilder.Entity("Nezam.Refahi.BasicDefinitions.Domain.Entities.Agency", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("EstablishedDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("ExternalCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ManagerName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ManagerPhone")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<long>("Version")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Agencyies_Code");
+
+                    b.HasIndex("ExternalCode")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Agencyies_ExternalCode");
+
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("IX_Agencyies_IsActive");
+
+                    b.HasIndex("ManagerName")
+                        .HasDatabaseName("IX_Agencyies_ManagerName");
+
+                    b.ToTable("Agencies", "definitions");
+                });
+
             modelBuilder.Entity("Nezam.Refahi.BasicDefinitions.Domain.Entities.Capability", b =>
                 {
                     b.Property<string>("Id")
@@ -164,96 +254,6 @@ namespace Nezam.Refahi.BasicDefinitions.Infrastructure.Migrations
                         .HasDatabaseName("IX_Features_Type_Title");
 
                     b.ToTable("Features", "definitions");
-                });
-
-            modelBuilder.Entity("Nezam.Refahi.BasicDefinitions.Domain.Entities.RepresentativeOffice", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DeletedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("EstablishedDate")
-                        .HasColumnType("date");
-
-                    b.Property<string>("ExternalCode")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("LastModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ManagerName")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("ManagerPhone")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsRequired()
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<long>("Version")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code")
-                        .IsUnique()
-                        .HasDatabaseName("IX_RepresentativeOffices_Code");
-
-                    b.HasIndex("ExternalCode")
-                        .IsUnique()
-                        .HasDatabaseName("IX_RepresentativeOffices_ExternalCode");
-
-                    b.HasIndex("IsActive")
-                        .HasDatabaseName("IX_RepresentativeOffices_IsActive");
-
-                    b.HasIndex("ManagerName")
-                        .HasDatabaseName("IX_RepresentativeOffices_ManagerName");
-
-                    b.ToTable("RepresentativeOffices", "definitions");
                 });
 
             modelBuilder.Entity("CapabilityFeatures", b =>

@@ -1,6 +1,6 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Nezam.Refahi.Finance.Domain.Events;
+using Nezam.Refahi.Finance.Contracts.IntegrationEvents;
 using Nezam.Refahi.Notifications.Application.Features.Notifications.Commands.CreateNotification;
 using Nezam.Refahi.Notifications.Application.Services;
 
@@ -9,7 +9,7 @@ namespace Nezam.Refahi.Notifications.Application.EventHandlers.Finance;
 /// <summary>
 /// Event handler for bill fully paid events from Finance context
 /// </summary>
-public class BillFullyPaidEventHandler : INotificationHandler<BillFullyPaidEvent>
+public class BillFullyPaidEventHandler : INotificationHandler<BillFullyPaidIntegrationEvent>
 {
     private readonly INotificationService _notificationService;
     private readonly ILogger<BillFullyPaidEventHandler> _logger;
@@ -22,34 +22,33 @@ public class BillFullyPaidEventHandler : INotificationHandler<BillFullyPaidEvent
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
     
-    public async Task Handle(BillFullyPaidEvent notification, CancellationToken cancellationToken)
+    public async Task Handle(BillFullyPaidIntegrationEvent notification, CancellationToken cancellationToken)
     {
         try
         {
             _logger.LogInformation("Handling bill fully paid event for user {UserId}, bill {BillNumber}, total amount {TotalAmount}", 
-                notification.ExternalUserId, notification.BillNumber, notification.TotalAmount.AmountRials);
+                notification.ExternalUserId, notification.BillNumber, notification.PaidAmountRials);
             
             // Create notification command
             var command = new CreateNotificationCommand
             {
                 ExternalUserId = notification.ExternalUserId,
                 Title = "فاکتور کاملاً پرداخت شد",
-                Message = $"فاکتور {notification.BillNumber} با مبلغ کل {notification.TotalAmount.AmountRials:N0} تومان کاملاً پرداخت شد.",
+                Message = $"فاکتور {notification.BillNumber} با مبلغ کل {notification.PaidAmountRials:N0} تومان کاملاً پرداخت شد.",
                 Context = "Bill",
                 Action = "BillFullyPaid",
                 Data = System.Text.Json.JsonSerializer.Serialize(new
                 {
                     billId = notification.BillId,
                     billNumber = notification.BillNumber,
-                    totalAmount = notification.TotalAmount.AmountRials,
-                    paidAmount = notification.PaidAmount.AmountRials,
+                    paidAmountRials = notification.PaidAmountRials,
                     currency = "IRR",
-                    fullyPaidDate = notification.FullyPaidDate,
-                    paymentCount = notification.PaymentCount,
-                    lastPaymentMethod = notification.LastPaymentMethod,
-                    lastGateway = notification.LastGateway,
+                    paidAt = notification.PaidAt,
                     referenceId = notification.ReferenceId,
-                    referenceType = notification.ReferenceType
+                    referenceType = notification.ReferenceType,
+                    gatewayTransactionId = notification.GatewayTransactionId,
+                    gatewayReference = notification.GatewayReference,
+                    gateway = notification.Gateway
                 }),
                 ExpiresAt = DateTime.UtcNow.AddDays(90) // Keep for 90 days
             };

@@ -254,7 +254,7 @@ public class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand,
                 BillTotalAmount = bill.TotalAmount.AmountRials,
                 ItemsAdded = itemsAdded,
                 BillWasIssued = billWasIssued,
-                TrackingNumber = paymentProcessingResult?.TrackingNumber,
+                TrackingNumber = paymentProcessingResult?.TrackingNumber != null ? (long)paymentProcessingResult.TrackingNumber : null,
                 RequiresRedirect = paymentProcessingResult?.RedirectUrl != null,
                 PaymentMessage = paymentProcessingResult?.Message,
                 PaymentGateway = paymentGateway?.ToString()

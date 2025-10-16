@@ -49,7 +49,7 @@ public class CreateBillCommandHandler : IRequestHandler<CreateBillCommand, Appli
                 billId: Guid.NewGuid(),
                 title: item.Title,
                 description: item.Description,
-                unitPrice: Money.FromRials(item.UnitPriceRials),
+                unitPrice: Money.FromRials((decimal)item.UnitPriceRials),
                 quantity: item.Quantity,
                 discountPercentage: item.DiscountPercentage
             )).ToList();

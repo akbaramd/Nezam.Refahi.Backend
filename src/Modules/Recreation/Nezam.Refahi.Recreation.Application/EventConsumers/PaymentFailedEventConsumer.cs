@@ -1,7 +1,7 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
-using Nezam.Refahi.Finance.Domain.Events;
+using Nezam.Refahi.Finance.Contracts.IntegrationEvents;
 using Nezam.Refahi.Recreation.Application.Services;
 using Nezam.Refahi.Recreation.Domain.Repositories;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
@@ -9,10 +9,10 @@ using Nezam.Refahi.Shared.Application.Common.Interfaces;
 namespace Nezam.Refahi.Recreation.Application.EventConsumers;
 
 /// <summary>
-/// Handles PaymentFailedEvent to handle payment failures for tour reservations
+/// Handles PaymentFailedIntegrationEvent to handle payment failures for tour reservations
 /// When a payment fails, we may need to update reservation status or take other actions
 /// </summary>
-public class PaymentFailedEventConsumer : INotificationHandler<PaymentFailedEvent>
+public class PaymentFailedEventConsumer : INotificationHandler<PaymentFailedIntegrationEvent>
 {
     private readonly ITourReservationRepository _reservationRepository;
     private readonly IRecreationUnitOfWork _unitOfWork;
@@ -31,7 +31,7 @@ public class PaymentFailedEventConsumer : INotificationHandler<PaymentFailedEven
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
     }
 
-    public async Task Handle(PaymentFailedEvent notification, CancellationToken cancellationToken)
+    public async Task Handle(PaymentFailedIntegrationEvent notification, CancellationToken cancellationToken)
     {
         try
         {

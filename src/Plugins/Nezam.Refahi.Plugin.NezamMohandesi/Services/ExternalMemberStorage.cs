@@ -255,8 +255,6 @@ public class ExternalMemberStorage : IExternalMemberStorage
           {
             var capabilityDto = new ExternalMemberCapabilityDto
             {
-              Id = Guid.NewGuid(),
-              CapabilityId = Guid.NewGuid(),
               Capability = new ExternalCapabilityDto
               {
                 Id = Guid.NewGuid(),
@@ -285,8 +283,6 @@ public class ExternalMemberStorage : IExternalMemberStorage
     {
       var generalCapability = new ExternalMemberCapabilityDto
       {
-        Id = Guid.NewGuid(),
-        CapabilityId = Guid.NewGuid(),
         Capability = new ExternalCapabilityDto
         {
           Id = Guid.NewGuid(),

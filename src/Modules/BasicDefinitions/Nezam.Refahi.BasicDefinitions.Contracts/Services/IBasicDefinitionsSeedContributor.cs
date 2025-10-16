@@ -20,5 +20,5 @@ public interface IBasicDefinitionsSeedContributor
     /// <summary>
     /// Seeds representative offices
     /// </summary>
-    Task<List<RepresentativeOffice>> SeedRepresentativeOfficesAsync(CancellationToken cancellationToken = default);
+    Task<List<Agency>> SeedAgencyiesAsync(CancellationToken cancellationToken = default);
 }

@@ -14,7 +14,7 @@ using Nezam.Refahi.Identity.Application.Features.Users.Commands.RemoveRole;
 using Nezam.Refahi.Identity.Application.Features.Users.Commands.UpdateUser;
 using Nezam.Refahi.Identity.Application.Features.Users.Queries.GetUserDetail;
 using Nezam.Refahi.Identity.Application.Features.Users.Queries.GetUsersPaginated;
-using Nezam.Refahi.Identity.Contracts.Dtos;
+using Nezam.Refahi.Identity.Domain.Dtos;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
 namespace Nezam.Refahi.Identity.Presentation.Endpoints;

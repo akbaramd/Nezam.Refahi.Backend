@@ -7,7 +7,7 @@ public class RefundDto
 {
     public Guid Id { get; set; }
     public Guid BillId { get; set; }
-    public long AmountRials { get; set; }
+    public decimal AmountRials { get; set; }
     public string Status { get; set; } = string.Empty; // RefundStatus as string
     public string Reason { get; set; } = string.Empty;
     public string RequestedByNationalNumber { get; set; } = string.Empty;
@@ -30,7 +30,7 @@ public class RefundSummaryDto
 {
     public Guid Id { get; set; }
     public Guid BillId { get; set; }
-    public long AmountRials { get; set; }
+    public decimal AmountRials { get; set; }
     public string Status { get; set; } = string.Empty; // RefundStatus as string
     public string Reason { get; set; } = string.Empty;
     public string RequestedByNationalNumber { get; set; } = string.Empty;
@@ -44,7 +44,7 @@ public class RefundSummaryDto
 public class CreateRefundDto
 {
     public Guid BillId { get; set; }
-    public long AmountRials { get; set; }
+    public decimal AmountRials { get; set; }
     public string Reason { get; set; } = string.Empty;
     public string? RequestedByNationalNumber { get; set; }
 }
