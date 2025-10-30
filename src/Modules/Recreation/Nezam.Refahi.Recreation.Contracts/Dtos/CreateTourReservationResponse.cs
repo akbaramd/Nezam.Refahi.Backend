@@ -1,4 +1,4 @@
-﻿namespace Nezam.Refahi.Recreation.Contracts.Dtos;
+﻿namespace Nezam.Refahi.Recreation.Application.Dtos;
 
 /// <summary>
 /// Response after creating tour reservation
