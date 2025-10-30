@@ -761,4 +761,9 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
         if (trackingCode.Length > 50)
             throw new ArgumentException("کد پیگیری نمی‌تواند بیش از 50 کاراکتر باشد", nameof(trackingCode));
     }
+
+    public void SetCapacity(Guid newCapacityId)
+    {
+      CapacityId = newCapacityId;
+    }
 }
