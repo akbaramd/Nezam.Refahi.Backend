@@ -7,6 +7,7 @@ using Nezam.Refahi.Finance.Domain.Repositories;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
 using MassTransit;
+using Nezam.Refahi.Contracts.Finance.v1.Messages;
 using Nezam.Refahi.Finance.Contracts.IntegrationEvents;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
 
@@ -72,8 +73,6 @@ public class CreateBillCommandHandler : IRequestHandler<CreateBillCommand, Appli
                 metadata: request.Metadata,
                 items: items ?? new List<BillItem>()
             );
-             bill.Issue();
-
 
 
             // Save bill
@@ -81,7 +80,7 @@ public class CreateBillCommandHandler : IRequestHandler<CreateBillCommand, Appli
             await _unitOfWork.SaveAsync(cancellationToken);
 
             // Publish BillCreatedIntegrationEvent inside unit of work (captured by outbox if configured)
-            var billCreatedEvent = new BillCreatedIntegrationEvent
+            var billCreatedEvent = new BillCreatedEventMessage()
             {
                 BillId = bill.Id,
                 BillNumber = bill.BillNumber,

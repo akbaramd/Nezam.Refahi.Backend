@@ -1,5 +1,6 @@
 using MassTransit;
 using MassTransit.Saga;
+using Nezam.Refahi.Contracts.Finance.v1.Messages;
 using Nezam.Refahi.Finance.Contracts.IntegrationEvents;
 using Nezam.Refahi.Recreation.Contracts.IntegrationEvents;
 
@@ -89,15 +90,13 @@ public class ReservationPaymentSagaStateMachine : MassTransitStateMachine<Reserv
                     context.Saga.Currency = context.Message.Currency;
                     context.Saga.CreatedAt = DateTime.UtcNow;
                 })
-                .Publish(context => new CreateBillIntegrationEvent
+                .Publish(context => new IssueBillCommandMessage()
                 {
                     TrackingCode = context.Saga.TrackingCode,
                     ReferenceId = context.Saga.ReservationId.ToString(),
                     ReferenceType = "TourReservation",
                     ExternalUserId = context.Saga.ExternalUserId,
                     UserFullName = context.Saga.UserFullName,
-                    AmountRials = context.Saga.TotalAmountRials,
-                    Currency = context.Saga.Currency,
                     BillTitle = $"فاکتور تور {context.Saga.TourTitle}",
                     Description = $"ایجاد فاکتور برای رزرو: {context.Saga.TrackingCode}",
                     Metadata = new Dictionary<string, string>
@@ -214,7 +213,7 @@ public class ReservationPaymentSagaStateMachine : MassTransitStateMachine<Reserv
 
     // Events
     public Event<ReservationHeldIntegrationEvent> ReservationHeld { get; private set; } = null!;
-    public Event<BillCreatedIntegrationEvent> BillCreated { get; private set; } = null!;
+    public Event<BillCreatedEventMessage> BillCreated { get; private set; } = null!;
     public Event<PaymentCompletedIntegrationEvent> PaymentCompleted { get; private set; } = null!;
     public Event<PaymentFailedIntegrationEvent> PaymentFailed { get; private set; } = null!;
 }

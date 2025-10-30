@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Nezam.Refahi.Contracts.Finance.v1.Messages;
 using Nezam.Refahi.Finance.Contracts.IntegrationEvents;
 using Nezam.Refahi.Notifications.Application.Features.Notifications.Commands.CreateNotification;
 using Nezam.Refahi.Notifications.Application.Services;
@@ -9,7 +10,7 @@ namespace Nezam.Refahi.Notifications.Application.EventHandlers.Finance;
 /// <summary>
 /// Event handler for bill fully paid events from Finance context
 /// </summary>
-public class BillFullyPaidEventHandler : INotificationHandler<BillFullyPaidCompletedIntegrationEvent>
+public class BillFullyPaidEventHandler : INotificationHandler<BillFullyPaidEventMessage>
 {
     private readonly INotificationService _notificationService;
     private readonly ILogger<BillFullyPaidEventHandler> _logger;
@@ -22,7 +23,7 @@ public class BillFullyPaidEventHandler : INotificationHandler<BillFullyPaidCompl
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
     
-    public async Task Handle(BillFullyPaidCompletedIntegrationEvent notification, CancellationToken cancellationToken)
+    public async Task Handle(BillFullyPaidEventMessage notification, CancellationToken cancellationToken)
     {
         try
         {

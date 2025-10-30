@@ -64,6 +64,9 @@ public class ChargeWalletCommandHandler : IRequestHandler<ChargeWalletCommand, A
             {
                 return ApplicationResult<ChargeWalletResponse>.Failure(
                     $"Cannot charge wallet. Current status: {wallet.Status}");
+
+
+
             }
 
             // Validate transaction limits

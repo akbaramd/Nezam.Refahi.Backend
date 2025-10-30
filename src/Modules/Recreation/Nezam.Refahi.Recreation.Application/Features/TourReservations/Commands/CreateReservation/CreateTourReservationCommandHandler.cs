@@ -15,6 +15,7 @@ using MassTransit;
 using System.Text.Json;
 using Nezam.Refahi.Recreation.Application.Services.Contracts;
 using Nezam.Refahi.Membership.Contracts.Dtos;
+using Nezam.Refahi.Recreation.Application.Dtos;
 using Nezam.Refahi.Recreation.Contracts.Dtos;
 using Nezam.Refahi.Shared.Application;
 

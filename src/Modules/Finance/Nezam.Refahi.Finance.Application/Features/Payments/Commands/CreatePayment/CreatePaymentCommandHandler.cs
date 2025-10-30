@@ -220,40 +220,7 @@ public class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand,
             // STEP 5: PUBLISH INTEGRATION EVENTS AND COMMIT TRANSACTION
             // Get the created payment from the response
             var createdPayment = bill.Payments.FirstOrDefault(p => p.Id == response.PaymentId);
-            if (createdPayment != null)
-            {
-                // Publish PaymentCreatedIntegrationEvent
-                var paymentCreatedEvent = new PaymentCreatedIntegrationEvent
-                {
-                    PaymentId = createdPayment.Id,
-                    BillId = bill.Id,
-                    ReferenceId = bill.ReferenceId,
-                    ReferenceType = bill.ReferenceType,
-                    AmountRials = createdPayment.Amount.AmountRials,
-                    PaymentMethod = createdPayment.Method.ToString(),
-                    PaymentGateway = createdPayment.Gateway?.ToString(),
-                    ExpiryDate = createdPayment.ExpiryDate,
-                    Description = createdPayment.Description,
-                    CreatedAt = createdPayment.CreatedAt,
-                    ExternalUserId = bill.ExternalUserId,
-                    UserFullName = bill.UserFullName ?? string.Empty,
-                    Metadata = new Dictionary<string, string>
-                    {
-                        ["BillId"] = bill.Id.ToString(),
-                        ["BillNumber"] = bill.BillNumber,
-                        ["PaymentMethod"] = createdPayment.Method.ToString(),
-                        ["IsFreePayment"] = response.IsFreePayment.ToString(),
-                        ["AppliedDiscountCode"] = appliedDiscountCode ?? string.Empty,
-                        ["AppliedDiscountAmount"] = appliedDiscountAmount.ToString(),
-                        ["OriginalBillAmount"] = originalBillAmount.ToString(),
-                        ["FinalBillAmount"] = bill.TotalAmount.AmountRials.ToString(),
-                        ["BillWasIssued"] = billWasIssued.ToString()
-                    }
-                };
-
-                // Publish with Idempotency Key for reliability
-                await _publishEndpoint.Publish(paymentCreatedEvent, cancellationToken);
-            }
+           
 
             // Save changes (including Outbox messages) and commit transaction
             await _unitOfWork.CommitAsync(cancellationToken);

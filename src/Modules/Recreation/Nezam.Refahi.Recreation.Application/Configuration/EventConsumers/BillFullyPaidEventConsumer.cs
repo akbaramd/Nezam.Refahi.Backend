@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Nezam.Refahi.Contracts.Finance.v1.Messages;
 using Nezam.Refahi.Finance.Contracts.IntegrationEvents;
 using Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.ConfirmReservation;
 using Nezam.Refahi.Recreation.Application.Services;
@@ -12,7 +13,7 @@ namespace Nezam.Refahi.Recreation.Application.EventConsumers;
 /// Handles BillFullyPaidIntegrationEvent to confirm tour reservations
 /// When a bill is fully paid, the associated tour reservation should be confirmed
 /// </summary>
-public class BillFullyPaidEventConsumer : INotificationHandler<BillFullyPaidCompletedIntegrationEvent>
+public class BillFullyPaidEventConsumer : INotificationHandler<BillFullyPaidEventMessage>
 {
     private readonly ITourReservationRepository _reservationRepository;
     private readonly IRecreationUnitOfWork _unitOfWork;
@@ -31,17 +32,17 @@ public class BillFullyPaidEventConsumer : INotificationHandler<BillFullyPaidComp
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task Handle(BillFullyPaidCompletedIntegrationEvent notification, CancellationToken cancellationToken)
+    public async Task Handle(BillFullyPaidEventMessage notification, CancellationToken cancellationToken)
     {
         try
         {
-            _logger.LogInformation("Processing BillFullyPaidEvent for Bill {BillId}, ReferenceId: {ReferenceId}", 
+            _logger.LogInformation("Processing BillFullyPaidEventMessage for Bill {BillId}, ReferenceId: {ReferenceId}", 
 notification.BillId, notification.ReferenceId);
 
             // Check if this is a tour reservation bill
             if (notification.ReferenceType != "TourReservation")
             {
-                _logger.LogDebug("Ignoring BillFullyPaidEvent - ReferenceType {ReferenceType} is not for tour reservation", 
+                _logger.LogDebug("Ignoring BillFullyPaidEventMessage - ReferenceType {ReferenceType} is not for tour reservation", 
                     notification.ReferenceType);
                 return;
             }
@@ -51,7 +52,7 @@ notification.BillId, notification.ReferenceId);
             
             if (reservation == null)
             {
-                _logger.LogWarning("No reservation found with tracking code {TrackingCode} for BillFullyPaidEvent", 
+                _logger.LogWarning("No reservation found with tracking code {TrackingCode} for BillFullyPaidEventMessage", 
                     notification.ReferenceId);
                 return;
             }
@@ -82,7 +83,7 @@ notification.BillId, notification.ReferenceId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error processing BillFullyPaidEvent for Bill {BillId}, ReferenceId: {ReferenceId}", 
+            _logger.LogError(ex, "Error processing BillFullyPaidEventMessage for Bill {BillId}, ReferenceId: {ReferenceId}", 
                 notification.BillId, notification.ReferenceId);
             throw;
         }

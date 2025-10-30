@@ -2,6 +2,7 @@ using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using MassTransit;
+using Nezam.Refahi.Contracts.Finance.v1.Messages;
 using Nezam.Refahi.Finance.Application.Services;
 using Nezam.Refahi.Finance.Application.Commands.Wallets;
 using Nezam.Refahi.Finance.Domain.Entities;
@@ -124,7 +125,7 @@ public class CreateWalletDepositCommandHandler : IRequestHandler<CreateWalletDep
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                 // Publish integration event for orchestrator to create bill
-                var depositRequestedEvent = new Nezam.Refahi.Finance.Contracts.IntegrationEvents.WalletDepositRequestedIntegrationEvent
+                var depositRequestedEvent = new WalletDepositRequestedEventMessage()
                 {
                     ExternalUserId = request.ExternalUserId,
                     UserFullName = request.UserFullName,

@@ -1,5 +1,5 @@
 using MassTransit;
-using Nezam.Refahi.Finance.Contracts.IntegrationEvents;
+using Nezam.Refahi.Contracts.Finance.v1.Messages;
 
 namespace Nezam.Refahi.Orchestrator.Sagas.WalletDeposit;
 
@@ -38,6 +38,8 @@ public class WalletDepositSagaStateMachine : MassTransitStateMachine<WalletDepos
 
         Event(() => WalletDepositRequested, x => x.CorrelateById(context => context.Message.WalletDepositId));
         Event(() => BillCreated, x => x.CorrelateById(context => context.Message.ReferenceId));
+        Event(() => PendingFailed, x => x.CorrelateById(context => context.Message.WalletDepositId));
+        Event(() => CompletionFailed, x => x.CorrelateById(context => context.Message.WalletDepositId));
 
         Initially(
             When(WalletDepositRequested)
@@ -54,20 +56,22 @@ public class WalletDepositSagaStateMachine : MassTransitStateMachine<WalletDepos
                     context.Saga.ReferenceType = "WalletDeposit";
                     context.Saga.CreatedAt = DateTime.UtcNow;
                 })
-                .Publish(context => new CreateBillIntegrationEvent
+                .Send(context => new IssueBillCommandMessage
                 {
                     TrackingCode = context.Saga.TrackingCode,
                     ReferenceId = context.Saga.WalletDepositId.ToString(), // correlate via tracking
                     ReferenceType = context.Saga.ReferenceType,
                     ExternalUserId = context.Saga.ExternalUserId,
                     UserFullName = context.Saga.UserFullName,
-                    AmountRials = context.Saga.AmountRials,
-                    Currency = context.Saga.Currency,
                     BillTitle = $"واریز کیف پول - {context.Saga.UserFullName}",
                     Description = context.Saga.Description ?? "ایجاد صورت‌حساب واریز کیف پول",
-                    Items = new List<CreateBillItemDto>
+                    Metadata = new Dictionary<string, string>()
                     {
-                        new CreateBillItemDto
+                        ["WalletDepositId"] = context.Saga.WalletDepositId.ToString()
+                    },
+                    Items = new List<CreateBillItemMessage>
+                    {
+                        new CreateBillItemMessage
                         {
                             Title = "واریز کیف پول",
                             Description = $"واریز کیف پول برای {context.Saga.UserFullName} - کد پیگیری: {context.Saga.TrackingCode}",
@@ -90,7 +94,7 @@ public class WalletDepositSagaStateMachine : MassTransitStateMachine<WalletDepos
                     context.Saga.BillNumber = context.Message.BillNumber;
                     context.Saga.BillCreatedAt = DateTime.UtcNow;
                 })
-                .Publish(context => new PendWalletDepositIntegrationEvent
+                .Send(context => new MarkWalletDepositPendingCommandMessage
                 {
                     WalletDepositId = context.Saga.WalletDepositId,
                     TrackingCode = context.Saga.TrackingCode,
@@ -102,6 +106,19 @@ public class WalletDepositSagaStateMachine : MassTransitStateMachine<WalletDepos
                     BillNumber = context.Saga.BillNumber ?? context.Message.BillNumber
                 })
                 .TransitionTo(AwaitingPayment)
+            ,
+            When(PendingFailed)
+                .Send(context => new FailWalletDepositCommandMessage
+                {
+                    WalletDepositId = context.Saga.WalletDepositId,
+                    TrackingCode = context.Saga.TrackingCode,
+                    FailureStage = "Pending",
+                    FailureReason = context.Message.FailureReason,
+                    ErrorCode = context.Message.ErrorCode,
+                    BillId = context.Saga.BillId,
+                    BillNumber = context.Saga.BillNumber
+                })
+                .TransitionTo(Failed)
         );
 
         // Listen for bill fully paid to complete the saga when payment succeeds
@@ -111,7 +128,7 @@ public class WalletDepositSagaStateMachine : MassTransitStateMachine<WalletDepos
             When(BillFullyPaid, context =>
                 context.Message.ReferenceType == context.Saga.ReferenceType &&
                 context.Message.ReferenceId == context.Saga.WalletDepositId)
-                .Publish(context => new WalletDepositCompletedIntegrationEvent
+                .Send(context => new CompleteWalletDepositCommandMessage
                 {
                     WalletDepositId = context.Saga.WalletDepositId,
                     TrackingCode = context.Saga.TrackingCode,
@@ -125,15 +142,32 @@ public class WalletDepositSagaStateMachine : MassTransitStateMachine<WalletDepos
                     PaidAt = context.Message.PaidAt
                 })
                 .Finalize()
+            ,
+            When(CompletionFailed)
+                .Send(context => new FailWalletDepositCommandMessage
+                {
+                    WalletDepositId = context.Saga.WalletDepositId,
+                    TrackingCode = context.Saga.TrackingCode,
+                    FailureStage = "Completion",
+                    FailureReason = context.Message.FailureReason,
+                    ErrorCode = context.Message.ErrorCode,
+                    BillId = context.Saga.BillId,
+                    BillNumber = context.Saga.BillNumber,
+                    PaymentId = context.Message.PaymentId
+                })
+                .TransitionTo(Failed)
         );
     }
 
     public State AwaitingBillCreation { get; private set; } = null!;
     public State AwaitingPayment { get; private set; } = null!;
+    public State Failed { get; private set; } = null!;
 
-    public Event<WalletDepositRequestedIntegrationEvent> WalletDepositRequested { get; private set; } = null!;
-    public Event<BillCreatedIntegrationEvent> BillCreated { get; private set; } = null!;
-    public Event<BillFullyPaidCompletedIntegrationEvent> BillFullyPaid { get; private set; } = null!;
+    public Event<WalletDepositRequestedEventMessage> WalletDepositRequested { get; private set; } = null!;
+    public Event<BillCreatedEventMessage> BillCreated { get; private set; } = null!;
+    public Event<BillFullyPaidEventMessage> BillFullyPaid { get; private set; } = null!;
+    public Event<WalletDepositPendingFailedEventMessage> PendingFailed { get; private set; } = null!;
+    public Event<WalletDepositCompletionFailedMessage> CompletionFailed { get; private set; } = null!;
 }
 
 

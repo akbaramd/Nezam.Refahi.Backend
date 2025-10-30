@@ -11,4 +11,16 @@
     <ProjectReference Include="..\..\..\Shareds\Nezam.Refahi.Shared.Application\Nezam.Refahi.Shared.Application.csproj" />
     <ProjectReference Include="..\Nezam.Refahi.Finance.Domain\Nezam.Refahi.Finance.Domain.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Commands\v1\Refunds\" />
+    <Folder Include="Commands\v1\Wallets\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Commands\v1\Payments\ProcessRegularPaymentCommand.cs" />
+    <Compile Remove="Commands\v1\Payments\ProcessFreePaymentCommand.cs" />
+    <Compile Remove="Commands\v1\Payments\PayWithWalletCommand.cs" />
+    <Compile Remove="Commands\v1\Payments\IssueBillCommand.cs" />
+    <Compile Remove="Commands\v1\Payments\HandlePaymentCallbackCommand.cs" />
+    <Compile Remove="Commands\v1\Payments\FailPaymentCommand.cs" />
+  </ItemGroup>
 </Project>

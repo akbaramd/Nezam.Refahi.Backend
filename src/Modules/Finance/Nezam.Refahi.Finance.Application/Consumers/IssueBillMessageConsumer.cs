@@ -1,7 +1,7 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Nezam.Refahi.Finance.Application.Commands.Bills;
-using Nezam.Refahi.Finance.Contracts.IntegrationEvents;
+using Nezam.Refahi.Contracts.Finance.v1.Messages;
 using Nezam.Refahi.Shared.Application;
 using MassTransit;
 
@@ -10,23 +10,23 @@ namespace Nezam.Refahi.Finance.Application.Consumers;
 /// <summary>
 /// Consumer that creates a bill upon receiving CreateBillIntegrationEvent and publishes BillCreatedIntegrationEvent
 /// </summary>
-public class CreateBillConsumer : IConsumer<CreateBillIntegrationEvent>
+public class IssueBillMessageConsumer : IConsumer<IssueBillCommandMessage>
 {
     private readonly IMediator _mediator;
     private readonly IPublishEndpoint _publishEndpoint;
-    private readonly ILogger<CreateBillConsumer> _logger;
+    private readonly ILogger<IssueBillMessageConsumer> _logger;
 
-    public CreateBillConsumer(
+    public IssueBillMessageConsumer(
         IMediator mediator,
         IPublishEndpoint publishEndpoint,
-        ILogger<CreateBillConsumer> logger)
+        ILogger<IssueBillMessageConsumer> logger)
     {
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task Consume(ConsumeContext<CreateBillIntegrationEvent> context)
+    public async Task Consume(ConsumeContext<IssueBillCommandMessage> context)
     {
         var notification = context.Message;
         var cancellationToken = context.CancellationToken;
@@ -59,10 +59,13 @@ public class CreateBillConsumer : IConsumer<CreateBillIntegrationEvent>
         };
 
         var createResult = await _mediator.Send(createCommand, cancellationToken);
-       
 
+        if (createResult.IsSuccess)
+        {
+          await _mediator.Send(new IssueBillCommand() { BillId = createResult.Data!.BillId }, cancellationToken);
+        }
     
-
+       
      
     }
 }

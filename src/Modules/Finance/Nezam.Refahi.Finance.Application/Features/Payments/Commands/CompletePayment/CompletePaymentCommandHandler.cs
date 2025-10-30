@@ -8,6 +8,7 @@ using Nezam.Refahi.Shared.Application;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
 using MassTransit;
+using Nezam.Refahi.Contracts.Finance.v1.Messages;
 
 namespace Nezam.Refahi.Finance.Application.Features.Payments.Commands.CompletePayment;
 
@@ -47,24 +48,49 @@ public class CompletePaymentCommandHandler : IRequestHandler<CompletePaymentComm
             var validation = await _validator.ValidateAsync(request, cancellationToken);
             if (!validation.IsValid)
             {
-                var errors = validation.Errors.Select(e => e.ErrorMessage).ToList();
-                return ApplicationResult<CompletePaymentResponse>.Failure(errors, "Validation failed");
+				var errors = validation.Errors.Select(e => e.ErrorMessage).ToList();
+				// Publish failure event
+				await PublishPaymentFailedAsync(
+					request.PaymentId,
+					referenceId: null,
+					referenceType: null,
+					externalUserId: Guid.Empty,
+					failureReason: "Validation failed",
+					errorCode: "VALIDATION_FAILED",
+					cancellationToken: cancellationToken);
+				return ApplicationResult<CompletePaymentResponse>.Failure(errors, "Validation failed");
             }
 
             // Get payment
-            var payment = await _paymentRepository.GetByIdAsync(request.PaymentId, cancellationToken);
+			var payment = await _paymentRepository.GetByIdAsync(request.PaymentId, cancellationToken);
             if (payment == null)
             {
-                await _unitOfWork.RollbackAsync(cancellationToken);
-                return ApplicationResult<CompletePaymentResponse>.Failure("Payment not found");
+				await PublishPaymentFailedAsync(
+					request.PaymentId,
+					referenceId: null,
+					referenceType: null,
+					externalUserId: Guid.Empty,
+					failureReason: "Payment not found",
+					errorCode: "PAYMENT_NOT_FOUND",
+					cancellationToken: cancellationToken);
+				await _unitOfWork.RollbackAsync(cancellationToken);
+				return ApplicationResult<CompletePaymentResponse>.Failure("Payment not found");
             }
 
             // Get bill
-            var bill = await _billRepository.GetByIdAsync(payment.BillId, cancellationToken);
+			var bill = await _billRepository.GetByIdAsync(payment.BillId, cancellationToken);
             if (bill == null)
             {
-                await _unitOfWork.RollbackAsync(cancellationToken);
-                return ApplicationResult<CompletePaymentResponse>.Failure("Bill not found");
+				await PublishPaymentFailedAsync(
+					payment.Id,
+					referenceId: null,
+					referenceType: null,
+					externalUserId: Guid.Empty,
+					failureReason: "Bill not found",
+					errorCode: "BILL_NOT_FOUND",
+					cancellationToken: cancellationToken);
+				await _unitOfWork.RollbackAsync(cancellationToken);
+				return ApplicationResult<CompletePaymentResponse>.Failure("Bill not found");
             }
 
             // Record payment in bill (this will mark payment as completed and update bill status)
@@ -76,14 +102,14 @@ public class CompletePaymentCommandHandler : IRequestHandler<CompletePaymentComm
             // Get updated payment before saving
             var updatedPayment = bill.Payments.First(p => p.Id == request.PaymentId);
 
-            // Publish Integration Events INSIDE transaction (Transactional Outbox Pattern)
+			// Publish Integration Events INSIDE transaction (Transactional Outbox Pattern)
             var paymentCompletedEvent = new PaymentCompletedIntegrationEvent
             {
                 PaymentId = updatedPayment.Id,
                 ReferenceId = bill.ReferenceId,
                 ReferenceType = bill.ReferenceType,
                 ExternalUserId = bill.ExternalUserId,
-                AmountRials = (long)updatedPayment.Amount.AmountRials,
+				AmountRials = (long)updatedPayment.Amount.AmountRials,
                 GatewayTransactionId = request.GatewayTransactionId,
                 GatewayReference = updatedPayment.GatewayReference,
                 CompletedAt = updatedPayment.CompletedAt!.Value,
@@ -102,7 +128,7 @@ public class CompletePaymentCommandHandler : IRequestHandler<CompletePaymentComm
             // Check if bill is fully paid and publish BillFullyPaidCompletedIntegrationEvent
             if (bill.Status == Nezam.Refahi.Finance.Domain.Enums.BillStatus.FullyPaid)
             {
-                var billFullyPaidCompletedEvent = new BillFullyPaidCompletedIntegrationEvent
+                var billFullyPaidCompletedEvent = new BillFullyPaidEventMessage()
                 {
                     BillId = bill.Id,
                     BillNumber = bill.BillNumber,
@@ -136,7 +162,7 @@ public class CompletePaymentCommandHandler : IRequestHandler<CompletePaymentComm
             // Save changes (including Outbox messages) and commit transaction
             await _billRepository.UpdateAsync(bill, cancellationToken:cancellationToken);
             await _unitOfWork.SaveAsync(cancellationToken);
-            await _unitOfWork.CommitAsync(cancellationToken);
+			await _unitOfWork.CommitAsync(cancellationToken);
 
             // Prepare response
             var response = new CompletePaymentResponse
@@ -153,8 +179,39 @@ public class CompletePaymentCommandHandler : IRequestHandler<CompletePaymentComm
         }
         catch (Exception ex)
         {
-            await _unitOfWork.RollbackAsync(cancellationToken);
-            return ApplicationResult<CompletePaymentResponse>.Failure(ex, "Failed to complete payment");
+			await PublishPaymentFailedAsync(
+				paymentId: Guid.Empty,
+				referenceId: null,
+				referenceType: null,
+				externalUserId: Guid.Empty,
+				failureReason: ex.Message,
+				errorCode: "EXCEPTION",
+				cancellationToken: cancellationToken);
+			await _unitOfWork.RollbackAsync(cancellationToken);
+			return ApplicationResult<CompletePaymentResponse>.Failure(ex, "Failed to complete payment");
         }
     }
+
+	private async Task PublishPaymentFailedAsync(
+		Guid paymentId,
+		string? referenceId,
+		string? referenceType,
+		Guid externalUserId,
+		string? failureReason,
+		string? errorCode,
+		CancellationToken cancellationToken)
+	{
+		var evt = new PaymentFailedIntegrationEvent
+		{
+			PaymentId = paymentId,
+			ReferenceId = referenceId ?? string.Empty,
+			ReferenceType = referenceType ?? string.Empty,
+			ExternalUserId = externalUserId,
+			FailureReason = failureReason ?? string.Empty,
+			ErrorCode = errorCode,
+			FailedAt = DateTime.UtcNow
+		};
+
+		await _publishEndpoint.Publish(evt, cancellationToken);
+	}
 }
