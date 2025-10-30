@@ -1,0 +1,229 @@
+@{
+    ViewBag.Title = "تایید خروج از سیستم";
+    Layout = "_AuthLayout";
+}
+
+<div class="authentication-wrapper">
+    <div class="authentication-container">
+        <div class="auth-card">
+            <div class="auth-header text-center mb-4">
+
+                <h3 class="auth-title mb-3">تایید خروج از سیستم</h3>
+                <p class="auth-subtitle text-muted">
+                    آیا مطمئن هستید که می‌خواهید از سیستم خارج شوید؟
+                </p>
+            </div>
+
+            <div class="auth-content">
+                <div class="auth-info-section">
+                    <div class="info-card mb-4">
+                        <div class="info-header">
+                            <i class="ri-information-line me-2"></i>
+                            <span class="fw-semibold">توجه</span>
+                        </div>
+                        <p class="info-text">
+                            پس از خروج، تمام اطلاعات جلسه شما پاک خواهد شد و برای ورود مجدد نیاز به احراز هویت خواهید
+                            داشت.
+                        </p>
+                    </div>
+                </div>
+
+                <form asp-action="ConfirmLogout" asp-controller="Auth" method="post" class="auth-form">
+                    @Html.AntiForgeryToken()
+
+                    <div class="auth-actions">
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <button type="submit"
+                                        class="btn btn-danger btn-lg w-100 auth-action-btn confirm-btn">
+                                    <i class="ri-logout-box-r-line me-2"></i>
+                                    تایید خروج
+                                </button>
+                            </div>
+                            <div class="col-12 col-md-6">
+                               
+                                <button type="button" onclick="history.back()"
+                                        class="btn btn-outline-secondary btn-lg w-100 auth-action-btn cancel-btn">
+                                    <i class="ri-close-line me-2"></i>
+                                    انصراف
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                </form>
+
+                <div class="auth-footer text-center mt-4">
+                    <p class="text-muted small mb-0">
+                        سازمان نظام مهندسی ساختمان آذربایجان غربی
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .authentication-wrapper {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .authentication-container {
+        width: 100%;
+        max-width: 450px;
+    }
+
+    .auth-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        padding: 2.5rem;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .auth-icon {
+        display: flex;
+        justify-content: center;
+    }
+
+    .icon-wrapper {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .warning-icon {
+        background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+        box-shadow: 0 8px 25px rgba(255, 193, 7, 0.3);
+    }
+
+    .auth-title {
+        color: #2c3e50;
+        font-weight: 700;
+        font-size: 1.5rem;
+    }
+
+    .auth-subtitle {
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+
+    .auth-content {
+        text-align: center;
+    }
+
+    .auth-info-section {
+        margin: 2rem 0;
+    }
+
+    .info-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.25rem;
+        border-left: 4px solid #ffc107;
+    }
+
+    .info-header {
+        color: #495057;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-text {
+        color: #6c757d;
+        font-size: 0.85rem;
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    .auth-actions {
+        margin: 2rem 0;
+    }
+
+    .auth-action-btn {
+        border-radius: 12px;
+        padding: 0.875rem 1.5rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    .auth-action-btn:hover {
+        transform: translateY(-2px);
+        text-decoration: none;
+    }
+
+    .cancel-btn {
+        border: 2px solid #6c757d;
+        color: #6c757d;
+        background: transparent;
+    }
+
+    .cancel-btn:hover {
+        background: #6c757d;
+        color: white;
+        box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+    }
+
+    .confirm-btn {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        border: none;
+        color: white;
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+    }
+
+    .confirm-btn:hover {
+        box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
+        color: white;
+    }
+
+    .auth-footer {
+        border-top: 1px solid #e9ecef;
+        padding-top: 1.5rem;
+    }
+
+    /* RTL Specific Styles */
+    .auth-action-btn i {
+        margin-left: 0.5rem;
+        margin-right: 0;
+    }
+
+    .info-header i {
+        margin-left: 0.5rem;
+        margin-right: 0;
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 576px) {
+        .authentication-wrapper {
+            padding: 1rem;
+        }
+
+        .auth-card {
+            padding: 2rem 1.5rem;
+        }
+
+        .icon-wrapper {
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+        }
+    }
+</style> 

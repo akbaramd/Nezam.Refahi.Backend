@@ -44,7 +44,8 @@ public class BillCreatedEventHandler : INotificationHandler<BillCreatedIntegrati
                     amount = notification.TotalAmountRials,
                     currency = notification.Currency,
                     issueDate = notification.IssueDate,
-                    reservationId = notification.ReservationId,
+                    referenceType = notification.ReferenceType,
+                    referenceId = notification.ReferenceId,
                     trackingCode = notification.TrackingCode
                 }),
                 ExpiresAt = DateTime.UtcNow.AddDays(30) // Expire 30 days after creation

@@ -141,6 +141,46 @@ public static class WalletEndpoints
             .Produces<ApplicationResult<WalletDepositsResponse>>(200)
             .Produces(400);
 
+        // ───────────────────── Get Wallet Deposit Details (by id) ─────────────────────
+        walletGroup.MapGet("/deposits/{depositId:guid}", async (
+                Guid depositId,
+                [FromServices] ICurrentUserService currentUserService,
+                [FromServices] IMediator mediator) =>
+            {
+                var externalUserId = currentUserService.UserId;
+                if (externalUserId == null)
+                    return Results.Unauthorized();
+
+                var query = new Nezam.Refahi.Finance.Application.Features.Wallets.Queries.GetWalletDepositsDetails.GetWalletDepositsDetailsQuery
+                {
+                    DepositIds = new List<Guid> { depositId },
+                    ExternalUserId = externalUserId.Value
+                };
+
+                var result = await mediator.Send(query);
+
+                if (!result.IsSuccess)
+                {
+                    if (string.Equals(result.Message, "FORBIDDEN", StringComparison.OrdinalIgnoreCase))
+                        return Results.Forbid();
+                    return Results.BadRequest(result);
+                }
+
+                var item = result.Data?.FirstOrDefault();
+                if (item == null)
+                    return Results.NotFound();
+
+                return Results.Ok(ApplicationResult<Nezam.Refahi.Finance.Contracts.Dtos.WalletDepositDetailsDto>.Success(item));
+            })
+            .WithName("GetWalletDepositDetails")
+            .Produces<ApplicationResult<Nezam.Refahi.Finance.Contracts.Dtos.WalletDepositDetailsDto>>(200)
+            .Produces(401)
+            .Produces(403)
+            .Produces(404)
+            .Produces(400);
+
+        
+        
         return app;
     }
 }

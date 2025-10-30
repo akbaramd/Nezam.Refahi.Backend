@@ -1,0 +1,160 @@
+@{
+    ViewBag.Title = "ورود به سامانه نظام مهندسی";
+    Layout = null;
+}
+
+<!doctype html>
+<html dir="rtl" lang="fa" data-layout="vertical" data-topbar="light" data-sidebar="ladylip" data-sidebar-size="lg">
+<head>
+    <partial name="_title_meta" /> 
+    <partial name="_head_css" />
+</head>
+<body>
+
+    <div class="auth-page-wrapper pt-5">
+        <!-- auth page bg -->
+        <div class="auth-one-bg-position auth-one-bg" id="auth-particles">
+            <div class="bg-overlay"></div>
+
+            <div class="shape">
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1440 120">
+                    <path d="M 0,36 C 144,53.6 432,123.2 720,124 C 1008,124.8 1296,56.8 1440,40L1440 140L0 140z"></path>
+                </svg>
+            </div>
+        </div>
+
+        <!-- auth page content -->
+        <div class="auth-page-content"> 
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="text-center mt-sm-5 mb-2 text-white-50">
+                            <div>
+                                <a href="@Url.Action("Index", "Dashboard", new {area="Panel"})" class="d-inline-block auth-logo">
+                                    <img src="~/assets/images/logo22.png" alt="" height="100">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="text-center mb-4">
+                            <h2 class="text-white mb-2">سامانه یکپارچه خدمات الکترونیکی</h2>
+                        </div>
+                    </div>
+                </div>
+                <!-- end row -->
+
+                <div class="row justify-content-center">
+                    <div class="col-md-8 col-lg-6 col-xl-5">
+                        <!-- User Type Selection Card -->
+                        <div class="card mt-4 card-bg-fill">
+                            <div class="card-header bg-primary bg-opacity-10 py-3">
+                                <h4 class="card-title mb-0 text-center">به پورتال جامع نظام مهندسی خوش آمدید</h4>
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="text-center mb-4">
+                                    <h5 class="mt-3">لطفاً نوع کاربری خود را انتخاب کنید</h5>
+                                </div>
+
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <a href="@Url.Action("Login", "Auth", new {userType="Engineer"})" class="btn btn-info w-100 py-3 px-4">
+                                            <div class="d-flex align-items-center">
+                                                <span class="flex-shrink-0">
+                                                    <i class="ri-user-settings-line fs-18 me-2"></i>
+                                                </span>
+                                                <span class="flex-grow-1">
+                                                    <span class="d-block fw-semibold fs-16">ورود مهندسین</span>
+                                                    <small>برای مهندسین و کارشناسان نظام مهندسی</small>
+                                                </span>
+                                                <span class="flex-shrink-0">
+                                                    <i class="ri-arrow-left-line fs-18"></i>
+                                                </span>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    <div class="col-12">
+                                        <a href="@Url.Action("Login", "Auth", new {userType="Owner"})" class="btn btn-primary w-100 py-3 px-4">
+                                            <div class="d-flex align-items-center">
+                                                <span class="flex-shrink-0">
+                                                    <i class="ri-login-circle-line fs-18 me-2"></i>
+                                                </span>
+                                                <span class="flex-grow-1">
+                                                    <span class="d-block fw-semibold fs-16">ورود مالکین</span>
+                                                    <small>برای مالکین و متقاضیان</small>
+                                                </span>
+                                                <span class="flex-shrink-0">
+                                                    <i class="ri-arrow-left-line fs-18"></i>
+                                                </span>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    <div class="col-12">
+                                        <a href="@Url.Action("Register", "Auth", new {userType="Owner"})" class="btn btn-success w-100 py-3 px-4">
+                                            <div class="d-flex align-items-center">
+                                                <span class="flex-shrink-0">
+                                                    <i class="ri-user-add-line fs-18 me-2"></i>
+                                                </span>
+                                                <span class="flex-grow-1">
+                                                    <span class="d-block fw-semibold fs-16">ثبت نام مالکین</span>
+                                                    <small>اگر حساب کاربری ندارید، ثبت نام کنید</small>
+                                                </span>
+                                                <span class="flex-shrink-0">
+                                                    <i class="ri-arrow-left-line fs-18"></i>
+                                                </span>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-5">
+                                    <div class="alert alert-info border-0">
+                                        <div class="d-flex">
+                                            <div class="flex-shrink-0 me-3">
+                                                <i class="ri-information-line fs-24"></i>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h5 class="mt-0 mb-1">راهنمای ورود</h5>
+                                                <ul class="ps-3 mb-0">
+                                                    <li>اگر <strong>مهندس</strong> هستید، با انتخاب گزینه «ورود مهندسین» وارد شوید.</li>
+                                                    <li>اگر <strong>مالک</strong> هستید و قبلاً ثبت نام کرده‌اید، از گزینه «ورود مالکین» استفاده کنید.</li>
+                                                    <li>اگر <strong>مالک</strong> هستید و حساب کاربری ندارید، با انتخاب گزینه «ثبت نام مالکین» ثبت نام کنید.</li>
+                                                    <li>مهندسین نیازی به ثبت نام ندارند و می‌توانند با اطلاعات حساب مهندسی خود وارد شوند.</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                        <!-- end card -->
+                    </div>
+                </div>
+                <!-- end row -->
+            </div>
+            <!-- end container -->
+        </div>
+        <!-- end auth page content -->
+        <!-- footer -->
+        <footer class="footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="text-center">
+                             <p class="mb-0 text-muted">&copy; @DateTime.Now.Year توسعه داده شده توسط گروه انفورماتیک استان آذرباجان غربی</p> 
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <!-- end Footer -->
+    </div>
+    <!-- end auth-page-wrapper -->
+
+    <partial name="_vendor_scripts" /> 
+
+    <!-- particles js -->
+    <script src="~/assets/libs/particles.js/particles.js"></script>
+    <!-- particles app js -->
+    <script src="~/assets/js/pages/particles.app.js"></script>
+</body>
+</html> 

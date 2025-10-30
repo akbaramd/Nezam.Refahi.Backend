@@ -8,7 +8,7 @@ using Nezam.Refahi.Recreation.Domain.Repositories;
 using Nezam.Refahi.Shared.Application;
 using Nezam.Refahi.Shared.Application.Common.Models;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
-using Nezam.Refahi.Shared.Infrastructure.Outbox;
+using MassTransit;
 
 namespace Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.InitiatePayment;
 
@@ -19,20 +19,20 @@ public class
   private readonly ITourRepository _tourRepository;
   private readonly ITourPricingRepository _pricingRepository;
   private readonly IRecreationUnitOfWork _unitOfWork;
-  private readonly IOutboxPublisher _outboxPublisher;
+  private readonly IPublishEndpoint _publishEndpoint;
 
   public InitiatePaymentCommandHandler(
     ITourReservationRepository reservationRepository,
     ITourRepository tourRepository,
     ITourPricingRepository pricingRepository,
     IRecreationUnitOfWork unitOfWork,
-    IOutboxPublisher outboxPublisher)
+    IPublishEndpoint publishEndpoint)
   {
     _reservationRepository = reservationRepository;
     _tourRepository = tourRepository;
     _pricingRepository = pricingRepository;
     _unitOfWork = unitOfWork;
-    _outboxPublisher = outboxPublisher;
+    _publishEndpoint = publishEndpoint;
   }
 
   public async Task<ApplicationResult<InitiatePaymentResponse>> Handle(
@@ -132,8 +132,8 @@ public class
 
     try
     {
-      // Publish integration event through outbox
-      await _outboxPublisher.PublishAsync(paymentRequestedEvent, cancellationToken);
+      // Publish integration event via MassTransit
+      await _publishEndpoint.Publish(paymentRequestedEvent, cancellationToken);
 
       // Update reservation status to indicate payment is being processed
       reservation.SetToPaying();

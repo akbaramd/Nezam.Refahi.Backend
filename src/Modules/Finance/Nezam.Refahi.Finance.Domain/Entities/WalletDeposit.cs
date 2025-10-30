@@ -89,6 +89,26 @@ public sealed class WalletDeposit : FullAggregateRoot<Guid>
     }
 
     /// <summary>
+    /// Moves deposit to Processing while orchestrator prepares the bill
+    /// </summary>
+    public void StartProcessing()
+    {
+        if (Status != WalletDepositStatus.Pending)
+            throw new InvalidOperationException("Can only start processing from pending state");
+        Status = WalletDepositStatus.Processing;
+    }
+
+    /// <summary>
+    /// Marks deposit as Pending (waiting for payment) once bill is created
+    /// </summary>
+    public void MarkPending()
+    {
+        if (Status != WalletDepositStatus.Processing)
+            throw new InvalidOperationException("Can only mark pending from processing state");
+        Status = WalletDepositStatus.Pending;
+    }
+
+    /// <summary>
     /// تکمیل واریز
     /// </summary>
     /// <remarks>

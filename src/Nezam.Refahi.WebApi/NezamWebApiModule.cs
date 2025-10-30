@@ -34,6 +34,7 @@ using Parbad.Builder;
 using Parbad.Gateway.ParbadVirtual;
 using Parbad.Gateway.Parsian;
 using System.Globalization;
+using Nezam.Refahi.Orchestrator;
 using Nezam.Refahi.WebApi.HealthChecks;
 using Nezam.Refahi.WebApi.Swagger;
 using Swashbuckle.AspNetCore.Filters;
@@ -54,6 +55,7 @@ public class NezamWebApiModule : BonWebModule
     DependOn<NezamRefahiBasicDefinitionsPresentationModule>();
     DependOn<NezamRefahiSurveyingPresentationModule>();
     DependOn<NezamRefahiFacilitiesPresentationModule>();
+    DependOn<NezamRefahiOrchestratorModule>();
   }
 
   public override Task OnConfigureAsync(BonConfigurationContext context)

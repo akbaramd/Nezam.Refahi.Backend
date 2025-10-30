@@ -1,0 +1,16 @@
+@model Nezam.New.EES.ViewComponents.BreadcrumbViewModel
+
+<div class="page-title-right">
+    <ol class="breadcrumb m-0">
+        <li class="breadcrumb-item">
+            <a href="@Url.Action("Index", "Dashboard", new {area = "Panel"})">داشبورد</a>
+        </li>
+        @foreach (var item in Model.Items)
+        {
+            <li class="breadcrumb-item">
+                <a href="@item.Url">@item.Title</a>
+            </li>
+        }
+        <li class="breadcrumb-item active">@Model.CurrentPage</li>
+    </ol>
+</div> 

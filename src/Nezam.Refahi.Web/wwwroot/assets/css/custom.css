@@ -1,0 +1,324 @@
+/*
+Template Name: Velzon - Admin & Dashboard Template
+Author: Themesbrand
+Website: https://themesbrand.com/
+Contact: support@themesbrand.com
+File: Custom Css File
+*/
+
+
+body {
+    font-family: Vazirmatn;
+}
+
+body[dir="rtl"] {
+    direction: rtl;
+    text-align: right;
+}
+
+body[dir="rtl"] .gridjs-th {
+    text-align: right;
+}
+
+body[dir="rtl"] .gridjs-td {
+    text-align: right;
+}
+
+body[dir="rtl"] .gridjs-container {
+    direction: rtl;
+}
+
+body[dir="rtl"] .gridjs-pagination {
+    justify-content: flex-start;
+}
+
+
+/* ------------------------- Scrollable Tabs -------------------------------- */
+.nav-tabs-scroll {
+    display: flex;
+    flex-wrap: nowrap;        /* آیتم‌ها در یک خط و بدون شکست */
+    overflow-x: auto;         /* اسکرول فقط روی محور X */
+    overflow-y: hidden;
+    gap: .25rem;              /* فاصلهٔ بین تب‌ها */
+    -ms-overflow-style: none; /* IE/Edge scrollbar hide */
+    scrollbar-width: none;    /* Firefox scrollbar hide */
+    scroll-snap-type: x proximity;   /* UX نرم هنگام اسکرول */
+}
+.nav-tabs-scroll::-webkit-scrollbar { display: none; }   /* Chrome/Safari */
+
+/*  خود آیتم تب – عرض بر اساس محتوا (flex-basis:auto)  */
+.nav-tabs-scroll .nav-item   { flex: 0 0 auto; }
+.nav-tabs-scroll .nav-link   { padding: .5rem 1rem; }    /* منطقهٔ لمس ≥ 44px */
+
+/* ------------------------- Desktop ≥ lg ----------------------------------- */
+@media (min-width: 992px) {
+    .nav-tabs-scroll {
+        overflow: visible;      /* اسکرول خاموش */
+        flex-wrap: wrap;        /* تب‌ها اگر جا بود به خط بعد بروند */
+    }
+}
+
+/* ------------------------- Sidebar Design -------------------------------- */
+.sidebar-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--vz-header-bg);
+    border-right: 1px solid #e9ecef;
+}
+
+/* Search Section */
+.sidebar-search {
+    border-bottom: 1px solid #e9ecef;
+}
+
+.sidebar-search .form-control {
+    font-size: 0.875rem;
+}
+
+.sidebar-search .form-control::placeholder {
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+/* Header Section */
+.sidebar-header {
+    border-bottom: 1px solid var(--vz-header-item-bg);
+}
+
+.sidebar-header h6 {
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+/* Menu Container */
+.sidebar-menu {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+}
+
+/* Menu Sections */
+.menu-section {
+    border-bottom: 1px solid var(--vz-header-item-bg);
+}
+
+.menu-section:last-child {
+    border-bottom: none;
+}
+
+/* Menu Items */
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid var(--vz-header-item-bg);
+    background: var(--vz-header-bg);
+}
+
+.menu-item:hover {
+    background: var(--vz-header-item-bg);
+}
+
+.menu-item.active {
+    background: var(--vz-header-item-bg);
+    border-right: 3px solid #2196f3;
+}
+
+.menu-item.active .menu-text {
+    color: #1976d2;
+    font-weight: 600;
+}
+
+.menu-item.active .menu-icon i {
+    color: #1976d2;
+}
+
+/* Menu Icon */
+.menu-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0.5rem;
+}
+
+.menu-icon i {
+    font-size: 1.1rem;
+    color: #6c757d;
+}
+
+/* Menu Text */
+.menu-text {
+    flex: 1;
+    font-size: 0.9rem;
+    color: #495057;
+    font-weight: 500;
+}
+
+/* Menu Arrow */
+.menu-arrow {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.menu-arrow i {
+    font-size: 1rem;
+    color: #6c757d;
+    transition: transform 0.2s ease;
+}
+
+.menu-item[aria-expanded="true"] .menu-arrow i {
+    transform: rotate(90deg);
+}
+
+/* Enhanced hover effects */
+.menu-item:hover .menu-arrow i {
+    color: #2196f3;
+}
+
+.menu-item.active .menu-arrow i {
+    color: #1976d2;
+}
+
+/* Submenu */
+.submenu {
+    background-color: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    overflow: hidden;
+}
+
+.submenu-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+    text-decoration: none;
+    color: #495057;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #e9ecef;
+    position: relative;
+}
+
+.submenu-item:hover {
+    background-color: #e9ecef;
+    color: #495057;
+    text-decoration: none;
+}
+
+.submenu-item.active {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    font-weight: 600;
+    border-right: 3px solid #2196f3;
+}
+
+.submenu-item i {
+    margin-left: 0.4rem;
+    font-size: 0.9rem;
+    width: 16px;
+    text-align: center;
+}
+
+.submenu-item span {
+    flex: 1;
+}
+
+/* Scrollbar Styling */
+.sidebar-menu::-webkit-scrollbar {
+    width: 4px;
+}
+
+.sidebar-menu::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.sidebar-menu::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 2px;
+}
+
+.sidebar-menu::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .menu-item {
+        padding: 0.6rem 0.8rem;
+    }
+
+    .menu-text {
+        font-size: 0.8rem;
+    }
+
+    .submenu-item {
+        padding: 0.4rem 0.8rem 0.4rem 2rem;
+        font-size: 0.75rem;
+    }
+}
+
+/* Permission-based hiding */
+[permission]:not([permission*=","]) {
+    display: none;
+}
+
+[permission-any]:not([permission-any*=","]) {
+    display: none;
+}
+
+/* Mobile Sidebar Functionality */
+@media (max-width: 1024px) {
+    /* Hide hamburger icon on desktop */
+    #topnav-hamburger-icon {
+        display: none !important;
+    }
+    
+    /* Mobile sidebar styles */
+    .app-menu {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 280px;
+        height: 100vh;
+        z-index: 1050;
+        transition: left 0.3s ease-in-out;
+        background: #fff;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .app-menu.mobile-open {
+        left: 0;
+    }
+    
+    /* Overlay styles */
+    .vertical-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1040;
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+        display: none;
+    }
+    
+    /* Prevent body scroll when sidebar is open */
+    body.sidebar-open {
+        overflow: hidden;
+    }
+    
+    /* Show hamburger icon on mobile */
+    #topnav-hamburger-icon {
+        display: block !important;
+    }
+}
+

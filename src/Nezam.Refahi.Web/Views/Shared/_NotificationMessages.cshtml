@@ -1,0 +1,51 @@
+@{
+    var successMessage = TempData["SuccessMessage"]?.ToString();
+    var errorMessage = TempData["ErrorMessage"]?.ToString();
+    var warningMessage = TempData["WarningMessage"]?.ToString();
+    var infoMessage = TempData["InfoMessage"]?.ToString();
+}
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <div class="alert alert-success alert-dismissible alert-label-icon label-arrow fade show" role="alert">
+        <i class="ri-check-double-line label-icon"></i><strong>موفقیت!</strong> @successMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger alert-dismissible alert-label-icon label-arrow fade show" role="alert">
+        <i class="ri-error-warning-line label-icon"></i><strong>خطا!</strong> @errorMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(warningMessage))
+{
+    <div class="alert alert-warning alert-dismissible alert-label-icon label-arrow fade show" role="alert">
+        <i class="ri-alert-line label-icon"></i><strong>هشدار!</strong> @warningMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(infoMessage))
+{
+    <div class="alert alert-info alert-dismissible alert-label-icon label-arrow fade show" role="alert">
+        <i class="ri-information-line label-icon"></i><strong>اطلاعات!</strong> @infoMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<script>
+    // Auto-dismiss alerts after 5 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+            var alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                var bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    });
+</script> 

@@ -7,7 +7,7 @@ using Nezam.Refahi.Finance.Domain.Repositories;
 using Nezam.Refahi.Shared.Application;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
-using Nezam.Refahi.Shared.Infrastructure.Outbox;
+using MassTransit;
 
 namespace Nezam.Refahi.Finance.Application.Features.Refunds.Commands.CompleteRefund;
 
@@ -20,20 +20,20 @@ public class CompleteRefundCommandHandler : IRequestHandler<CompleteRefundComman
     private readonly IRefundRepository _refundRepository;
     private readonly IValidator<CompleteRefundCommand> _validator;
     private readonly IFinanceUnitOfWork _unitOfWork;
-    private readonly IOutboxPublisher _outboxPublisher;
+    private readonly IPublishEndpoint _publishEndpoint;
 
     public CompleteRefundCommandHandler(
         IBillRepository billRepository,
         IRefundRepository refundRepository,
         IValidator<CompleteRefundCommand> validator,
         IFinanceUnitOfWork unitOfWork,
-        IOutboxPublisher outboxPublisher)
+        IPublishEndpoint publishEndpoint)
     {
         _billRepository = billRepository ?? throw new ArgumentNullException(nameof(billRepository));
         _refundRepository = refundRepository ?? throw new ArgumentNullException(nameof(refundRepository));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
-        _outboxPublisher = outboxPublisher ?? throw new ArgumentNullException(nameof(outboxPublisher));
+        _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
     }
 
     public async Task<ApplicationResult<CompleteRefundResponse>> Handle(
@@ -94,7 +94,7 @@ public class CompleteRefundCommandHandler : IRequestHandler<CompleteRefundComman
                 GatewayRefundId = request.GatewayRefundId,
                 CompletedAt = updatedRefund.CompletedAt!.Value
             };
-            await _outboxPublisher.PublishAsync(refundCompletedEvent, cancellationToken);
+            await _publishEndpoint.Publish(refundCompletedEvent, cancellationToken);
 
             // Prepare response
             var response = new CompleteRefundResponse

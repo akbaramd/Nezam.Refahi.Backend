@@ -13,6 +13,7 @@ using Nezam.Refahi.Finance.Domain.Repositories;
 using Nezam.Refahi.Shared.Application;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
+using MassTransit;
 
 namespace Nezam.Refahi.Finance.Application.Features.Payments.Commands.CreatePayment;
 
@@ -32,20 +33,20 @@ public class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand,
     private readonly IValidator<CreatePaymentCommand> _validator;
     private readonly IFinanceUnitOfWork _unitOfWork;
     private readonly IMediator _mediator;
-    private readonly IOutboxPublisher _outboxPublisher;
+    private readonly IPublishEndpoint _publishEndpoint;
 
     public CreatePaymentCommandHandler(
         IBillRepository billRepository,
         IValidator<CreatePaymentCommand> validator,
         IFinanceUnitOfWork unitOfWork,
         IMediator mediator,
-        IOutboxPublisher outboxPublisher)
+        IPublishEndpoint publishEndpoint)
     {
         _billRepository = billRepository ?? throw new ArgumentNullException(nameof(billRepository));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
-        _outboxPublisher = outboxPublisher ?? throw new ArgumentNullException(nameof(outboxPublisher));
+        _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
     }
 
     public async Task<ApplicationResult<CreatePaymentResponse>> Handle(
@@ -251,13 +252,7 @@ public class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand,
                 };
 
                 // Publish with Idempotency Key for reliability
-                var paymentIdempotencyKey = $"payment_created_{createdPayment.Id}_{DateTime.UtcNow:yyyyMMddHHmmss}";
-                await _outboxPublisher.PublishAsync(
-                    paymentCreatedEvent, 
-                    aggregateId: bill.Id,
-                    correlationId: createdPayment.Id.ToString()?.ToString(),
-                    idempotencyKey: paymentIdempotencyKey,
-                    cancellationToken);
+                await _publishEndpoint.Publish(paymentCreatedEvent, cancellationToken);
             }
 
             // Save changes (including Outbox messages) and commit transaction

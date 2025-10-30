@@ -1,0 +1,150 @@
+@model Nezam.Refahi.Web.Models.TourFormViewModel
+
+@{
+    ViewData["Title"] = "ویرایش تور";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                <h4 class="mb-sm-0">ویرایش تور: @Model.Title</h4>
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0" style="background: white; padding: 0.5rem 1rem; border-radius: 0.25rem;">
+                        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Dashboard")" style="color: #6c757d;">داشبورد</a></li>
+                        <li class="breadcrumb-item"><a href="@Url.Action("Index")" style="color: #6c757d;">تورها</a></li>
+                        <li class="breadcrumb-item active" style="color: #495057;">ویرایش تور</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">اطلاعات تور</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <input asp-for="Id" type="hidden" />
+                        
+                        <div class="row g-3">
+                            <!-- Title -->
+                            <div class="col-md-6">
+                                <label asp-for="Title" class="form-label">عنوان تور *</label>
+                                <input asp-for="Title" class="form-control" placeholder="عنوان تور را وارد کنید">
+                                <span asp-validation-for="Title" class="text-danger"></span>
+                            </div>
+
+                            <!-- Status -->
+                            <div class="col-md-6">
+                                <label asp-for="Status" class="form-label">وضعیت</label>
+                                <select asp-for="Status" class="form-select">
+                                    <option value="Draft">پیش‌نویس</option>
+                                    <option value="Scheduled">برنامه‌ریزی شده</option>
+                                    <option value="RegistrationOpen">ثبت‌نام باز</option>
+                                    <option value="RegistrationClosed">ثبت‌نام بسته</option>
+                                    <option value="InProgress">در حال اجرا</option>
+                                    <option value="Completed">تکمیل شده</option>
+                                    <option value="Cancelled">لغو شده</option>
+                                    <option value="Postponed">به تعویق افتاده</option>
+                                    <option value="Suspended">معلق</option>
+                                    <option value="Archived">آرشیو شده</option>
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="col-12">
+                                <label asp-for="Description" class="form-label">توضیحات *</label>
+                                <textarea asp-for="Description" class="form-control" rows="4" placeholder="توضیحات کامل تور را وارد کنید"></textarea>
+                                <span asp-validation-for="Description" class="text-danger"></span>
+                            </div>
+
+                            <!-- Tour Dates -->
+                            <div class="col-md-6">
+                                <label asp-for="TourStart" class="form-label">تاریخ شروع تور *</label>
+                                <input asp-for="TourStart" type="datetime-local" class="form-control">
+                                <span asp-validation-for="TourStart" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="TourEnd" class="form-label">تاریخ پایان تور *</label>
+                                <input asp-for="TourEnd" type="datetime-local" class="form-control">
+                                <span asp-validation-for="TourEnd" class="text-danger"></span>
+                            </div>
+
+                            <!-- Age Restrictions -->
+                            <div class="col-md-6">
+                                <label asp-for="MinAge" class="form-label">حداقل سن</label>
+                                <input asp-for="MinAge" type="number" class="form-control" placeholder="18" min="0" max="100">
+                                <span asp-validation-for="MinAge" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="MaxAge" class="form-label">حداکثر سن</label>
+                                <input asp-for="MaxAge" type="number" class="form-control" placeholder="65" min="0" max="100">
+                                <span asp-validation-for="MaxAge" class="text-danger"></span>
+                            </div>
+
+                            <!-- Guest Limitations -->
+                            <div class="col-md-6">
+                                <label asp-for="MaxGuestsPerReservation" class="form-label">حداکثر مهمان در هر رزرو</label>
+                                <input asp-for="MaxGuestsPerReservation" type="number" class="form-control" placeholder="5" min="1" max="50">
+                                <span asp-validation-for="MaxGuestsPerReservation" class="text-danger"></span>
+                            </div>
+
+                            <!-- Active Status -->
+                            <div class="col-md-6">
+                                <div class="form-check mt-4">
+                                    <input asp-for="IsActive" class="form-check-input" type="checkbox">
+                                    <label asp-for="IsActive" class="form-check-label">
+                                        تور فعال است
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="ri-save-line me-1"></i> ذخیره تغییرات
+                                    </button>
+                                    <a href="@Url.Action("Details", new { id = Model.Id })" class="btn btn-outline-info">
+                                        <i class="ri-eye-line me-1"></i> مشاهده
+                                    </a>
+                                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                                        <i class="ri-arrow-right-line me-1"></i> بازگشت
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Validate dates
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const startDate = new Date(document.getElementById('TourStart').value);
+            const endDate = new Date(document.getElementById('TourEnd').value);
+            
+            if (startDate >= endDate) {
+                e.preventDefault();
+                alert('تاریخ شروع باید قبل از تاریخ پایان باشد');
+                return false;
+            }
+        });
+    </script>
+}

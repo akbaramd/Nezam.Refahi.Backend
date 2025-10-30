@@ -7,7 +7,7 @@ using Nezam.Refahi.Finance.Domain.Repositories;
 using Nezam.Refahi.Shared.Application;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
-using Nezam.Refahi.Shared.Infrastructure.Outbox;
+using MassTransit;
 
 namespace Nezam.Refahi.Finance.Application.Features.Bills.Commands.CancelBill;
 
@@ -19,18 +19,18 @@ public class CancelBillCommandHandler : IRequestHandler<CancelBillCommand, Appli
     private readonly IBillRepository _billRepository;
     private readonly IValidator<CancelBillCommand> _validator;
     private readonly IFinanceUnitOfWork _unitOfWork;
-    private readonly IOutboxPublisher _outboxPublisher;
+    private readonly IPublishEndpoint _publishEndpoint;
 
     public CancelBillCommandHandler(
         IBillRepository billRepository,
         IValidator<CancelBillCommand> validator,
         IFinanceUnitOfWork unitOfWork,
-        IOutboxPublisher outboxPublisher)
+        IPublishEndpoint publishEndpoint)
     {
         _billRepository = billRepository ?? throw new ArgumentNullException(nameof(billRepository));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
-        _outboxPublisher = outboxPublisher ?? throw new ArgumentNullException(nameof(outboxPublisher));
+        _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
     }
 
     public async Task<ApplicationResult<CancelBillResponse>> Handle(
@@ -81,7 +81,7 @@ public class CancelBillCommandHandler : IRequestHandler<CancelBillCommand, Appli
                     ["BillStatus"] = bill.Status.ToString()
                 }
             };
-            await _outboxPublisher.PublishAsync(billCancelledEvent, cancellationToken);
+            await _publishEndpoint.Publish(billCancelledEvent, cancellationToken);
 
             // Commit transaction (saves domain changes + outbox messages)
             await _unitOfWork.CommitAsync(cancellationToken);

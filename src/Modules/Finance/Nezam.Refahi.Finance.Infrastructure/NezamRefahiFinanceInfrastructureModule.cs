@@ -94,7 +94,6 @@ public class NezamRefahiFinanceInfrastructureModule : BonWebModule
         context.Services.AddScoped<WalletSnapshotService>();
 
         // Register Event Consumers
-        context.Services.AddScoped<WalletChargePaymentCompletedConsumer>();
 
         return base.OnConfigureAsync(context);
     }

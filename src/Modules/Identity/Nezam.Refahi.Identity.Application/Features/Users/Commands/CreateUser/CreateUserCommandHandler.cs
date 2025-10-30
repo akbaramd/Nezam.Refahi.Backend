@@ -8,7 +8,7 @@ using Nezam.Refahi.Identity.Domain.Repositories;
 using Nezam.Refahi.Shared.Application;
 using Nezam.Refahi.Shared.Application.Common.Models;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
-using Nezam.Refahi.Shared.Infrastructure.Outbox;
+using MassTransit;
 using Nezam.Refahi.Shared.Domain.Services;
 
 namespace Nezam.Refahi.Identity.Application.Features.Users.Commands.CreateUser;
@@ -18,7 +18,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Appli
     private readonly IUserRepository _userRepository;
     private readonly IRoleRepository _roleRepository;
     private readonly IIdentityUnitOfWork _unitOfWork;
-    private readonly IOutboxPublisher _outboxPublisher;
+    private readonly IPublishEndpoint _publishEndpoint;
     private readonly IIdempotencyService _idempotencyService;
     private readonly ILogger<CreateUserCommandHandler> _logger;
 
@@ -26,14 +26,14 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Appli
         IUserRepository userRepository, 
         IRoleRepository roleRepository, 
         IIdentityUnitOfWork unitOfWork,
-        IOutboxPublisher outboxPublisher,
+        IPublishEndpoint publishEndpoint,
         IIdempotencyService idempotencyService,
         ILogger<CreateUserCommandHandler> logger)
     {
         _userRepository = userRepository;
         _roleRepository = roleRepository;
         _unitOfWork = unitOfWork;
-        _outboxPublisher = outboxPublisher ?? throw new ArgumentNullException(nameof(outboxPublisher));
+        _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
         _idempotencyService = idempotencyService ?? throw new ArgumentNullException(nameof(idempotencyService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -175,8 +175,8 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Appli
                     Claims = request.Claims
                 };
 
-                // Publish to outbox with idempotency and correlation INSIDE transaction
-                await _outboxPublisher.PublishAsync(userCreatedEvent, user.Id, correlationId, idempotencyKey, cancellationToken);
+                // Publish via MassTransit
+                await _publishEndpoint.Publish(userCreatedEvent, cancellationToken);
 
                 // Commit transaction (saves domain changes + outbox messages)
                 await _unitOfWork.CommitAsync(cancellationToken);

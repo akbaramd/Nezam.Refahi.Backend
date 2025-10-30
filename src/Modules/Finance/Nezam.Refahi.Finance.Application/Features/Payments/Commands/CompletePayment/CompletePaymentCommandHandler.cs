@@ -7,7 +7,7 @@ using Nezam.Refahi.Finance.Domain.Repositories;
 using Nezam.Refahi.Shared.Application;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
-using Nezam.Refahi.Shared.Infrastructure.Outbox;
+using MassTransit;
 
 namespace Nezam.Refahi.Finance.Application.Features.Payments.Commands.CompletePayment;
 
@@ -20,20 +20,20 @@ public class CompletePaymentCommandHandler : IRequestHandler<CompletePaymentComm
     private readonly IPaymentRepository _paymentRepository;
     private readonly IValidator<CompletePaymentCommand> _validator;
     private readonly IFinanceUnitOfWork _unitOfWork;
-    private readonly IOutboxPublisher _outboxPublisher;
+    private readonly IBus _publishEndpoint;
 
     public CompletePaymentCommandHandler(
         IBillRepository billRepository,
         IPaymentRepository paymentRepository,
         IValidator<CompletePaymentCommand> validator,
         IFinanceUnitOfWork unitOfWork,
-        IOutboxPublisher outboxPublisher)
+        IBus publishEndpoint)
     {
         _billRepository = billRepository ?? throw new ArgumentNullException(nameof(billRepository));
         _paymentRepository = paymentRepository ?? throw new ArgumentNullException(nameof(paymentRepository));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
-        _outboxPublisher = outboxPublisher ?? throw new ArgumentNullException(nameof(outboxPublisher));
+        _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
     }
 
     public async Task<ApplicationResult<CompletePaymentResponse>> Handle(
@@ -97,12 +97,7 @@ public class CompletePaymentCommandHandler : IRequestHandler<CompletePaymentComm
             
             // Publish with Idempotency Key for reliability
             var paymentIdempotencyKey = $"payment_completed_{updatedPayment.Id}_{DateTime.UtcNow:yyyyMMddHHmmss}";
-            await _outboxPublisher.PublishAsync(
-                paymentCompletedEvent, 
-                aggregateId: bill.Id,
-                correlationId: request.GatewayTransactionId,
-                idempotencyKey: paymentIdempotencyKey,
-                cancellationToken);
+            await _publishEndpoint.Publish(paymentCompletedEvent, cancellationToken);
 
             // Check if bill is fully paid and publish BillFullyPaidCompletedIntegrationEvent
             if (bill.Status == Nezam.Refahi.Finance.Domain.Enums.BillStatus.FullyPaid)
@@ -111,7 +106,8 @@ public class CompletePaymentCommandHandler : IRequestHandler<CompletePaymentComm
                 {
                     BillId = bill.Id,
                     BillNumber = bill.BillNumber,
-                    ReferenceId = bill.ReferenceId,
+                    ReferenceId = Guid.Parse(bill.ReferenceId),
+                    ReferenceTrackingCode = bill.ReferenceTrackCode,
                     ReferenceType = bill.ReferenceType,
                     PaidAmountRials = (long)bill.TotalAmount.AmountRials,
                     PaidAt = updatedPayment.CompletedAt!.Value,
@@ -134,12 +130,7 @@ public class CompletePaymentCommandHandler : IRequestHandler<CompletePaymentComm
                 
                 // Publish with Idempotency Key for reliability
                 var billIdempotencyKey = $"bill_fully_paid_{bill.Id}_{DateTime.UtcNow:yyyyMMddHHmmss}";
-                await _outboxPublisher.PublishAsync(
-                    billFullyPaidCompletedEvent, 
-                    aggregateId: bill.Id,
-                    correlationId: request.GatewayTransactionId,
-                    idempotencyKey: billIdempotencyKey,
-                    cancellationToken);
+                await _publishEndpoint.Publish(billFullyPaidCompletedEvent, cancellationToken);
             }
 
             // Save changes (including Outbox messages) and commit transaction

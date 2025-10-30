@@ -1,0 +1,354 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report ScriptLanguage="CSharp" ReportInfo.Created="05/16/2013 12:56:40" ReportInfo.Modified="08/19/2024 11:33:33" ReportInfo.CreatorVersion="2022.3.11.0" PrintSettings.ShowDialog="false">
+  <Dictionary>
+    <TableDataSource Name="IntialBillDetails" ReferenceName="IntialBillDetails" DataType="null" Enabled="true">
+      <Column Name="Index" DataType="System.Int32"/>
+      <Column Name="Title" DataType="System.String"/>
+      <Column Name="Tax" DataType="System.Int64"/>
+      <Column Name="Amount" DataType="System.Int64"/>
+      <Column Name="FormatedAmount" DataType="System.String"/>
+    </TableDataSource>
+    <TableDataSource Name="SupervisorBillDetails" ReferenceName="SupervisorBillDetails" DataType="null" Enabled="true">
+      <Column Name="Index" DataType="System.Int32"/>
+      <Column Name="Title" DataType="System.String"/>
+      <Column Name="Tax" DataType="System.Int64"/>
+      <Column Name="Amount" DataType="System.Int64"/>
+      <Column Name="FormatedAmount" DataType="System.String"/>
+    </TableDataSource>
+    <TableDataSource Name="OtherBillDetails" ReferenceName="OtherBillDetails" DataType="null" Enabled="true">
+      <Column Name="Index" DataType="System.Int32"/>
+      <Column Name="Title" DataType="System.String"/>
+      <Column Name="Tax" DataType="System.Int64"/>
+      <Column Name="Amount" DataType="System.Int64"/>
+      <Column Name="FormatedAmount" DataType="System.String"/>
+    </TableDataSource>
+    <TableDataSource Name="BillPaymentDetails" ReferenceName="BillPaymentDetails" DataType="null" Enabled="true">
+      <Column Name="Index" DataType="System.Int32"/>
+      <Column Name="BillPaymentCode" DataType="System.String"/>
+      <Column Name="RRN" DataType="System.String"/>
+      <Column Name="RegDate" DataType="System.String"/>
+      <Column Name="PersianRegDate" DataType="System.String"/>
+      <Column Name="Amount" DataType="System.Int64"/>
+      <Column Name="FormatedAmount" DataType="System.String"/>
+    </TableDataSource>
+    <TableDataSource Name="tbl_change" ReferenceName="tbl_change" DataType="null" Enabled="true">
+      <Column Name="sabt_no" DataType="System.String"/>
+      <Column Name="ozviyat_no" DataType="System.Int64"/>
+      <Column Name="gorooh_cod" DataType="System.Int32"/>
+      <Column Name="tedad_cod" DataType="System.Double"/>
+      <Column Name="name" DataType="System.String"/>
+      <Column Name="fname" DataType="System.String"/>
+      <Column Name="title" DataType="System.String"/>
+      <Column Name="nezarat" DataType="System.Double"/>
+      <Column Name="tarrahi" DataType="System.Double"/>
+      <Column Name="daftar_fanni_no" DataType="System.String"/>
+      <Column Name="tafavot_metraj" DataType="System.Int32"/>
+      <Column Name="sal" DataType="System.Int32"/>
+      <Column Name="sabt_date" DataType="System.String"/>
+      <Column Name="malekname" DataType="System.String"/>
+      <Column Name="malekfname" DataType="System.String"/>
+      <Column Name="dastoor_no" DataType="System.String"/>
+      <Column Name="dastoor_date" DataType="System.String"/>
+      <Column Name="pelak_no" DataType="System.String"/>
+      <Column Name="metraj" DataType="System.Double"/>
+      <Column Name="daftar_no" DataType="System.String"/>
+      <Column Name="mantageh" DataType="System.String"/>
+      <Column Name="gorooh" DataType="System.String"/>
+      <Column Name="change" DataType="System.String"/>
+      <Column Name="metraj_gabl" DataType="System.Int32"/>
+      <Column Name="sal1" DataType="System.Int32"/>
+      <Column Name="Expr1" DataType="System.Int32"/>
+      <Column Name="comment" DataType="System.String"/>
+      <Column Name="n_tedad" DataType="System.Double"/>
+      <Column Name="tkoll" DataType="System.Double"/>
+      <Column Name="t_tedad" DataType="System.Double"/>
+      <Column Name="eng_full_name" DataType="System.String"/>
+      <Column Name="eng_mob" DataType="System.String"/>
+      <Column Name="malek_full_name" DataType="System.String"/>
+      <Column Name="pnezarat_cod" DataType="System.Int32"/>
+      <Column Name="ptarrahi_cod" DataType="System.Int32"/>
+    </TableDataSource>
+    <Parameter Name="maliat_rate" DataType="System.String"/>
+    <Parameter Name="karbar_name" DataType="System.String"/>
+    <Parameter Name="comments" DataType="System.String"/>
+    <Parameter Name="sahm_nezarat" DataType="System.String"/>
+    <Parameter Name="sahm_tarrahi" DataType="System.String"/>
+    <Parameter Name="sahm_mojri" DataType="System.String"/>
+    <Parameter Name="sahm_mechanic_khak" DataType="System.String"/>
+    <Parameter Name="sum_sahm_1" DataType="System.String"/>
+    <Parameter Name="sahm_shanasname" DataType="System.String"/>
+    <Parameter Name="sahm_nezarat_eng" DataType="System.String"/>
+    <Parameter Name="sahm_nagshebardar" DataType="System.String"/>
+    <Parameter Name="sum_sahm_2" DataType="System.String"/>
+    <Parameter Name="maliyat_afzoodeh_shenasname" DataType="System.String"/>
+    <Parameter Name="sum_maliyat_afzoodeh" DataType="System.String"/>
+    <Parameter Name="tedad_tabage" DataType="System.String"/>
+    <Parameter Name="tedad_sagf" DataType="System.String"/>
+    <Parameter Name="trackcode" DataType="System.String"/>
+    <Parameter Name="maliyat_afzoodeh_sahm_nezarat" DataType="System.String"/>
+    <Parameter Name="maliyat_afzoodeh_sahm_tarrahi" DataType="System.String"/>
+    <Parameter Name="maliyat_afzoodeh_sahm_mojri" DataType="System.String"/>
+    <Parameter Name="pardakht_saderat" DataType="System.String"/>
+    <Parameter Name="pardakht_tejarat" DataType="System.String"/>
+    <Parameter Name="bedehi_saderat" DataType="System.String"/>
+    <Parameter Name="bedehi_tejarat" DataType="System.String"/>
+    <Parameter Name="kol_saderat" DataType="System.String"/>
+    <Parameter Name="kol_tejarat" DataType="System.String"/>
+    <Parameter Name="sumCol1" DataType="System.String"/>
+    <Parameter Name="sumCol2" DataType="System.String"/>
+    <Parameter Name="malek_mob_no" DataType="System.String"/>
+    <Parameter Name="malek_address" DataType="System.String"/>
+    <Parameter Name="malek_mellicode" DataType="System.String"/>
+    <Parameter Name="maliyat_arzesh_rate" DataType="System.String"/>
+    <Parameter Name="avarez_arzesh_rate" DataType="System.String"/>
+    <Parameter Name="avarez_afzoodeh_shenasname" DataType="System.String"/>
+    <Parameter Name="avarez_afzoodeh_sahm_nezarat" DataType="System.String"/>
+    <Parameter Name="avarez_afzoodeh_sahm_tarrahi" DataType="System.String"/>
+    <Parameter Name="avarez_afzoodeh_sahm_mojri" DataType="System.String"/>
+    <Parameter Name="sahm_sandog_hemayati" DataType="System.String"/>
+    <Parameter Name="shahrdari_name" DataType="System.String"/>
+    <Parameter Name="bank_sazman" DataType="System.String"/>
+    <Parameter Name="bank_erjaa" DataType="System.String"/>
+    <Parameter Name="varizi_bank_sazman" DataType="System.String"/>
+    <Parameter Name="varizi_bank_erjaa" DataType="System.String"/>
+    <Parameter Name="bank_sazman_motamarkez" DataType="System.String"/>
+    <Parameter Name="sum_sahm_daftar" DataType="System.String"/>
+    <Parameter Name="varizi_bank_sazman_ostan" DataType="System.String"/>
+    <Parameter Name="kol_tejarat_ostan" DataType="System.String"/>
+    <Parameter Name="bedehi_tejarat_ostan" DataType="System.String"/>
+    <Parameter Name="pardakht_tejarat_ostan" DataType="System.String"/>
+    <Parameter Name="Dprint" DataType="System.String"/>
+    <Parameter Name="avarez_afzoodeh_nagshebardar" DataType="System.String"/>
+    <Parameter Name="sahm_nagshebardar_sazman" DataType="System.String"/>
+    <Parameter Name="maliyat_afzoodeh_nagshebardar" DataType="System.String"/>
+    <Parameter Name="Sum_maliyat" DataType="System.String"/>
+    <Parameter Name="Sum_avarez" DataType="System.String"/>
+    <Parameter Name="sum_mablag_taaviz_naghshe" DataType="System.String"/>
+    <Parameter Name="maliyat_sum_mablag_taaviz_naghshe" DataType="System.String"/>
+    <Parameter Name="avarez_sum_mablag_taaviz_naghshe" DataType="System.String"/>
+    <Parameter Name="sahm_Geo_nazer" DataType="System.String"/>
+    <Parameter Name="maliyat_mechanic_khak" DataType="System.String"/>
+    <Parameter Name="avarez_mechanic_khak" DataType="System.String"/>
+    <Parameter Name="dossierNumber" DataType="System.String"/>
+    <Parameter Name="sum_khak" DataType="System.String"/>
+    <Parameter Name="controlTarrahLabel" DataType="System.String"/>
+    <Parameter Name="SumIntialBillDetails" DataType="System.String"/>
+    <Parameter Name="SumSupervisorBillDetails" DataType="System.String"/>
+    <Parameter Name="OtherBillDetails" DataType="System.String"/>
+    <Parameter Name="SumBillPaymentDetails" DataType="System.String"/>
+    <Parameter Name="SumBills" DataType="System.String"/>
+  </Dictionary>
+  <ReportPage Name="Page1" LeftMargin="5" TopMargin="5" RightMargin="5" BottomMargin="5" FirstPageSource="15" OtherPagesSource="15" Watermark.Font="Arial, 60pt">
+    <ReportTitleBand Name="ReportTitle1" Width="756" Height="264.6" Guides="255.15">
+      <ShapeObject Name="Shape1" Left="9.45" Top="9.45" Width="217.35" Height="141.75" Border.Width="0.25" Fill.Color="Gainsboro"/>
+      <TextObject Name="Text1" Left="321.3" Top="9.45" Width="94.5" Height="18.9" Text="باسمه تعالي" HorzAlign="Center" Font="B Nazanin, 10pt"/>
+      <TextObject Name="Text2" Left="264.6" Top="37.8" Width="207.9" Height="37.8" Fill.Color="Gainsboro" Text="فرم تاییدیه مالی پرونده" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 12pt, style=Bold"/>
+      <TextObject Name="Text10" Left="141.75" Top="28.35" Width="66.15" Height="18.9" Text=": شماره ثبت" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+      <TextObject Name="Text11" Left="141.75" Top="47.25" Width="66.15" Height="18.9" Text=": نوع پرونده" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+      <TextObject Name="Text12" Left="141.75" Top="66.15" Width="47.25" Height="18.9" Text=": گروه" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+      <TextObject Name="Text13" Left="141.75" Top="85.05" Width="66.15" Height="18.9" Text=": متراژ نقشه" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+      <TextObject Name="Text70" Left="18.9" Top="28.35" Width="113.4" Height="18.9" Text="[tbl_change.sabt_no]" HorzAlign="Right" VertAlign="Center" WordWrap="false" Font="B Nazanin, 11pt, style=Bold"/>
+      <TextObject Name="Text80" Left="18.9" Top="85.05" Width="113.4" Height="18.9" Text="[tbl_change.metraj]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="0" Format.DecimalSeparator="." Format.GroupSeparator="" Format.NegativePattern="3" HorzAlign="Right" VertAlign="Center" WordWrap="false" Font="B Nazanin, 11pt, style=Bold" Trimming="EllipsisCharacter"/>
+      <TextObject Name="Text84" Left="18.9" Top="66.15" Width="113.4" Height="18.9" Text="[tbl_change.gorooh]" HorzAlign="Right" WordWrap="false" Font="B Nazanin, 11pt, style=Bold"/>
+      <TextObject Name="Text85" Left="18.9" Top="47.25" Width="113.4" Height="18.9" Text="[tbl_change.change]" HorzAlign="Right" VertAlign="Center" WordWrap="false" Font="B Nazanin, 11pt, style=Bold"/>
+      <TextObject Name="Text130" Left="9.45" Top="170.1" Width="737.1" Height="47.25" Border.Lines="All" Text="اطلاعات سازمان &#13;&#10;كد اقتصادي :411333944144      كدپستي:94636-57157        شناسنامه ملي :14009050860        آدرس: خيابان عمار-خيابان حج" Padding="2, 0, 10, 0" HorzAlign="Right" Font="B Nazanin, 10pt, style=Bold"/>
+      <TextObject Name="Text137" Left="141.75" Top="103.95" Width="66.15" Height="18.9" Text=": پرونده" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+      <TextObject Name="Text138" Left="18.9" Top="103.95" Width="113.4" Height="18.9" Text="[dossierNumber]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="0" Format.DecimalSeparator="." Format.GroupSeparator="" Format.NegativePattern="3" HorzAlign="Right" VertAlign="Center" WordWrap="false" Font="B Nazanin, 11pt, style=Bold" Trimming="EllipsisCharacter"/>
+      <TableObject Name="Table15" Left="226.8" Top="94.5" Width="519.55" Height="56.7">
+        <TableColumn Name="Column61" Width="188.95"/>
+        <TableColumn Name="Column62" Width="66.1"/>
+        <TableColumn Name="Column63" Width="198.4"/>
+        <TableColumn Name="Column64" Width="66.1"/>
+        <TableRow Name="Row16">
+          <TableCell Name="Cell66" Text="[malek_mellicode]" HorzAlign="Right" Font="B Nazanin, 10pt, style=Bold"/>
+          <TableCell Name="Cell67" Text=": کد ملی" HorzAlign="Right" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell68" Text="[tbl_change.malek_full_name]" HorzAlign="Right" Font="B Nazanin, 10pt, style=Bold"/>
+          <TableCell Name="Cell69" Text=": نام مالک" HorzAlign="Right" Font="B Nazanin, 10pt"/>
+        </TableRow>
+        <TableRow Name="Row17">
+          <TableCell Name="Cell71" Text="[malek_phone_no]" HorzAlign="Right" Font="B Nazanin, 10pt, style=Bold"/>
+          <TableCell Name="Cell72" Text=": تلفن مالک " HorzAlign="Right" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell73" Text="[malek_mob_no]" HorzAlign="Right" Font="B Nazanin, 10pt, style=Bold"/>
+          <TableCell Name="Cell74" Text=": موبایل مالک" HorzAlign="Right" Font="B Nazanin, 10pt"/>
+        </TableRow>
+        <TableRow Name="Row18">
+          <TableCell Name="Cell76" Text="[shahrdari_name]" HorzAlign="Right" Font="B Nazanin, 10pt, style=Bold"/>
+          <TableCell Name="Cell77" Text=": شهرداری" HorzAlign="Right" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell78" Text="[tbl_change.dastoor_no]" HorzAlign="Right" Font="B Nazanin, 10pt, style=Bold"/>
+          <TableCell Name="Cell79" Text=": شماره ارجاع" HorzAlign="Right" Font="B Nazanin, 10pt"/>
+        </TableRow>
+      </TableObject>
+      <TextObject Name="Text140" Left="141.75" Top="122.85" Width="75.6" Height="18.9" Text=": تعداد سقف" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+      <TextObject Name="Text141" Left="18.9" Top="122.85" Width="113.4" Height="18.9" Text="[tedad_sagf]" Format="Number" Format.UseLocale="false" Format.DecimalDigits="0" Format.DecimalSeparator="." Format.GroupSeparator="" Format.NegativePattern="3" HorzAlign="Right" VertAlign="Center" WordWrap="false" Font="B Nazanin, 11pt, style=Bold" Trimming="EllipsisCharacter"/>
+      <TextObject Name="Text142" Left="396.9" Top="236.25" Width="349.65" Height="18.9" Text=": لیست صورت حساب های ثبت شده برای پرونده به شرح زیر می باشد" HorzAlign="Right" Font="B Nazanin, 10pt, style=Bold"/>
+    </ReportTitleBand>
+    <DataBand Name="Data1" Top="291.19" Width="756" Height="18.9" CanGrow="true" DataSource="IntialBillDetails">
+      <TableObject Name="Table2" Left="9.45" Width="737.08" Height="18.9">
+        <TableColumn Name="Column6" Width="150"/>
+        <TableColumn Name="Column7" Width="150"/>
+        <TableColumn Name="Column8" Width="337.08"/>
+        <TableColumn Name="Column9" Width="100"/>
+        <TableRow Name="Row2">
+          <TableCell Name="Cell6" Border.Lines="All" Text="[IntialBillDetails.Tax]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell7" Border.Lines="All" Text="[IntialBillDetails.FormatedAmount]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell8" Border.Lines="All" Text="[IntialBillDetails.Title]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell9" Border.Lines="All" Text="[IntialBillDetails.Index]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+        </TableRow>
+      </TableObject>
+      <DataHeaderBand Name="DataHeader1" Top="268.45" Width="756" Height="18.9">
+        <TableObject Name="Table5" Left="9.45" Width="737.08" Height="18.9">
+          <TableColumn Name="Column18" Width="150"/>
+          <TableColumn Name="Column19" Width="150"/>
+          <TableColumn Name="Column20" Width="337.08"/>
+          <TableColumn Name="Column21" Width="100"/>
+          <TableRow Name="Row5">
+            <TableCell Name="Cell18" Border.Lines="All" Fill.Color="Gainsboro" Text="مالیات و عوارض" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+            <TableCell Name="Cell19" Border.Lines="All" Fill.Color="Gainsboro" Text="مبلغ قابل پرداخت" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+            <TableCell Name="Cell20" Border.Lines="All" Fill.Color="Gainsboro" Text="عنوان" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+            <TableCell Name="Cell21" Border.Lines="All" Fill.Color="Gainsboro" Text="ردیف" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+          </TableRow>
+        </TableObject>
+      </DataHeaderBand>
+      <DataFooterBand Name="DataFooter1" Top="313.94" Width="756" Height="18.9" Guides="18.9">
+        <TableObject Name="Table6" Left="9.45" Width="737.08" Height="18.9" PrintOnParent="true">
+          <TableColumn Name="Column22" Width="150"/>
+          <TableColumn Name="Column23" Width="150"/>
+          <TableColumn Name="Column24" Width="337.08"/>
+          <TableColumn Name="Column25" Width="100"/>
+          <TableRow Name="Row6">
+            <TableCell Name="Cell22" Border.Lines="Left, Top, Bottom" Fill.Color="WhiteSmoke" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+            <TableCell Name="Cell23" Border.Lines="Right, Top, Bottom" Fill.Color="WhiteSmoke" Text="[SumIntialBillDetails]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+            <TableCell Name="Cell24" Border.Lines="Left, Top, Bottom" Fill.Color="WhiteSmoke" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+            <TableCell Name="Cell25" Border.Lines="Right, Top, Bottom" Fill.Color="WhiteSmoke" Text="قابل پرداخت" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+          </TableRow>
+        </TableObject>
+      </DataFooterBand>
+    </DataBand>
+    <DataBand Name="Data3" Top="336.68" Width="756" Height="18.9" CanGrow="true" DataSource="SupervisorBillDetails">
+      <TableObject Name="Table4" Left="9.45" Width="737.08" Height="18.9" PrintOnParent="true">
+        <TableColumn Name="Column14" Width="150"/>
+        <TableColumn Name="Column15" Width="150"/>
+        <TableColumn Name="Column16" Width="337.08"/>
+        <TableColumn Name="Column17" Width="100"/>
+        <TableRow Name="Row4">
+          <TableCell Name="Cell14" Border.Lines="All" Text="[SupervisorBillDetails.Tax]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell15" Border.Lines="All" Text="[SupervisorBillDetails.FormatedAmount]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell16" Border.Lines="All" Text="[SupervisorBillDetails.Title]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell17" Border.Lines="All" Text="[SupervisorBillDetails.Index]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+        </TableRow>
+      </TableObject>
+      <DataFooterBand Name="DataFooter2" Top="359.43" Width="756" Height="18.9">
+        <TableObject Name="Table8" Left="9.45" Width="737.08" Height="18.9" PrintOnParent="true">
+          <TableColumn Name="Column30" Width="150"/>
+          <TableColumn Name="Column31" Width="150"/>
+          <TableColumn Name="Column32" Width="337.08"/>
+          <TableColumn Name="Column33" Width="100"/>
+          <TableRow Name="Row8">
+            <TableCell Name="Cell30" Border.Lines="Left, Top, Bottom" Fill.Color="WhiteSmoke" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+            <TableCell Name="Cell31" Border.Lines="Right, Top, Bottom" Fill.Color="WhiteSmoke" Text="[SumSupervisorBillDetails]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+            <TableCell Name="Cell32" Border.Lines="Left, Top, Bottom" Fill.Color="WhiteSmoke" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+            <TableCell Name="Cell33" Border.Lines="Right, Top, Bottom" Fill.Color="WhiteSmoke" Text="قابل پرداخت" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+          </TableRow>
+        </TableObject>
+      </DataFooterBand>
+    </DataBand>
+    <DataBand Name="Data2" Top="382.18" Width="756" Height="18.9" CanGrow="true" DataSource="OtherBillDetails">
+      <TableObject Name="Table10" Left="9.45" Width="737.08" Height="18.9" PrintOnParent="true">
+        <TableColumn Name="Column38" Width="150"/>
+        <TableColumn Name="Column39" Width="150"/>
+        <TableColumn Name="Column40" Width="337.08"/>
+        <TableColumn Name="Column41" Width="100"/>
+        <TableRow Name="Row10">
+          <TableCell Name="Cell38" Border.Lines="All" Text="[OtherBillDetails.Tax]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell39" Border.Lines="All" Text="[OtherBillDetails.FormatedAmount]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell40" Border.Lines="All" Text="[OtherBillDetails.Title]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell41" Border.Lines="All" Text="[OtherBillDetails.Index]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+        </TableRow>
+      </TableObject>
+      <DataFooterBand Name="DataFooter3" Top="404.92" Width="756" Height="18.9">
+        <TableObject Name="Table11" Left="9.45" Width="737.08" Height="18.9" PrintOnParent="true">
+          <TableColumn Name="Column42" Width="150"/>
+          <TableColumn Name="Column43" Width="150"/>
+          <TableColumn Name="Column44" Width="337.08"/>
+          <TableColumn Name="Column45" Width="100"/>
+          <TableRow Name="Row11">
+            <TableCell Name="Cell42" Border.Lines="Left, Top, Bottom" Fill.Color="WhiteSmoke" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+            <TableCell Name="Cell43" Border.Lines="Right, Top, Bottom" Fill.Color="WhiteSmoke" Text="[OtherBillDetails]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+            <TableCell Name="Cell44" Border.Lines="Left, Top, Bottom" Fill.Color="WhiteSmoke" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+            <TableCell Name="Cell45" Border.Lines="Right, Top, Bottom" Fill.Color="WhiteSmoke" Text="قابل پرداخت" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+          </TableRow>
+        </TableObject>
+      </DataFooterBand>
+    </DataBand>
+    <DataBand Name="Data5" Top="427.67" Width="756" Height="18.9">
+      <TableObject Name="Table16" Left="9.45" Width="737.08" Height="18.9" PrintOnParent="true">
+        <TableColumn Name="Column65" Width="150"/>
+        <TableColumn Name="Column66" Width="150"/>
+        <TableColumn Name="Column67" Width="337.08"/>
+        <TableColumn Name="Column68" Width="100"/>
+        <TableRow Name="Row19">
+          <TableCell Name="Cell80" Border.Lines="Left, Top, Bottom" Fill.Color="Gainsboro" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell81" Border.Lines="Right, Top, Bottom" Fill.Color="Gainsboro" Text="[SumBills]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+          <TableCell Name="Cell82" Border.Lines="Left, Top, Bottom" Fill.Color="Gainsboro" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell83" Border.Lines="Right, Top, Bottom" Fill.Color="Gainsboro" Text="مجموع" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+        </TableRow>
+      </TableObject>
+    </DataBand>
+    <DataBand Name="Data4" Top="520.41" Width="756" Height="18.9" CanGrow="true" DataSource="BillPaymentDetails">
+      <TableObject Name="Table13" Left="9.45" Width="737.08" Height="18.9" PrintOnParent="true">
+        <TableColumn Name="Column59" Width="150"/>
+        <TableColumn Name="Column50" Width="150"/>
+        <TableColumn Name="Column51" Width="168.54"/>
+        <TableColumn Name="Column52" Width="168.54"/>
+        <TableColumn Name="Column53" Width="100"/>
+        <TableRow Name="Row13">
+          <TableCell Name="Cell59" Border.Lines="All" Text="[BillPaymentDetails.RRN]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell50" Border.Lines="All" Text="[BillPaymentDetails.BillPaymentCode]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell51" Border.Lines="All" Text="[BillPaymentDetails.FormatedAmount]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell52" Border.Lines="All" Text="[BillPaymentDetails.PersianRegDate]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell53" Border.Lines="All" Text="[BillPaymentDetails.Index]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+        </TableRow>
+      </TableObject>
+      <DataHeaderBand Name="DataHeader4" Top="450.42" Width="756" Height="66.15">
+        <TextObject Name="Text134" Left="396.9" Top="18.9" Width="349.65" Height="18.9" Text=": لیست پرداخت های ثبت شده برای پرونده به شرح زیر می باشد" HorzAlign="Right" Font="B Nazanin, 10pt, style=Bold"/>
+        <TableObject Name="Table12" Left="9.45" Top="47.25" Width="737.08" Height="18.9" PrintOnParent="true">
+          <TableColumn Name="Column58" Width="150"/>
+          <TableColumn Name="Column46" Width="150"/>
+          <TableColumn Name="Column47" Width="168.54"/>
+          <TableColumn Name="Column48" Width="168.54"/>
+          <TableColumn Name="Column49" Width="100"/>
+          <TableRow Name="Row12">
+            <TableCell Name="Cell58" Border.Lines="All" Fill.Color="Gainsboro" Text="کد رهگیری" HorzAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+            <TableCell Name="Cell46" Border.Lines="All" Fill.Color="Gainsboro" Text="شناسه قبض" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+            <TableCell Name="Cell47" Border.Lines="All" Fill.Color="Gainsboro" Text="مبلغ" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+            <TableCell Name="Cell48" Border.Lines="All" Fill.Color="Gainsboro" Text="تاریخ پرداخت" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+            <TableCell Name="Cell49" Border.Lines="All" Fill.Color="Gainsboro" Text="ردیف" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+          </TableRow>
+        </TableObject>
+      </DataHeaderBand>
+      <DataFooterBand Name="DataFooter4" Top="543.16" Width="756" Height="37.8">
+        <TableObject Name="Table14" Left="9.45" Width="737.08" Height="18.9" PrintOnParent="true">
+          <TableColumn Name="Column54" Width="150"/>
+          <TableColumn Name="Column55" Width="150"/>
+          <TableColumn Name="Column56" Width="168.54"/>
+          <TableColumn Name="Column57" Width="168.54"/>
+          <TableColumn Name="Column58" Width="100"/>
+          <TableRow Name="Row14">
+            <TableCell Name="Cell57" Border.Lines="Left, Top, Bottom" Fill.Color="Gainsboro" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+            <TableCell Name="Cell54" Border.Lines="Right, Top, Bottom" Fill.Color="Gainsboro" Text="[SumBillPaymentDetails]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+            <TableCell Name="Cell55" Border.Lines="Left, Top, Bottom" Fill.Color="Gainsboro" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+            <TableCell Name="Cell56" Border.Lines="Top, Bottom" Fill.Color="Gainsboro" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+            <TableCell Name="Cell57" Border.Lines="Right, Top, Bottom" Fill.Color="Gainsboro" Text="مجموع" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+          </TableRow>
+        </TableObject>
+      </DataFooterBand>
+    </DataBand>
+    <ReportSummaryBand Name="ReportSummary1" Top="584.8" Width="756" Height="56.7">
+      <TextObject Name="Text143" Left="9.45" Top="9.45" Width="737.1" Height="18.9" CanGrow="true" Text="[comments]" HorzAlign="Right" Font="B Nazanin, 10pt"/>
+    </ReportSummaryBand>
+    <PageFooterBand Name="PageFooter1" Top="645.35" Width="756" Height="66.15">
+      <TextObject Name="Text69" Left="9.45" Width="737.1" Height="37.8" Fill.Color="LightGray" Text="  مدت اعتبار اين برگه از تاريخ ثبت به مدت سه ماه مي باشد، طي اين مدت نيز در صورت تغيير ضوابط يا تغيير تعرفه ها بروزرساني   خواهد شد." HorzAlign="Justify" VertAlign="Center" RightToLeft="true" Font="B Nazanin, 10pt, style=Bold"/>
+      <TextObject Name="Text139" Left="9.45" Top="47.25" Width="94.5" Height="18.9" Text="[Date]" Font="B Nazanin, 10pt"/>
+    </PageFooterBand>
+  </ReportPage>
+</Report>

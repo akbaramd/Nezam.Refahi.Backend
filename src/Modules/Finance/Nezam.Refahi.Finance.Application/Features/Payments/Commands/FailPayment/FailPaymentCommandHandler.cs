@@ -7,7 +7,7 @@ using Nezam.Refahi.Finance.Domain.Repositories;
 using Nezam.Refahi.Shared.Application;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
-using Nezam.Refahi.Shared.Infrastructure.Outbox;
+using MassTransit;
 
 namespace Nezam.Refahi.Finance.Application.Features.Payments.Commands.FailPayment;
 
@@ -20,20 +20,20 @@ public class FailPaymentCommandHandler : IRequestHandler<FailPaymentCommand, App
     private readonly IPaymentRepository _paymentRepository;
     private readonly IValidator<FailPaymentCommand> _validator;
     private readonly IFinanceUnitOfWork _unitOfWork;
-    private readonly IOutboxPublisher _outboxPublisher;
+    private readonly IPublishEndpoint _publishEndpoint;
 
     public FailPaymentCommandHandler(
         IBillRepository billRepository,
         IPaymentRepository paymentRepository,
         IValidator<FailPaymentCommand> validator,
         IFinanceUnitOfWork unitOfWork,
-        IOutboxPublisher outboxPublisher)
+        IPublishEndpoint publishEndpoint)
     {
         _billRepository = billRepository ?? throw new ArgumentNullException(nameof(billRepository));
         _paymentRepository = paymentRepository ?? throw new ArgumentNullException(nameof(paymentRepository));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
-        _outboxPublisher = outboxPublisher ?? throw new ArgumentNullException(nameof(outboxPublisher));
+        _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
     }
 
     public async Task<ApplicationResult<FailPaymentResponse>> Handle(
@@ -102,7 +102,7 @@ public class FailPaymentCommandHandler : IRequestHandler<FailPaymentCommand, App
                     ["FailedAt"] = DateTime.UtcNow.ToString("O")
                 }
             };
-            await _outboxPublisher.PublishAsync(paymentFailedEvent, cancellationToken);
+            await _publishEndpoint.Publish(paymentFailedEvent, cancellationToken);
 
             // Prepare response
             var response = new FailPaymentResponse

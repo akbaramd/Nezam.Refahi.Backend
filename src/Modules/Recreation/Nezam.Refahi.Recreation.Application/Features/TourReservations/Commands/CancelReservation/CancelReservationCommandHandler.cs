@@ -9,7 +9,7 @@ using Nezam.Refahi.Shared.Application;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
-using Nezam.Refahi.Shared.Infrastructure.Outbox;
+using MassTransit;
 
 namespace Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.CancelReservation;
 
@@ -24,7 +24,7 @@ public class CancelReservationCommandHandler : IRequestHandler<CancelReservation
     private readonly ICurrentUserService _currentUserService;
     private readonly MemberValidationService _memberValidationService;
     private readonly ILogger<CancelReservationCommandHandler> _logger;
-    private readonly IOutboxPublisher _outboxPublisher;
+    private readonly IPublishEndpoint _publishEndpoint;
 
     public CancelReservationCommandHandler(
         ITourReservationRepository reservationRepository,
@@ -33,7 +33,7 @@ public class CancelReservationCommandHandler : IRequestHandler<CancelReservation
         ICurrentUserService currentUserService,
         MemberValidationService memberValidationService,
         ILogger<CancelReservationCommandHandler> logger,
-        IOutboxPublisher outboxPublisher)
+        IPublishEndpoint publishEndpoint)
     {
         _reservationRepository = reservationRepository;
         _tourRepository = tourRepository;
@@ -41,7 +41,7 @@ public class CancelReservationCommandHandler : IRequestHandler<CancelReservation
         _currentUserService = currentUserService;
         _memberValidationService = memberValidationService;
         _logger = logger;
-        _outboxPublisher = outboxPublisher ?? throw new ArgumentNullException(nameof(outboxPublisher));
+        _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
     }
 
     public async Task<ApplicationResult<CancelReservationResponse>> Handle(CancelReservationCommand request, CancellationToken cancellationToken)
@@ -180,7 +180,7 @@ public class CancelReservationCommandHandler : IRequestHandler<CancelReservation
                     ["CancellationReason"] = request.Reason ?? string.Empty
                 }
             };
-            await _outboxPublisher.PublishAsync(reservationCancelledEvent, cancellationToken);
+            await _publishEndpoint.Publish(reservationCancelledEvent, cancellationToken);
 
             return ApplicationResult<CancelReservationResponse>.Success(response);
         }

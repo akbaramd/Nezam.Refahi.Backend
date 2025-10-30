@@ -60,9 +60,10 @@ public static class BillEndpoints
         billMeGroup.MapGet("/{billId:guid}/discount-codes/{code}/validation", async (
             [FromRoute] Guid billId,
             [FromRoute] string code,
-            [FromQuery] Guid externalUserId,
+            [FromServices] ICurrentUserService currentUserService,
             [FromServices] IMediator mediator) =>
           {
+            var externalUserId = currentUserService.GetRequiredUserId();
             if (externalUserId == Guid.Empty)
               return Results.BadRequest(ApplicationResult<DiscountValidationDto>.Failure("externalUserId is required."));
 

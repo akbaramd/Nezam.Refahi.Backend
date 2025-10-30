@@ -1,0 +1,84 @@
+﻿@inject Nezam.Refahi.Web.Services.IAuthService AuthService
+
+@{
+    // Get user information from authentication service
+    var userInfo = AuthService.GetCurrentUser();
+    
+    // Set user data with fallbacks
+    string userFullName = userInfo?.FullName ?? "کاربر سیستم";
+    string profileImagePath = userInfo?.ProfileImagePath ?? "~/assets/images/users/avatar-1.jpg";
+    
+    // Static menu state
+    bool isDashboardSection = Context.Request.Path.Value?.ToLower().Contains("/Dashboard".ToLower()) == true;
+    bool isTourSection = Context.Request.Path.Value?.ToLower().Contains("/Tour".ToLower()) == true;
+}
+<!-- ========== App Menu ========== -->
+<div class="app-menu navbar-menu two-column-menu" >
+    <!-- LOGO -->
+    
+
+    <div class="dropdown sidebar-user m-1 rounded" >
+        <button type="button" class="btn material-shadow-none" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span class="d-flex align-items-center gap-2">
+                <img class="rounded header-profile-user" src="@Url.Content(profileImagePath)" alt="Header Avatar">
+                <span class="text-start">
+                    <span class="d-block fw-medium sidebar-user-name-text">@userFullName</span>
+                    <span class="d-block fs-14 sidebar-user-name-sub-text"><i class="ri ri-circle-fill fs-10 text-success align-baseline"></i> <span class="align-middle">آنلاین</span></span>
+                </span>
+            </span>
+        </button>
+        <div class="dropdown-menu dropdown-menu-end">
+            <!-- item-->
+            <h6 class="dropdown-header">خوش آمدید!</h6>
+            <a class="dropdown-item" href="@Url.Action("Profile", "Account")"><i class="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i> <span class="align-middle">پروفایل</span></a>
+            <a class="dropdown-item" href="@Url.Action("Logout", "Auth")"><i class="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> <span class="align-middle">خروج</span></a>
+        </div>
+    </div>
+
+    <!-- New Sidebar Design -->
+    <div class="sidebar-content" >
+        <!-- Search Section -->
+        <div class="sidebar-search p-3 bg-opacity-10">
+            <div class="input-group">
+                <input type="text" class="form-control border-0 bg-transparent" placeholder="جستجو در منو..." id="sidebarSearch">
+                <span class="input-group-text border-0 bg-transparent">
+                    <i class="ri-search-line text-muted"></i>
+                </span>
+            </div>
+        </div>
+
+        <!-- Main Menu Header -->
+        <div class="sidebar-header p-2 text-white text-center">
+            <h6 class="mb-0 fw-bold">همه صفحات</h6>
+        </div>
+
+        <!-- Menu Items Container -->
+        <div class="sidebar-menu">
+            <!-- Dashboard Section -->
+            <div class="menu-section">
+                <div class="menu-item @(isDashboardSection ? "active" : "")" 
+                     onclick="window.location.href='@Url.Action("Index", "Dashboard")'">
+                    <div class="menu-icon">
+                        <i class="ri-dashboard-2-line"></i>
+                    </div>
+                    <div class="menu-text">داشبورد</div>
+                </div>
+            </div>
+
+            <!-- Tours Section -->
+            <div class="menu-section">
+                <div class="menu-item @(isTourSection ? "active" : "")" 
+                     onclick="window.location.href='@Url.Action("Index", "Tour")'">
+                    <div class="menu-icon">
+                        <i class="ri-map-pin-line"></i>
+                    </div>
+                    <div class="menu-text">مدیریت تورها</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="sidebar-background"></div>
+</div>
+<!-- Left Sidebar End -->
+<!-- Vertical Overlay-->
+<div class="vertical-overlay"></div>

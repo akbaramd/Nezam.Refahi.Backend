@@ -1,0 +1,281 @@
+@model Nezam.Refahi.Web.Models.OtpLoginViewModel
+@{
+    ViewData["Title"] = "ورود به سیستم";
+    Layout = "_AuthLayout";
+}
+
+<div class="authentication-wrapper">
+    <div class="authentication-container">
+        <div class="auth-card">
+            <div class="auth-header text-center mb-4">
+                
+                <h3 class="auth-title mb-3">ورود به پرتال مهندسی</h3>
+                <p class="auth-subtitle text-muted">
+                    لطفا شماره موبایل فعال خود را وارد کنید
+                </p>
+            </div>
+
+            <form asp-action="Login" asp-controller="Auth" method="post" id="otpForm" class="auth-form">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="ReturnUrl" value="@ViewData["ReturnUrl"]" />
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4"></div>
+
+                <div class="form-group mb-4">
+                    <label asp-for="PhoneNumber" class="form-label fw-semibold mb-2">
+                        <i class="ri-smartphone-line me-1"></i>
+                        شماره موبایل
+                    </label>
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text">
+                            <i class="ri-smartphone-line"></i>
+                        </span>
+                        <input asp-for="PhoneNumber"
+                               id="PhoneNumber"
+                               class="form-control"
+                               dir="ltr"
+                               placeholder="09123456789"
+                               autocomplete="off"
+                               maxlength="11" />
+                    </div>
+                    <span asp-validation-for="PhoneNumber" class="text-danger small mt-1 d-block"></span>
+                </div>
+
+                <div class="form-group mb-4">
+                    <button class="btn btn-primary btn-lg w-100 auth-submit-btn" type="submit">
+                        <i class="ri-message-2-line me-2"></i>
+                        دریافت کد تایید
+                    </button>
+                </div>
+
+                <div class="auth-info-section">
+                    <div class="info-card mb-3">
+                        <div class="info-header">
+                            <i class="ri-key-line me-2"></i>
+                            <span class="fw-semibold">کد تایید پیش‌فرض</span>
+                        </div>
+                        <p class="info-text">
+                            کد تایید پیش‌فرض سیستم: <strong class="text-primary">12345</strong>
+                        </p>
+                    </div>
+
+                    <div class="info-card mb-3">
+                        <div class="info-header">
+                            <i class="ri-user-settings-line me-2"></i>
+                            <span class="fw-semibold">مهندسین محترم</span>
+                        </div>
+                        <p class="info-text">
+                            از شماره موبایلی استفاده کنید که در سازمان نظام مهندسی به نام شما ثبت شده است.
+                        </p>
+                    </div>
+
+                    <div class="info-card">
+                        <div class="info-header">
+                            <i class="ri-home-line me-2"></i>
+                            <span class="fw-semibold">مالکین محترم</span>
+                        </div>
+                        <p class="info-text">
+                            برای ورود از شماره موبایلی استفاده کنید که آخرین بار با آن در سیستم ثبت نام کرده‌اید.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="auth-footer text-center mt-4">
+                    <p class="text-muted small mb-0">
+                        سازمان نظام مهندسی ساختمان آذربایجان غربی
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        $(function() {
+            // Phone number input handling
+            $('#PhoneNumber').on('input', function() {
+                let v = $(this).val().replace(/\D/g, '').substring(0, 11);
+                if (v.length === 10 && v.startsWith('9')) {
+                    v = '0' + v;
+                }
+                $(this).val(v);
+            });
+
+            // Form submission enhancement
+            $('#otpForm').on('submit', function() {
+                const submitBtn = $(this).find('button[type="submit"]');
+                const originalText = submitBtn.html();
+                
+                submitBtn.prop('disabled', true);
+                submitBtn.html('<i class="ri-loader-4-line me-2"></i>در حال ارسال...');
+                
+                // Re-enable after 3 seconds if no response
+                setTimeout(function() {
+                    submitBtn.prop('disabled', false);
+                    submitBtn.html(originalText);
+                }, 3000);
+            });
+        });
+    </script>
+
+    <style>
+        .authentication-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .authentication-container {
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .auth-icon {
+            display: flex;
+            justify-content: center;
+        }
+
+        .icon-wrapper {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .auth-title {
+            color: #2c3e50;
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+
+        .auth-subtitle {
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-label {
+            color: #495057;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .input-group-text {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            color: #6c757d;
+        }
+
+        .form-control {
+            border: 1px solid #e9ecef;
+            border-radius: 0 8px 8px 0;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .auth-submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 0.875rem 1.5rem;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .auth-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .auth-submit-btn:disabled {
+            transform: none;
+            opacity: 0.7;
+        }
+
+        .auth-info-section {
+            margin-top: 2rem;
+        }
+
+        .info-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1.25rem;
+            border-left: 4px solid #667eea;
+        }
+
+        .info-header {
+            color: #495057;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-text {
+            color: #6c757d;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .auth-footer {
+            border-top: 1px solid #e9ecef;
+            padding-top: 1.5rem;
+        }
+
+        /* Responsive adjustments */
+        @@media (max-width: 576px) {
+            .authentication-wrapper {
+                padding: 1rem;
+            }
+            
+            .auth-card {
+                padding: 2rem 1.5rem;
+            }
+            
+            .icon-wrapper {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Loading animation */
+        @@keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .ri-loader-4-line {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+}

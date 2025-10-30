@@ -7,7 +7,7 @@ using Nezam.Refahi.Identity.Domain.Entities;
 using Nezam.Refahi.Identity.Domain.Repositories;
 using Nezam.Refahi.Shared.Application;
 using Nezam.Refahi.Shared.Application.Common.Models;
-using Nezam.Refahi.Shared.Infrastructure.Outbox;
+using MassTransit;
 
 namespace Nezam.Refahi.Identity.Application.Features.Users.Commands.AddRole;
 
@@ -21,7 +21,7 @@ public class AddRoleToUserCommandHandler : IRequestHandler<AddRoleToUserCommand,
     private readonly IUserRoleRepository _userRoleRepository;
     private readonly IIdentityUnitOfWork _unitOfWork;
     private readonly ILogger<AddRoleToUserCommandHandler> _logger;
-    private readonly IOutboxPublisher _outboxPublisher;
+    private readonly IPublishEndpoint _publishEndpoint;
 
     public AddRoleToUserCommandHandler(
         IUserRepository userRepository,
@@ -29,14 +29,14 @@ public class AddRoleToUserCommandHandler : IRequestHandler<AddRoleToUserCommand,
         IUserRoleRepository userRoleRepository,
         IIdentityUnitOfWork unitOfWork,
         ILogger<AddRoleToUserCommandHandler> logger,
-        IOutboxPublisher outboxPublisher)
+        IPublishEndpoint publishEndpoint)
     {
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         _roleRepository = roleRepository ?? throw new ArgumentNullException(nameof(roleRepository));
         _userRoleRepository = userRoleRepository ?? throw new ArgumentNullException(nameof(userRoleRepository));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _outboxPublisher = outboxPublisher ?? throw new ArgumentNullException(nameof(outboxPublisher));
+        _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
     }
 
     public async Task<ApplicationResult> Handle(AddRoleToUserCommand request, CancellationToken cancellationToken)
@@ -105,7 +105,7 @@ public class AddRoleToUserCommandHandler : IRequestHandler<AddRoleToUserCommand,
                 ChangedBy = request.AssignedBy?.ToString() ?? "System"
             };
 
-            await _outboxPublisher.PublishAsync(userRoleChangedEvent, cancellationToken);
+            await _publishEndpoint.Publish(userRoleChangedEvent, cancellationToken);
 
             _logger.LogInformation("Successfully assigned role {RoleId} to user {UserId}", 
                 request.RoleId, request.UserId);

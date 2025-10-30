@@ -50,7 +50,7 @@ public sealed class Payment : SoftDeletableAggregateRoot<Guid>
     {
         if (billId == Guid.Empty)
             throw new ArgumentException("Bill ID cannot be empty.", nameof(billId));
-        if (amount == null || amount.AmountRials <= 0)
+        if (amount == null || amount.AmountRials < 0)
             throw new ArgumentException("Payment amount must be greater than zero.", nameof(amount));
 
         BillId = billId;

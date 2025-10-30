@@ -7,7 +7,7 @@ using Nezam.Refahi.Shared.Application.Common.Models;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
 using Nezam.Refahi.Recreation.Application.Services;
 using Nezam.Refahi.Shared.Application;
-using Nezam.Refahi.Shared.Infrastructure.Outbox;
+using MassTransit;
 
 namespace Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.ConfirmReservation;
 
@@ -21,7 +21,7 @@ public class ConfirmReservationCommandHandler : IRequestHandler<ConfirmReservati
     private readonly ICurrentUserService _currentUserService;
     private readonly MemberValidationService _memberValidationService;
     private readonly ILogger<ConfirmReservationCommandHandler> _logger;
-    private readonly IOutboxPublisher _outboxPublisher;
+    private readonly IPublishEndpoint _publishEndpoint;
 
     public ConfirmReservationCommandHandler(
         ITourReservationRepository reservationRepository,
@@ -29,14 +29,14 @@ public class ConfirmReservationCommandHandler : IRequestHandler<ConfirmReservati
         ICurrentUserService currentUserService,
         MemberValidationService memberValidationService,
         ILogger<ConfirmReservationCommandHandler> logger,
-        IOutboxPublisher outboxPublisher)
+        IPublishEndpoint publishEndpoint)
     {
         _reservationRepository = reservationRepository;
         _unitOfWork = unitOfWork;
         _currentUserService = currentUserService;
         _memberValidationService = memberValidationService;
         _logger = logger;
-        _outboxPublisher = outboxPublisher ?? throw new ArgumentNullException(nameof(outboxPublisher));
+        _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
     }
 
     public async Task<ApplicationResult> Handle(ConfirmReservationCommand request, CancellationToken cancellationToken)
@@ -120,7 +120,7 @@ public class ConfirmReservationCommandHandler : IRequestHandler<ConfirmReservati
                 PaidAt = DateTime.UtcNow,
                 ExternalUserId = reservation.ExternalUserId
             };
-            await _outboxPublisher.PublishAsync(paymentCompletedEvent, cancellationToken);
+            await _publishEndpoint.Publish(paymentCompletedEvent, cancellationToken);
 
             return ApplicationResult.Success();
         }

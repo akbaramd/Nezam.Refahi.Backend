@@ -6,7 +6,7 @@ using Nezam.Refahi.Identity.Contracts.IntegrationEvents;
 using Nezam.Refahi.Identity.Domain.Repositories;
 using Nezam.Refahi.Shared.Application;
 using Nezam.Refahi.Shared.Application.Common.Models;
-using Nezam.Refahi.Shared.Infrastructure.Outbox;
+using MassTransit;
 
 namespace Nezam.Refahi.Identity.Application.Features.Users.Commands.DeleteUser;
 
@@ -14,16 +14,16 @@ public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Appli
 {
     private readonly IUserRepository _userRepository;
     private readonly IIdentityUnitOfWork _unitOfWork;
-    private readonly IOutboxPublisher _outboxPublisher;
+    private readonly IPublishEndpoint _publishEndpoint;
 
     public DeleteUserCommandHandler(
         IUserRepository userRepository, 
         IIdentityUnitOfWork unitOfWork,
-        IOutboxPublisher outboxPublisher)
+        IPublishEndpoint publishEndpoint)
     {
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;
-        _outboxPublisher = outboxPublisher ?? throw new ArgumentNullException(nameof(outboxPublisher));
+        _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
     }
 
     public async Task<ApplicationResult> Handle(DeleteUserCommand request, CancellationToken cancellationToken)
@@ -89,7 +89,7 @@ public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Appli
                 Reason = request.DeleteReason ?? (request.SoftDelete ? "Soft delete by system" : "Hard delete by system")
             };
 
-            await _outboxPublisher.PublishAsync(userDeletedEvent, cancellationToken);
+            await _publishEndpoint.Publish(userDeletedEvent, cancellationToken);
 
             var successMessage = request.SoftDelete 
                 ? "کاربر با موفقیت غیرفعال شد" 

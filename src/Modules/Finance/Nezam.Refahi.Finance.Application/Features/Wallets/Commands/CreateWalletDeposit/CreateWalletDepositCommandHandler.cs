@@ -1,6 +1,7 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using MassTransit;
 using Nezam.Refahi.Finance.Application.Services;
 using Nezam.Refahi.Finance.Application.Commands.Wallets;
 using Nezam.Refahi.Finance.Domain.Entities;
@@ -21,19 +22,22 @@ public class CreateWalletDepositCommandHandler : IRequestHandler<CreateWalletDep
     private readonly IWalletDepositRepository _walletDepositRepository;
     private readonly IValidator<CreateWalletDepositCommand> _validator;
     private readonly IFinanceUnitOfWork _unitOfWork;
+    private readonly IBus _publishEndpoint;
 
     public CreateWalletDepositCommandHandler(
         IBillRepository billRepository,
         IWalletRepository walletRepository,
         IWalletDepositRepository walletDepositRepository,
         IValidator<CreateWalletDepositCommand> validator,
-        IFinanceUnitOfWork unitOfWork)
+        IFinanceUnitOfWork unitOfWork,
+        IBus publishEndpoint)
     {
         _billRepository = billRepository ?? throw new ArgumentNullException(nameof(billRepository));
         _walletRepository = walletRepository ?? throw new ArgumentNullException(nameof(walletRepository));
         _walletDepositRepository = walletDepositRepository ?? throw new ArgumentNullException(nameof(walletDepositRepository));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+        _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
     }
 
     public async Task<ApplicationResult<CreateWalletDepositResponse>> Handle(
@@ -113,62 +117,45 @@ public class CreateWalletDepositCommandHandler : IRequestHandler<CreateWalletDep
                     externalReference: request.ExternalReference,
                     metadata: request.Metadata);
 
-                // Add deposit to repository first
+                // Move to processing while orchestrator prepares bill
+                walletDeposit.StartProcessing();
+
                 await _walletDepositRepository.AddAsync(walletDeposit, cancellationToken: cancellationToken);
-
-                // Create bill with deposit tracking code as reference
-                var items = new List<BillItem>
-                {
-                    new (
-                        billId: Guid.NewGuid(),
-                        title: "مبلغ واریز کیف پول",
-                        description: $"واریز کیف پول به مبلغ {request.AmountRials:N0} ریال",
-                        unitPrice: depositAmount,
-                        quantity: 1,
-                        discountPercentage: 0)
-                };
-                var bill = new Bill(
-                    referenceTrackingCode:walletDeposit.TrackingCode,
-                    title: $"صورت حساب واریز کیف پول - {request.UserFullName}",
-                    referenceId: walletDeposit.Id.ToString(), // Use tracking code as reference
-                    billType: nameof(walletDeposit),
-                    externalUserId: request.ExternalUserId,
-                    userFullName: request.UserFullName,
-                    description: request.Description ?? "صورت حساب واریز کیف پول",
-                    dueDate: DateTime.UtcNow.AddDays(7), // 7 days to pay
-                    metadata: request.Metadata,
-                    items: items);
-
-       
-
-                // Issue the bill
-                bill.Issue();
-
-                // Save bill
-                await _billRepository.AddAsync(bill, cancellationToken: cancellationToken);
-                
-                // Save all changes in a single transaction
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-                // Return response
+                // Publish integration event for orchestrator to create bill
+                var depositRequestedEvent = new Nezam.Refahi.Finance.Contracts.IntegrationEvents.WalletDepositRequestedIntegrationEvent
+                {
+                    ExternalUserId = request.ExternalUserId,
+                    UserFullName = request.UserFullName,
+                    AmountRials = request.AmountRials,
+                    TrackingCode = walletDeposit.TrackingCode,
+                    Currency = "IRR",
+                    Description = request.Description,
+                    WalletDepositId = walletDeposit.Id,
+                    Metadata = request.Metadata ?? new Dictionary<string, string>()
+                };
+                await _publishEndpoint.Publish(depositRequestedEvent, cancellationToken);
+
+                // Return response with deposit info; bill to be created asynchronously
                 var response = new CreateWalletDepositResponse
                 {
                     DepositId = walletDeposit.Id,
-                    BillId = bill.Id,
-                    BillNumber = bill.BillNumber,
+                    BillId = Guid.Empty,
+                    BillNumber = string.Empty,
                     UserExternalUserId = request.ExternalUserId,
                     UserFullName = request.UserFullName,
                     AmountRials = request.AmountRials,
                     DepositStatus = walletDeposit.Status.ToString(),
                     DepositStatusText = GetWalletDepositStatusText(walletDeposit.Status),
-                    BillStatus = bill.Status.ToString(),
-                    BillStatusText = GetBillStatusText(bill.Status),
+                    BillStatus = "Pending",
+                    BillStatusText = GetBillStatusText(Domain.Enums.BillStatus.Draft),
                     RequestedAt = walletDeposit.RequestedAt,
-                    BillIssueDate = bill.IssueDate,
-                    ReferenceId = walletDeposit.TrackingCode // Use tracking code as reference
+                    BillIssueDate = null,
+                    ReferenceId = walletDeposit.TrackingCode
                 };
 
-                return ApplicationResult<CreateWalletDepositResponse>.Success(response);
+                return ApplicationResult<CreateWalletDepositResponse>.Success(response, "درخواست واریز ثبت شد. صورت‌حساب به‌زودی ایجاد می‌شود.");
             }
             catch (DbUpdateConcurrencyException ex)
             {

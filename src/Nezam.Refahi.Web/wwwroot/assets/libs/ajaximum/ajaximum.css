@@ -1,0 +1,319 @@
+/* ------------------------------------------------------
+   Container styling: "Panel Bar" look
+------------------------------------------------------ */
+.navmenu-container {
+    /* Panel-like container */
+    background-color: #fff;
+    padding: 10px;
+    height: 100%;
+}
+
+/* ------------------------------------------------------
+   Search box
+------------------------------------------------------ */
+.navmenu-search {
+    width: 100%;
+    padding: 6px;
+    margin-bottom: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* ------------------------------------------------------
+   Menu List & Items
+------------------------------------------------------ */
+.navmenu-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Each top-level <li> can have a bottom border 
+   to create a "panel" separation. We'll skip 
+   applying it to dividers or last item if you like.
+*/
+.navmenu-list > li {
+    margin: 0;
+    position: relative;
+    border-bottom: 1px solid #eee;
+}
+
+/* Remove bottom border from the last item 
+   to keep it cleaner (optional). */
+.navmenu-list > li:last-child {
+    border-bottom: none;
+}
+
+/* 
+   .navmenu-item-content is the row container 
+   for image + text.
+   - .parent-item: for items with children 
+   - .leaf-item: for clickable links
+*/
+.navmenu-item-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+.navmenu-item-content:hover {
+    background-color: #f7f7f7;
+}
+.navmenu-item-content.parent-item {
+    cursor: pointer; /* Indicate toggling child items */
+}
+.navmenu-item-content.leaf-item {
+    text-decoration: none;
+}
+
+/* If using an image (PNG/JPG etc.) */
+.navmenu-item-img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+/* ------------------------------------------------------
+   Divider style
+   (Tag Helper: <li class='menu-divider'><hr/></li>)
+------------------------------------------------------ */
+.menu-divider {
+    margin: 8px 0;
+    text-align: center;
+    position: relative;
+    border: none;
+    /* We'll remove the default li bottom border for the divider 
+       if you prefer. You can remove it here or keep it. */
+    border-bottom: none !important;
+}
+.menu-divider hr {
+    border: none;
+    border-top: 1px solid #ccc;
+    width: 90%;
+    margin: 0 auto;
+}
+
+/* ------------------------------------------------------
+   Group Header style
+   (Tag Helper: <li class="group-header"> 
+                <div class="navmenu-item-content group-header-text">...)
+------------------------------------------------------ */
+.group-header {
+    margin: 8px 0;
+    border-bottom: none; /* So it doesn't appear like a normal item */
+}
+.group-header > .navmenu-item-content {
+    background-color: #f2f2f2; /* Subtle background to highlight the header */
+    font-weight: bold;
+    margin-bottom: 4px;
+    border-bottom: none;
+}
+.group-header > .navmenu-item-content:hover {
+    background: #e8e8e8; /* Slight hover effect on the group header */
+}
+
+/* ------------------------------------------------------
+   Submenu 
+   - Indented and with a subtle left border for "panel" style
+------------------------------------------------------ */
+.sub-menu {
+    list-style: none;
+    margin: 0;
+    padding: 0 15px 0 0; /* Indent sub-items */
+    display: none;       /* Hidden by default; toggled by JS */
+    border-left: 1px dashed #ddd; /* Subtle vertical line */
+}
+
+/* Submenu items can have a small bottom dashed border, 
+   or keep them consistent with top-level items, your choice. */
+.sub-menu li {
+    border-bottom: 1px dashed #eee;
+    margin-bottom: 4px;
+    padding-bottom: 4px;
+}
+.sub-menu li:last-child {
+    border-bottom: none;
+}
+
+/* Inside sub-menu, the actual clickable row or parent row: */
+.sub-menu .navmenu-item-content {
+    background-color: #fbfbfb;
+    font-size: 0.95rem;
+    border-radius: 4px;
+    padding: 6px 8px;
+}
+.sub-menu .navmenu-item-content:hover {
+    background-color: #f1f1f1;
+}
+
+/* ------------------------------------------------------
+   Arrow for parent items (has-children)
+   We use an arrow (caret) to indicate expand/collapse
+------------------------------------------------------ */
+.has-children > .navmenu-item-content {
+    font-weight: 500;
+    position: relative;
+    padding-left: 25px; /* Make room for arrow */
+}
+
+/* Collapsed arrow: "❯" or "▶" 
+   Expanded arrow: "▼" or "▽"
+   We'll do "▶" -> "▼" here.
+*/
+.has-children > .navmenu-item-content::after {
+    content: "▶";
+    font-size: 0.75rem;
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    transition: transform 0.2s ease;
+}
+
+/* Rotate arrow if parent <li> is "open" (JS toggles .open class) */
+.has-children.open > .navmenu-item-content::after {
+    content: "▼";
+    transform: translateY(-50%);
+    color: #666;
+}
+
+
+
+/*--------------------------------------------------------*/
+
+/* 
+  The main container for MDI tabs 
+  We'll assume your existing styles for <body>, etc. 
+  remain or are overridden.
+*/
+
+/* We keep .mdi-tabs-container from your Tag Helper output */
+.mdi-tabs-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background-color: #fdfdfd;
+    overflow: hidden; /* So the border radius applies cleanly */
+    box-sizing: border-box;
+}
+
+/* ------------------------------------------------------
+   Tab list at the top
+   We'll allow horizontal scrolling if too many tabs
+------------------------------------------------------ */
+.mdi-tab-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow-x: auto;      /* horizontal scroll if tabs overflow */
+    overflow-y: hidden;    /* no vertical scrollbar */
+    white-space: nowrap;   /* keep tabs on one line */
+    background-color: #f4f4f4;
+
+    /* For smooth scrolling on modern browsers */
+    scroll-behavior: smooth;
+}
+
+/* Hide the default scrollbar track, show a minimal scroll thumb (optional) */
+.mdi-tab-list::-webkit-scrollbar {
+    height: 6px; /* scrollbar height */
+}
+.mdi-tab-list::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.2);
+}
+
+/* 
+   Each tab item 
+   We aim for a "Firefox/Chrome" style:
+   - min-width so text doesn't collapse
+   - slight border radius at top
+   - "active" tab merges with content below
+*/
+.mdi-tab {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-width: 120px; /* ensures a decent clickable area */
+    padding: 6px 10px;
+    margin: 4px 2px 0 2px;
+    background-color: #e6e6e6;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s ease;
+    
+}
+
+/* Tab title text */
+.mdi-tab-title {
+    /* If you want the text to truncate with ellipsis if very long: */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 80px; /* depends on your design */
+    display: inline-block;
+    flex-grow: 1;
+}
+
+/* 
+   The close button as an icon button 
+   We'll style it as a small circle with an 'x' or something similar
+*/
+.mdi-tab-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    margin-left: 6px; /* space from the title */
+    background-color: transparent;
+    font-size: 14px;
+    color: #777;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* On tab hover: lighten background slightly */
+.mdi-tab:hover {
+    background-color: #ddd;
+    color: #333;
+}
+.mdi-tab:hover .mdi-tab-close {
+    color: #555;
+}
+
+/* Hover effect on the close button */
+.mdi-tab-close:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    color: #222;
+}
+
+/* Active tab merges with content area: white background, top z-index */
+.mdi-tab.active {
+    background-color: #fff;
+    border-bottom-color: #fff; /* visually merges with content area below */
+    z-index: 2;
+    font-weight: 600;
+}
+
+/* ------------------------------------------------------
+   The content area for the active tab or default fallback content
+------------------------------------------------------ */
+.mdi-tab-content {
+    position: relative;
+    flex-grow: 1; /* fill remaining vertical space if you want a flexible layout */
+    padding: 1rem;
+    background-color: #fff;
+    /* 
+      Because the .mdi-tabs-container has a border,
+      we can align the content with that or let it be overshadowed by the active tab
+    */
+}

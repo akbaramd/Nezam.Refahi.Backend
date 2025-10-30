@@ -11,7 +11,7 @@ using Nezam.Refahi.Shared.Domain.ValueObjects;
 using Nezam.Refahi.Recreation.Application.Services;
 using Nezam.Refahi.Recreation.Application.Configuration;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
-using Nezam.Refahi.Shared.Infrastructure.Outbox;
+using MassTransit;
 using System.Text.Json;
 using Nezam.Refahi.Recreation.Application.Services.Contracts;
 using Nezam.Refahi.Membership.Contracts.Dtos;
@@ -34,7 +34,7 @@ public class CreateTourReservationCommandHandler
     private readonly IDisplayNameService _displayNameService;
     private readonly ReservationSettings _settings;
     private readonly ILogger<CreateTourReservationCommandHandler> _logger;
-    private readonly IOutboxPublisher _outboxPublisher;
+    private readonly IPublishEndpoint _publishEndpoint;
 
     public CreateTourReservationCommandHandler(
         ITourRepository tourRepository,
@@ -48,7 +48,7 @@ public class CreateTourReservationCommandHandler
         IDisplayNameService displayNameService,
         IOptions<ReservationSettings> settings,
         ILogger<CreateTourReservationCommandHandler> logger,
-        IOutboxPublisher outboxPublisher)
+        IPublishEndpoint publishEndpoint)
     {
         _tourRepository = tourRepository;
         _reservationRepository = reservationRepository;
@@ -61,7 +61,7 @@ public class CreateTourReservationCommandHandler
         _validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
         _displayNameService = displayNameService ?? throw new ArgumentNullException(nameof(displayNameService));
         _settings = settings.Value ?? throw new ArgumentNullException(nameof(settings));
-        _outboxPublisher = outboxPublisher ?? throw new ArgumentNullException(nameof(outboxPublisher));
+        _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
     }
 
     public async Task<ApplicationResult<CreateTourReservationResponse>> Handle(
@@ -600,7 +600,7 @@ public class CreateTourReservationCommandHandler
                     ["CreatedAt"] = DateTime.UtcNow.ToString("O")
                 }
             };
-            await _outboxPublisher.PublishAsync(reservationCreatedEvent, cancellationToken);
+            await _publishEndpoint.Publish(reservationCreatedEvent, cancellationToken);
 
             return ApplicationResult<CreateTourReservationResponse>.Success(response);
         }

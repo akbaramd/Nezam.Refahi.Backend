@@ -8,7 +8,7 @@ using Nezam.Refahi.Shared.Application;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
-using Nezam.Refahi.Shared.Infrastructure.Outbox;
+using MassTransit;
 
 namespace Nezam.Refahi.Finance.Application.Features.Refunds.Commands.CreateRefund;
 
@@ -21,20 +21,20 @@ public class CreateRefundCommandHandler : IRequestHandler<CreateRefundCommand, A
     private readonly IRefundRepository _refundRepository;
     private readonly IValidator<CreateRefundCommand> _validator;
     private readonly IFinanceUnitOfWork _unitOfWork;
-    private readonly IOutboxPublisher _outboxPublisher;
+    private readonly IPublishEndpoint _publishEndpoint;
 
     public CreateRefundCommandHandler(
         IBillRepository billRepository,
         IRefundRepository refundRepository,
         IValidator<CreateRefundCommand> validator,
         IFinanceUnitOfWork unitOfWork,
-        IOutboxPublisher outboxPublisher)
+        IPublishEndpoint publishEndpoint)
     {
         _billRepository = billRepository ?? throw new ArgumentNullException(nameof(billRepository));
         _refundRepository = refundRepository ?? throw new ArgumentNullException(nameof(refundRepository));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
-        _outboxPublisher = outboxPublisher ?? throw new ArgumentNullException(nameof(outboxPublisher));
+        _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
     }
 
     public async Task<ApplicationResult<CreateRefundResponse>> Handle(
@@ -86,7 +86,7 @@ public class CreateRefundCommandHandler : IRequestHandler<CreateRefundCommand, A
                 RequestedByNationalNumber = request.RequestedByExternalUserId?.ToString() ?? string.Empty, // Assuming this is the national number
                 RequestedAt = refund.RequestedAt
             };
-            await _outboxPublisher.PublishAsync(refundRequestedEvent, cancellationToken);
+            await _publishEndpoint.Publish(refundRequestedEvent, cancellationToken);
 
             // Commit transaction (saves domain changes + outbox messages)
             await _unitOfWork.CommitAsync(cancellationToken);

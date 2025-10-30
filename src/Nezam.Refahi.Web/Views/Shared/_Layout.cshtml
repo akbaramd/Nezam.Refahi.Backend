@@ -1,0 +1,128 @@
+<!doctype html>
+<html dir="rtl" lang="en" data-layout="vertical" data-topbar="light" data-sidebar="light" data-sidebar-size="lg" data-sidebar-image="none" data-preloader="disable" data-theme="default" data-theme-colors="default">
+<head>
+    <partial name="~/Views/Shared/_title_meta.cshtml" />
+    @RenderSection("styles", required: false)
+    <partial name="~/Views/Shared/_head_css.cshtml" />
+</head>
+<body dir="rtl">
+    <!-- Include impersonation bar at the top of the body -->
+ 
+    
+    <!-- Begin page -->
+    <div id="layout-wrapper">
+        <partial name="~/Views/Shared/_topbar.cshtml" />
+        
+        <!-- Area-specific sidebar -->
+        <partial name="_sidebar" />
+
+        <!-- ============================================================== -->
+        <!-- Start right Content here -->
+        <!-- ============================================================== -->
+        <div class="main-content">
+
+            <div class="page-content">
+                <div class="container-fluid">
+                    <!-- Notification Messages -->
+                    <partial name="_NotificationMessages"/>
+                    @RenderBody()
+                </div>
+            </div>
+
+            @RenderSection("externalhtml", required: false)
+            <partial name="~/Views/Shared/_footer.cshtml" />
+        </div>
+
+    </div>
+
+    <partial name="~/Views/Shared/_vendor_scripts.cshtml" />
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Expand card with Bootstrap collapse support
+            document.querySelectorAll('[data-vlz-card-expand]').forEach(button => {
+                const targetSelector = button.getAttribute('data-vlz-card-expand');
+                
+                // First try to find the target directly
+                let target = document.querySelector(targetSelector);
+                
+                // If target is a card, look for collapse element inside it
+                if (target && !target.classList.contains('collapse')) {
+                    const collapseElement = target.querySelector('.collapse');
+                    if (collapseElement) {
+                        // Use the collapse element as the target instead
+                        target = collapseElement;
+                        // Update the target selector to point to the collapse element
+                        const collapseId = collapseElement.id || `collapse-${Math.random().toString(36).substring(2, 9)}`;
+                        if (!collapseElement.id) {
+                            collapseElement.id = collapseId;
+                        }
+                        button.setAttribute('data-bs-target', `#${collapseId}`);
+                    }
+                }
+
+                if (target) {
+                    // Check if target is a Bootstrap collapse element
+                    if (target.classList.contains('collapse')) {
+                        // Use Bootstrap collapse
+                        button.setAttribute('data-bs-toggle', 'collapse');
+                        if (!button.hasAttribute('data-bs-target')) {
+                            button.setAttribute('data-bs-target', targetSelector);
+                        }
+                        button.setAttribute('aria-expanded', 'false');
+                        
+                        // Update aria-expanded attribute when collapse state changes
+                        target.addEventListener('show.bs.collapse', () => {
+                            button.setAttribute('aria-expanded', 'true');
+                        });
+                        
+                        target.addEventListener('hide.bs.collapse', () => {
+                            button.setAttribute('aria-expanded', 'false');
+                        });
+                    } else {
+                        // Use legacy behavior for non-collapse elements
+                        button.addEventListener('click', () => {
+                            target.classList.remove('d-none');
+                            target.classList.add('d-block');
+                        });
+                    }
+                }
+            });
+
+            // Collapse cards (legacy support)
+            document.querySelectorAll('[data-vlz-card-collapse]').forEach(button => {
+                const targetSelector = button.getAttribute('data-vlz-card-collapse');
+                const target = document.querySelector(targetSelector);
+
+                if (target) {
+                    button.addEventListener('click', () => {
+                        target.classList.remove('d-block');
+                        target.classList.add('d-none');
+                    });
+                }
+            });
+
+            // Toggle card (legacy support)
+            document.querySelectorAll('[data-vlz-card-toggle]').forEach(button => {
+                const targetSelector = button.getAttribute('data-vlz-card-toggle');
+                const target = document.querySelector(targetSelector);
+
+                if (target) {
+                    button.addEventListener('click', () => {
+                        target.classList.toggle('d-none');
+                        target.classList.toggle('d-block');
+                    });
+                }
+            });
+            
+            // Initialize all tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+
+    <script src="~/assets/js/app.js"></script>
+    @RenderSection("scripts", required: false)
+</body>
+</html>

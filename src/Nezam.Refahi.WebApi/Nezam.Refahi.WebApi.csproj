@@ -19,6 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Modules\Facilities\Nezam.Refahi.Facilities.Presentation\Nezam.Refahi.Facilities.Presentation.csproj" />
     <ProjectReference Include="..\Modules\Survey\Nezam.Refahi.Surveying.Presentation\Nezam.Refahi.Surveying.Presentation.csproj" />
+    <ProjectReference Include="..\Orchestrator\Nezam.Refahi.Orchestrator\Nezam.Refahi.Orchestrator.csproj" />
     <ProjectReference Include="..\Shareds\Nezam.Refahi.Shared.Infrastructure\Nezam.Refahi.Shared.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Finance\Nezam.Refahi.Finance.Presentation\Nezam.Refahi.Finance.Presentation.csproj" />
     <ProjectReference Include="..\Modules\Identity\Nezam.Refahi.Identity.Presentation\Nezam.Refahi.Identity.Presentation.csproj" />

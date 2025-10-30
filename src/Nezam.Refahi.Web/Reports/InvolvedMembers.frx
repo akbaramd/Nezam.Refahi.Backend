@@ -1,0 +1,136 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report ScriptLanguage="CSharp" ReportInfo.Created="05/16/2013 12:56:40" ReportInfo.Modified="01/25/2025 11:47:32" ReportInfo.CreatorVersion="2024.1.6.0" PrintSettings.ShowDialog="false">
+  <Dictionary>
+    <TableDataSource Name="InvolvedMembers" ReferenceName="InvolvedMembers" DataType="System.Int32" Enabled="true">
+      <Column Name="FirstName" DataType="System.String"/>
+      <Column Name="LastName" DataType="System.String"/>
+      <Column Name="NationalCode" DataType="System.String"/>
+      <Column Name="DossierNumber" DataType="System.String"/>
+      <Column Name="DossierDate" DataType="System.String"/>
+      <Column Name="RefNumber" DataType="System.String"/>
+      <Column Name="LicenseNumber" DataType="System.String"/>
+      <Column Name="LicenseDate" DataType="System.String"/>
+      <Column Name="RequestDate" DataType="System.String"/>
+      <Column Name="BeforeWideningArea" DataType="System.Single"/>
+      <Column Name="AfterWideningArea" DataType="System.Single"/>
+      <Column Name="OccupancyPercentage" DataType="System.Single"/>
+      <Column Name="LicenseRegDate" DataType="System.String"/>
+      <Column Name="InvolvedMemberStatusTitle" DataType="System.String"/>
+      <Column Name="InvolvedMemberRegDate" DataType="System.String"/>
+      <Column Name="InvolvedMemberExpireDate" DataType="System.String"/>
+      <Column Name="IsCoordinator" DataType="System.Boolean"/>
+      <Column Name="WorkItem" DataType="System.Double"/>
+      <Column Name="Description" DataType="System.String"/>
+      <Column Name="ModifiedWorkItem" DataType="System.Boolean"/>
+      <Column Name="Metraje" DataType="System.Double"/>
+      <Column Name="QuotaYear" DataType="System.Int32"/>
+      <Column Name="ServiceTypeTitle" DataType="System.String"/>
+      <Column Name="ServiceFieldTitle" DataType="System.String"/>
+      <Column Name="BuildingType" DataType="System.String"/>
+      <Column Name="BuildingGroup" DataType="System.String"/>
+      <Column Name="Status" DataType="System.String" PropName="Column"/>
+      <Column Name="BuildingMetraje" DataType="System.Double" PropName="Column"/>
+      <Column Name="LastCeiling" DataType="System.Double" PropName="System.Int32"/>
+    </TableDataSource>
+    <Parameter Name="FirstName" DataType="System.String" AsString=""/>
+    <Parameter Name="LastName" DataType="System.String" AsString=""/>
+    <Parameter Name="NationalNumber" DataType="System.String" AsString=""/>
+    <Parameter Name="MembershipNumber" DataType="System.String" AsString=""/>
+    <Parameter Name="PhoneNumber" DataType="System.String" AsString=""/>
+    <Parameter Name="Agency" DataType="System.String" AsString=""/>
+  </Dictionary>
+  <ReportPage Name="Page1" Landscape="true" PaperWidth="297" PaperHeight="210" RawPaperSize="9" LeftMargin="5" TopMargin="5" RightMargin="5" BottomMargin="5" Watermark.Font="Arial, 60pt" LastPageSource="15" FirstPageSource="15">
+    <ReportTitleBand Name="ReportTitle1" Width="1084.86" Height="170.1" Guides="255.15">
+      <TextObject Name="Text1" Left="481.95" Top="9.45" Width="94.5" Height="18.9" Text="باسمه تعالي" HorzAlign="Center" Font="B Nazanin, 10pt"/>
+      <TextObject Name="Text2" Left="434.7" Top="37.8" Width="207.9" Height="37.8" Fill.Color="Gainsboro" Text="کارکرد اعضای نظام مهندسی" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 12pt, style=Bold"/>
+      <TableObject Name="Table15" Left="9.45" Top="85.05" Width="1062.75" Height="85.05">
+        <TableColumn Name="Column61" Width="436.9"/>
+        <TableColumn Name="Column62" Width="103.95"/>
+        <TableColumn Name="Column63" Width="386.85"/>
+        <TableColumn Name="Column64" Width="135.05"/>
+        <TableRow Name="Row16" Height="28.35">
+          <TableCell Name="Cell66" Border.Lines="Left, Top, Bottom" Text="[MembershipNumber]" HorzAlign="Right" VertAlign="Center" Font="B Nazanin, 9.75pt, style=Bold"/>
+          <TableCell Name="Cell67" Border.Lines="Right, Top, Bottom" Text=": شماره عضویت" HorzAlign="Right" VertAlign="Center" Font="B Nazanin, 9.75pt, style=Bold"/>
+          <TableCell Name="Cell68" Border.Lines="Left, Top, Bottom" Text="[FirstName]" HorzAlign="Right" VertAlign="Center" Font="B Nazanin, 9.75pt, style=Bold"/>
+          <TableCell Name="Cell69" Border.Lines="Right, Top, Bottom" Text=": نام " HorzAlign="Right" VertAlign="Center" Font="B Nazanin, 9.75pt, style=Bold"/>
+        </TableRow>
+        <TableRow Name="Row17" Height="28.35">
+          <TableCell Name="Cell71" Border.Lines="Left, Top, Bottom" Text="[PhoneNumber]" HorzAlign="Right" VertAlign="Center" Font="B Nazanin, 9.75pt, style=Bold"/>
+          <TableCell Name="Cell72" Border.Lines="Right, Top, Bottom" Text=": تلفن " HorzAlign="Right" VertAlign="Center" Font="B Nazanin, 9.75pt, style=Bold"/>
+          <TableCell Name="Cell73" Border.Lines="Left, Top, Bottom" Text="[LastName]" HorzAlign="Right" VertAlign="Center" Font="B Nazanin, 9.75pt, style=Bold"/>
+          <TableCell Name="Cell74" Border.Lines="Right, Top, Bottom" Text=": نام خانوادگی" HorzAlign="Right" VertAlign="Center" Font="B Nazanin, 9.75pt, style=Bold"/>
+        </TableRow>
+        <TableRow Name="Row18" Height="28.35">
+          <TableCell Name="Cell76" Border.Lines="Left, Top, Bottom" Text="[Agency]" HorzAlign="Right" VertAlign="Center" Font="B Nazanin, 9.75pt, style=Bold"/>
+          <TableCell Name="Cell77" Border.Lines="Right, Top, Bottom" Text=": دفتر" HorzAlign="Right" VertAlign="Center" Font="B Nazanin, 9.75pt, style=Bold"/>
+          <TableCell Name="Cell78" Border.Lines="Left, Top, Bottom" Text="[NationalNumber]" HorzAlign="Right" VertAlign="Center" Font="B Nazanin, 9.75pt, style=Bold"/>
+          <TableCell Name="Cell79" Border.Lines="Right, Top, Bottom" Text=": کد ملی" HorzAlign="Right" VertAlign="Center" Font="B Nazanin, 9.75pt, style=Bold"/>
+        </TableRow>
+      </TableObject>
+    </ReportTitleBand>
+    <DataBand Name="Data1" Top="197" Width="1084.86" Height="18.9" CanGrow="true" DataSource="InvolvedMembers">
+      <TableObject Name="Table2" Left="9.45" Width="1062.75" Height="18.9">
+        <TableColumn Name="Column71" Width="87.25"/>
+        <TableColumn Name="Column70" Width="85.05"/>
+        <TableColumn Name="Column69" Width="56.7"/>
+        <TableColumn Name="Column68" Width="75.6"/>
+        <TableColumn Name="Column73" Width="75.6"/>
+        <TableColumn Name="Column67" Width="56.7"/>
+        <TableColumn Name="Column66" Width="103.95"/>
+        <TableColumn Name="Column18" Width="98.09"/>
+        <TableColumn Name="Column19" Width="69.74"/>
+        <TableColumn Name="Column75" Width="75.6"/>
+        <TableColumn Name="Column20" Width="143.42"/>
+        <TableColumn Name="Column65" Width="85.05"/>
+        <TableColumn Name="Column21" Width="50"/>
+        <TableRow Name="Row2">
+          <TableCell Name="Cell90" Border.Lines="All" Text="[InvolvedMembers.LastCeiling]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell86" Border.Lines="All" Text="[InvolvedMembers.ServiceFieldTitle]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell85" Border.Lines="All" Text="[InvolvedMembers.ServiceTypeTitle]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell84" Border.Lines="All" Text="[InvolvedMembers.WorkItem]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell83" Border.Lines="All" Text="[InvolvedMembers.Metraje]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell88" Border.Lines="All" Text="[InvolvedMembers.BuildingType]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell82" Border.Lines="All" Text="[InvolvedMembers.BuildingGroup]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell81" Border.Lines="All" Text="[InvolvedMembers.InvolvedMemberRegDate]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell18" Border.Lines="All" Text="[InvolvedMembers.LicenseRegDate]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell19" Border.Lines="All" Text="[InvolvedMembers.Status]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell20" Border.Lines="All" Text="[InvolvedMembers.FirstName] [InvolvedMembers.LastName]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell80" Border.Lines="All" Text="[InvolvedMembers.DossierNumber]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+          <TableCell Name="Cell21" Border.Lines="All" Text="[InvolvedMembers.Index]" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt"/>
+        </TableRow>
+      </TableObject>
+      <DataHeaderBand Name="DataHeader1" Top="174.1" Width="1084.86" Height="18.9">
+        <TableObject Name="Table5" Left="9.45" Width="1062.75" Height="18.9">
+          <TableColumn Name="Column71" Width="87.25"/>
+          <TableColumn Name="Column70" Width="85.05"/>
+          <TableColumn Name="Column69" Width="56.7"/>
+          <TableColumn Name="Column68" Width="75.6"/>
+          <TableColumn Name="Column72" Width="75.6"/>
+          <TableColumn Name="Column67" Width="56.7"/>
+          <TableColumn Name="Column66" Width="103.95"/>
+          <TableColumn Name="Column18" Width="98.09"/>
+          <TableColumn Name="Column19" Width="69.74"/>
+          <TableColumn Name="Column74" Width="75.6"/>
+          <TableColumn Name="Column20" Width="143.42"/>
+          <TableColumn Name="Column65" Width="85.05"/>
+          <TableColumn Name="Column21" Width="50"/>
+          <TableRow Name="Row5">
+            <TableCell Name="Cell89" Border.Lines="All" Fill.Color="Silver" Text="فرم جاری" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+            <TableCell Name="HeaderCell86" Border.Lines="All" Fill.Color="Silver" Text="رشته" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+            <TableCell Name="HeaderCell85" Border.Lines="All" Fill.Color="Silver" Text="نوع خدمت" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+            <TableCell Name="HeaderCell84" Border.Lines="All" Fill.Color="Silver" Text="کارکرد" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+            <TableCell Name="HeaderCell83" Border.Lines="All" Fill.Color="Silver" Text="متراژ" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+            <TableCell Name="HeaderCell87" Border.Lines="All" Fill.Color="Silver" Text="نوع نقشه" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+            <TableCell Name="HeaderCell82" Border.Lines="All" Fill.Color="Silver" Text="گروه " HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+            <TableCell Name="HeaderCell81" Border.Lines="All" Fill.Color="Silver" Text="تاریخ ثبت ظرفیت" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+            <TableCell Name="HeaderCell18" Border.Lines="All" Fill.Color="Silver" Text="تاریخ ثبت نقشه" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+            <TableCell Name="HeaderCell19" Border.Lines="All" Fill.Color="Silver" Text="وضعیت" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+            <TableCell Name="HeaderCell20" Border.Lines="All" Fill.Color="Silver" Text="نام مالک" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+            <TableCell Name="HeaderCell80" Border.Lines="All" Fill.Color="Silver" Text="شماره پرونده" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+            <TableCell Name="HeaderCell21" Border.Lines="All" Fill.Color="Silver" Text="ردیف" HorzAlign="Center" VertAlign="Center" Font="B Nazanin, 10pt, style=Bold"/>
+          </TableRow>
+        </TableObject>
+      </DataHeaderBand>
+    </DataBand>
+  </ReportPage>
+</Report>

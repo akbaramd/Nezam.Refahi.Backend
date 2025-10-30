@@ -6,7 +6,7 @@ using Nezam.Refahi.Identity.Domain.Repositories;
 using Nezam.Refahi.Shared.Application;
 using Nezam.Refahi.Shared.Application.Common.Models;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
-using Nezam.Refahi.Shared.Infrastructure.Outbox;
+using MassTransit;
 
 namespace Nezam.Refahi.Identity.Application.Features.Users.Commands.UpdateUser;
 
@@ -14,16 +14,16 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Appli
 {
     private readonly IUserRepository _userRepository;
     private readonly IIdentityUnitOfWork _unitOfWork;
-    private readonly IOutboxPublisher _outboxPublisher;
+    private readonly IPublishEndpoint _publishEndpoint;
 
     public UpdateUserCommandHandler(
         IUserRepository userRepository, 
         IIdentityUnitOfWork unitOfWork,
-        IOutboxPublisher outboxPublisher)
+        IPublishEndpoint publishEndpoint)
     {
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;
-        _outboxPublisher = outboxPublisher ?? throw new ArgumentNullException(nameof(outboxPublisher));
+        _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
     }
 
     public async Task<ApplicationResult> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
@@ -109,7 +109,7 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Appli
                     ChangedFields = changedFields
                 };
 
-                await _outboxPublisher.PublishAsync(userUpdatedEvent, cancellationToken);
+                await _publishEndpoint.Publish(userUpdatedEvent, cancellationToken);
             }
 
             return ApplicationResult.Success("اطلاعات کاربر با موفقیت به‌روزرسانی شد");

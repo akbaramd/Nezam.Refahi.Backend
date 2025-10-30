@@ -1,0 +1,38 @@
+@using System.Security.Claims
+
+@if (User.Identity?.IsAuthenticated == true && User.HasClaim(c => c.Type == "IsImpersonating"))
+{
+    var originalAdminName = User.FindFirstValue("OriginalAdminName") ?? "Admin";
+    
+    <div class="">
+     
+            <div class="alert alert-warning d-flex align-items-center justify-content-between py-2 mb-0 mb-3">
+                <div>
+                    <i class="ri-user-shared-line fs-16 me-1"></i>
+                    <span>شما در حال استفاده از سیستم به عنوان کاربر <strong>@User.Identity?.Name</strong> هستید.</span>
+                </div>
+                <form asp-action="EndImpersonation" asp-controller="Users" asp-area="Panel" method="post" class="mb-0">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-sm btn-dark">
+                        <i class="ri-logout-box-line me-1"></i>
+                        بازگشت به حساب <strong>@originalAdminName</strong>
+                    </button>
+                </form>
+            </div>
+       
+    </div>
+}
+
+<style>
+    
+    
+ 
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (document.querySelector('.impersonation-bar')) {
+            document.body.classList.add('impersonating');
+        }
+    });
+</script> 

@@ -1,0 +1,33 @@
+@model List<string>
+
+<div class="card">
+    <div class="card-header">
+        <h4 class="card-title">انتخاب کاربران</h4>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-12">
+                <form method="post">
+                    <div class="mb-3">
+                        <label class="form-label">کاربران</label>
+                        <user-selected-input 
+                            asp-for="@Model" 
+                            placeholder="کاربران را انتخاب کنید..."
+                            button-text="انتخاب کاربران"
+                            modal-title="انتخاب کاربران سیستم"
+                            api-url="/api/Users/GetUsers"
+                            selection-mode="multiple">
+                        </user-selected-input>
+                        <small class="form-text text-muted">برای انتخاب کاربران، روی دکمه انتخاب کاربران کلیک کنید.</small>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">ثبت</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_UserSelectedInputScripts" />
+} 
