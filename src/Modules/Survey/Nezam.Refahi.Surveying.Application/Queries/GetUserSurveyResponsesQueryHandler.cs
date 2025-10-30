@@ -8,8 +8,8 @@ using Nezam.Refahi.Surveying.Contracts.Queries;
 using Nezam.Refahi.Surveying.Domain.Entities;
 using Nezam.Refahi.Surveying.Domain.Enums;
 using Nezam.Refahi.Surveying.Domain.Repositories;
-using Nezam.Refahi.Surveying.Domain.Services;
 using Nezam.Refahi.Surveying.Domain.ValueObjects;
+using Nezam.Refahi.Surveying.Domain.Services;
 
 namespace Nezam.Refahi.Surveying.Application.Queries;
 
@@ -66,8 +66,12 @@ public class GetUserSurveyResponsesQueryHandler : IRequestHandler<GetUserSurveyR
             // Map responses to DTOs
             var responseDtos = responses.Select(r => MapToResponseDto(r, survey, request.IncludeAnswers, request.IncludeLastAnswersOnly)).ToList();
 
-            // Get latest response
-            var latestResponse = responses.OrderByDescending(r => r.SubmittedAt ?? DateTimeOffset.MinValue).FirstOrDefault();
+            // Get latest response - prioritize submitted responses
+            var latestResponse = responses
+                .Where(r => r.AttemptStatus == AttemptStatus.Submitted)
+                .OrderByDescending(r => r.SubmittedAt ?? DateTimeOffset.MinValue)
+                .FirstOrDefault() 
+                ?? responses.OrderByDescending(r => r.SubmittedAt ?? r.CanceledAt ?? r.ExpiredAt ?? DateTimeOffset.MinValue).FirstOrDefault();
             var latestResponseDto = latestResponse != null ? MapToResponseDto(latestResponse, survey, request.IncludeAnswers, request.IncludeLastAnswersOnly) : null;
 
             // Calculate summary
@@ -268,13 +272,25 @@ public class GetUserSurveyResponsesQueryHandler : IRequestHandler<GetUserSurveyR
         if (!survey.IsAcceptingResponses())
             return false;
 
-        if (responses.Count >= survey.ParticipationPolicy.MaxAttemptsPerMember)
+        // Check if user has reached max attempts (only count submitted responses)
+        var submittedCount = responses.Count(r => r.AttemptStatus == AttemptStatus.Submitted);
+        if (submittedCount >= survey.ParticipationPolicy.MaxAttemptsPerMember)
             return false;
 
-        var lastResponse = responses.OrderByDescending(r => r.SubmittedAt ?? DateTimeOffset.MinValue).FirstOrDefault();
-        if (lastResponse != null && survey.ParticipationPolicy.CoolDownSeconds.HasValue)
+        // Check if user has an active response
+        var hasActiveResponse = responses.Any(r => r.AttemptStatus == AttemptStatus.Active);
+        if (hasActiveResponse)
+            return false;
+
+        // Check cooldown period - only consider submitted responses for cooldown
+        var lastSubmittedResponse = responses
+            .Where(r => r.AttemptStatus == AttemptStatus.Submitted)
+            .OrderByDescending(r => r.SubmittedAt ?? DateTimeOffset.MinValue)
+            .FirstOrDefault();
+            
+        if (lastSubmittedResponse != null && survey.ParticipationPolicy.CoolDownSeconds.HasValue)
         {
-            var timeSinceLastResponse = DateTimeOffset.UtcNow - (lastResponse.SubmittedAt ?? DateTimeOffset.MinValue);
+            var timeSinceLastResponse = DateTimeOffset.UtcNow - (lastSubmittedResponse.SubmittedAt ?? DateTimeOffset.MinValue);
             if (timeSinceLastResponse.TotalSeconds < survey.ParticipationPolicy.CoolDownSeconds.Value)
                 return false;
         }

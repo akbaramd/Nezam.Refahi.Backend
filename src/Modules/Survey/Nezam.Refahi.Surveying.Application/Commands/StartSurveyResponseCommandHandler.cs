@@ -47,7 +47,7 @@ public class StartSurveyResponseCommandHandler : IRequestHandler<StartSurveyResp
             var survey = await _surveyRepository.GetWithResponsesAsync(request.SurveyId, cancellationToken);
             if (survey == null)
             {
-                return ApplicationResult<StartSurveyResponseResponse>.Failure("نظرسنجی یافت نشد");
+                return ApplicationResult<StartSurveyResponseResponse>.Failure("نظرسنجی مورد نظر یافت نشد. لطفاً دوباره تلاش کنید.");
             }
 
             // 2. Create participant info
@@ -74,7 +74,7 @@ public class StartSurveyResponseCommandHandler : IRequestHandler<StartSurveyResp
             var eligibilityResult = ValidateParticipationEligibility(survey, participant, existingResponse, request).Result;
             if (!eligibilityResult.IsEligible)
             {
-                return ApplicationResult<StartSurveyResponseResponse>.Failure(eligibilityResult.ErrorMessage ?? "خطا در اعتبارسنجی");
+                return ApplicationResult<StartSurveyResponseResponse>.Failure(eligibilityResult.ErrorMessage ?? "متأسفانه امکان شرکت در این نظرسنجی وجود ندارد.");
             }
 
             // 6. Create new response using domain aggregate
@@ -91,7 +91,7 @@ public class StartSurveyResponseCommandHandler : IRequestHandler<StartSurveyResp
         {
             _logger.LogError(ex, "Error starting survey response for SurveyId {SurveyId}, NationalNumber {NationalNumber}", 
                 request.SurveyId, request.NationalNumber);
-            return ApplicationResult<StartSurveyResponseResponse>.Failure("خطا در شروع نظرسنجی");
+            return ApplicationResult<StartSurveyResponseResponse>.Failure("خطایی در شروع نظرسنجی رخ داد. لطفاً دوباره تلاش کنید.");
         }
     }
 
@@ -108,7 +108,7 @@ public class StartSurveyResponseCommandHandler : IRequestHandler<StartSurveyResp
         // For non-anonymous surveys, get member info using national number
         if (string.IsNullOrWhiteSpace(request.NationalNumber))
         {
-            throw new ArgumentException("National number is required for non-anonymous surveys", nameof(request.NationalNumber));
+            throw new ArgumentException("شماره ملی برای نظرسنجی‌های غیرناشناس الزامی است", nameof(request.NationalNumber));
         }
 
         var nationalId = new NationalId(request.NationalNumber);
@@ -116,7 +116,7 @@ public class StartSurveyResponseCommandHandler : IRequestHandler<StartSurveyResp
         
         if (memberInfo == null)
         {
-            throw new InvalidOperationException($"Member not found for national number: {request.NationalNumber}");
+            throw new InvalidOperationException($"عضو با شماره ملی {request.NationalNumber} یافت نشد");
         }
 
         return ParticipantInfo.ForMember(memberInfo.Id);
@@ -136,7 +136,7 @@ public class StartSurveyResponseCommandHandler : IRequestHandler<StartSurveyResp
     /// <summary>
     /// Handles scenarios where an active response already exists
     /// </summary>
-    private async Task<ApplicationResult<StartSurveyResponseResponse>> HandleActiveResponseScenario(
+    private async Task<ApplicationResult<StartSurveyResponseResponse>?> HandleActiveResponseScenario(
         Survey survey, 
         Response existingResponse, 
         StartSurveyResponseCommand request, 
@@ -154,16 +154,17 @@ public class StartSurveyResponseCommandHandler : IRequestHandler<StartSurveyResp
             // Check if we can cancel the active attempt and start new one
             if (!survey.ParticipationPolicy.AllowMultipleSubmissions)
             {
-                return ApplicationResult<StartSurveyResponseResponse>.Failure("تلاش فعال دیگری موجود است و شروع تلاش جدید مجاز نیست");
+                return ApplicationResult<StartSurveyResponseResponse>.Failure("شما در حال حاضر در حال تکمیل این نظرسنجی هستید.");
             }
             
             // Cancel the active attempt and continue with new attempt creation
             existingResponse.Cancel();
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            return ApplicationResult<StartSurveyResponseResponse>.Success(null!); // Continue with normal flow
+            // Return null to indicate we should continue with normal flow
+            return null;
         }
         
-        return ApplicationResult<StartSurveyResponseResponse>.Failure("تلاش فعال دیگری موجود است");
+        return ApplicationResult<StartSurveyResponseResponse>.Failure("شما در حال حاضر در حال تکمیل این نظرسنجی هستید.");
     }
 
     /// <summary>
@@ -178,19 +179,19 @@ public class StartSurveyResponseCommandHandler : IRequestHandler<StartSurveyResp
         // Check survey state and timing
         if (!survey.IsAcceptingResponses())
         {
-            return Task.FromResult(new EligibilityValidationResult(false, "SURVEY_NOT_ACTIVE", "نظرسنجی در حال حاضر فعال نیست"));
+            return Task.FromResult(new EligibilityValidationResult(false, "SURVEY_NOT_ACTIVE", "این نظرسنجی در حال حاضر غیرفعال است و امکان شرکت وجود ندارد."));
         }
 
         // Check time constraints
         var now = DateTimeOffset.UtcNow;
         if (survey.StartAt.HasValue && now < survey.StartAt.Value)
         {
-            return Task.FromResult(new EligibilityValidationResult(false, "SURVEY_NOT_STARTED", "نظرسنجی هنوز شروع نشده است"));
+            return Task.FromResult(new EligibilityValidationResult(false, "SURVEY_NOT_STARTED", "این نظرسنجی هنوز شروع نشده است. لطفاً در زمان مقرر مراجعه کنید."));
         }
 
         if (survey.EndAt.HasValue && now > survey.EndAt.Value)
         {
-            return Task.FromResult(new EligibilityValidationResult(false, "SURVEY_ENDED", "نظرسنجی به پایان رسیده است"));
+            return Task.FromResult(new EligibilityValidationResult(false, "SURVEY_ENDED", "متأسفانه زمان شرکت در این نظرسنجی به پایان رسیده است."));
         }
 
         // Use domain service for complex participation rules
@@ -203,12 +204,12 @@ public class StartSurveyResponseCommandHandler : IRequestHandler<StartSurveyResp
             {
                 if (!survey.ParticipationPolicy.AllowMultipleSubmissions)
                 {
-                    return Task.FromResult(new EligibilityValidationResult(false, "MAX_ATTEMPTS_REACHED", "شما قبلاً در این نظرسنجی شرکت کرده‌اید"));
+                    return Task.FromResult(new EligibilityValidationResult(false, "ALREADY_PARTICIPATED", "شما قبلاً در این نظرسنجی شرکت کرده‌اید و امکان شرکت مجدد وجود ندارد."));
                 }
 
                 if (attemptNumber > survey.ParticipationPolicy.MaxAttemptsPerMember)
                 {
-                    return Task.FromResult(new EligibilityValidationResult(false, "MAX_ATTEMPTS_REACHED", "حداکثر تعداد تلاش‌های مجاز را انجام داده‌اید"));
+                    return Task.FromResult(new EligibilityValidationResult(false, "MAX_ATTEMPTS_REACHED", $"شما حداکثر تعداد مجاز تلاش‌ها ({survey.ParticipationPolicy.MaxAttemptsPerMember}) را انجام داده‌اید."));
                 }
 
                 // Check cooldown using domain service
@@ -218,7 +219,24 @@ public class StartSurveyResponseCommandHandler : IRequestHandler<StartSurveyResp
                     if (now < cooldownEnd)
                     {
                         var remainingSeconds = (int)(cooldownEnd - now).Value.TotalSeconds;
-                        return Task.FromResult(new EligibilityValidationResult(false, "COOLDOWN_ACTIVE", $"لطفاً {remainingSeconds} ثانیه صبر کنید"));
+                        var remainingMinutes = remainingSeconds / 60;
+                        var remainingHours = remainingMinutes / 60;
+                        
+                        string timeMessage;
+                        if (remainingHours > 0)
+                        {
+                            timeMessage = $"{remainingHours} ساعت و {remainingMinutes % 60} دقیقه";
+                        }
+                        else if (remainingMinutes > 0)
+                        {
+                            timeMessage = $"{remainingMinutes} دقیقه و {remainingSeconds % 60} ثانیه";
+                        }
+                        else
+                        {
+                            timeMessage = $"{remainingSeconds} ثانیه";
+                        }
+                        
+                        return Task.FromResult(new EligibilityValidationResult(false, "COOLDOWN_ACTIVE", $"لطفاً {timeMessage} صبر کنید"));
                     }
                 }
             }
@@ -263,7 +281,7 @@ public class StartSurveyResponseCommandHandler : IRequestHandler<StartSurveyResp
             Cooldown = cooldownInfo,
             IsResumed = isResumed,
             CanAnswer = true,
-            Message = isResumed ? "پاسخ فعال موجود بازیابی شد" : "نظرسنجی با موفقیت شروع شد",
+            Message = isResumed ? "ادامه نظرسنجی" : "نظرسنجی شروع شد",
             EligibilityReasons = new List<string>()
         });
     }
@@ -332,7 +350,34 @@ public class StartSurveyResponseCommandHandler : IRequestHandler<StartSurveyResp
         {
             Enabled = true,
             Seconds = remainingSeconds,
-            Message = remainingSeconds > 0 ? $"لطفاً {remainingSeconds} ثانیه صبر کنید" : null
+            Message = remainingSeconds > 0 ? $"لطفاً {GetTimeMessage(remainingSeconds)} صبر کنید" : null
         };
+    }
+
+    /// <summary>
+    /// Formats time duration in a user-friendly Persian format
+    /// </summary>
+    private static string GetTimeMessage(int totalSeconds)
+    {
+        var hours = totalSeconds / 3600;
+        var minutes = (totalSeconds % 3600) / 60;
+        var seconds = totalSeconds % 60;
+
+        if (hours > 0)
+        {
+            if (minutes > 0)
+                return $"{hours} ساعت و {minutes} دقیقه";
+            return $"{hours} ساعت";
+        }
+        else if (minutes > 0)
+        {
+            if (seconds > 0)
+                return $"{minutes} دقیقه و {seconds} ثانیه";
+            return $"{minutes} دقیقه";
+        }
+        else
+        {
+            return $"{seconds} ثانیه";
+        }
     }
 }

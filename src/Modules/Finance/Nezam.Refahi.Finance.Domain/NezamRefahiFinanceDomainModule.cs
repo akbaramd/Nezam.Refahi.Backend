@@ -19,6 +19,7 @@ public class NezamRefahiFinanceDomainModule : BonModule
   public override Task OnConfigureAsync(BonConfigurationContext context)
   {
     context.Services.AddScoped<WalletDomainService>();
+    context.Services.AddScoped<DiscountCodeDomainService>();
     return base.OnConfigureAsync(context);
   }
 }

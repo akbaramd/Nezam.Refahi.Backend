@@ -15,7 +15,7 @@ using Nezam.Refahi.Shared.Infrastructure.Outbox;
 using System.Text.Json;
 using Nezam.Refahi.Recreation.Application.Services.Contracts;
 using Nezam.Refahi.Membership.Contracts.Dtos;
-using Nezam.Refahi.Recreation.Application.Dtos;
+using Nezam.Refahi.Recreation.Contracts.Dtos;
 using Nezam.Refahi.Shared.Application;
 
 namespace Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.CreateReservation;
@@ -381,16 +381,16 @@ public class CreateTourReservationCommandHandler
                 expiryDate: expiryDate,
                 notes: request.Notes);
 
-            // Transition to Held state using State Machine
-            if (ReservationStateMachine.IsValidTransition(initialStatus, ReservationStatus.Held))
+            // Transition to OnHold state using State Machine
+            if (ReservationStateMachine.IsValidTransition(initialStatus, ReservationStatus.OnHold))
             {
                 // Note: TourReservation entity might need an UpdateStatus method
                 // For now, we'll assume it starts in the correct state
-                _logger.LogInformation("Reservation created in Held state - ReservationId: {ReservationId}", reservation.Id);
+                _logger.LogInformation("Reservation created in OnHold state - ReservationId: {ReservationId}", reservation.Id);
             }
             else
             {
-                _logger.LogError("Invalid state transition from {From} to {To}", initialStatus, ReservationStatus.Held);
+                _logger.LogError("Invalid state transition from {From} to {To}", initialStatus, ReservationStatus.OnHold);
                 return ApplicationResult<CreateTourReservationResponse>.Failure("خطا در ایجاد رزرو");
             }
 
@@ -1021,8 +1021,8 @@ public class CreateTourReservationCommandHandler
                 }
             }
 
-            // Update reservation expiry if it's in Held state
-            if (existingReservation.Status == ReservationStatus.Held)
+            // Update reservation expiry if it's in OnHold state
+            if (existingReservation.Status == ReservationStatus.OnHold)
             {
                 var newExpiryDate = DateTime.UtcNow.AddMinutes(_settings.ReservationHoldMinutes);
                 existingReservation.UpdateExpiryDate(newExpiryDate);

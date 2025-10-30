@@ -1,12 +1,12 @@
 using MediatR;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
-namespace Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilityRequests;
+namespace Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilityRequestsByUser;
 
 /// <summary>
 /// Query to get facility requests
 /// </summary>
-public record GetFacilityRequestsQuery : IRequest<ApplicationResult<GetFacilityRequestsResult>>
+public record GetFacilityRequestsByUserQuery : IRequest<ApplicationResult<GetFacilityRequestsByUserQueryResult>>
 {
     /// <summary>
     /// Page number (default: 1)

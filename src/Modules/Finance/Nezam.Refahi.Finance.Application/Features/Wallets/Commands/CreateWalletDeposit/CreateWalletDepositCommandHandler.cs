@@ -119,7 +119,7 @@ public class CreateWalletDepositCommandHandler : IRequestHandler<CreateWalletDep
                 // Create bill with deposit tracking code as reference
                 var items = new List<BillItem>
                 {
-                    new BillItem(
+                    new (
                         billId: Guid.NewGuid(),
                         title: "مبلغ واریز کیف پول",
                         description: $"واریز کیف پول به مبلغ {request.AmountRials:N0} ریال",
@@ -128,9 +128,10 @@ public class CreateWalletDepositCommandHandler : IRequestHandler<CreateWalletDep
                         discountPercentage: 0)
                 };
                 var bill = new Bill(
+                    referenceTrackingCode:walletDeposit.TrackingCode,
                     title: $"صورت حساب واریز کیف پول - {request.UserFullName}",
-                    referenceId: walletDeposit.TrackingCode, // Use tracking code as reference
-                    billType: "WalletDeposit",
+                    referenceId: walletDeposit.Id.ToString(), // Use tracking code as reference
+                    billType: nameof(walletDeposit),
                     externalUserId: request.ExternalUserId,
                     userFullName: request.UserFullName,
                     description: request.Description ?? "صورت حساب واریز کیف پول",

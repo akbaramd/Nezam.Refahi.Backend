@@ -1,74 +1,51 @@
 using FluentValidation;
 using MediatR;
 using Nezam.Refahi.Finance.Application.Commands.Payments;
+using Nezam.Refahi.Finance.Application.Features.Payments.Commands.ApplyDiscountCode;
+using Nezam.Refahi.Finance.Application.Features.Payments.Commands.IssueBill;
+using Nezam.Refahi.Finance.Application.Features.Payments.Commands.ProcessFreePayment;
+using Nezam.Refahi.Finance.Application.Features.Payments.Commands.ProcessRegularPayment;
 using Nezam.Refahi.Finance.Application.Services;
+using Nezam.Refahi.Finance.Contracts.IntegrationEvents;
+using Nezam.Refahi.Finance.Domain.Entities;
 using Nezam.Refahi.Finance.Domain.Enums;
 using Nezam.Refahi.Finance.Domain.Repositories;
+using Nezam.Refahi.Shared.Application;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
-using Nezam.Refahi.Shared.Domain.ValueObjects;
 
 namespace Nezam.Refahi.Finance.Application.Features.Payments.Commands.CreatePayment;
 
 /// <summary>
-/// Handler for CreatePaymentCommand - Creates payments with comprehensive bill management
-///
-/// Complete Business Logic & Accounting Operations:
-///
-/// 1. BILL MANAGEMENT:
-///    - Adds additional items to draft bills before payment
-///    - Automatically calculates item totals with quantity and discounts
-///    - Recalculates bill total amount after item additions
-///    - Auto-issues draft bills if AutoIssueBill is enabled
-///    - Validates bill status transitions (Draft → Issued → Payable)
-///
-/// 2. PAYMENT PROCESSING:
-///    - Creates payment attempts with multiple gateway support
-///    - Validates payment amounts against bill remaining balance
-///    - Supports partial and full payments
-///    - Handles payment method validation (Online, Cash, Card)
-///    - Sets appropriate payment expiry for online transactions
-///
-/// 3. ACCOUNTING OPERATIONS:
-///    - Updates accounts receivable when bills are issued
-///    - Creates payment intention records for audit trail
-///    - Maintains accurate bill balance calculations
-///    - Tracks payment attempts and their lifecycle
-///    - Supports revenue recognition through bill issuance
-///
-/// 4. BUSINESS RULES:
-///    - Cannot create payments for cancelled bills
-///    - Cannot overpay bills (payment amount ≤ remaining amount)
-///    - Only issued bills are payable (auto-issue available)
-///    - Maintains referential integrity between bills and payments
-///    - Enforces payment gateway requirements for online payments
-///
-/// 5. STATUS MANAGEMENT:
-///    - Bill Status: Draft → Issued → PartiallyPaid → FullyPaid
-///    - Payment Status: Pending → Processing → Completed/Failed/Cancelled
-///    - Automatic status transitions based on business events
-///    - Maintains consistent state across all entities
+/// Simplified CreatePaymentCommandHandler - Orchestrates smaller, focused commands
+/// 
+/// Responsibilities:
+/// 1. Validates the request
+/// 2. Applies discount code if provided
+/// 3. Issues bill if required
+/// 4. Routes to appropriate payment processor based on bill amount
+/// 5. Returns comprehensive response
 /// </summary>
 public class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand, ApplicationResult<CreatePaymentResponse>>
 {
     private readonly IBillRepository _billRepository;
-    private readonly IPaymentRepository _paymentRepository;
-    private readonly IPaymentService _paymentService;
     private readonly IValidator<CreatePaymentCommand> _validator;
     private readonly IFinanceUnitOfWork _unitOfWork;
+    private readonly IMediator _mediator;
+    private readonly IOutboxPublisher _outboxPublisher;
 
     public CreatePaymentCommandHandler(
         IBillRepository billRepository,
-        IPaymentRepository paymentRepository,
-        IPaymentService paymentService,
         IValidator<CreatePaymentCommand> validator,
-        IFinanceUnitOfWork unitOfWork)
+        IFinanceUnitOfWork unitOfWork,
+        IMediator mediator,
+        IOutboxPublisher outboxPublisher)
     {
         _billRepository = billRepository ?? throw new ArgumentNullException(nameof(billRepository));
-        _paymentRepository = paymentRepository ?? throw new ArgumentNullException(nameof(paymentRepository));
-        _paymentService = paymentService ?? throw new ArgumentNullException(nameof(paymentService));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        _outboxPublisher = outboxPublisher ?? throw new ArgumentNullException(nameof(outboxPublisher));
     }
 
     public async Task<ApplicationResult<CreatePaymentResponse>> Handle(
@@ -94,12 +71,46 @@ public class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand,
                 return ApplicationResult<CreatePaymentResponse>.Failure("Bill not found");
             }
 
-            // Track business operations for response
-            int itemsAdded = 0;
-            bool billWasIssued = false;
+            // Security check
+            if (bill.ExternalUserId != request.ExternalUserId)
+            {
+                await _unitOfWork.RollbackAsync(cancellationToken);
+                return ApplicationResult<CreatePaymentResponse>.Failure("Access denied: You can only create payments for your own bills");
+            }
 
- 
-            // STEP 2: AUTO-ISSUE BILL IF REQUIRED
+            // Track operations for response
+            bool billWasIssued = false;
+            string? appliedDiscountCode = null;
+            decimal appliedDiscountAmount = 0;
+            decimal originalBillAmount = bill.TotalAmount.AmountRials;
+            bool isFreeBill = false;
+
+            // STEP 1: APPLY DISCOUNT CODE IF PROVIDED
+            if (!string.IsNullOrEmpty(request.DiscountCode))
+            {
+                var applyDiscountCommand = new ApplyDiscountCodeCommand
+                {
+                    BillId = request.BillId,
+                    DiscountCode = request.DiscountCode,
+                    ExternalUserId = request.ExternalUserId
+                };
+
+                var discountResult = await _mediator.Send(applyDiscountCommand, cancellationToken);
+                if (!discountResult.IsSuccess)
+                {
+                    await _unitOfWork.RollbackAsync(cancellationToken);
+                    return ApplicationResult<CreatePaymentResponse>.Failure(discountResult.Errors?.FirstOrDefault() ?? "Failed to apply discount code");
+                }
+
+                appliedDiscountCode = discountResult.Data?.AppliedDiscountCode;
+                appliedDiscountAmount = discountResult.Data?.AppliedDiscountAmount ?? 0;
+                isFreeBill = discountResult.Data?.IsFreeBill ?? false;
+
+                // Get updated bill
+                bill = await _billRepository.GetByIdAsync(request.BillId, cancellationToken);
+            }
+
+            // STEP 2: ISSUE BILL IF REQUIRED
             if (bill.Status == BillStatus.Draft && request.AutoIssueBill)
             {
                 if (!bill.Items.Any())
@@ -109,8 +120,24 @@ public class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand,
                         "Cannot issue empty bill. Add at least one item to the bill before creating payment.");
                 }
 
-                bill.Issue();
+                var issueBillCommand = new IssueBillCommand
+                {
+                    BillId = request.BillId,
+                    ExternalUserId = request.ExternalUserId
+                };
+
+                var issueResult = await _mediator.Send(issueBillCommand, cancellationToken);
+                if (!issueResult.IsSuccess)
+                {
+                    await _unitOfWork.RollbackAsync(cancellationToken);
+                    return ApplicationResult<CreatePaymentResponse>.Failure(issueResult.Errors?.FirstOrDefault() ?? "Failed to issue bill");
+                }
+
                 billWasIssued = true;
+                isFreeBill = issueResult.Data?.IsFreeBill ?? false;
+
+                // Get updated bill
+                bill = await _billRepository.GetByIdAsync(request.BillId, cancellationToken);
             }
 
             // STEP 3: VALIDATE BILL IS PAYABLE
@@ -124,149 +151,119 @@ public class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand,
             if (bill.Status == BillStatus.Cancelled)
             {
                 await _unitOfWork.RollbackAsync(cancellationToken);
-                return ApplicationResult<CreatePaymentResponse>.Failure(
-                    "Cannot create payment for cancelled bill.");
+                return ApplicationResult<CreatePaymentResponse>.Failure("Cannot create payment for cancelled bill.");
             }
 
             if (bill.Status == BillStatus.FullyPaid)
             {
                 await _unitOfWork.RollbackAsync(cancellationToken);
-                return ApplicationResult<CreatePaymentResponse>.Failure(
-                    "Bill is already fully paid. No additional payment needed.");
+                return ApplicationResult<CreatePaymentResponse>.Failure("Bill is already fully paid.");
             }
 
-            // STEP 4: VALIDATE PAYMENT AMOUNT
-            if (request.AmountRials <= 0)
-            {
-                await _unitOfWork.RollbackAsync(cancellationToken);
-                return ApplicationResult<CreatePaymentResponse>.Failure(
-                    "Payment amount must be greater than zero.");
-            }
+            // STEP 4: ROUTE TO APPROPRIATE PAYMENT PROCESSOR
+            CreatePaymentResponse response;
+            string successMessage;
 
-            if (request.AmountRials > bill.RemainingAmount.AmountRials)
+            if (bill.RemainingAmount.AmountRials <= 0 || isFreeBill)
             {
-                await _unitOfWork.RollbackAsync(cancellationToken);
-                return ApplicationResult<CreatePaymentResponse>.Failure(
-                    $"Payment amount ({request.AmountRials:N0} Rials) exceeds remaining bill amount ({bill.RemainingAmount.AmountRials:N0} Rials).");
-            }
+                // Process free payment
+                var freePaymentCommand = new ProcessFreePaymentCommand
+                {
+                    BillId = request.BillId,
+                    ExternalUserId = request.ExternalUserId,
+                    Description = request.Description
+                };
 
-            // STEP 5: VALIDATE PAYMENT METHOD AND GATEWAY
-            if (!Enum.TryParse<PaymentMethod>(request.PaymentMethod, true, out var paymentMethod))
-            {
-                await _unitOfWork.RollbackAsync(cancellationToken);
-                return ApplicationResult<CreatePaymentResponse>.Failure("Invalid payment method");
-            }
-
-            PaymentGateway? paymentGateway = null;
-            if (!string.IsNullOrEmpty(request.PaymentGateway))
-            {
-                if (!Enum.TryParse<PaymentGateway>(request.PaymentGateway, true, out var gateway))
+                var freeResult = await _mediator.Send(freePaymentCommand, cancellationToken);
+                if (!freeResult.IsSuccess)
                 {
                     await _unitOfWork.RollbackAsync(cancellationToken);
-                    return ApplicationResult<CreatePaymentResponse>.Failure("Invalid payment gateway");
+                    return ApplicationResult<CreatePaymentResponse>.Failure(freeResult.Errors?.FirstOrDefault() ?? "Failed to process free payment");
                 }
-                paymentGateway = gateway;
+
+                response = MapFreePaymentResponse(freeResult.Data!, bill, billWasIssued, appliedDiscountCode, appliedDiscountAmount, originalBillAmount);
+                successMessage = "پرداخت رایگان با موفقیت پردازش شد.";
             }
-
-            // Validate gateway is provided for online payments
-            if (paymentMethod == PaymentMethod.Online && paymentGateway == null)
+            else
             {
-                await _unitOfWork.RollbackAsync(cancellationToken);
-                return ApplicationResult<CreatePaymentResponse>.Failure(
-                    "Payment gateway is required for online payments.");
-            }
-
-            // STEP 6: CREATE PAYMENT
-            var amount = Money.FromRials(request.AmountRials);
-            var payment = bill.CreatePayment(
-                amount: amount,
-                method: paymentMethod,
-                gateway: paymentGateway,
-                callbackUrl: request.CallbackUrl,
-                description: request.Description,
-                expiryDate: request.ExpiryDate
-            );
-            var traclingNumber = GenerateTrackingNumber();
-            payment.SetTrackingNumber(traclingNumber.ToString());
-            // STEP 7: SAVE ALL CHANGES
-            await _billRepository.UpdateAsync(bill, cancellationToken:cancellationToken);
-            await _unitOfWork.SaveAsync(cancellationToken);
-            await _unitOfWork.CommitAsync(cancellationToken);
-
-            // STEP 8: PROCESS PAYMENT IF ONLINE
-            PaymentProcessingResult? paymentProcessingResult = null;
-            if (paymentMethod == PaymentMethod.Online && !string.IsNullOrEmpty(request.CallbackUrl))
-            {
-            
-                // Create gateway request (gateway-focused)
-                var gatewayRequest = new PaymentGatewayRequest
+                // Process regular payment
+                var regularPaymentCommand = new ProcessRegularPaymentCommand
                 {
-                    TrackingNumber = traclingNumber,
-                    AmountRials = (long)amount.AmountRials,
-                    Gateway = paymentGateway!.Value.ToString(),
+                    BillId = request.BillId,
+                    AmountRials = request.AmountRials,
+                    PaymentMethod = request.PaymentMethod,
+                    PaymentGateway = request.PaymentGateway,
                     CallbackUrl = request.CallbackUrl,
                     Description = request.Description,
-                    AdditionalData = new Dictionary<string, string>
+                    ExpiryDate = request.ExpiryDate,
+                    ExternalUserId = request.ExternalUserId
+                };
+
+                var regularResult = await _mediator.Send(regularPaymentCommand, cancellationToken);
+                if (!regularResult.IsSuccess)
+                {
+                    await _unitOfWork.RollbackAsync(cancellationToken);
+                    return ApplicationResult<CreatePaymentResponse>.Failure(regularResult.Errors?.FirstOrDefault() ?? "Failed to process regular payment");
+                }
+
+                response = MapRegularPaymentResponse(regularResult.Data!, bill, billWasIssued, appliedDiscountCode, appliedDiscountAmount, originalBillAmount);
+                successMessage = "پرداخت با موفقیت ایجاد شد.";
+            }
+
+            // Add additional context to success message
+            if (billWasIssued)
+                successMessage += " صورتحساب به صورت خودکار صادر شد.";
+            if (!string.IsNullOrEmpty(appliedDiscountCode))
+                successMessage += $" کد تخفیف '{appliedDiscountCode}' اعمال شد.";
+
+            // STEP 5: PUBLISH INTEGRATION EVENTS AND COMMIT TRANSACTION
+            // Get the created payment from the response
+            var createdPayment = bill.Payments.FirstOrDefault(p => p.Id == response.PaymentId);
+            if (createdPayment != null)
+            {
+                // Publish PaymentCreatedIntegrationEvent
+                var paymentCreatedEvent = new PaymentCreatedIntegrationEvent
+                {
+                    PaymentId = createdPayment.Id,
+                    BillId = bill.Id,
+                    ReferenceId = bill.ReferenceId,
+                    ReferenceType = bill.ReferenceType,
+                    AmountRials = createdPayment.Amount.AmountRials,
+                    PaymentMethod = createdPayment.Method.ToString(),
+                    PaymentGateway = createdPayment.Gateway?.ToString(),
+                    ExpiryDate = createdPayment.ExpiryDate,
+                    Description = createdPayment.Description,
+                    CreatedAt = createdPayment.CreatedAt,
+                    ExternalUserId = bill.ExternalUserId,
+                    UserFullName = bill.UserFullName ?? string.Empty,
+                    Metadata = new Dictionary<string, string>
                     {
-                        ["PaymentId"] = payment.Id.ToString(),
                         ["BillId"] = bill.Id.ToString(),
-                        ["BillNumber"] = bill.BillNumber
+                        ["BillNumber"] = bill.BillNumber,
+                        ["PaymentMethod"] = createdPayment.Method.ToString(),
+                        ["IsFreePayment"] = response.IsFreePayment.ToString(),
+                        ["AppliedDiscountCode"] = appliedDiscountCode ?? string.Empty,
+                        ["AppliedDiscountAmount"] = appliedDiscountAmount.ToString(),
+                        ["OriginalBillAmount"] = originalBillAmount.ToString(),
+                        ["FinalBillAmount"] = bill.TotalAmount.AmountRials.ToString(),
+                        ["BillWasIssued"] = billWasIssued.ToString()
                     }
                 };
 
-                var processingResult = await _paymentService.ProcessPaymentAsync(
-                    gatewayRequest, 
+                // Publish with Idempotency Key for reliability
+                var paymentIdempotencyKey = $"payment_created_{createdPayment.Id}_{DateTime.UtcNow:yyyyMMddHHmmss}";
+                await _outboxPublisher.PublishAsync(
+                    paymentCreatedEvent, 
+                    aggregateId: bill.Id,
+                    correlationId: createdPayment.Id.ToString()?.ToString(),
+                    idempotencyKey: paymentIdempotencyKey,
                     cancellationToken);
-
-                if (processingResult.IsSuccess)
-                {
-                    paymentProcessingResult = processingResult.Data;
-                    
-                    // Update payment with tracking number (business logic)
-                    // Note: Payment entity should have a method to set tracking number
-                    // payment.SetTrackingNumber(gatewayRequest.TrackingNumber.ToString());
-                    // await _paymentRepository.UpdateAsync(payment, cancellationToken: cancellationToken);
-                    // await _unitOfWork.SaveAsync(cancellationToken);
-                }
-                else
-                {
-                    // Log the error but don't fail the entire operation
-                    // The payment was created successfully, just the gateway processing failed
-                    await _unitOfWork.RollbackAsync(cancellationToken);
-                    return ApplicationResult<CreatePaymentResponse>.Failure(
-                        processingResult.Errors?.FirstOrDefault() ?? "خطا در پردازش پرداخت آنلاین");
-                }
             }
 
-            // STEP 9: PREPARE COMPREHENSIVE RESPONSE
-            var response = new CreatePaymentResponse
-            {
-                PaymentId = payment.Id,
-                BillId = bill.Id,
-                BillNumber = bill.BillNumber,
-                Amount = payment.Amount.AmountRials,
-                PaymentMethod = payment.Method.ToString(),
-                Status = payment.Status.ToString(),
-                CreatedAt = payment.CreatedAt,
-                ExpiryDate = payment.ExpiryDate,
-                GatewayRedirectUrl = paymentProcessingResult?.RedirectUrl,
-                BillStatus = bill.Status.ToString(),
-                BillTotalAmount = bill.TotalAmount.AmountRials,
-                ItemsAdded = itemsAdded,
-                BillWasIssued = billWasIssued,
-                TrackingNumber = paymentProcessingResult?.TrackingNumber != null ? (long)paymentProcessingResult.TrackingNumber : null,
-                RequiresRedirect = paymentProcessingResult?.RedirectUrl != null,
-                PaymentMessage = paymentProcessingResult?.Message,
-                PaymentGateway = paymentGateway?.ToString()
-            };
+            // Save changes (including Outbox messages) and commit transaction
+            await _unitOfWork.CommitAsync(cancellationToken);
 
-            var successMessage = $"Payment created successfully. ";
-            if (itemsAdded > 0)
-                successMessage += $"{itemsAdded} item(s) added to bill. ";
-            if (billWasIssued)
-                successMessage += "Bill was automatically issued. ";
-
-            return ApplicationResult<CreatePaymentResponse>.Success(response, successMessage.Trim());
+            return ApplicationResult<CreatePaymentResponse>.Success(response, successMessage);
         }
         catch (Exception ex)
         {
@@ -275,13 +272,77 @@ public class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand,
         }
     }
 
-    /// <summary>
-    /// Generates a unique tracking number for payment
-    /// </summary>
-    private long GenerateTrackingNumber()
+    private CreatePaymentResponse MapFreePaymentResponse(
+        ProcessFreePaymentResponse freeResponse,
+        Bill bill,
+        bool billWasIssued,
+        string? appliedDiscountCode,
+        decimal appliedDiscountAmount,
+        decimal originalBillAmount)
     {
-        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        var random = new Random().Next(1000, 9999);
-        return timestamp * 10000 + random;
+        return new CreatePaymentResponse
+        {
+            PaymentId = freeResponse.PaymentId,
+            BillId = freeResponse.BillId,
+            BillNumber = freeResponse.BillNumber,
+            Amount = freeResponse.Amount,
+            PaymentMethod = freeResponse.PaymentMethod,
+            Status = freeResponse.Status,
+            CreatedAt = freeResponse.CreatedAt,
+            ExpiryDate = null,
+            GatewayRedirectUrl = null,
+            BillStatus = freeResponse.BillStatus,
+            BillTotalAmount = freeResponse.BillTotalAmount,
+            ItemsAdded = 0,
+            BillWasIssued = billWasIssued,
+            TrackingNumber = null,
+            RequiresRedirect = false,
+            PaymentMessage = freeResponse.PaymentStatus,
+            PaymentGateway = null,
+            AppliedDiscountCode = appliedDiscountCode,
+            AppliedDiscountAmount = appliedDiscountAmount,
+            OriginalBillAmount = originalBillAmount,
+            FinalBillAmount = bill.TotalAmount.AmountRials,
+            IsFreePayment = true,
+            PaymentSkipped = true,
+            PaymentStatus = "پرداخت رایگان - تکمیل شد"
+        };
+    }
+
+    private CreatePaymentResponse MapRegularPaymentResponse(
+        ProcessRegularPaymentResponse regularResponse,
+        Bill bill,
+        bool billWasIssued,
+        string? appliedDiscountCode,
+        decimal appliedDiscountAmount,
+        decimal originalBillAmount)
+    {
+        return new CreatePaymentResponse
+        {
+            PaymentId = regularResponse.PaymentId,
+            BillId = regularResponse.BillId,
+            BillNumber = regularResponse.BillNumber,
+            Amount = regularResponse.Amount,
+            PaymentMethod = regularResponse.PaymentMethod,
+            Status = regularResponse.Status,
+            CreatedAt = regularResponse.CreatedAt,
+            ExpiryDate = regularResponse.ExpiryDate,
+            GatewayRedirectUrl = regularResponse.GatewayRedirectUrl,
+            BillStatus = regularResponse.BillStatus,
+            BillTotalAmount = regularResponse.BillTotalAmount,
+            ItemsAdded = 0,
+            BillWasIssued = billWasIssued,
+            TrackingNumber = regularResponse.TrackingNumber,
+            RequiresRedirect = regularResponse.RequiresRedirect,
+            PaymentMessage = regularResponse.PaymentMessage,
+            PaymentGateway = regularResponse.PaymentGateway,
+            AppliedDiscountCode = appliedDiscountCode,
+            AppliedDiscountAmount = appliedDiscountAmount,
+            OriginalBillAmount = originalBillAmount,
+            FinalBillAmount = bill.TotalAmount.AmountRials,
+            IsFreePayment = false,
+            PaymentSkipped = false,
+            PaymentStatus = "پرداخت عادی"
+        };
     }
 }

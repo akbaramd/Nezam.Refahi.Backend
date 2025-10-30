@@ -20,9 +20,6 @@ public class CompletePaymentCommandValidator : AbstractValidator<CompletePayment
             .MaximumLength(200)
             .WithMessage("Gateway transaction ID cannot exceed 200 characters");
 
-        RuleFor(x => x.GatewayReference)
-            .MaximumLength(200)
-            .WithMessage("Gateway reference cannot exceed 200 characters")
-            .When(x => !string.IsNullOrEmpty(x.GatewayReference));
+     
     }
 }

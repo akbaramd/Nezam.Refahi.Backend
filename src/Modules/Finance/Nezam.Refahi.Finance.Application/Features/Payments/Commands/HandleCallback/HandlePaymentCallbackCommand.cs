@@ -21,18 +21,18 @@ public class PaymentCallbackResult
 {
     // Payment Information
     public Guid PaymentId { get; set; }
-    public decimal TrackingNumber { get; set; }
+    public decimal GatewayReference { get; set; }
+    public string? BillTrackingCode { get; set; }= null!;
+    public string? BillType { get; set; }= null!;
     public bool IsSuccessful { get; set; }
     public string? Message { get; set; }
     public string? TransactionCode { get; set; }
     public Money Amount { get; set; } = null!;
     public DateTime ProcessedAt { get; set; }
-    public string? RedirectUrl { get; set; }
     public PaymentStatus NewStatus { get; set; }
     
     // Bill Information
     public Guid BillId { get; set; }
-    public string? BillNumber { get; set; }
     public string? BillStatus { get; set; }
     public decimal? BillTotalAmount { get; set; }
     public decimal? BillPaidAmount { get; set; }

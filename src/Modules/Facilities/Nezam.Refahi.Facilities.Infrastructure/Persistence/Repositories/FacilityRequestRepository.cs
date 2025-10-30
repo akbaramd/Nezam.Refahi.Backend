@@ -274,7 +274,7 @@ public class FacilityRequestRepository : EfRepository<FacilitiesDbContext, Facil
             .AnyAsync(cancellationToken);
     }
 
-    public async Task<FacilityRequest?> GetUserRequestForCycleAsync(Guid userId, Guid cycleId, CancellationToken cancellationToken = default)
+    public async Task<FacilityRequest?> GetUserLastRequestForCycleAsync(Guid userId, Guid cycleId, CancellationToken cancellationToken = default)
     {
         return await PrepareQuery(_dbSet)
             .Where(r => r.MemberId == userId && r.FacilityCycleId == cycleId)
@@ -282,14 +282,11 @@ public class FacilityRequestRepository : EfRepository<FacilitiesDbContext, Facil
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<Dictionary<Guid, FacilityRequest>> GetUserRequestsForCyclesAsync(Guid userId, IEnumerable<Guid> cycleIds, CancellationToken cancellationToken = default)
+    public async Task<Dictionary<Guid, FacilityRequest>> GetUserRequestsForCycleAsync(Guid userId, Guid cycleId  , CancellationToken cancellationToken = default)
     {
-        var cycleIdsList = cycleIds.ToList();
-        if (!cycleIdsList.Any())
-            return new Dictionary<Guid, FacilityRequest>();
 
         var requests = await PrepareQuery(_dbSet)
-            .Where(r => r.MemberId == userId && cycleIdsList.Contains(r.FacilityCycleId))
+            .Where(r => r.MemberId == userId && r.FacilityCycleId == cycleId)
             .OrderByDescending(r => r.CreatedAt)
             .ToListAsync(cancellationToken);
 

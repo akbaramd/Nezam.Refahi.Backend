@@ -1,4 +1,4 @@
-﻿namespace Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilityDetails;
+﻿namespace Nezam.Refahi.Facilities.Application.Dtos;
 
 /// <summary>
 /// Facility cycle dependency data transfer object

@@ -31,6 +31,8 @@ public class AnswerQuestionResponse
     public int AnsweredRepeatsForThisQuestion { get; set; } // Number of answered repeats for this question
     public int? TotalRepeatsAllowed { get; set; } // null for Unbounded
     public double CompletionPercentage { get; set; }
+    public string ResponseStatus { get; set; } = string.Empty; // Current response status
+    public string ResponseStatusText { get; set; } = string.Empty; // Persian text for response status
     public string? Message { get; set; }
     public List<string> ValidationErrors { get; set; } = new(); // Question-specific validation errors
 }

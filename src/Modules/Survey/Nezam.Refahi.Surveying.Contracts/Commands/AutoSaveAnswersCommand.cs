@@ -30,6 +30,8 @@ public enum AutoSaveMode
 public class AutoSaveAnswersResponse
 {
     public int SavedCount { get; set; }
+    public string ResponseStatus { get; set; } = string.Empty; // New response status
+    public string ResponseStatusText { get; set; } = string.Empty; // Persian text for response status
     public List<InvalidAnswerDto> Invalids { get; set; } = new();
 }
 

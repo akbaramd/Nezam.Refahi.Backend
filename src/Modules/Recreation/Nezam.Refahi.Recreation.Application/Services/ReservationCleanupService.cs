@@ -73,8 +73,8 @@ public class ReservationCleanupService : BackgroundService
             var allExpiredReservations = await reservationRepository.GetExpiredReservationsAsync(cutoffTime, cancellationToken);
             
             // Separate reservations by status for different processing
-            var heldReservations = allExpiredReservations.Where(r => r.Status == ReservationStatus.Held).ToList();
-            var payingReservations = allExpiredReservations.Where(r => r.Status == ReservationStatus.Paying).ToList();
+            var heldReservations = allExpiredReservations.Where(r => r.Status == ReservationStatus.OnHold).ToList();
+            var payingReservations = allExpiredReservations.Where(r => r.Status == ReservationStatus.PendingConfirmation).ToList();
 
             if (!allExpiredReservations.Any())
             {

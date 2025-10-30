@@ -33,11 +33,6 @@ namespace Nezam.Refahi.Finance.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("BillType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
@@ -60,6 +55,13 @@ namespace Nezam.Refahi.Finance.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("DiscountCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid?>("DiscountCodeId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("DueDate")
                         .HasColumnType("datetime2");
@@ -96,6 +98,19 @@ namespace Nezam.Refahi.Finance.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ReferenceTrackCode")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasDefaultValue("sdad");
+
+                    b.Property<string>("ReferenceType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("ReferenceType");
 
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
@@ -158,7 +173,7 @@ namespace Nezam.Refahi.Finance.Infrastructure.Migrations
 
                     b.HasIndex("Status");
 
-                    b.HasIndex("ReferenceId", "BillType");
+                    b.HasIndex("ReferenceId", "ReferenceType");
 
                     b.ToTable("Bills", "finance");
                 });
@@ -198,22 +213,227 @@ namespace Nezam.Refahi.Finance.Infrastructure.Migrations
                     b.ToTable("BillItems", "finance");
                 });
 
+            modelBuilder.Entity("Nezam.Refahi.Finance.Domain.Entities.DiscountCode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("کد تخفیف");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasComment("تاریخ ایجاد");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasComment("ایجادکننده");
+
+                    b.Property<Guid?>("CreatedByExternalUserId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("شناسه کاربر ایجادکننده");
+
+                    b.Property<string>("CreatedByUserFullName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasComment("نام کامل کاربر ایجادکننده");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2")
+                        .HasComment("تاریخ حذف");
+
+                    b.Property<string>("DeletedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasComment("حذف‌کننده");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)")
+                        .HasComment("توضیحات کد تخفیف");
+
+                    b.Property<decimal>("DiscountValue")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("مقدار تخفیف");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true)
+                        .HasComment("آیا فعال است");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasComment("آیا حذف شده");
+
+                    b.Property<bool>("IsSingleUse")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasComment("آیا یکبار مصرف است");
+
+                    b.Property<DateTime?>("LastModifiedAt")
+                        .HasColumnType("datetime2")
+                        .HasComment("تاریخ آخرین تغییر");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasComment("آخرین تغییردهنده");
+
+                    b.Property<string>("Metadata")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("اطلاعات اضافی");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int")
+                        .HasComment("وضعیت کد تخفیف");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasComment("عنوان کد تخفیف");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int")
+                        .HasComment("نوع تخفیف (درصدی یا مبلغی)");
+
+                    b.Property<int?>("UsageLimit")
+                        .HasColumnType("int")
+                        .HasComment("حد مجاز استفاده");
+
+                    b.Property<int>("UsedCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasComment("تعداد استفاده شده");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .HasColumnType("datetime2")
+                        .HasComment("تاریخ شروع اعتبار");
+
+                    b.Property<DateTime>("ValidTo")
+                        .HasColumnType("datetime2")
+                        .HasComment("تاریخ پایان اعتبار");
+
+                    b.Property<long>("Version")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("IX_DiscountCodes_Code");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_DiscountCodes_Status");
+
+                    b.HasIndex("ValidFrom")
+                        .HasDatabaseName("IX_DiscountCodes_ValidFrom");
+
+                    b.HasIndex("ValidTo")
+                        .HasDatabaseName("IX_DiscountCodes_ValidTo");
+
+                    b.HasIndex("Status", "ValidFrom", "ValidTo")
+                        .HasDatabaseName("IX_DiscountCodes_Status_ValidDates");
+
+                    b.ToTable("DiscountCodes", "finance");
+                });
+
+            modelBuilder.Entity("Nezam.Refahi.Finance.Domain.Entities.DiscountCodeUsage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BillId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("شناسه فاکتور");
+
+                    b.Property<Guid>("DiscountCodeId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("شناسه کد تخفیف");
+
+                    b.Property<Guid>("DiscountCodeId1")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ExternalUserId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("شناسه کاربر");
+
+                    b.Property<string>("Metadata")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("اطلاعات اضافی");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)")
+                        .HasComment("یادداشت‌ها");
+
+                    b.Property<DateTime>("UsedAt")
+                        .HasColumnType("datetime2")
+                        .HasComment("تاریخ استفاده");
+
+                    b.Property<string>("UserFullName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasComment("نام کامل کاربر");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BillId")
+                        .HasDatabaseName("IX_DiscountCodeUsages_BillId");
+
+                    b.HasIndex("DiscountCodeId")
+                        .HasDatabaseName("IX_DiscountCodeUsages_DiscountCodeId");
+
+                    b.HasIndex("DiscountCodeId1");
+
+                    b.HasIndex("ExternalUserId")
+                        .HasDatabaseName("IX_DiscountCodeUsages_ExternalUserId");
+
+                    b.HasIndex("UsedAt")
+                        .HasDatabaseName("IX_DiscountCodeUsages_UsedAt");
+
+                    b.HasIndex("DiscountCodeId", "BillId")
+                        .HasDatabaseName("IX_DiscountCodeUsages_DiscountCodeId_BillId");
+
+                    b.HasIndex("DiscountCodeId", "ExternalUserId")
+                        .HasDatabaseName("IX_DiscountCodeUsages_DiscountCodeId_ExternalUserId");
+
+                    b.ToTable("DiscountCodeUsages", "finance");
+                });
+
             modelBuilder.Entity("Nezam.Refahi.Finance.Domain.Entities.Payment", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("BillId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("BillNumber")
-                        .IsRequired()
+                    b.Property<string>("AppliedDiscountCode")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("CallbackUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                    b.Property<Guid?>("AppliedDiscountCodeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BillId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("CompletedAt")
                         .HasColumnType("datetime2");
@@ -261,6 +481,11 @@ namespace Nezam.Refahi.Finance.Infrastructure.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
+                    b.Property<bool>("IsFreePayment")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
                     b.Property<DateTime?>("LastModifiedAt")
                         .HasColumnType("datetime2");
 
@@ -281,17 +506,12 @@ namespace Nezam.Refahi.Finance.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("TrackingNumber")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<long>("Version")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
                     b.HasIndex("BillId");
-
-                    b.HasIndex("BillNumber");
 
                     b.HasIndex("CompletedAt");
 
@@ -304,6 +524,8 @@ namespace Nezam.Refahi.Finance.Infrastructure.Migrations
                     b.HasIndex("DeletedBy")
                         .HasDatabaseName("IX_Payment_DeletedBy")
                         .HasFilter("[DeletedBy] IS NOT NULL");
+
+                    b.HasIndex("GatewayReference");
 
                     b.HasIndex("GatewayTransactionId");
 
@@ -787,6 +1009,23 @@ namespace Nezam.Refahi.Finance.Infrastructure.Migrations
 
             modelBuilder.Entity("Nezam.Refahi.Finance.Domain.Entities.Bill", b =>
                 {
+                    b.OwnsOne("Nezam.Refahi.Shared.Domain.ValueObjects.Money", "DiscountAmount", b1 =>
+                        {
+                            b1.Property<Guid>("BillId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<decimal>("AmountRials")
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("DiscountAmountRials");
+
+                            b1.HasKey("BillId");
+
+                            b1.ToTable("Bills", "finance");
+
+                            b1.WithOwner()
+                                .HasForeignKey("BillId");
+                        });
+
                     b.OwnsOne("Nezam.Refahi.Shared.Domain.ValueObjects.Money", "PaidAmount", b1 =>
                         {
                             b1.Property<Guid>("BillId")
@@ -837,6 +1076,8 @@ namespace Nezam.Refahi.Finance.Infrastructure.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("BillId");
                         });
+
+                    b.Navigation("DiscountAmount");
 
                     b.Navigation("PaidAmount")
                         .IsRequired();
@@ -899,6 +1140,112 @@ namespace Nezam.Refahi.Finance.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Nezam.Refahi.Finance.Domain.Entities.DiscountCode", b =>
+                {
+                    b.OwnsOne("Nezam.Refahi.Shared.Domain.ValueObjects.Money", "MaximumDiscountAmount", b1 =>
+                        {
+                            b1.Property<Guid>("DiscountCodeId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<decimal>("AmountRials")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("MaximumDiscountAmountRials")
+                                .HasComment("حداکثر مبلغ تخفیف");
+
+                            b1.HasKey("DiscountCodeId");
+
+                            b1.ToTable("DiscountCodes", "finance");
+
+                            b1.WithOwner()
+                                .HasForeignKey("DiscountCodeId");
+                        });
+
+                    b.OwnsOne("Nezam.Refahi.Shared.Domain.ValueObjects.Money", "MinimumBillAmount", b1 =>
+                        {
+                            b1.Property<Guid>("DiscountCodeId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<decimal>("AmountRials")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("MinimumBillAmountRials")
+                                .HasComment("حداقل مبلغ فاکتور");
+
+                            b1.HasKey("DiscountCodeId");
+
+                            b1.ToTable("DiscountCodes", "finance");
+
+                            b1.WithOwner()
+                                .HasForeignKey("DiscountCodeId");
+                        });
+
+                    b.Navigation("MaximumDiscountAmount");
+
+                    b.Navigation("MinimumBillAmount");
+                });
+
+            modelBuilder.Entity("Nezam.Refahi.Finance.Domain.Entities.DiscountCodeUsage", b =>
+                {
+                    b.HasOne("Nezam.Refahi.Finance.Domain.Entities.DiscountCode", null)
+                        .WithMany()
+                        .HasForeignKey("DiscountCodeId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Nezam.Refahi.Finance.Domain.Entities.DiscountCode", "DiscountCode")
+                        .WithMany("Usages")
+                        .HasForeignKey("DiscountCodeId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("Nezam.Refahi.Shared.Domain.ValueObjects.Money", "BillAmount", b1 =>
+                        {
+                            b1.Property<Guid>("DiscountCodeUsageId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<decimal>("AmountRials")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("BillAmountRials")
+                                .HasComment("مبلغ فاکتور");
+
+                            b1.HasKey("DiscountCodeUsageId");
+
+                            b1.ToTable("DiscountCodeUsages", "finance");
+
+                            b1.WithOwner()
+                                .HasForeignKey("DiscountCodeUsageId");
+                        });
+
+                    b.OwnsOne("Nezam.Refahi.Shared.Domain.ValueObjects.Money", "DiscountAmount", b1 =>
+                        {
+                            b1.Property<Guid>("DiscountCodeUsageId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<decimal>("AmountRials")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("DiscountAmountRials")
+                                .HasComment("مبلغ تخفیف");
+
+                            b1.HasKey("DiscountCodeUsageId");
+
+                            b1.ToTable("DiscountCodeUsages", "finance");
+
+                            b1.WithOwner()
+                                .HasForeignKey("DiscountCodeUsageId");
+                        });
+
+                    b.Navigation("BillAmount")
+                        .IsRequired();
+
+                    b.Navigation("DiscountAmount")
+                        .IsRequired();
+
+                    b.Navigation("DiscountCode");
+                });
+
             modelBuilder.Entity("Nezam.Refahi.Finance.Domain.Entities.Payment", b =>
                 {
                     b.HasOne("Nezam.Refahi.Finance.Domain.Entities.Bill", "Bill")
@@ -924,8 +1271,27 @@ namespace Nezam.Refahi.Finance.Infrastructure.Migrations
                                 .HasForeignKey("PaymentId");
                         });
 
+                    b.OwnsOne("Nezam.Refahi.Shared.Domain.ValueObjects.Money", "AppliedDiscountAmount", b1 =>
+                        {
+                            b1.Property<Guid>("PaymentId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<decimal>("AmountRials")
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("AppliedDiscountAmountRials");
+
+                            b1.HasKey("PaymentId");
+
+                            b1.ToTable("Payments", "finance");
+
+                            b1.WithOwner()
+                                .HasForeignKey("PaymentId");
+                        });
+
                     b.Navigation("Amount")
                         .IsRequired();
+
+                    b.Navigation("AppliedDiscountAmount");
 
                     b.Navigation("Bill");
                 });
@@ -1071,6 +1437,11 @@ namespace Nezam.Refahi.Finance.Infrastructure.Migrations
                     b.Navigation("Payments");
 
                     b.Navigation("Refunds");
+                });
+
+            modelBuilder.Entity("Nezam.Refahi.Finance.Domain.Entities.DiscountCode", b =>
+                {
+                    b.Navigation("Usages");
                 });
 
             modelBuilder.Entity("Nezam.Refahi.Finance.Domain.Entities.Payment", b =>

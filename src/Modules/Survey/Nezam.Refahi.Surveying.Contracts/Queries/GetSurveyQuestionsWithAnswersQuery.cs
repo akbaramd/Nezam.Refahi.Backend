@@ -11,7 +11,7 @@ public class GetSurveyQuestionsWithAnswersQuery : IRequest<ApplicationResult<Sur
 {
     public Guid SurveyId { get; set; }
     public Guid? ResponseId { get; set; } // If provided, get answers for this specific response
-    public Guid? MemberId { get; set; } // If provided, get answers for this member
+    public string? UserNationalNumber { get; set; } // If provided, get answers for this member
     public int? AttemptNumber { get; set; } // If provided, get answers for this specific attempt
     public bool IncludeAllAttempts { get; set; } = false; // If true, include answers from all attempts
 }

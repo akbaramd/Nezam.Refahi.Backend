@@ -123,26 +123,17 @@ public sealed class FacilityCapabilityPolicyAddedEvent : DomainEvent
     public string Name { get; }
     public string Code { get; }
     public string CapabilityId { get; }
-    public CapabilityPolicyType PolicyType { get; }
-    public decimal? ModifierValue { get; }
-    public string? Notes { get; }
 
     public FacilityCapabilityPolicyAddedEvent(
         Guid facilityId,
         string name,
         string code,
-        string capabilityId,
-        CapabilityPolicyType policyType,
-        decimal? modifierValue,
-        string? notes)
+        string capabilityId)
     {
         FacilityId = facilityId;
         Name = name;
         Code = code;
         CapabilityId = capabilityId;
-        PolicyType = policyType;
-        ModifierValue = modifierValue;
-        Notes = notes;
     }
 }
 

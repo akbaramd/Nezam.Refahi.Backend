@@ -89,8 +89,8 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
         if (participant.ReservationId != Id)
             throw new ArgumentException("شرکت‌کننده متعلق به این رزرو نمی‌باشد", nameof(participant));
         
-        // Only allow adding participants in Draft or Held state
-        if (Status != ReservationStatus.Draft && Status != ReservationStatus.Held)
+        // Only allow adding participants in Draft or OnHold state
+        if (Status != ReservationStatus.Draft && Status != ReservationStatus.OnHold)
             throw new InvalidOperationException($"امکان اضافه کردن شرکت‌کننده در وضعیت {Status} وجود ندارد");
 
         // Check if national number already exists in this reservation
@@ -105,7 +105,7 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     /// </summary>
     public void RemoveParticipant(Guid participantId)
     {
-        if (Status != ReservationStatus.Draft && Status != ReservationStatus.Held)
+        if (Status != ReservationStatus.Draft && Status != ReservationStatus.OnHold)
             throw new InvalidOperationException("امکان حذف شرکت‌کننده از رزروهای غیردر انتظار وجود ندارد");
 
         var participant = _participants.FirstOrDefault(p => p.Id == participantId);
@@ -116,18 +116,18 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     }
 
     /// <summary>
-    /// Transitions from Draft to Held state (reserves capacity)
+    /// Transitions from Draft to OnHold state (reserves capacity)
     /// </summary>
     public void Hold()
     {
-        var (isValid, errorMessage) = ReservationStateMachine.ValidateTransition(Status, ReservationStatus.Held, "Hold");
+        var (isValid, errorMessage) = ReservationStateMachine.ValidateTransition(Status, ReservationStatus.OnHold, "Hold");
         if (!isValid)
             throw new InvalidOperationException(errorMessage);
 
         if (!_participants.Any())
             throw new InvalidOperationException("رزرو بدون شرکت‌کننده قابل نگهداری نیست");
 
-        Status = ReservationStatus.Held;
+        Status = ReservationStatus.OnHold;
         ExpiryDate ??= DateTime.UtcNow.AddMinutes(15); // Set expiry if not already set
         
         // Publish domain event
@@ -148,11 +148,11 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     }
 
     /// <summary>
-    /// Sets the reservation status to paying (payment in progress)
+    /// Sets the reservation status to pending confirmation (payment in progress)
     /// </summary>
     public void SetToPaying()
     {
-        var (isValid, errorMessage) = ReservationStateMachine.ValidateTransition(Status, ReservationStatus.Paying, "SetToPaying");
+        var (isValid, errorMessage) = ReservationStateMachine.ValidateTransition(Status, ReservationStatus.PendingConfirmation, "SetToPendingConfirmation");
         if (!isValid)
             throw new InvalidOperationException(errorMessage);
 
@@ -161,7 +161,7 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
         if (!_participants.Any())
             throw new InvalidOperationException("رزرو بدون شرکت‌کننده است و امکان پردازش پرداخت وجود ندارد");
 
-        Status = ReservationStatus.Paying;
+        Status = ReservationStatus.PendingConfirmation;
     }
 
     /// <summary>
@@ -275,7 +275,7 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     /// </summary>
     public void Reactivate(DateTime newExpiryDate, string? reason = null)
     {
-        var (isValid, errorMessage) = ReservationStateMachine.ValidateTransition(Status, ReservationStatus.Held, "Reactivate");
+        var (isValid, errorMessage) = ReservationStateMachine.ValidateTransition(Status, ReservationStatus.OnHold, "Reactivate");
         if (!isValid)
             throw new InvalidOperationException(errorMessage);
 
@@ -285,7 +285,7 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
         if (newExpiryDate <= DateTime.UtcNow)
             throw new ArgumentException("تاریخ انقضای جدید باید در آینده تعیین شود", nameof(newExpiryDate));
 
-        Status = ReservationStatus.Held;
+        Status = ReservationStatus.OnHold;
         ExpiryDate = newExpiryDate;
         
         if (!string.IsNullOrWhiteSpace(reason))
@@ -299,11 +299,11 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     /// </summary>
     public void MarkPaymentFailed(string? reason = null)
     {
-        var (isValid, errorMessage) = ReservationStateMachine.ValidateTransition(Status, ReservationStatus.PaymentFailed, "MarkPaymentFailed");
+        var (isValid, errorMessage) = ReservationStateMachine.ValidateTransition(Status, ReservationStatus.ProcessingFailed, "MarkPaymentFailed");
         if (!isValid)
             throw new InvalidOperationException(errorMessage);
 
-        Status = ReservationStatus.PaymentFailed;
+        Status = ReservationStatus.ProcessingFailed;
         CancellationReason = reason?.Trim();
         
         if (!string.IsNullOrWhiteSpace(reason))
@@ -317,11 +317,11 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     /// </summary>
     public void InitiateRefund(string? reason = null)
     {
-        var (isValid, errorMessage) = ReservationStateMachine.ValidateTransition(Status, ReservationStatus.Refunding, "InitiateRefund");
+        var (isValid, errorMessage) = ReservationStateMachine.ValidateTransition(Status, ReservationStatus.CancellationProcessing, "InitiateRefund");
         if (!isValid)
             throw new InvalidOperationException(errorMessage);
 
-        Status = ReservationStatus.Refunding;
+        Status = ReservationStatus.CancellationProcessing;
         
         if (!string.IsNullOrWhiteSpace(reason))
         {
@@ -334,11 +334,11 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     /// </summary>
     public void CompleteRefund(Money? refundAmount = null)
     {
-        var (isValid, errorMessage) = ReservationStateMachine.ValidateTransition(Status, ReservationStatus.Refunded, "CompleteRefund");
+        var (isValid, errorMessage) = ReservationStateMachine.ValidateTransition(Status, ReservationStatus.CancellationProcessed, "CompleteRefund");
         if (!isValid)
             throw new InvalidOperationException(errorMessage);
 
-        Status = ReservationStatus.Refunded;
+        Status = ReservationStatus.CancellationProcessed;
         if (refundAmount != null)
         {
             PaidAmount = Money.Zero; // Clear paid amount after refund
@@ -350,7 +350,7 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     /// </summary>
     public void ExtendExpiry(DateTime newExpiryDate)
     {
-        if (Status != ReservationStatus.Draft && Status != ReservationStatus.Held)
+        if (Status != ReservationStatus.Draft && Status != ReservationStatus.OnHold)
             throw new InvalidOperationException("امکان تمدید تاریخ انقضا فقط برای رزروهای در انتظار وجود دارد");
         if (newExpiryDate <= DateTime.UtcNow)
             throw new ArgumentException("تاریخ انقضای جدید باید در آینده تعیین شود", nameof(newExpiryDate));
@@ -421,11 +421,11 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     }
 
     /// <summary>
-    /// بررسی اینکه آیا رزرو در انتظار است (Held یا Paying) و منقضی نشده
+    /// بررسی اینکه آیا رزرو در انتظار است (OnHold یا PendingConfirmation) و منقضی نشده
     /// </summary>
     public bool IsPending()
     {
-        return (Status == ReservationStatus.Held || Status == ReservationStatus.Paying) && !IsExpired();
+        return (Status == ReservationStatus.OnHold || Status == ReservationStatus.PendingConfirmation) && !IsExpired();
     }
 
     /// <summary>
@@ -441,7 +441,7 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     /// </summary>
     public bool IsPaying()
     {
-        return Status == ReservationStatus.Paying;
+        return Status == ReservationStatus.PendingConfirmation;
     }
 
     /// <summary>
@@ -482,14 +482,14 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     /// </summary>
     public bool HasConflictingReservation()
     {
-        // Paying and Confirmed reservations always prevent new reservations
-        if (Status == ReservationStatus.Paying || Status == ReservationStatus.Confirmed)
+        // PendingConfirmation and Confirmed reservations always prevent new reservations
+        if (Status == ReservationStatus.PendingConfirmation || Status == ReservationStatus.Confirmed)
         {
             return true;
         }
 
-        // All other states (Draft, Held, Expired, Cancelled, SystemCancelled, PaymentFailed, 
-        // Refunding, Refunded, Waitlisted, CancelRequested, AmendRequested, NoShow, Rejected)
+        // All other states (Draft, OnHold, Expired, Cancelled, SystemCancelled, ProcessingFailed, 
+        // CancellationProcessing, CancellationProcessed, Waitlisted, CancellationRequested, AmendmentRequested, NoShow, Rejected)
         // do not prevent new reservations - they can be renewed instead
         return false;
     }
@@ -506,14 +506,14 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
             return true;
         }
 
-        // Expired reservations can be reused (will be renewed to Held)
+        // Expired reservations can be reused (will be renewed to OnHold)
         if (Status == ReservationStatus.Expired)
         {
             return true;
         }
 
-        // Held reservations can be reused if not expired
-        if (Status == ReservationStatus.Held)
+        // OnHold reservations can be reused if not expired
+        if (Status == ReservationStatus.OnHold)
         {
             return IsExpired();
         }
@@ -618,7 +618,7 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
             {
                 ReservationStatus.Draft => 1,      // Highest priority - can always be renewed
                 ReservationStatus.Expired => 2,    // Second priority - can be renewed if capacity allows
-                ReservationStatus.Held => 3,       // Third priority - can be renewed if not expired
+                ReservationStatus.OnHold => 3,       // Third priority - can be renewed if not expired
                 ReservationStatus.Confirmed => 4,  // Lowest priority - can be renewed if not expired
                 _ => 999
             })
@@ -677,8 +677,8 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
         if (Status != ReservationStatus.Expired)
             throw new InvalidOperationException($"Cannot renew reservation in {Status} state. Only expired reservations can be renewed.");
 
-        // Change status to Held and update expiry date
-        Status = ReservationStatus.Held;
+        // Change status to OnHold and update expiry date
+        Status = ReservationStatus.OnHold;
         ExpiryDate = DateTime.UtcNow.AddMinutes(15); // Default 15 minutes hold time
     }
 

@@ -158,8 +158,7 @@ public class PayWithWalletCommandHandler : IRequestHandler<PayWithWalletCommand,
             var completePaymentCommand = new CompletePaymentCommand
             {
                 PaymentId = payment.Id,
-                GatewayTransactionId = $"WALLET_{payment.Id}",
-                GatewayReference = request.ExternalReference ?? $"WALLET_PAY_{bill.BillNumber}"
+                GatewayTransactionId = walletTransaction.Id.ToString(),
             };
 
             var completeResult = await _mediator.Send(completePaymentCommand, cancellationToken);

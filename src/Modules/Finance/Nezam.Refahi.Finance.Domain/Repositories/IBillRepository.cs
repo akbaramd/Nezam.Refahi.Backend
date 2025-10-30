@@ -1,4 +1,5 @@
 using MCA.SharedKernel.Domain.Contracts.Repositories;
+using MCA.SharedKernel.Domain.Contracts.Specifications;
 using Nezam.Refahi.Finance.Domain.Entities;
 using Nezam.Refahi.Finance.Domain.Enums;
 
@@ -17,7 +18,7 @@ public interface IBillRepository : IRepository<Bill, Guid>
     /// <summary>
     /// Gets bill by reference ID and type
     /// </summary>
-    Task<Bill?> GetByReferenceAsync(string referenceId, string billType, CancellationToken cancellationToken = default);
+    Task<Bill?> GetByReferenceTrackingCodeAsync(string referenceId,  CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets bills by user national number
@@ -73,4 +74,5 @@ public interface IBillRepository : IRepository<Bill, Guid>
     /// Gets payment completion statistics
     /// </summary>
     Task<Dictionary<BillStatus, int>> GetStatusStatisticsAsync(DateTime? fromDate = null, DateTime? toDate = null, CancellationToken cancellationToken = default);
+
 }

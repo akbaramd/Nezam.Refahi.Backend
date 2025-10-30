@@ -14,66 +14,66 @@ public static class ReservationStateMachine
     {
         [ReservationStatus.Draft] = new()
         {
-            ReservationStatus.Held,
+            ReservationStatus.OnHold,
             ReservationStatus.Cancelled,
             ReservationStatus.Waitlisted,
             ReservationStatus.Rejected
         },
-        [ReservationStatus.Held] = new()
+        [ReservationStatus.OnHold] = new()
         {
-            ReservationStatus.Paying,
+            ReservationStatus.PendingConfirmation,
             ReservationStatus.Confirmed, // Direct confirmation (e.g., free tours)
             ReservationStatus.Cancelled,
             ReservationStatus.Expired,
             ReservationStatus.SystemCancelled,
             ReservationStatus.Waitlisted
         },
-        [ReservationStatus.Paying] = new()
+        [ReservationStatus.PendingConfirmation] = new()
         {
             ReservationStatus.Confirmed,
-            ReservationStatus.PaymentFailed,
+            ReservationStatus.ProcessingFailed,
             ReservationStatus.Cancelled,
             ReservationStatus.SystemCancelled,
-            ReservationStatus.CancelRequested
+            ReservationStatus.CancellationRequested
         },
         [ReservationStatus.Confirmed] = new()
         {
             ReservationStatus.Cancelled,
             ReservationStatus.SystemCancelled,
-            ReservationStatus.Refunding,
-            ReservationStatus.CancelRequested,
-            ReservationStatus.AmendRequested,
+            ReservationStatus.CancellationProcessing,
+            ReservationStatus.CancellationRequested,
+            ReservationStatus.AmendmentRequested,
             ReservationStatus.NoShow
         },
-        [ReservationStatus.PaymentFailed] = new()
+        [ReservationStatus.ProcessingFailed] = new()
         {
-            ReservationStatus.Paying, // Retry payment
+            ReservationStatus.PendingConfirmation, // Retry payment
             ReservationStatus.Cancelled,
             ReservationStatus.Expired
         },
-        [ReservationStatus.Refunding] = new()
+        [ReservationStatus.CancellationProcessing] = new()
         {
-            ReservationStatus.Refunded
+            ReservationStatus.CancellationProcessed
         },
         [ReservationStatus.Expired] = new()
         {
-            ReservationStatus.Held, // Allow reactivation to Held state
+            ReservationStatus.OnHold, // Allow reactivation to OnHold state
             ReservationStatus.Cancelled // Allow manual cancellation of expired reservations
         },
         [ReservationStatus.Waitlisted] = new()
         {
-            ReservationStatus.Held, // Promote to held when capacity becomes available
+            ReservationStatus.OnHold, // Promote to held when capacity becomes available
             ReservationStatus.Cancelled,
             ReservationStatus.Expired,
             ReservationStatus.SystemCancelled
         },
-        [ReservationStatus.CancelRequested] = new()
+        [ReservationStatus.CancellationRequested] = new()
         {
             ReservationStatus.Cancelled, // Complete cancellation after PSP arbitration
             ReservationStatus.Confirmed, // Revert if cancellation is denied
-            ReservationStatus.Paying // Revert if cancellation is denied
+            ReservationStatus.PendingConfirmation // Revert if cancellation is denied
         },
-        [ReservationStatus.AmendRequested] = new()
+        [ReservationStatus.AmendmentRequested] = new()
         {
             ReservationStatus.Confirmed, // Approve amendment
             ReservationStatus.Cancelled, // Reject amendment
@@ -87,7 +87,7 @@ public static class ReservationStateMachine
         // Terminal states (no transitions allowed)
         [ReservationStatus.Cancelled] = new(),
         [ReservationStatus.SystemCancelled] = new(),
-        [ReservationStatus.Refunded] = new(),
+        [ReservationStatus.CancellationProcessed] = new(),
         [ReservationStatus.Rejected] = new()
     };
 
@@ -122,8 +122,8 @@ public static class ReservationStateMachine
     /// </summary>
     public static bool IsActiveState(ReservationStatus state)
     {
-        return state is ReservationStatus.Held 
-                    or ReservationStatus.Paying 
+        return state is ReservationStatus.OnHold 
+                    or ReservationStatus.PendingConfirmation 
                     or ReservationStatus.Confirmed
                     or ReservationStatus.Waitlisted;
     }
@@ -141,7 +141,7 @@ public static class ReservationStateMachine
     /// </summary>
     public static bool CanInitiatePayment(ReservationStatus state)
     {
-        return GetValidNextStates(state).Contains(ReservationStatus.Paying);
+        return GetValidNextStates(state).Contains(ReservationStatus.PendingConfirmation);
     }
 
     /// <summary>
@@ -165,7 +165,7 @@ public static class ReservationStateMachine
     /// </summary>
     public static bool CanRequestCancellation(ReservationStatus state)
     {
-        return GetValidNextStates(state).Contains(ReservationStatus.CancelRequested);
+        return GetValidNextStates(state).Contains(ReservationStatus.CancellationRequested);
     }
 
     /// <summary>
@@ -173,7 +173,7 @@ public static class ReservationStateMachine
     /// </summary>
     public static bool CanRequestAmendment(ReservationStatus state)
     {
-        return GetValidNextStates(state).Contains(ReservationStatus.AmendRequested);
+        return GetValidNextStates(state).Contains(ReservationStatus.AmendmentRequested);
     }
 
     /// <summary>

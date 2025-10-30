@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
+using Nezam.Refahi.Facilities.Application.Dtos;
 using Nezam.Refahi.Facilities.Application.Features.Facilities.Commands.ApproveFacilityRequest;
 using Nezam.Refahi.Facilities.Application.Features.Facilities.Commands.CancelFacilityRequest;
 using Nezam.Refahi.Facilities.Application.Features.Facilities.Commands.CreateFacilityRequest;
@@ -9,12 +10,9 @@ using Nezam.Refahi.Facilities.Application.Features.Facilities.Commands.RejectFac
 using Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilities;
 using Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilityDetails;
 using Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilityRequestDetails;
-using Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilityRequests;
 using Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilityCycles;
 using Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilityCycleDetails;
-using Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetUserCycleRequests;
-using Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetUserCyclesWithRequests;
-using Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetUserMemberInfo;
+using Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilityRequestsByUser;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
@@ -97,7 +95,7 @@ public static class FacilityEndpoints
             })
             .RequireAuthorization()
             .WithName("GetFacilityDetails")
-            .Produces<ApplicationResult<GetFacilityDetailsResult>>()
+            .Produces<ApplicationResult<FacilityDetailsDto>>()
             .Produces(404)
             .Produces(400);
 
@@ -109,6 +107,7 @@ public static class FacilityEndpoints
                 [FromQuery] int page = 1,
                 [FromQuery] int pageSize = 10,
                 [FromQuery] string? status = null,
+                [FromQuery] string? searchTerm = null,
                 [FromQuery] bool onlyActive = true,
                 [FromQuery] bool onlyEligible = false,
                 [FromQuery] bool onlyWithUserRequests = false,
@@ -116,13 +115,14 @@ public static class FacilityEndpoints
                 [FromQuery] bool includeDetailedRequestInfo = false,
                 [FromQuery] bool includeStatistics = true) =>
             {
-                var query = new GetFacilityCyclesQuery
+                var query = new GetFacilityCyclesWithUserQuery
                 {
                     FacilityId = facilityId,
                     NationalNumber = currentUserService.UserNationalNumber,
                     Page = page,
                     PageSize = pageSize,
                     Status = status,
+                    SearchTerm = searchTerm,
                     OnlyActive = onlyActive,
                     OnlyEligible = onlyEligible,
                     OnlyWithUserRequests = onlyWithUserRequests,
@@ -146,8 +146,8 @@ public static class FacilityEndpoints
                 return Results.BadRequest(result);
             })
             .RequireAuthorization()
-            .WithName("GetFacilityCycles")
-            .Produces<ApplicationResult<GetFacilityCyclesResponse>>()
+            .WithName("GetFacilityCyclesWithUser")
+            .Produces<ApplicationResult<GetFacilityCyclesWithUserQueryResponse>>()
             .Produces(404)
             .Produces(400);
 
@@ -189,162 +189,7 @@ public static class FacilityEndpoints
             })
             .RequireAuthorization()
             .WithName("GetFacilityCycleDetails")
-            .Produces<ApplicationResult<GetFacilityCycleDetailsResponse>>()
-            .Produces(404)
-            .Produces(400);
-
-        // ───────────────────── Get User Cycle Requests ─────────────────────
-        group.MapGet("/user/cycle-requests", async (
-                [FromServices] IMediator mediator,
-                [FromServices] ICurrentUserService currentUserService,
-                [FromQuery] int page = 1,
-                [FromQuery] int pageSize = 10,
-                [FromQuery] Guid? facilityId = null,
-                [FromQuery] Guid? facilityCycleId = null,
-                [FromQuery] string? status = null,
-                [FromQuery] int? statusCategory = null,
-                [FromQuery] DateTime? dateFrom = null,
-                [FromQuery] DateTime? dateTo = null,
-                [FromQuery] bool includeFacilityInfo = true,
-                [FromQuery] bool includeCycleInfo = true,
-                [FromQuery] bool includeTimeline = true) =>
-            {
-                var query = new GetUserCycleRequestsQuery
-                {
-                    NationalNumber = currentUserService.UserNationalNumber ?? string.Empty,
-                    Page = page,
-                    PageSize = pageSize,
-                    FacilityId = facilityId,
-                    FacilityCycleId = facilityCycleId,
-                    Status = status,
-                    StatusCategory = statusCategory.HasValue ? (Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetUserCycleRequests.RequestStatusCategory)statusCategory.Value : null,
-                    DateFrom = dateFrom,
-                    DateTo = dateTo,
-                    IncludeFacilityInfo = includeFacilityInfo,
-                    IncludeCycleInfo = includeCycleInfo,
-                    IncludeTimeline = includeTimeline
-                };
-
-                var result = await mediator.Send(query);
-
-                if (result.IsSuccess)
-                {
-                    return Results.Ok(result);
-                }
-
-                return Results.BadRequest(result);
-            })
-            .RequireAuthorization()
-            .WithName("GetUserCycleRequests")
-            .Produces<ApplicationResult<GetUserCycleRequestsResponse>>()
-            .Produces(400);
-
-        // ───────────────────── Get User Cycles With Requests ─────────────────────
-        group.MapGet("/user/cycles-with-requests", async (
-                [FromServices] IMediator mediator,
-                [FromServices] ICurrentUserService currentUserService,
-                [FromQuery] int page = 1,
-                [FromQuery] int pageSize = 10,
-                [FromQuery] Guid? facilityId = null,
-                [FromQuery] string? requestStatus = null,
-                [FromQuery] int? requestStatusCategory = null,
-                [FromQuery] bool onlyActive = true,
-                [FromQuery] bool includeDetailedRequestInfo = true,
-                [FromQuery] bool includeFacilityInfo = true,
-                [FromQuery] bool includeStatistics = true) =>
-            {
-                var query = new GetUserCyclesWithRequestsQuery
-                {
-                    NationalNumber = currentUserService.UserNationalNumber ?? string.Empty,
-                    FacilityId = facilityId,
-                    Page = page,
-                    PageSize = pageSize,
-                    RequestStatus = requestStatus,
-                    RequestStatusCategory = requestStatusCategory.HasValue ? (Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetUserCyclesWithRequests.RequestStatusCategory)requestStatusCategory.Value : null,
-                    OnlyActive = onlyActive,
-                    IncludeDetailedRequestInfo = includeDetailedRequestInfo,
-                    IncludeFacilityInfo = includeFacilityInfo,
-                    IncludeStatistics = includeStatistics
-                };
-
-                var result = await mediator.Send(query);
-
-                if (result.IsSuccess)
-                {
-                    return Results.Ok(result);
-                }
-
-                return Results.BadRequest(result);
-            })
-            .RequireAuthorization()
-            .WithName("GetUserCyclesWithRequests")
-            .Produces<ApplicationResult<GetUserCyclesWithRequestsResponse>>()
-            .Produces(400);
-
-        // ───────────────────── Get User Member Info ─────────────────────
-        group.MapGet("/user/member-info", async (
-                [FromServices] IMediator mediator,
-                [FromServices] ICurrentUserService currentUserService) =>
-            {
-                var query = new GetUserMemberInfoQuery
-                {
-                    NationalNumber = currentUserService.UserNationalNumber ?? string.Empty
-                };
-
-                var result = await mediator.Send(query);
-
-                if (result.IsSuccess)
-                {
-                    return Results.Ok(result);
-                }
-
-                if (result.Errors.Any(e => e.Contains("not found")))
-                {
-                    return Results.NotFound(result);
-                }
-
-                return Results.BadRequest(result);
-            })
-            .RequireAuthorization()
-            .WithName("GetUserMemberInfo")
-            .Produces<ApplicationResult<GetUserMemberInfoResponse>>()
-            .Produces(404)
-            .Produces(400);
-
-        // ───────────────────── Check User Request for Cycle ─────────────────────
-        group.MapGet("/cycles/{cycleId:guid}/user-request", async (
-                Guid cycleId,
-                [FromServices] IMediator mediator,
-                [FromServices] ICurrentUserService currentUserService) =>
-            {
-                var query = new GetFacilityCycleDetailsQuery
-                {
-                    CycleId = cycleId,
-                    NationalNumber = currentUserService.UserNationalNumber,
-                    IncludeFacilityInfo = false,
-                    IncludeUserRequestHistory = true,
-                    IncludeEligibilityDetails = false,
-                    IncludeDependencies = false,
-                    IncludeStatistics = false
-                };
-
-                var result = await mediator.Send(query);
-
-                if (result.IsSuccess)
-                {
-                    return Results.Ok(result);
-                }
-
-                if (result.Errors.Any(e => e.Contains("not found")))
-                {
-                    return Results.NotFound(result);
-                }
-
-                return Results.BadRequest(result);
-            })
-            .RequireAuthorization()
-            .WithName("GetUserRequestForCycle")
-            .Produces<ApplicationResult<GetFacilityCycleDetailsResponse>>()
+            .Produces<ApplicationResult<FacilityCycleWithUserDetailDto>>()
             .Produces(404)
             .Produces(400);
 
@@ -362,7 +207,7 @@ public static class FacilityEndpoints
                 [FromQuery] DateTime? dateFrom = null,
                 [FromQuery] DateTime? dateTo = null) =>
             {
-                var query = new GetFacilityRequestsQuery
+                var query = new GetFacilityRequestsByUserQuery
                 {
                     Page = page,
                     PageSize = pageSize,
@@ -385,8 +230,8 @@ public static class FacilityEndpoints
                 return Results.BadRequest(result);
             })
             .RequireAuthorization()
-            .WithName("GetFacilityRequests")
-            .Produces<ApplicationResult<GetFacilityRequestsResult>>()
+            .WithName("GetFacilityRequestsByUser")
+            .Produces<ApplicationResult<GetFacilityRequestsByUserQueryResult>>()
             .Produces(400);
 
         // ───────────────────── Get Facility Request Details ─────────────────────
@@ -421,7 +266,7 @@ public static class FacilityEndpoints
             })
             .RequireAuthorization()
             .WithName("GetFacilityRequestDetails")
-            .Produces<ApplicationResult<GetFacilityRequestDetailsResult>>()
+            .Produces<ApplicationResult<FacilityRequestDetailsDto>>()
             .Produces(404)
             .Produces(400);
 

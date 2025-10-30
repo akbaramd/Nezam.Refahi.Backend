@@ -1,16 +1,16 @@
 using FluentValidation;
 using MediatR;
-using Nezam.Refahi.Finance.Application.Services;
 using Nezam.Refahi.Finance.Application.Queries.Wallets;
+using Nezam.Refahi.Finance.Application.Services;
 using Nezam.Refahi.Finance.Domain.Entities;
 using Nezam.Refahi.Finance.Domain.Repositories;
 using Nezam.Refahi.Finance.Domain.Services;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
-namespace Nezam.Refahi.Finance.Application.Features.Wallets.Queries.GetWalletBalance;
+namespace Nezam.Refahi.Finance.Application.Features.Wallets.Queries.GetUserWalletBalance;
 
 /// <summary>
-/// Handler for GetUserWalletBalanceQuery - Retrieves wallet balance information
+/// Handler for GetUserWalletBalance - Retrieves wallet balance information
 /// </summary>
 public class GetUserWalletBalanceQueryHandler : IRequestHandler<GetUserWalletBalanceQuery, ApplicationResult<WalletBalanceResponse>>
 {

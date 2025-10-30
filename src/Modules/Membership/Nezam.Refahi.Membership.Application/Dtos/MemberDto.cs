@@ -10,6 +10,7 @@ public class MemberDto
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public string NationalCode { get; set; } = string.Empty;
+    public bool IsSpecial { get; set; }
     public string? PhoneNumber { get; set; }
     public string? Email { get; set; }
     public DateTime? BirthDate { get; set; }

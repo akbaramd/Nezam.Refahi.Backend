@@ -32,8 +32,8 @@ public sealed class Facility : FullAggregateRoot<Guid>
     private readonly List<FacilityFeature> _features = new();
     public IReadOnlyCollection<FacilityFeature> Features => _features.AsReadOnly();
 
-    private readonly List<FacilityCapabilityPolicy> _capabilityPolicies = new();
-    public IReadOnlyCollection<FacilityCapabilityPolicy> CapabilityPolicies => _capabilityPolicies.AsReadOnly();
+    private readonly List<FacilityCapability> _capabilityPolicies = new();
+    public IReadOnlyCollection<FacilityCapability> CapabilityPolicies => _capabilityPolicies.AsReadOnly();
 
     // Private constructor for EF Core
     private Facility() : base() { }
@@ -304,41 +304,35 @@ public sealed class Facility : FullAggregateRoot<Guid>
     }
 
     /// <summary>
-    /// اضافه کردن سیاست قابلیت به تسهیلات
+    /// اضافه کردن قابلیت مورد نیاز به تسهیلات
     /// </summary>
     /// <remarks>
     /// <para>توضیح رفتار:</para>
-    /// این رفتار یک سیاست قابلیت را به تسهیلات اضافه می‌کند که می‌تواند الزام، ممنوعیت
-    /// یا تعدیل مبلغ، سهمیه یا اولویت باشد.
+    /// این رفتار یک قابلیت مورد نیاز را به تسهیلات اضافه می‌کند.
+    /// اعضایی که این قابلیت را دارند می‌توانند از تسهیلات استفاده کنند.
     ///
     /// <para>کاربرد در دنیای واقعی:</para>
-    /// زمانی که نیاز به تعریف قوانین خاص بر اساس قابلیت‌های عضو وجود دارد،
-    /// این رفتار برای اضافه کردن سیاست قابلیت استفاده می‌شود.
+    /// زمانی که نیاز به تعریف قابلیت‌های مورد نیاز برای استفاده از تسهیلات وجود دارد،
+    /// این رفتار برای اضافه کردن قابلیت استفاده می‌شود.
     ///
     /// <para>قوانین:</para>
     /// - شناسه قابلیت اجباری است.
-    /// - نوع سیاست باید مشخص باشد.
-    /// - سیاست تکراری اضافه نمی‌شود.
+    /// - قابلیت تکراری اضافه نمی‌شود.
     ///
     /// <para>بایدها و نبایدها:</para>
     /// - باید: شناسه قابلیت معتبر باشد.
-    /// - باید: نوع سیاست مشخص باشد.
-    /// - نباید: سیاست تکراری اضافه شود.
+    /// - نباید: قابلیت تکراری اضافه شود.
     /// - نباید: بدون شناسه قابلیت اضافه شود.
     /// </remarks>
-    public void AddCapabilityPolicy(
-        string capabilityId,
-        CapabilityPolicyType policyType,
-        decimal? modifierValue = null,
-        string? notes = null)
+    public void AddCapabilityPolicy(string capabilityId)
     {
         if (string.IsNullOrWhiteSpace(capabilityId))
             throw new ArgumentException("Capability ID cannot be empty", nameof(capabilityId));
 
         if (_capabilityPolicies.Any(cp => cp.CapabilityId == capabilityId))
-            throw new InvalidOperationException("Capability policy already exists for this facility");
+            throw new InvalidOperationException("Capability already exists for this facility");
 
-        var capabilityPolicy = new FacilityCapabilityPolicy(Id, capabilityId, policyType, modifierValue, notes);
+        var capabilityPolicy = new FacilityCapability(Id, capabilityId);
         _capabilityPolicies.Add(capabilityPolicy);
 
         // Raise domain event
@@ -346,14 +340,11 @@ public sealed class Facility : FullAggregateRoot<Guid>
             Id,
             Name,
             Code,
-            capabilityId,
-            policyType,
-            modifierValue,
-            notes));
+            capabilityId));
     }
 
     /// <summary>
-    /// حذف سیاست قابلیت از تسهیلات
+    /// حذف قابلیت از تسهیلات
     /// </summary>
     public void RemoveCapabilityPolicy(string capabilityId)
     {
@@ -362,7 +353,7 @@ public sealed class Facility : FullAggregateRoot<Guid>
 
         var policy = _capabilityPolicies.FirstOrDefault(cp => cp.CapabilityId == capabilityId);
         if (policy == null)
-            throw new InvalidOperationException("Capability policy not found for this facility");
+            throw new InvalidOperationException("Capability not found for this facility");
 
         _capabilityPolicies.Remove(policy);
 

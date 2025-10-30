@@ -92,29 +92,7 @@ public class FacilitiesSeeder
     {
         var facilities = new List<Facility>();
 
-        // Mehr Facility - 100 million Toman loan for 30 months
-        var mehrFacility = new Facility(
-            name: "تسهیلات مهر",
-            code: "MEHR-001",
-            type: FacilityType.Loan,
-            description: "تسهیلات مهر برای خرید مسکن با مبلغ ۱۰۰ میلیون تومان و بازپرداخت ۳۰ ماهه",
-            bankName: "بانک مهر",
-            bankCode: "MEHR",
-            bankAccountNumber: "1234567890"
-        );
-
-        // Activate the facility
-        mehrFacility.Activate();
-
-        // Add metadata
-        mehrFacility.Metadata["loanTermMonths"] = "30";
-        mehrFacility.Metadata["interestRate"] = "0.18"; // 18% annual interest
-        mehrFacility.Metadata["purpose"] = "مسکن";
-        mehrFacility.Metadata["targetGroup"] = "کارمندان دولت";
-
-        facilities.Add(mehrFacility);
-
-        // Tejarat Facility - 100 million Toman loan for 30 months
+        // Only Tejarat Facility - Trade Facilities
         var tejaratFacility = new Facility(
             name: "تسهیلات تجارت",
             code: "TEJARAT-001",
@@ -130,10 +108,11 @@ public class FacilitiesSeeder
 
         // Add metadata
         tejaratFacility.Metadata["loanTermMonths"] = "30";
-        tejaratFacility.Metadata["interestRate"] = "0.20"; // 20% annual interest
+        tejaratFacility.Metadata["interestRate"] = "0.23"; // 23% annual interest
         tejaratFacility.Metadata["purpose"] = "کسب و کار";
         tejaratFacility.Metadata["targetGroup"] = "کارآفرینان";
         tejaratFacility.Metadata["businessPlanRequired"] = "true";
+        tejaratFacility.Metadata["cooldownYears"] = "2"; // 2 years cooldown after receiving loan
 
         facilities.Add(tejaratFacility);
 
@@ -143,47 +122,90 @@ public class FacilitiesSeeder
     private List<FacilityCycle> CreateFacilityCycles(List<Facility> facilities)
     {
         var cycles = new List<FacilityCycle>();
-        var currentDate = DateTime.UtcNow;
+        
+        // Persian dates: 1 Aban to 30 Aban (1403) = October 22, 2024 to November 20, 2024
+        // Registration period: 1 month before cycle start
+        var cycle1StartDate = new DateTime(2024, 10, 22); // 1 Aban 1403
+        var cycle1EndDate = new DateTime(2024, 11, 20);   // 30 Aban 1403
+        var cycle1RegistrationStart = cycle1StartDate.AddMonths(-1); // 1 month before
+        var cycle1RegistrationEnd = cycle1StartDate.AddDays(-1); // Day before cycle starts
 
         foreach (var facility in facilities)
         {
-            // Create first cycle for each facility
-            var cycleStartDate = currentDate.AddDays(7); // Start in 1 week
-            var cycleEndDate = cycleStartDate.AddMonths(3); // 3 months duration
-
-            var cycle = new FacilityCycle(
+            // Create first cycle for Trade Facilities
+            var cycle1 = new FacilityCycle(
                 facilityId: facility.Id,
                 name: $"دوره اول {facility.Name}",
-                startDate: cycleStartDate,
-                endDate: cycleEndDate,
+                startDate: cycle1StartDate,
+                endDate: cycle1EndDate,
                 quota: 100, // 100 applications per cycle
-                minAmount: facility.Code == "MEHR-001" ? new Money(50_000_000) : new Money(20_000_000),
+                minAmount: new Money(20_000_000),
                 maxAmount: new Money(100_000_000),
                 defaultAmount: new Money(100_000_000),
                 paymentMonths: 30,
-                interestRate: facility.Code == "MEHR-001" ? 0.18m : 0.20m,
-                cooldownDays: facility.Code == "MEHR-001" ? 365 : 180,
-                isRepeatable: facility.Code != "MEHR-001",
-                isExclusive: facility.Code == "MEHR-001",
-                exclusiveSetId: facility.Code == "MEHR-001" ? "MEHR_SET" : null,
-                maxActiveAcrossCycles: facility.Code == "MEHR-001" ? 1 : 2,
-                description: $"دوره اول ارائه {facility.Name} - ظرفیت ۱۰۰ درخواست"
+                interestRate: 0.23m, // 23% annual interest
+                cooldownDays: 730, // 2 years = 730 days
+                isRepeatable: true,
+                isExclusive: false,
+                exclusiveSetId: null,
+                maxActiveAcrossCycles: 2,
+                description: $"دوره اول ارائه {facility.Name} - ظرفیت ۱۰۰ درخواست - ثبت نام از {cycle1RegistrationStart:yyyy/MM/dd} تا {cycle1RegistrationEnd:yyyy/MM/dd}"
             );
 
             // Activate the cycle
-            cycle.Activate();
+            cycle1.Activate();
 
             // Add cycle-specific metadata
-            cycle.Metadata["cycleNumber"] = "1";
-            cycle.Metadata["priority"] = "high";
-            cycle.Metadata["announcementDate"] = currentDate.ToString("yyyy-MM-dd");
-            cycle.Metadata["admissionStrategy"] = "FIFO";
-            cycle.Metadata["waitlistCapacity"] = "50";
+            cycle1.Metadata["cycleNumber"] = "1";
+            cycle1.Metadata["priority"] = "high";
+            cycle1.Metadata["announcementDate"] = DateTime.UtcNow.ToString("yyyy-MM-dd");
+            cycle1.Metadata["admissionStrategy"] = "FIFO";
+            cycle1.Metadata["waitlistCapacity"] = "50";
+            cycle1.Metadata["registrationStartDate"] = cycle1RegistrationStart.ToString("yyyy-MM-dd");
+            cycle1.Metadata["registrationEndDate"] = cycle1RegistrationEnd.ToString("yyyy-MM-dd");
+            cycle1.Metadata["availableSlots"] = "100";
+            cycle1.Metadata["registeredCount"] = "0";
 
-            cycles.Add(cycle);
+            cycles.Add(cycle1);
 
-            _logger.LogInformation("Created cycle for facility {FacilityCode}: {CycleName} (Quota: {Quota})", 
-                facility.Code, cycle.Name, cycle.Quota);
+            // Create second cycle for Trade Facilities (same period for both cycles as requested)
+            var cycle2 = new FacilityCycle(
+                facilityId: facility.Id,
+                name: $"دوره دوم {facility.Name}",
+                startDate: cycle1StartDate, // Same period for both cycles
+                endDate: cycle1EndDate,
+                quota: 100, // 100 applications per cycle
+                minAmount: new Money(20_000_000),
+                maxAmount: new Money(100_000_000),
+                defaultAmount: new Money(100_000_000),
+                paymentMonths: 30,
+                interestRate: 0.23m, // 23% annual interest
+                cooldownDays: 730, // 2 years = 730 days
+                isRepeatable: true,
+                isExclusive: false,
+                exclusiveSetId: null,
+                maxActiveAcrossCycles: 2,
+                description: $"دوره دوم ارائه {facility.Name} - ظرفیت ۱۰۰ درخواست - ثبت نام از {cycle1RegistrationStart:yyyy/MM/dd} تا {cycle1RegistrationEnd:yyyy/MM/dd}"
+            );
+
+            // Activate the cycle
+            cycle2.Activate();
+
+            // Add cycle-specific metadata
+            cycle2.Metadata["cycleNumber"] = "2";
+            cycle2.Metadata["priority"] = "high";
+            cycle2.Metadata["announcementDate"] = DateTime.UtcNow.ToString("yyyy-MM-dd");
+            cycle2.Metadata["admissionStrategy"] = "FIFO";
+            cycle2.Metadata["waitlistCapacity"] = "50";
+            cycle2.Metadata["registrationStartDate"] = cycle1RegistrationStart.ToString("yyyy-MM-dd");
+            cycle2.Metadata["registrationEndDate"] = cycle1RegistrationEnd.ToString("yyyy-MM-dd");
+            cycle2.Metadata["availableSlots"] = "100";
+            cycle2.Metadata["registeredCount"] = "0";
+
+            cycles.Add(cycle2);
+
+            _logger.LogInformation("Created cycles for facility {FacilityCode}: {Cycle1Name} and {Cycle2Name} (Quota: 100 each)", 
+                facility.Code, cycle1.Name, cycle2.Name);
         }
 
         return cycles;

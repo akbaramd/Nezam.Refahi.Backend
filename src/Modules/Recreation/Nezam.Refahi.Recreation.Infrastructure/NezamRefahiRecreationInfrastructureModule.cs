@@ -63,7 +63,7 @@ public class NezamRefahiRecreationInfrastructureModule : BonModule
         // Register seeding services
         context.Services.AddScoped<ITourSeedingService, TourSeedingService>();
         // TourSeedingHostedService moved to Hangfire jobs - runs at 2:00 AM daily
-
+        context.Services.AddHostedService<TourSeedingHostedService>();
         // Register cleanup configuration and service
         context.Services.Configure<ReservationCleanupOptions>(
             context.GetRequireService<IConfiguration>().GetSection(ReservationCleanupOptions.SectionName));

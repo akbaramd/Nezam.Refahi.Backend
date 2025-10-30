@@ -1,3 +1,4 @@
+using MCA.SharedKernel.Domain.Models;
 using MediatR;
 using Nezam.Refahi.Notifications.Application.Features.Notifications.Commands.CreateNotification;
 using Nezam.Refahi.Notifications.Application.Features.Notifications.Commands.MarkAsRead;

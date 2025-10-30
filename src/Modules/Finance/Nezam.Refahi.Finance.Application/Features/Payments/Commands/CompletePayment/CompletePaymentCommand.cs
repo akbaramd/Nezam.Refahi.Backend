@@ -21,7 +21,6 @@ public record CompletePaymentCommand : IRequest<ApplicationResult<CompletePaymen
     /// <summary>
     /// Gateway reference number (optional)
     /// </summary>
-    public string? GatewayReference { get; init; }
 }
 
 /// <summary>

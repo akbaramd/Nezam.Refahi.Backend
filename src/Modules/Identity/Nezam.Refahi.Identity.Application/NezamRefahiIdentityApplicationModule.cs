@@ -2,6 +2,7 @@ using System.Reflection;
 using Bonyan.Modularity;
 using Bonyan.Modularity.Abstractions;
 using FluentValidation;
+using MCA.SharedKernel.Application.Mappers.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Nezam.Refahi.Identity.Application.Services;
 using Nezam.Refahi.Identity.Contracts;
@@ -22,7 +23,8 @@ public class NezamRefahiIdentityApplicationModule : BonModule
   {
     // This module will be configured by the shared infrastructure
     // which has access to all the required packages
-
+    context.Services.AddMappers(c => c.AddAssembly(typeof(NezamRefahiIdentityApplicationModule).Assembly));
+    
     context.Services.AddMediatR(v =>
     {
       v.RegisterServicesFromAssembly(typeof(NezamRefahiIdentityApplicationModule).Assembly);

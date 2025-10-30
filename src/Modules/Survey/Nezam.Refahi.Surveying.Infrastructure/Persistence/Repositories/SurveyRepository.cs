@@ -391,6 +391,40 @@ public class SurveyRepository : EfRepository<SurveyDbContext, Survey, Guid>, ISu
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<Dictionary<Guid, Response?>> GetUserLatestResponsesAsync(
+        IEnumerable<Guid> surveyIds,
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        var surveyIdsList = surveyIds.ToList();
+        if (!surveyIdsList.Any())
+        {
+            return new Dictionary<Guid, Response?>();
+        }
+
+        // Get all responses for the user in the specified surveys
+        var responses = await _dbSet
+            .SelectMany(s => s.Responses)
+            .Where(r => surveyIdsList.Contains(r.SurveyId) && 
+                       r.Participant.MemberId == userId)
+            .OrderByDescending(r => r.SubmittedAt ?? r.CanceledAt ?? r.ExpiredAt ?? DateTimeOffset.MinValue)
+            .ToListAsync(cancellationToken);
+
+        // Group by survey and get the latest response for each survey
+        var result = new Dictionary<Guid, Response?>();
+        
+        foreach (var surveyId in surveyIdsList)
+        {
+            var latestResponse = responses
+                .Where(r => r.SurveyId == surveyId)
+                .FirstOrDefault();
+            
+            result[surveyId] = latestResponse;
+        }
+
+        return result;
+    }
+
     protected override IQueryable<Survey> PrepareQuery(IQueryable<Survey> query)
     {
         return query

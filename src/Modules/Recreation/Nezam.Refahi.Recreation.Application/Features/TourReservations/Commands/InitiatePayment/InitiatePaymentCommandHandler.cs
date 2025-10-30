@@ -1,5 +1,5 @@
 using MediatR;
-using Nezam.Refahi.Recreation.Application.Dtos;
+using Nezam.Refahi.Recreation.Contracts.Dtos;
 using Nezam.Refahi.Recreation.Application.Services;
 using Nezam.Refahi.Recreation.Contracts.IntegrationEvents;
 using Nezam.Refahi.Recreation.Domain.Entities;
@@ -47,7 +47,7 @@ public class
     }
 
     // Check if reservation is valid for payment
-    if (reservation.Status != ReservationStatus.Held)
+    if (reservation.Status != ReservationStatus.OnHold)
     {
       return ApplicationResult<InitiatePaymentResponse>.Failure("وضعیت رزرو برای پرداخت مناسب نیست");
     }

@@ -10,9 +10,6 @@ using Microsoft.OpenApi.Models;
 using Nezam.Refahi.Identity.Presentation;
 using Nezam.Refahi.Membership.Presentation;
 using Nezam.Refahi.Settings.Presentation;
-using Nezam.Refahi.WebApi.Endpoints;
-using Nezam.Refahi.WebApi.Swagger;
-using Swashbuckle.AspNetCore.Filters;
 using System.Reflection;
 using Nezam.Refahi.Finance.Presentation;
 using Nezam.Refahi.Membership.Application.HostedServices;
@@ -22,7 +19,25 @@ using Nezam.Refahi.BasicDefinitions.Presentation;
 using Nezam.Refahi.Facilities.Presentation;
 using Nezam.Refahi.Surveying.Presentation;
 using Nezam.Refahi.Shared.Infrastructure.Services;
+using FluentValidation;
+
+using Hangfire;
+using Hangfire.Dashboard;
+using Hangfire.SqlServer;
+using MediatR;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+
+using Parbad.Builder;
+using Parbad.Gateway.ParbadVirtual;
+using Parbad.Gateway.Parsian;
+using System.Globalization;
 using Nezam.Refahi.WebApi.HealthChecks;
+using Nezam.Refahi.WebApi.Swagger;
+using Swashbuckle.AspNetCore.Filters;
+
 
 namespace Nezam.Refahi.WebApi;
 

@@ -22,7 +22,7 @@ public class TourPricingConfiguration : IEntityTypeConfiguration<TourPricing>
             .IsRequired()
             .HasConversion<int>();
 
-        builder.OwnsOne(tp => tp.Price, money =>
+        builder.OwnsOne(tp => tp.BasePrice, money =>
         {
             money.Property(m => m.AmountRials)
                 .HasColumnName("PriceRials")
@@ -56,14 +56,30 @@ public class TourPricingConfiguration : IEntityTypeConfiguration<TourPricing>
             .IsRequired()
             .HasDefaultValue(true);
 
+        builder.Property(tp => tp.IsDefault)
+            .IsRequired()
+            .HasDefaultValue(false);
+
         builder.HasOne(tp => tp.Tour)
             .WithMany(t => t.Pricing)
             .HasForeignKey(tp => tp.TourId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // Configure many-to-many relationships
+        builder.HasMany(tp => tp.Capabilities)
+            .WithOne(tpc => tpc.TourPricing)
+            .HasForeignKey(tpc => tpc.TourPricingId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(tp => tp.Features)
+            .WithOne(tpf => tpf.TourPricing)
+            .HasForeignKey(tpf => tpf.TourPricingId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.HasIndex(tp => tp.TourId);
         builder.HasIndex(tp => tp.ParticipantType);
         builder.HasIndex(tp => new { tp.TourId, tp.ParticipantType });
+        builder.HasIndex(tp => new { tp.TourId, tp.ParticipantType, tp.IsDefault });
         builder.HasIndex(tp => tp.ValidFrom);
         builder.HasIndex(tp => tp.ValidTo);
         builder.HasIndex(tp => tp.IsActive);

@@ -235,6 +235,50 @@ public class ExternalMemberStorage : IExternalMemberStorage
   {
     var capabilities = new List<ExternalMemberCapabilityDto>();
 
+    // Check if user has license for "نظارت اجزا طراحی" (supervision of design components)
+    // This check is done regardless of license expiration date
+    var hasDesignSupervisionLicense = HasDesignSupervisionLicense(member);
+
+    // Add license status capability based on design supervision license
+    if (hasDesignSupervisionLicense)
+    {
+      var hasLicenseCapability = new ExternalMemberCapabilityDto
+      {
+        Capability = new ExternalCapabilityDto
+        {
+          Id = Guid.NewGuid(),
+          Key = MappingHelper.CapabilityKeys.HasLicense,
+          Name = MappingHelper.CapabilityDisplayNames.SpecialNames[MappingHelper.CapabilityKeys.HasLicense],
+          Description = "Professional with license for design supervision",
+          IsActive = true
+        },
+        IsActive = true,
+        AssignedAt = DateTime.UtcNow,
+        AssignedBy = "external-system",
+        Claims = BuildLicenseStatusClaims(MappingHelper.LicenseStatus.HasLicense)
+      };
+      capabilities.Add(hasLicenseCapability);
+    }
+    else
+    {
+      var noLicenseCapability = new ExternalMemberCapabilityDto
+      {
+        Capability = new ExternalCapabilityDto
+        {
+          Id = Guid.NewGuid(),
+          Key = MappingHelper.CapabilityKeys.NoLicense,
+          Name = MappingHelper.CapabilityDisplayNames.SpecialNames[MappingHelper.CapabilityKeys.NoLicense],
+          Description = "Professional without license for design supervision",
+          IsActive = true
+        },
+        IsActive = true,
+        AssignedAt = DateTime.UtcNow,
+        AssignedBy = "external-system",
+        Claims = BuildLicenseStatusClaims(MappingHelper.LicenseStatus.NoLicense)
+      };
+      capabilities.Add(noLicenseCapability);
+    }
+
     // Create individual capabilities for each unique service combination across all licenses
     var uniqueServiceCombinations = new HashSet<string>();
 
@@ -276,28 +320,6 @@ public class ExternalMemberStorage : IExternalMemberStorage
           }
         }
       }
-    }
-
-    // If no individual capabilities were created, create a general capability
-    if (!capabilities.Any())
-    {
-      var generalCapability = new ExternalMemberCapabilityDto
-      {
-        Capability = new ExternalCapabilityDto
-        {
-          Id = Guid.NewGuid(),
-          Key = MappingHelper.CapabilityKeys.HasLicense,
-          Name = "General Professional License / پروانه عمومی",
-          Description = "General professional license holder",
-          IsActive = true
-        },
-        IsActive = true,
-        AssignedAt = DateTime.UtcNow,
-        AssignedBy = "external-system",
-        Claims = BuildGeneralCapabilityClaims(activeLicenses)
-      };
-
-      capabilities.Add(generalCapability);
     }
 
     return capabilities;
@@ -672,6 +694,35 @@ public class ExternalMemberStorage : IExternalMemberStorage
     if (string.IsNullOrEmpty(gradeTitle)) return null;
 
     return MappingHelper.ExternalMappings.GradeMappings.TryGetValue(gradeTitle, out var mapped) ? mapped : null;
+  }
+
+  private bool HasDesignSupervisionLicense(Cedo.Models.Member member)
+  {
+    // Check if member has any license for "نظارت اجزا طراحی" (supervision of design components)
+    // This check is done regardless of license expiration date
+    return member.ActivityLicenses.Any(license => 
+      license.MemberServices.Any(service => 
+        service.ServiceType?.Id != null && 
+        (service.ServiceType.Id == 5 || 
+        service.ServiceType.Id == 2 || 
+        service.ServiceType.Id == 15)));
+  }
+
+  private List<ExternalClaimDto> BuildLicenseStatusClaims(string licenseStatus)
+  {
+    return new List<ExternalClaimDto>
+    {
+      new ExternalClaimDto
+      {
+        ClaimTypeKey = MappingHelper.ClaimTypes.LicenseStatus,
+        ClaimTypeTitle = MappingHelper.ClaimTypeTitles.LicenseStatus,
+        Value = licenseStatus,
+        ValueKind = "Select",
+        IsActive = true,
+        AssignedAt = DateTime.UtcNow,
+        Notes = $"License status for design supervision capability"
+      }
+    };
   }
 
   private class CapabilityInfo

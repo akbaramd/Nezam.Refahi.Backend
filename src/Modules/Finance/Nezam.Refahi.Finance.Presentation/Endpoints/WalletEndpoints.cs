@@ -37,7 +37,7 @@ public static class WalletEndpoints
 {
     public static WebApplication MapWalletEndpoints(this WebApplication app)
     {
-        var walletGroup = app.MapGroup("/api/v1/wallets")
+        var walletGroup = app.MapGroup("/api/v1/me/wallets")
             .WithTags("Wallets")
             .RequireAuthorization();
 
@@ -79,11 +79,11 @@ public static class WalletEndpoints
                 [FromServices] ICurrentUserService currentUserService,
                 [FromServices] IMediator mediator) =>
             {
-                var query = new GetWalletBalanceQuery { ExternalUserId = currentUserService.UserId!.Value };
+                var query = new GetUserWalletBalanceQuery { ExternalUserId = currentUserService.UserId!.Value };
                 var result = await mediator.Send(query);
                 return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
             }) 
-            .WithName("GetWalletBalance")
+            .WithName("GetUserWalletBalance")
             .Produces<ApplicationResult<WalletBalanceResponse>>(200)
             .Produces(400);
         
@@ -98,7 +98,7 @@ public static class WalletEndpoints
                 [FromQuery] DateTime? fromDate = null,
                 [FromQuery] DateTime? toDate = null) =>
             {
-                var query = new GetWalletTransactionsQuery
+                var query = new ListUserWalletTransactionsQuery
                 {
                     ExternalUserId = currentUserService.UserId!.Value,
                     PageNumber = pageNumber,
@@ -111,7 +111,7 @@ public static class WalletEndpoints
                 var result = await mediator.Send(query);
                 return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
             })
-            .WithName("GetWalletTransactions")
+            .WithName("ListUserWalletTransactions")
             .Produces<ApplicationResult<WalletTransactionsResponse>>(200)
             .Produces(400);
 
@@ -125,7 +125,7 @@ public static class WalletEndpoints
                 [FromQuery] DateTime? fromDate = null,
                 [FromQuery] DateTime? toDate = null) =>
             {
-                var query = new GetWalletDepositsQuery
+                var query = new ListUserWalletDepositsQuery
                 {
                     ExternalUserId = currentUserService.UserId!.Value,
                     Page = page,
@@ -137,7 +137,7 @@ public static class WalletEndpoints
                 var result = await mediator.Send(query);
                 return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
             })
-            .WithName("GetWalletDeposits")
+            .WithName("ListUserWalletDeposits")
             .Produces<ApplicationResult<WalletDepositsResponse>>(200)
             .Produces(400);
 

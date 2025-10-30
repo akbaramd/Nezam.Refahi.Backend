@@ -10,7 +10,4 @@ public sealed record GetBillDetailsByTrackingCodeQuery
 {
   public string TrackingCode { get; init; } = string.Empty;
 
-  /// <summary>Optional type discriminator, e.g., "WalletDeposit".</summary>
-  public string BillType { get; init; } = "WalletDeposit";
-
 }

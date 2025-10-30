@@ -18,7 +18,7 @@ public class NezamRefahiRecreationPresentationModule : BonWebModule
 
         // Map Recreation endpoints
         app.MapTourEndpoints();
-        app.MapReservationEndpoints();
+        app.MapMeReservationEndpoints();
 
         return base.OnPostApplicationAsync(context);
     }

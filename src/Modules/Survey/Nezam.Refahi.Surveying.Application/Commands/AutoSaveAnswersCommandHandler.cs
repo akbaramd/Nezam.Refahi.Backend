@@ -85,8 +85,24 @@ public class AutoSaveAnswersCommandHandler : IRequestHandler<AutoSaveAnswersComm
                         continue;
                     }
 
+                    // Get question text and convert selected option IDs to dictionary with option texts
+                    var questionText = question.Text;
+                    var selectedOptionsWithTexts = new Dictionary<Guid, string>();
+                    
+                    if (answerDto.SelectedOptionIds != null && answerDto.SelectedOptionIds.Any())
+                    {
+                        foreach (var optionId in answerDto.SelectedOptionIds)
+                        {
+                            var optionText = survey.GetOptionText(answerDto.QuestionId, optionId);
+                            if (!string.IsNullOrEmpty(optionText))
+                            {
+                                selectedOptionsWithTexts[optionId] = optionText;
+                            }
+                        }
+                    }
+
                     // Use domain aggregate to set the answer
-                    survey.SetResponseAnswer(request.ResponseId, answerDto.QuestionId, answerDto.TextAnswer, answerDto.SelectedOptionIds);
+                    survey.SetResponseAnswer(request.ResponseId, answerDto.QuestionId, questionText, answerDto.TextAnswer, selectedOptionsWithTexts);
 
                     savedCount++;
                 }
@@ -107,6 +123,8 @@ public class AutoSaveAnswersCommandHandler : IRequestHandler<AutoSaveAnswersComm
             var responseDto = new AutoSaveAnswersResponse
             {
                 SavedCount = savedCount,
+                ResponseStatus = response.Status.ToString(),
+                ResponseStatusText = ResponseStatusHelper.GetPersianText(response.Status),
                 Invalids = invalids
             };
 

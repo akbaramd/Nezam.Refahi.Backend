@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AkbarAmd.SharedKernel.Application" Version="1.0.13" />
+    <PackageReference Include="AkbarAmd.SharedKernel.Application" Version="1.0.15" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
     <PackageReference Include="FluentValidation" Version="11.8.1" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.8.1" />
@@ -24,7 +24,7 @@
     <ProjectReference Include="..\..\Recreation\Nezam.Refahi.Recreation.Domain\Nezam.Refahi.Recreation.Domain.csproj" />
     <ProjectReference Include="..\..\Settings\Nezam.Refahi.Settings.Contracts\Nezam.Refahi.Settings.Contracts.csproj" />
     <ProjectReference Include="..\Nezam.Refahi.Notification.Domain\Nezam.Refahi.Notification.Domain.csproj" />
-    <ProjectReference Include="..\..\..\Nezam.Refahi.Shared.Application\Nezam.Refahi.Shared.Application.csproj" />
+    <ProjectReference Include="..\..\..\Shareds\Nezam.Refahi.Shared.Application\Nezam.Refahi.Shared.Application.csproj" />
   </ItemGroup>
 
 

@@ -6,12 +6,12 @@ namespace Nezam.Refahi.Finance.Application.Features.Bills.Queries.GetUserBills;
 /// <summary>
 /// Validator for ListUserBillsByUserIdQuery
 /// </summary>
-public class ListUserBillsByUserIdValidator : AbstractValidator<ListUserBillsByUserIdQuery>
+public class ListUserBillsByUserIdQueryValidator : AbstractValidator<ListUserBillsByUserIdQuery>
 {
     private readonly string[] _validSortFields = { "issuedate", "duedate", "totalamount", "status" };
     private readonly string[] _validSortDirections = { "asc", "desc" };
 
-    public ListUserBillsByUserIdValidator()
+    public ListUserBillsByUserIdQueryValidator()
     {
         RuleFor(x => x.ExternalUserId)  
             .NotEmpty()

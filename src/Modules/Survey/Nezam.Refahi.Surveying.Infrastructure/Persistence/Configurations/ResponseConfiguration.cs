@@ -31,6 +31,11 @@ public class ResponseConfiguration : IEntityTypeConfiguration<Response>
             .HasConversion<string>()
             .HasMaxLength(20);
 
+        builder.Property(r => r.Status)
+            .IsRequired()
+            .HasConversion<string>()
+            .HasMaxLength(20);
+
         builder.Property(r => r.SubmittedAt)
             .HasColumnType("datetimeoffset");
 
@@ -92,6 +97,7 @@ public class ResponseConfiguration : IEntityTypeConfiguration<Response>
         builder.HasIndex(r => r.SurveyId);
         builder.HasIndex(r => r.SubmittedAt);
         builder.HasIndex(r => r.AttemptStatus);
+        builder.HasIndex(r => r.Status);
         builder.HasIndex(r => new { r.SurveyId, r.AttemptNumber });
         
         // Note: Unique constraints for (SurveyId, Participant, AttemptNumber) will be enforced

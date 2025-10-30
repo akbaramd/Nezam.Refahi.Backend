@@ -1,6 +1,8 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Nezam.Refahi.Membership.Contracts.Services;
 using Nezam.Refahi.Shared.Application.Common.Models;
+using Nezam.Refahi.Shared.Domain.ValueObjects;
 using Nezam.Refahi.Surveying.Application.Services;
 using Nezam.Refahi.Surveying.Contracts.Queries;
 using Nezam.Refahi.Surveying.Domain.Entities;
@@ -16,13 +18,16 @@ public class GetParticipationStatusQueryHandler : IRequestHandler<GetParticipati
 {
     private readonly ISurveyRepository _surveyRepository;
     private readonly ILogger<GetParticipationStatusQueryHandler> _logger;
+    private readonly IMemberInfoService _memberInfoService;
 
     public GetParticipationStatusQueryHandler(
         ISurveyRepository surveyRepository,
-        ILogger<GetParticipationStatusQueryHandler> logger)
+        ILogger<GetParticipationStatusQueryHandler> logger,
+        IMemberInfoService memberInfoService)
     {
         _surveyRepository = surveyRepository;
         _logger = logger;
+        _memberInfoService = memberInfoService;
     }
 
     public async Task<ApplicationResult<ParticipationStatusResponse>> Handle(
@@ -31,8 +36,25 @@ public class GetParticipationStatusQueryHandler : IRequestHandler<GetParticipati
     {
         try
         {
-            _logger.LogInformation("Getting participation status for member {MemberId} in survey {SurveyId}", 
-                request.MemberId, request.SurveyId);
+            _logger.LogInformation("Getting participation status for user {UserNationalNumber} in survey {SurveyId}", 
+                request.UserNationalNumber, request.SurveyId);
+
+            // Validate user national number
+            if (string.IsNullOrWhiteSpace(request.UserNationalNumber))
+            {
+                _logger.LogWarning("User national number is null or empty");
+                return ApplicationResult<ParticipationStatusResponse>.Failure("User national number is required");
+            }
+
+            // Get member info from national number
+            var nationalId = new NationalId(request.UserNationalNumber);
+            var memberInfo = await _memberInfoService.GetMemberInfoAsync(nationalId);
+            
+            if (memberInfo == null)
+            {
+                _logger.LogWarning("Member with national number {UserNationalNumber} not found", request.UserNationalNumber);
+                return ApplicationResult<ParticipationStatusResponse>.Failure("Member not found");
+            }
 
             // Get survey with responses
             var survey = await _surveyRepository.GetWithResponsesAsync(request.SurveyId, cancellationToken);
@@ -44,32 +66,34 @@ public class GetParticipationStatusQueryHandler : IRequestHandler<GetParticipati
 
             // Get member's responses from survey aggregate
             var memberResponses = survey.Responses
-                .Where(r => r.Participant.MemberId == request.MemberId)
+                .Where(r => r.Participant.MemberId == memberInfo.Id)
                 .OrderByDescending(r => r.AttemptNumber)
                 .ToList();
 
-            var response = await BuildParticipationStatus(survey, request.MemberId, memberResponses.FirstOrDefault());
+            var response = await BuildParticipationStatus(survey, request.UserNationalNumber, memberInfo.Id, memberResponses.FirstOrDefault());
             
-            _logger.LogInformation("Successfully retrieved participation status for member {MemberId} in survey {SurveyId}", 
-                request.MemberId, request.SurveyId);
+            _logger.LogInformation("Successfully retrieved participation status for user {UserNationalNumber} in survey {SurveyId}", 
+                request.UserNationalNumber, request.SurveyId);
             return ApplicationResult<ParticipationStatusResponse>.Success(response);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while getting participation status for member {MemberId} in survey {SurveyId}", 
-                request.MemberId, request.SurveyId);
+            _logger.LogError(ex, "Error occurred while getting participation status for user {UserNationalNumber} in survey {SurveyId}", 
+                request.UserNationalNumber, request.SurveyId);
             return ApplicationResult<ParticipationStatusResponse>.Failure("An error occurred while retrieving participation status");
         }
     }
 
     private async Task<ParticipationStatusResponse> BuildParticipationStatus(
         Survey survey, 
+        string userNationalNumber,
         Guid memberId, 
         Response? memberResponse)
     {
         var response = new ParticipationStatusResponse
         {
             SurveyId = survey.Id,
+            UserNationalNumber = userNationalNumber,
             MemberId = memberId,
             MaxAllowedAttempts = survey.ParticipationPolicy.MaxAttemptsPerMember,
             AllowMultipleSubmissions = survey.ParticipationPolicy.AllowMultipleSubmissions

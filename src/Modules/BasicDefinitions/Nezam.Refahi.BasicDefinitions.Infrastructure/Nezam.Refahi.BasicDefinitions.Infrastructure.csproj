@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AkbarAmd.SharedKernel.Infrastructure" Version="1.0.13" />
+    <PackageReference Include="AkbarAmd.SharedKernel.Infrastructure" Version="1.0.15" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.18" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.18" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.18">
@@ -21,7 +21,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Nezam.Refahi.Shared.Infrastructure\Nezam.Refahi.Shared.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Shareds\Nezam.Refahi.Shared.Infrastructure\Nezam.Refahi.Shared.Infrastructure.csproj" />
     <ProjectReference Include="..\Nezam.Refahi.BasicDefinitions.Application\Nezam.Refahi.BasicDefinitions.Application.csproj" />
     <ProjectReference Include="..\Nezam.Refahi.BasicDefinitions.Domain\Nezam.Refahi.BasicDefinitions.Domain.csproj" />
   </ItemGroup>

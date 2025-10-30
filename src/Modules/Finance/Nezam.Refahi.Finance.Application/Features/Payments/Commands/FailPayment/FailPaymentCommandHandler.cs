@@ -85,7 +85,7 @@ public class FailPaymentCommandHandler : IRequestHandler<FailPaymentCommand, App
                 BillId = bill.Id,
                 BillNumber = bill.BillNumber,
                 ReferenceId = bill.ReferenceId,
-                ReferenceType = bill.BillType,
+                ReferenceType = bill.ReferenceType,
                 AmountRials = (long)updatedPayment.Amount.AmountRials,
                 FailedAt = DateTime.UtcNow,
                 FailureReason = updatedPayment.FailureReason ?? request.FailureReason ?? string.Empty,

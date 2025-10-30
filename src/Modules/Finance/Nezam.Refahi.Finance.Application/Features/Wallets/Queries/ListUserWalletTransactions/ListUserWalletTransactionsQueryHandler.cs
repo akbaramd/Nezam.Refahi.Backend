@@ -5,18 +5,18 @@ using Nezam.Refahi.Finance.Domain.Enums;
 using Nezam.Refahi.Finance.Domain.Repositories;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
-namespace Nezam.Refahi.Finance.Application.Features.Wallets.Queries.GetWalletTransactions;
+namespace Nezam.Refahi.Finance.Application.Features.Wallets.Queries.ListUserWalletTransactions;
 
 /// <summary>
 /// Handler for ListUserWalletTransactionsQuery - Retrieves wallet transaction history
 /// </summary>
-public class GetWalletTransactionsQueryHandler : IRequestHandler<ListUserWalletTransactionsQuery, ApplicationResult<WalletTransactionsResponse>>
+public class ListUserWalletTransactionsQueryHandler : IRequestHandler<ListUserWalletTransactionsQuery, ApplicationResult<WalletTransactionsResponse>>
 {
     private readonly IWalletRepository _walletRepository;
     private readonly IWalletTransactionRepository _walletTransactionRepository;
     private readonly IValidator<ListUserWalletTransactionsQuery> _validator;
 
-    public GetWalletTransactionsQueryHandler(
+    public ListUserWalletTransactionsQueryHandler(
         IWalletRepository walletRepository,
         IWalletTransactionRepository walletTransactionRepository,
         IValidator<ListUserWalletTransactionsQuery> validator)

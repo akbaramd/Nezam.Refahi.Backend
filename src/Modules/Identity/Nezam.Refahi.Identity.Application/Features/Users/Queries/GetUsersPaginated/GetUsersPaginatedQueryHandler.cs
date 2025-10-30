@@ -1,6 +1,9 @@
-﻿using MediatR;
+﻿using MCA.SharedKernel.Application.Contracts;
+using MCA.SharedKernel.Domain.Models;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Nezam.Refahi.Identity.Domain.Dtos;
+using Nezam.Refahi.Identity.Domain.Entities;
 using Nezam.Refahi.Identity.Domain.Repositories;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
@@ -10,11 +13,9 @@ public class GetUsersPaginatedQueryHandler
     : IRequestHandler<GetUsersPaginatedQuery, ApplicationResult<PaginatedResult<UserDto>>>
 {
     private readonly IUserRepository _userRepository;
+    private readonly IMapper<User,UserDto> _userMapper;
 
-    public GetUsersPaginatedQueryHandler(IUserRepository userRepository)
-    {
-        _userRepository = userRepository;
-    }
+    public GetUsersPaginatedQueryHandler(IUserRepository userRepository, IMapper<User,UserDto> userMapper) => (_userRepository, _userMapper) = (userRepository, userMapper);
 
     public async Task<ApplicationResult<PaginatedResult<UserDto>>> Handle(
         GetUsersPaginatedQuery request,
@@ -26,21 +27,12 @@ public class GetUsersPaginatedQueryHandler
         // Base Query
         var query = await _userRepository.GetPaginatedAsync(new UserPagiantedSpec(request.PageNumber,request.PageSize,request.Search), cancellationToken:cancellationToken);
 
-       
-   
-
         // Map → UserDto
-        var items = query.Items.Select(u => new UserDto
+        var items = new List<UserDto>();
+        foreach (var u in query.Items)
         {
-            Id = u.Id,
-            FirstName = u.FirstName,
-            LastName = u.LastName,
-            NationalId = u.NationalId?.Value,
-            PhoneNumber = u.PhoneNumber.Value,
-            IsActive = u.IsActive,
-            CreatedAtUtc = u.CreatedAt,
-            UpdatedAtUtc = u.LastModifiedAt
-        }).ToList();
+            items.Add(await _userMapper.MapAsync(u, cancellationToken));
+        }
 
         var result = new PaginatedResult<UserDto>
         {

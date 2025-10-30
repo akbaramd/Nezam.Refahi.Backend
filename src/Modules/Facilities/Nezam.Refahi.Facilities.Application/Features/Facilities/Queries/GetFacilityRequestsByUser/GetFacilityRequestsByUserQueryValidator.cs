@@ -1,14 +1,13 @@
 using FluentValidation;
-using Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilityRequests;
 
-namespace Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilityRequests;
+namespace Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilityRequestsByUser;
 
 /// <summary>
 /// Validator for GetFacilityRequestsByUserQuery
 /// </summary>
-public class GetFacilityRequestsQueryValidator : AbstractValidator<GetFacilityRequestsByUserQuery>
+public class GetFacilityRequestsByUserQueryValidator : AbstractValidator<GetFacilityRequestsByUserQuery>
 {
-    public GetFacilityRequestsQueryValidator()
+    public GetFacilityRequestsByUserQueryValidator()
     {
         RuleFor(x => x.Page)
             .GreaterThan(0)

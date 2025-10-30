@@ -14,13 +14,17 @@ public sealed class Bill : FullAggregateRoot<Guid>
     public string BillNumber { get; private set; } = null!;
     public string Title { get; private set; } = null!;
     public string ReferenceId { get; private set; } = null!;
-    public string BillType { get; private set; } = null!;
+    public string ReferenceTrackCode { get; private set; } = null!;
+    public string ReferenceType { get; private set; } = null!;
     public Guid ExternalUserId { get; private set; }
     public string? UserFullName { get; private set; }
     public BillStatus Status { get; private set; }
     public Money TotalAmount { get; private set; } = null!;
     public Money PaidAmount { get; private set; } = null!;
     public Money RemainingAmount { get; private set; } = null!;
+    public Money? DiscountAmount { get; private set; }
+    public string? DiscountCode { get; private set; }
+    public Guid? DiscountCodeId { get; private set; }
     public string? Description { get; private set; }
     public DateTime IssueDate { get; private set; }
     public DateTime? DueDate { get; private set; }
@@ -66,7 +70,9 @@ public sealed class Bill : FullAggregateRoot<Guid>
     /// - نباید: اطلاعات ورودی خالی یا نامعتبر باشد.
     /// </remarks>
     public Bill(
+      
         string title,
+        string referenceTrackingCode,
         string referenceId,
         string billType,
         Guid externalUserId,
@@ -85,11 +91,12 @@ public sealed class Bill : FullAggregateRoot<Guid>
             throw new ArgumentException("Bill type cannot be empty", nameof(billType));
         if (externalUserId == Guid.Empty)
             throw new ArgumentException("External user ID cannot be empty", nameof(externalUserId));
-
+    
         BillNumber = GenerateBillNumber();
         Title = title.Trim();
+        ReferenceTrackCode = referenceTrackingCode.Trim();
         ReferenceId = referenceId.Trim();
-        BillType = billType.Trim();
+        ReferenceType = billType.Trim();
         ExternalUserId = externalUserId;
         UserFullName = userFullName?.Trim();
         Description = description?.Trim();
@@ -109,7 +116,7 @@ public sealed class Bill : FullAggregateRoot<Guid>
             BillNumber,
             Title,
             ReferenceId,
-            BillType,
+            ReferenceType,
             ExternalUserId,
             UserFullName,
             TotalAmount,
@@ -138,12 +145,14 @@ public sealed class Bill : FullAggregateRoot<Guid>
     /// - حداقل یک قلم باید در صورت حساب وجود داشته باشد.
     /// - زمان صدور به صورت خودکار ثبت می‌شود.
     /// - وضعیت به صادر شده تغییر می‌یابد.
+    /// - صورتحساب‌های صفر مبلغ نیز باید صادر شوند و منتظر پرداخت بمانند.
     ///
     /// <para>بایدها و نبایدها:</para>
     /// - باید: حداقل یک قلم شامل باشد.
     /// - باید: زمان صدور دقیق ثبت شود.
     /// - نباید: صورتحساب‌های غیر پیش‌نویس صادر شوند.
     /// - نباید: بدون قلم صادر شود.
+    /// - نباید: صورتحساب‌های صفر مبلغ بلافاصله FullyPaid شوند.
     /// </remarks>
     public void Issue()
     {
@@ -153,9 +162,17 @@ public sealed class Bill : FullAggregateRoot<Guid>
             throw new InvalidOperationException("Cannot issue bill without items");
 
         var previousStatus = Status;
+        
+        // Recalculate amounts to ensure we have the latest totals
+        RecalculateAmounts();
+        
+        // Always set status to Issued, regardless of amount
+        // Zero-amount bills should also be Issued and wait for payment
         Status = BillStatus.Issued;
         IssueDate = DateTime.UtcNow;
 
+        UpdateBillStatus(); // برای هندل کردن Zero-amount و PartiallyPaid
+        
         // Raise domain event
         AddDomainEvent(new BillStatusChangedEvent(
             Id,
@@ -204,21 +221,18 @@ public sealed class Bill : FullAggregateRoot<Guid>
         if (amount.AmountRials > RemainingAmount.AmountRials)
             throw new InvalidOperationException("Payment amount exceeds remaining bill amount");
 
-        var payment = new Payment(Id, BillNumber, amount, method, gateway, callbackUrl, description, expiryDate);
+        var payment = new Payment(Id, amount, method, gateway, description, expiryDate);
         _payments.Add(payment);
 
         // Raise domain event
         AddDomainEvent(new PaymentInitiatedEvent(
             payment.Id,
             Id,
-            BillNumber,
             ReferenceId,
-            BillType,
-            ExternalUserId,
+            ReferenceType,
             amount,
             method,
             gateway,
-            payment.TrackingNumber,
             expiryDate,
             description));
 
@@ -230,13 +244,13 @@ public sealed class Bill : FullAggregateRoot<Guid>
     /// در دنیای واقعی: تایید دریافت پول از درگاه پرداخت یا خزانهدار
     /// قوانین: پرداخت باید وجود داشته باشد، شناسه تراکنش اجباری است
     /// </summary>
-    public void RecordPayment(Guid paymentId, string gatewayTransactionId, string? gatewayReference = null)
+    public void RecordPayment(Guid paymentId, string gatewayTransactionId)
     {
         var payment = _payments.FirstOrDefault(p => p.Id == paymentId);
         if (payment == null)
             throw new InvalidOperationException("Payment not found");
 
-        payment.MarkAsCompleted(gatewayTransactionId, gatewayReference);
+        payment.MarkAsCompleted(gatewayTransactionId);
 
         // Update Money values by creating new instances (EF Core will handle the change tracking)
         var newPaidAmount = PaidAmount.Add(payment.Amount);
@@ -251,7 +265,7 @@ public sealed class Bill : FullAggregateRoot<Guid>
         AddDomainEvent(new PaymentCompletedEvent(
             payment.Id,
             ReferenceId,
-            BillType,
+            ReferenceType,
             ExternalUserId,
             payment.Amount.AmountRials,
             gatewayTransactionId,
@@ -275,7 +289,7 @@ public sealed class Bill : FullAggregateRoot<Guid>
         AddDomainEvent(new PaymentFailedEvent(
             payment.Id,
             ReferenceId,
-            BillType,
+            ReferenceType,
             ExternalUserId,
             failureReason));
     }
@@ -306,7 +320,7 @@ public sealed class Bill : FullAggregateRoot<Guid>
             Id, // BillId
             BillNumber,
             ReferenceId,
-            BillType,
+            ReferenceType,
             refundAmount,
             refund.RequestedByExternalUserId,
             reason));
@@ -337,7 +351,7 @@ public sealed class Bill : FullAggregateRoot<Guid>
             refund.Id,
             Id,
             ReferenceId,
-            BillType,
+            ReferenceType,
             refund.Amount.AmountRials,
             refund.RequestedByExternalUserId,
             refund.CompletedAt!.Value));
@@ -392,7 +406,7 @@ public sealed class Bill : FullAggregateRoot<Guid>
             Id,
             BillNumber, 
             ReferenceId,
-            BillType,
+            ReferenceType,
             ExternalUserId,
             TotalAmount,
             PaidAmount,
@@ -618,6 +632,88 @@ public sealed class Bill : FullAggregateRoot<Guid>
     }
 
     /// <summary>
+    /// اعمال کد تخفیف بر روی فاکتور
+    /// </summary>
+    /// <remarks>
+    /// <para>توضیح رفتار:</para>
+    /// این رفتار کد تخفیف را بر روی فاکتور اعمال کرده و مبلغ تخفیف را محاسبه می‌کند.
+    /// مبلغ کل فاکتور پس از اعمال تخفیف به‌روزرسانی می‌شود.
+    ///
+    /// <para>کاربرد در دنیای واقعی:</para>
+    /// زمانی که مشتری کد تخفیف را در فرآیند پرداخت وارد می‌کند،
+    /// این رفتار برای اعمال تخفیف استفاده می‌شود.
+    ///
+    /// <para>قوانین:</para>
+    /// - فقط فاکتورهای پیش‌نویس یا صادر شده قابل تخفیف هستند.
+    /// - کد تخفیف باید معتبر و فعال باشد.
+    /// - مبلغ تخفیف نمی‌تواند از مبلغ کل بیشتر باشد.
+    /// - فقط یک کد تخفیف قابل اعمال است.
+    ///
+    /// <para>بایدها و نبایدها:</para>
+    /// - باید: کد تخفیف معتبر باشد.
+    /// - باید: مبلغ تخفیف محاسبه و اعمال شود.
+    /// - نباید: فاکتورهای پرداخت شده تخفیف یابند.
+    /// - نباید: کد تخفیف تکراری اعمال شود.
+    /// </remarks>
+    public void ApplyDiscountCode(string discountCode, Guid discountCodeId, Money discountAmount)
+    {
+        if (Status != BillStatus.Draft && Status != BillStatus.Issued)
+            throw new InvalidOperationException("Can only apply discount to draft or issued bills");
+
+        if (PaidAmount.AmountRials > 0)
+            throw new InvalidOperationException("Cannot apply discount to bills with payments");
+
+        if (DiscountCodeId.HasValue)
+            throw new InvalidOperationException("Discount code has already been applied to this bill");
+
+        // Allow over-discounting - the remainder will be "burned"
+        
+        DiscountCode = discountCode;
+        DiscountCodeId = discountCodeId;
+        DiscountAmount = discountAmount;
+
+        // Recalculate amounts with discount - do NOT update bill status
+        // Status should only change when payments are made, not when discounts are applied
+        RecalculateAmountsOnly();
+
+        // Raise domain event
+        AddDomainEvent(new BillDiscountAppliedEvent(
+            Id,
+            BillNumber,
+            discountCodeId,
+            discountCode,
+            discountAmount,
+            TotalAmount,
+            ExternalUserId,
+            UserFullName));
+    }
+
+    /// <summary>
+    /// حذف کد تخفیف از فاکتور
+    /// </summary>
+    /// <remarks>
+    /// <para>توضیح رفتار:</para>
+    /// این رفتار کد تخفیف اعمال شده را از فاکتور حذف می‌کند
+    /// و مبلغ کل فاکتور را به حالت اولیه برمی‌گرداند.
+    ///
+    /// <para>کاربرد در دنیای واقعی:</para>
+    /// زمانی که نیاز به حذف کد تخفیف از فاکتور وجود دارد،
+    /// این رفتار برای حذف تخفیف استفاده می‌شود.
+    ///
+    /// <para>قوانین:</para>
+    /// - فقط فاکتورهای دارای کد تخفیف قابل حذف تخفیف هستند.
+    /// - فاکتور نباید پرداخت شده باشد.
+    /// - مبلغ کل به حالت اولیه برمی‌گردد.
+    ///
+    /// <para>بایدها و نبایدها:</para>
+    /// - باید: فقط فاکتورهای دارای تخفیف حذف تخفیف یابند.
+    /// - باید: مبلغ کل به‌روزرسانی شود.
+    /// - نباید: فاکتورهای پرداخت شده حذف تخفیف یابند.
+    /// - نباید: فاکتورهای بدون تخفیف حذف تخفیف یابند.
+    /// </remarks>
+ 
+
+    /// <summary>
     /// بررسی سررسید بودن صورت حساب
     /// </summary>
     /// <remarks>
@@ -652,8 +748,32 @@ public sealed class Bill : FullAggregateRoot<Guid>
     // Private methods
     public void RecalculateAmounts()
     {
+        RecalculateAmountsOnly();
+        
+        // Update bill status after recalculating amounts
+        // But only if bill is not in Draft status - Draft bills should be handled by Issue() method
+        if (Status != BillStatus.Draft)
+        {
+            UpdateBillStatus();
+        }
+    }
+
+    private void RecalculateAmountsOnly()
+    {
         var total = _items.Sum(item => item.GetTotalAmount().AmountRials);
-        TotalAmount = Money.FromRials(total);
+        var baseTotalAmount = Money.FromRials(total);
+        
+        // Apply discount if exists
+        if (DiscountAmount != null)
+        {
+            var newTotalAmount = baseTotalAmount.Subtract(DiscountAmount);
+            TotalAmount = newTotalAmount.AmountRials < 0 ? Money.Zero : newTotalAmount;
+        }
+        else
+        {
+            TotalAmount = baseTotalAmount;
+        }
+        
         RemainingAmount = TotalAmount.Subtract(PaidAmount);
     }
 
@@ -673,18 +793,31 @@ public sealed class Bill : FullAggregateRoot<Guid>
             return;
         }
 
-        if (PaidAmount.AmountRials == 0)
+        // Don't automatically change Draft status - let Issue() method handle the transition
+        if (Status == BillStatus.Draft)
         {
-            Status = BillStatus.Issued;
+            return;
         }
-        else if (PaidAmount.AmountRials >= TotalAmount.AmountRials)
+
+        // Status logic based on payment amount relative to total amount
+        // A bill becomes FullyPaid when payment amount covers the total amount
+        if (PaidAmount.AmountRials >= TotalAmount.AmountRials)
         {
+            // Payment amount covers the total bill amount (including zero-amount bills)
+            // For zero-amount bills: 0 >= 0 is true, so they become FullyPaid after zero-amount payment
             Status = BillStatus.FullyPaid;
             FullyPaidDate = DateTime.UtcNow;
         }
+        else if (PaidAmount.AmountRials > 0)
+        {
+            // Partial payment made (but not enough to cover total)
+            Status = BillStatus.PartiallyPaid;
+        }
         else
         {
-            Status = BillStatus.PartiallyPaid;
+            // No payments made yet - bill remains Issued
+            // This includes zero-amount bills that haven't been paid yet
+            Status = BillStatus.Issued;
         }
 
         // Check if overdue
@@ -705,14 +838,14 @@ public sealed class Bill : FullAggregateRoot<Guid>
         }
 
         // Raise fully paid event if bill just became fully paid
-        if ( Status == BillStatus.FullyPaid)
+        if (Status == BillStatus.FullyPaid && !wasFullyPaid)
         {
             var completedPayments = _payments.Where(p => p.Status == PaymentStatus.Completed).ToList();
             AddDomainEvent(new BillFullyPaidEvent(
                 Id,
                 BillNumber,
                 ReferenceId,
-                BillType,
+                ReferenceType,
                 ExternalUserId,
                 TotalAmount,
                 PaidAmount,
@@ -729,7 +862,7 @@ public sealed class Bill : FullAggregateRoot<Guid>
                 Id,
                 BillNumber,
                 ReferenceId,
-                BillType,
+                ReferenceType,
                 ExternalUserId,
                 TotalAmount,        
                 RemainingAmount,
@@ -743,5 +876,84 @@ public sealed class Bill : FullAggregateRoot<Guid>
         var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
         var randomPart = Random.Shared.Next(100, 999).ToString();
         return $"ف-{timestamp}{randomPart}";
+    }
+
+    /// <summary>
+    /// اعمال کد تخفیف بر روی فاکتور
+    /// هدف: اعمال کد تخفیف و کاهش مبلغ کل فاکتور
+    /// نتیجه مورد انتظار: مبلغ تخفیف اعمال شده و کاهش مبلغ کل
+    /// منطق کسب‌وکار: کد تخفیف معتبر اعمال شده و مبلغ کل کاهش می‌یابد
+    /// </summary>
+    public void ApplyDiscountCode(Guid discountCodeId, string discountCode, Money discountAmount)
+    {
+        if (Status != BillStatus.Draft && Status != BillStatus.Issued)
+            throw new InvalidOperationException("کد تخفیف فقط برای فاکتورهای پیش‌نویس یا صادر شده قابل اعمال است");
+
+        if (PaidAmount.AmountRials > 0)
+            throw new InvalidOperationException("کد تخفیف برای فاکتورهای پرداخت شده قابل اعمال نیست");
+
+        if (DiscountCodeId.HasValue)
+            throw new InvalidOperationException("کد تخفیف قبلاً بر روی این فاکتور اعمال شده است");
+
+        // Allow over-discounting - the remainder will be "burned"
+
+        DiscountCodeId = discountCodeId;
+        DiscountCode = discountCode;
+        DiscountAmount = discountAmount;
+
+        // Recalculate amounts with discount - do NOT update bill status
+        // Status should only change when payments are made, not when discounts are applied
+        RecalculateAmountsOnly();
+
+        AddDomainEvent(new BillDiscountAppliedEvent(
+            Id,
+            BillNumber,
+            discountCodeId,
+            discountCode,
+            discountAmount,
+            TotalAmount,
+            ExternalUserId,
+            UserFullName));
+    }
+
+    /// <summary>
+    /// حذف کد تخفیف از فاکتور
+    /// هدف: حذف کد تخفیف و بازگرداندن مبلغ کل فاکتور
+    /// نتیجه مورد انتظار: حذف تخفیف و افزایش مبلغ کل به مقدار اولیه
+    /// منطق کسب‌وکار: کد تخفیف حذف شده و مبلغ کل به مقدار اولیه بازمی‌گردد
+    /// </summary>
+    public void RemoveDiscountCode()
+    {
+        if (!DiscountCodeId.HasValue)
+            throw new InvalidOperationException("کد تخفیفی بر روی این فاکتور اعمال نشده است");
+
+        if (Status != BillStatus.Draft && Status != BillStatus.Issued)
+            throw new InvalidOperationException("کد تخفیف فقط از فاکتورهای پیش‌نویس یا صادر شده قابل حذف است");
+
+        if (PaidAmount.AmountRials > 0)
+            throw new InvalidOperationException("کد تخفیف از فاکتورهای پرداخت شده قابل حذف نیست");
+
+        var removedDiscountAmount = DiscountAmount ?? Money.Zero;
+        var removedDiscountCode = DiscountCode ?? string.Empty;
+        var removedDiscountCodeId = DiscountCodeId.Value;
+
+        // پاک کردن اطلاعات تخفیف
+        DiscountCodeId = null;
+        DiscountCode = null;
+        DiscountAmount = null;
+
+        // Recalculate amounts without discount - do NOT update bill status
+        // Status should only change when payments are made, not when discounts are removed
+        RecalculateAmountsOnly();
+
+        AddDomainEvent(new BillDiscountRemovedEvent(
+            Id,
+            BillNumber,
+            removedDiscountCodeId,
+            removedDiscountCode,
+            removedDiscountAmount,
+            TotalAmount,
+            ExternalUserId,
+            UserFullName));
     }
 }

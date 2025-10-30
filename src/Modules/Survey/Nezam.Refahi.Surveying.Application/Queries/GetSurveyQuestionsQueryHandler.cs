@@ -1,11 +1,13 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Nezam.Refahi.Membership.Contracts.Services;
+using Nezam.Refahi.Shared.Application.Common.Models;
+using Nezam.Refahi.Shared.Domain.ValueObjects;
 using Nezam.Refahi.Surveying.Contracts.Dtos;
 using Nezam.Refahi.Surveying.Contracts.Queries;
 using Nezam.Refahi.Surveying.Domain.Entities;
 using Nezam.Refahi.Surveying.Domain.Enums;
 using Nezam.Refahi.Surveying.Domain.Repositories;
-using Nezam.Refahi.Shared.Application.Common.Models;
 
 namespace Nezam.Refahi.Surveying.Application.Queries;
 
@@ -16,13 +18,16 @@ public class GetSurveyQuestionsQueryHandler : IRequestHandler<GetSurveyQuestions
 {
     private readonly ISurveyRepository _surveyRepository;
     private readonly ILogger<GetSurveyQuestionsQueryHandler> _logger;
+    private readonly IMemberInfoService _memberInfoService;
 
     public GetSurveyQuestionsQueryHandler(
         ISurveyRepository surveyRepository,
-        ILogger<GetSurveyQuestionsQueryHandler> logger)
+        ILogger<GetSurveyQuestionsQueryHandler> logger,
+        IMemberInfoService memberInfoService)
     {
         _surveyRepository = surveyRepository;
         _logger = logger;
+        _memberInfoService = memberInfoService;
     }
 
     public async Task<ApplicationResult<SurveyQuestionsResponse>> Handle(GetSurveyQuestionsQuery request, CancellationToken cancellationToken)
@@ -33,16 +38,25 @@ public class GetSurveyQuestionsQueryHandler : IRequestHandler<GetSurveyQuestions
             if (survey == null)
                 return ApplicationResult<SurveyQuestionsResponse>.Failure("نظرسنجی یافت نشد");
 
+            // Get member info if national number is provided
+            Guid? memberId = null;
+            if (!string.IsNullOrWhiteSpace(request.UserNationalNumber))
+            {
+                var nationalId = new NationalId(request.UserNationalNumber);
+                var memberInfo = await _memberInfoService.GetMemberInfoAsync(nationalId);
+                memberId = memberInfo?.Id;
+            }
+
             var questions = survey.Questions
                 .OrderBy(q => q.Order)
-                .Select(q => MapQuestionToDto(q, request.IncludeUserAnswers, request.UserId))
+                .Select(q => MapQuestionToDto(q, request.IncludeUserAnswers, memberId))
                 .ToList();
 
             // Include user answers if requested
-            if (request.IncludeUserAnswers && request.UserId.HasValue)
+            if (request.IncludeUserAnswers && memberId.HasValue)
             {
                 var userResponse = survey.Responses
-                    .Where(r => r.Participant.MemberId == request.UserId.Value)
+                    .Where(r => r.Participant.MemberId == memberId.Value)
                     .OrderByDescending(r => r.AttemptNumber)
                     .FirstOrDefault();
 
@@ -64,7 +78,7 @@ public class GetSurveyQuestionsQueryHandler : IRequestHandler<GetSurveyQuestions
                 SurveyTitle = survey.Title,
                 SurveyDescription = string.Empty, // Survey entity doesn't have Description property
                 Questions = questions,
-                HasUserResponse = request.UserId.HasValue && questions.Any(q => q.IsAnswered),
+                HasUserResponse = !string.IsNullOrWhiteSpace(request.UserNationalNumber) && questions.Any(q => q.IsAnswered),
                 UserResponseId = null, // This would need to be fetched from response repository
                 UserAttemptNumber = null // This would need to be fetched from response repository
             };
@@ -78,7 +92,7 @@ public class GetSurveyQuestionsQueryHandler : IRequestHandler<GetSurveyQuestions
         }
     }
 
-    private static QuestionDto MapQuestionToDto(Question question, bool includeUserAnswers, Guid? userId)
+    private static QuestionDto MapQuestionToDto(Question question, bool includeUserAnswers, Guid? memberId)
     {
         var questionDto = new QuestionDto
         {

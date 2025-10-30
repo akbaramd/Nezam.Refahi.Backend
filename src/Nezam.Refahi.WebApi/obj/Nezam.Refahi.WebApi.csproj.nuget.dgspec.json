@@ -43,8 +43,8 @@
               "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\BasicDefinitions\\Nezam.Refahi.BasicDefinitions.Domain\\Nezam.Refahi.BasicDefinitions.Domain.csproj": {
                 "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\BasicDefinitions\\Nezam.Refahi.BasicDefinitions.Domain\\Nezam.Refahi.BasicDefinitions.Domain.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
               }
             }
           }
@@ -68,7 +68,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Application": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             },
             "FluentValidation": {
               "target": "Package",
@@ -143,8 +143,8 @@
               "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\BasicDefinitions\\Nezam.Refahi.BasicDefinitions.Domain\\Nezam.Refahi.BasicDefinitions.Domain.csproj": {
                 "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\BasicDefinitions\\Nezam.Refahi.BasicDefinitions.Domain\\Nezam.Refahi.BasicDefinitions.Domain.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
               }
             }
           }
@@ -218,8 +218,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
               }
             }
           }
@@ -243,7 +243,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Domain": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             }
           },
           "imports": [
@@ -305,8 +305,8 @@
               "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\BasicDefinitions\\Nezam.Refahi.BasicDefinitions.Domain\\Nezam.Refahi.BasicDefinitions.Domain.csproj": {
                 "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\BasicDefinitions\\Nezam.Refahi.BasicDefinitions.Domain\\Nezam.Refahi.BasicDefinitions.Domain.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
               }
             }
           }
@@ -330,7 +330,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Infrastructure": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
@@ -424,8 +424,8 @@
               "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\BasicDefinitions\\Nezam.Refahi.BasicDefinitions.Infrastructure\\Nezam.Refahi.BasicDefinitions.Infrastructure.csproj": {
                 "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\BasicDefinitions\\Nezam.Refahi.BasicDefinitions.Infrastructure\\Nezam.Refahi.BasicDefinitions.Infrastructure.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
               }
             }
           }
@@ -529,11 +529,11 @@
               "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Membership\\Nezam.Refahi.Membership.Contracts\\Nezam.Refahi.Membership.Contracts.csproj": {
                 "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Membership\\Nezam.Refahi.Membership.Contracts\\Nezam.Refahi.Membership.Contracts.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
               }
             }
           }
@@ -557,7 +557,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Application": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             },
             "FluentValidation": {
               "target": "Package",
@@ -621,8 +621,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
               }
             }
           }
@@ -646,7 +646,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Application": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             }
           },
           "imports": [
@@ -702,8 +702,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
               }
             }
           }
@@ -727,7 +727,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Domain": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             }
           },
           "imports": [
@@ -789,8 +789,8 @@
               "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Facilities\\Nezam.Refahi.Facilities.Domain\\Nezam.Refahi.Facilities.Domain.csproj": {
                 "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Facilities\\Nezam.Refahi.Facilities.Domain\\Nezam.Refahi.Facilities.Domain.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
               }
             }
           }
@@ -814,7 +814,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Infrastructure": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
@@ -1014,11 +1014,11 @@
               "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Recreation\\Nezam.Refahi.Recreation.Contracts\\Nezam.Refahi.Recreation.Contracts.csproj": {
                 "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Recreation\\Nezam.Refahi.Recreation.Contracts\\Nezam.Refahi.Recreation.Contracts.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
               }
             }
           }
@@ -1042,7 +1042,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Application": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             },
             "FluentValidation": {
               "target": "Package",
@@ -1106,8 +1106,11 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Finance\\Nezam.Refahi.Finance.Domain\\Nezam.Refahi.Finance.Domain.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Finance\\Nezam.Refahi.Finance.Domain\\Nezam.Refahi.Finance.Domain.csproj"
+              },
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
               }
             }
           }
@@ -1131,7 +1134,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Application": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             }
           },
           "imports": [
@@ -1187,8 +1190,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
               }
             }
           }
@@ -1212,7 +1215,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Domain": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             }
           },
           "imports": [
@@ -1274,8 +1277,8 @@
               "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Finance\\Nezam.Refahi.Finance.Domain\\Nezam.Refahi.Finance.Domain.csproj": {
                 "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Finance\\Nezam.Refahi.Finance.Domain\\Nezam.Refahi.Finance.Domain.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
               }
             }
           }
@@ -1299,7 +1302,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Infrastructure": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
@@ -1511,11 +1514,11 @@
               "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Contracts\\Nezam.Refahi.Settings.Contracts.csproj": {
                 "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Contracts\\Nezam.Refahi.Settings.Contracts.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
               }
             }
           }
@@ -1539,7 +1542,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Application": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             },
             "FluentValidation": {
               "target": "Package",
@@ -1607,8 +1610,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
               }
             }
           }
@@ -1632,7 +1635,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Domain": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             }
           },
           "imports": [
@@ -1691,8 +1694,8 @@
               "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Contracts\\Nezam.Refahi.Identity.Contracts.csproj": {
                 "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Contracts\\Nezam.Refahi.Identity.Contracts.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
               }
             }
           }
@@ -1716,7 +1719,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Domain": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             }
           },
           "imports": [
@@ -1778,8 +1781,8 @@
               "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Domain\\Nezam.Refahi.Identity.Domain.csproj": {
                 "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Domain\\Nezam.Refahi.Identity.Domain.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
               }
             }
           }
@@ -1803,7 +1806,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Infrastructure": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
@@ -1894,8 +1897,8 @@
               "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Infrastructure\\Nezam.Refahi.Identity.Infrastructure.csproj": {
                 "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Infrastructure\\Nezam.Refahi.Identity.Infrastructure.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
               }
             }
           }
@@ -2005,8 +2008,8 @@
               "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Contracts\\Nezam.Refahi.Settings.Contracts.csproj": {
                 "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Contracts\\Nezam.Refahi.Settings.Contracts.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
               }
             }
           }
@@ -2030,7 +2033,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Application": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             },
             "FluentValidation": {
               "target": "Package",
@@ -2173,8 +2176,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
               }
             }
           }
@@ -2198,7 +2201,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Domain": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             }
           },
           "imports": [
@@ -2260,8 +2263,8 @@
               "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Membership\\Nezam.Refahi.Membership.Domain\\Nezam.Refahi.Membership.Domain.csproj": {
                 "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Membership\\Nezam.Refahi.Membership.Domain\\Nezam.Refahi.Membership.Domain.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
               }
             }
           }
@@ -2285,7 +2288,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Infrastructure": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
@@ -2376,8 +2379,8 @@
               "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Membership\\Nezam.Refahi.Membership.Infrastructure\\Nezam.Refahi.Membership.Infrastructure.csproj": {
                 "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Membership\\Nezam.Refahi.Membership.Infrastructure\\Nezam.Refahi.Membership.Infrastructure.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
               }
             }
           }
@@ -2493,8 +2496,8 @@
               "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Contracts\\Nezam.Refahi.Settings.Contracts.csproj": {
                 "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Contracts\\Nezam.Refahi.Settings.Contracts.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
               }
             }
           }
@@ -2518,7 +2521,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Application": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             },
             "FluentValidation": {
               "target": "Package",
@@ -2586,8 +2589,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
               }
             }
           }
@@ -2673,8 +2676,8 @@
               "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Notification\\Nezam.Refahi.Notification.Domain\\Nezam.Refahi.Notification.Domain.csproj": {
                 "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Notification\\Nezam.Refahi.Notification.Domain\\Nezam.Refahi.Notification.Domain.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
               }
             }
           }
@@ -2698,7 +2701,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Infrastructure": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
@@ -2900,11 +2903,11 @@
               "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Contracts\\Nezam.Refahi.Settings.Contracts.csproj": {
                 "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Contracts\\Nezam.Refahi.Settings.Contracts.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
               }
             }
           }
@@ -2928,7 +2931,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Application": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             },
             "FluentValidation": {
               "target": "Package",
@@ -2941,6 +2944,14 @@
             "Microsoft.Extensions.Http": {
               "target": "Package",
               "version": "[8.0.1, )"
+            },
+            "Moq": {
+              "target": "Package",
+              "version": "[4.20.72, )"
+            },
+            "xunit": {
+              "target": "Package",
+              "version": "[2.9.3, )"
             }
           },
           "imports": [
@@ -2999,8 +3010,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
               }
             }
           }
@@ -3074,8 +3085,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
               }
             }
           }
@@ -3099,7 +3110,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Domain": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             }
           },
           "imports": [
@@ -3164,8 +3175,8 @@
               "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Recreation\\Nezam.Refahi.Recreation.Domain\\Nezam.Refahi.Recreation.Domain.csproj": {
                 "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Recreation\\Nezam.Refahi.Recreation.Domain\\Nezam.Refahi.Recreation.Domain.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
               }
             }
           }
@@ -3189,7 +3200,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Infrastructure": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
@@ -3280,8 +3291,8 @@
               "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Recreation\\Nezam.Refahi.Recreation.Infrastructure\\Nezam.Refahi.Recreation.Infrastructure.csproj": {
                 "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Recreation\\Nezam.Refahi.Recreation.Infrastructure\\Nezam.Refahi.Recreation.Infrastructure.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
               }
             }
           }
@@ -3382,11 +3393,11 @@
               "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Domain\\Nezam.Refahi.Settings.Domain.csproj": {
                 "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Domain\\Nezam.Refahi.Settings.Domain.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
               }
             }
           }
@@ -3410,7 +3421,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Application": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             },
             "Microsoft.Extensions.Http": {
               "target": "Package",
@@ -3545,8 +3556,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
               }
             }
           }
@@ -3570,7 +3581,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Domain": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             }
           },
           "imports": [
@@ -3629,8 +3640,8 @@
               "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Application\\Nezam.Refahi.Settings.Application.csproj": {
                 "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Application\\Nezam.Refahi.Settings.Application.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
               }
             }
           }
@@ -3654,7 +3665,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Infrastructure": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
@@ -3745,8 +3756,8 @@
               "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Infrastructure\\Nezam.Refahi.Settings.Infrastructure.csproj": {
                 "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Infrastructure\\Nezam.Refahi.Settings.Infrastructure.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
               }
             }
           }
@@ -3850,11 +3861,11 @@
               "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Survey\\Nezam.Refahi.Surveying.Domain\\Nezam.Refahi.Surveying.Domain.csproj": {
                 "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Survey\\Nezam.Refahi.Surveying.Domain\\Nezam.Refahi.Surveying.Domain.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
               }
             }
           }
@@ -3878,7 +3889,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Application": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             },
             "FluentValidation": {
               "target": "Package",
@@ -3942,8 +3953,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
               }
             }
           }
@@ -3967,7 +3978,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Application": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             }
           },
           "imports": [
@@ -4023,8 +4034,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
               }
             }
           }
@@ -4048,7 +4059,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Domain": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             }
           },
           "imports": [
@@ -4110,8 +4121,8 @@
               "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Survey\\Nezam.Refahi.Surveying.Domain\\Nezam.Refahi.Surveying.Domain.csproj": {
                 "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Survey\\Nezam.Refahi.Surveying.Domain\\Nezam.Refahi.Surveying.Domain.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
               }
             }
           }
@@ -4135,7 +4146,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Infrastructure": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
@@ -4293,14 +4304,14 @@
         }
       }
     },
-    "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+    "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\Nezam.Refahi.WebApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj",
-        "projectName": "Nezam.Refahi.Shared.Application",
-        "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj",
+        "projectUniqueName": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\Nezam.Refahi.WebApi.csproj",
+        "projectName": "Nezam.Refahi.WebApi",
+        "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\Nezam.Refahi.WebApi.csproj",
         "packagesPath": "C:\\Users\\akbar\\.nuget\\packages\\",
-        "outputPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\obj\\",
+        "outputPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\DevExpress 24.2\\Components\\Offline Packages",
@@ -4326,8 +4337,137 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\BasicDefinitions\\Nezam.Refahi.BasicDefinitions.Presentation\\Nezam.Refahi.BasicDefinitions.Presentation.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\BasicDefinitions\\Nezam.Refahi.BasicDefinitions.Presentation\\Nezam.Refahi.BasicDefinitions.Presentation.csproj"
+              },
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Facilities\\Nezam.Refahi.Facilities.Presentation\\Nezam.Refahi.Facilities.Presentation.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Facilities\\Nezam.Refahi.Facilities.Presentation\\Nezam.Refahi.Facilities.Presentation.csproj"
+              },
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Finance\\Nezam.Refahi.Finance.Presentation\\Nezam.Refahi.Finance.Presentation.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Finance\\Nezam.Refahi.Finance.Presentation\\Nezam.Refahi.Finance.Presentation.csproj"
+              },
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Presentation\\Nezam.Refahi.Identity.Presentation.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Presentation\\Nezam.Refahi.Identity.Presentation.csproj"
+              },
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Membership\\Nezam.Refahi.Membership.Presentation\\Nezam.Refahi.Membership.Presentation.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Membership\\Nezam.Refahi.Membership.Presentation\\Nezam.Refahi.Membership.Presentation.csproj"
+              },
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Notification\\Nezam.Refahi.Notification.Presentation\\Nezam.Refahi.Notification.Presentation.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Notification\\Nezam.Refahi.Notification.Presentation\\Nezam.Refahi.Notification.Presentation.csproj"
+              },
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Recreation\\Nezam.Refahi.Recreation.Presentation\\Nezam.Refahi.Recreation.Presentation.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Recreation\\Nezam.Refahi.Recreation.Presentation\\Nezam.Refahi.Recreation.Presentation.csproj"
+              },
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Presentation\\Nezam.Refahi.Settings.Presentation.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Presentation\\Nezam.Refahi.Settings.Presentation.csproj"
+              },
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Survey\\Nezam.Refahi.Surveying.Presentation\\Nezam.Refahi.Surveying.Presentation.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Survey\\Nezam.Refahi.Surveying.Presentation\\Nezam.Refahi.Surveying.Presentation.csproj"
+              },
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "allWarningsAsErrors": true,
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "10.0.100"
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Microsoft.AspNetCore.OpenApi": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[6.5.0, )"
+            },
+            "Swashbuckle.AspNetCore.Filters": {
+              "target": "Package",
+              "version": "[8.0.3, )"
+            },
+            "Swashbuckle.AspNetCore.SwaggerGen": {
+              "target": "Package",
+              "version": "[6.5.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100-rc.1.25451.107/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj",
+        "projectName": "Nezam.Refahi.Shared.Application",
+        "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj",
+        "packagesPath": "C:\\Users\\akbar\\.nuget\\packages\\",
+        "outputPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files\\DevExpress 24.2\\Components\\Offline Packages",
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\akbar\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.1.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.2.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\DevExpress 24.2\\Components\\System\\Components\\Packages": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
               }
             }
           }
@@ -4351,7 +4491,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Application": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             },
             "FluentValidation": {
               "target": "Package",
@@ -4394,14 +4534,14 @@
         }
       }
     },
-    "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
+    "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj",
+        "projectUniqueName": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj",
         "projectName": "Nezam.Refahi.Shared.Domain",
-        "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj",
+        "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj",
         "packagesPath": "C:\\Users\\akbar\\.nuget\\packages\\",
-        "outputPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\obj\\",
+        "outputPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\DevExpress 24.2\\Components\\Offline Packages",
@@ -4448,7 +4588,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Domain": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             }
           },
           "imports": [
@@ -4471,14 +4611,14 @@
         }
       }
     },
-    "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
+    "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj",
+        "projectUniqueName": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj",
         "projectName": "Nezam.Refahi.Shared.Infrastructure",
-        "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj",
+        "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj",
         "packagesPath": "C:\\Users\\akbar\\.nuget\\packages\\",
-        "outputPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\obj\\",
+        "outputPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\DevExpress 24.2\\Components\\Offline Packages",
@@ -4504,11 +4644,11 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Application\\Nezam.Refahi.Shared.Application.csproj"
               },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
+              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj": {
+                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Domain\\Nezam.Refahi.Shared.Domain.csproj"
               }
             }
           }
@@ -4532,7 +4672,7 @@
           "dependencies": {
             "AkbarAmd.SharedKernel.Infrastructure": {
               "target": "Package",
-              "version": "[1.0.13, )"
+              "version": "[1.0.15, )"
             },
             "Bonyan.AspNetCore": {
               "target": "Package",
@@ -4613,135 +4753,6 @@
             "System.IdentityModel.Tokens.Jwt": {
               "target": "Package",
               "version": "[7.1.2, )"
-            }
-          },
-          "imports": [
-            "net461",
-            "net462",
-            "net47",
-            "net471",
-            "net472",
-            "net48",
-            "net481"
-          ],
-          "assetTargetFallback": true,
-          "warn": true,
-          "frameworkReferences": {
-            "Microsoft.AspNetCore.App": {
-              "privateAssets": "none"
-            },
-            "Microsoft.NETCore.App": {
-              "privateAssets": "all"
-            }
-          },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100-rc.1.25451.107/PortableRuntimeIdentifierGraph.json"
-        }
-      }
-    },
-    "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\Nezam.Refahi.WebApi.csproj": {
-      "version": "1.0.0",
-      "restore": {
-        "projectUniqueName": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\Nezam.Refahi.WebApi.csproj",
-        "projectName": "Nezam.Refahi.WebApi",
-        "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\Nezam.Refahi.WebApi.csproj",
-        "packagesPath": "C:\\Users\\akbar\\.nuget\\packages\\",
-        "outputPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.WebApi\\obj\\",
-        "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files\\DevExpress 24.2\\Components\\Offline Packages",
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
-        "configFilePaths": [
-          "C:\\Users\\akbar\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.1.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 24.2.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
-        ],
-        "originalTargetFrameworks": [
-          "net8.0"
-        ],
-        "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\DevExpress 24.2\\Components\\System\\Components\\Packages": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
-          "https://api.nuget.org/v3/index.json": {}
-        },
-        "frameworks": {
-          "net8.0": {
-            "targetAlias": "net8.0",
-            "projectReferences": {
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\BasicDefinitions\\Nezam.Refahi.BasicDefinitions.Presentation\\Nezam.Refahi.BasicDefinitions.Presentation.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\BasicDefinitions\\Nezam.Refahi.BasicDefinitions.Presentation\\Nezam.Refahi.BasicDefinitions.Presentation.csproj"
-              },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Facilities\\Nezam.Refahi.Facilities.Presentation\\Nezam.Refahi.Facilities.Presentation.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Facilities\\Nezam.Refahi.Facilities.Presentation\\Nezam.Refahi.Facilities.Presentation.csproj"
-              },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Finance\\Nezam.Refahi.Finance.Presentation\\Nezam.Refahi.Finance.Presentation.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Finance\\Nezam.Refahi.Finance.Presentation\\Nezam.Refahi.Finance.Presentation.csproj"
-              },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Presentation\\Nezam.Refahi.Identity.Presentation.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Identity\\Nezam.Refahi.Identity.Presentation\\Nezam.Refahi.Identity.Presentation.csproj"
-              },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Membership\\Nezam.Refahi.Membership.Presentation\\Nezam.Refahi.Membership.Presentation.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Membership\\Nezam.Refahi.Membership.Presentation\\Nezam.Refahi.Membership.Presentation.csproj"
-              },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Notification\\Nezam.Refahi.Notification.Presentation\\Nezam.Refahi.Notification.Presentation.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Notification\\Nezam.Refahi.Notification.Presentation\\Nezam.Refahi.Notification.Presentation.csproj"
-              },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Recreation\\Nezam.Refahi.Recreation.Presentation\\Nezam.Refahi.Recreation.Presentation.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Recreation\\Nezam.Refahi.Recreation.Presentation\\Nezam.Refahi.Recreation.Presentation.csproj"
-              },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Presentation\\Nezam.Refahi.Settings.Presentation.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Settings\\Nezam.Refahi.Settings.Presentation\\Nezam.Refahi.Settings.Presentation.csproj"
-              },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Survey\\Nezam.Refahi.Surveying.Presentation\\Nezam.Refahi.Surveying.Presentation.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Survey\\Nezam.Refahi.Surveying.Presentation\\Nezam.Refahi.Surveying.Presentation.csproj"
-              },
-              "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
-                "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
-              }
-            }
-          }
-        },
-        "warningProperties": {
-          "allWarningsAsErrors": true,
-          "warnAsError": [
-            "NU1605"
-          ]
-        },
-        "restoreAuditProperties": {
-          "enableAudit": "true",
-          "auditLevel": "low",
-          "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "10.0.100"
-      },
-      "frameworks": {
-        "net8.0": {
-          "targetAlias": "net8.0",
-          "dependencies": {
-            "Microsoft.AspNetCore.OpenApi": {
-              "target": "Package",
-              "version": "[8.0.0, )"
-            },
-            "Microsoft.EntityFrameworkCore.Design": {
-              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
-              "suppressParent": "All",
-              "target": "Package",
-              "version": "[8.0.0, )"
-            },
-            "Swashbuckle.AspNetCore": {
-              "target": "Package",
-              "version": "[6.5.0, )"
-            },
-            "Swashbuckle.AspNetCore.Filters": {
-              "target": "Package",
-              "version": "[8.0.3, )"
-            },
-            "Swashbuckle.AspNetCore.SwaggerGen": {
-              "target": "Package",
-              "version": "[6.5.0, )"
             }
           },
           "imports": [

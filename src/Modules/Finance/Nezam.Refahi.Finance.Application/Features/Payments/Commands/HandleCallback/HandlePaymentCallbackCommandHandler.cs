@@ -63,12 +63,16 @@ public class HandlePaymentCallbackCommandHandler : IRequestHandler<HandlePayment
                 
                 // Try to get BillId from tracking number if available
                 Guid? billId = null;
-                if (gatewayResult.Data?.TrackingNumber != null)
+                string? trackingCode = "";
+                string? billType = "";
+                if (gatewayResult.Data?.GatewayReference != null)
                 {
                     try
                     {
-                        var paymentForError = await _paymentRepository.GetByTrackingNumberAsync(gatewayResult.Data.TrackingNumber.ToString(), cancellationToken);
+                        var paymentForError = await _paymentRepository.GetByGatewayReferenceAsync(gatewayResult.Data.GatewayReference.ToString(), cancellationToken);
                         billId = paymentForError?.BillId;
+                        trackingCode = paymentForError?.Bill.ReferenceTrackCode;
+                        billType = paymentForError?.Bill.ReferenceType;
                     }
                     catch (Exception ex)
                     {
@@ -76,23 +80,21 @@ public class HandlePaymentCallbackCommandHandler : IRequestHandler<HandlePayment
                     }
                 }
                 
-                // Return error with redirect to failure page
-                var redirectUrl = billId.HasValue 
-                    ? _frontendSettings.GetPaymentFailureUrl(billId.Value)
-                    : _frontendSettings.GetGenericPaymentFailureUrl();
+             
                     
                 return ApplicationResult<PaymentCallbackResult>.Success(new PaymentCallbackResult
                 {
                     PaymentId = Guid.Empty,
                     BillId = billId ?? Guid.Empty,
-                    TrackingNumber = gatewayResult.Data?.TrackingNumber ?? 0,
+                    GatewayReference = gatewayResult.Data?.GatewayReference ?? 0,
+                    BillTrackingCode = trackingCode,
+                    BillType = billType,
                     IsSuccessful = false,
                     Message = gatewayResult.Message ?? "خطا در دریافت اطلاعات از درگاه پرداخت",
                     TransactionCode = null,
                     Amount = Money.Zero,
                     ProcessedAt = DateTime.UtcNow,
                     NewStatus = PaymentStatus.Failed,
-                    RedirectUrl = redirectUrl,
                     BillStatus = null,
                     BillTotalAmount = null,
                     BillPaidAmount = null,
@@ -102,28 +104,29 @@ public class HandlePaymentCallbackCommandHandler : IRequestHandler<HandlePayment
             }
 
             var callbackData = gatewayResult.Data;
-            _logger.LogInformation("Gateway callback received - TrackingNumber: {TrackingNumber}, IsSuccessful: {IsSuccessful}",
-                callbackData.TrackingNumber, callbackData.IsSuccessful);
+            _logger.LogInformation("Gateway callback received - GatewayReference: {GatewayReference}, IsSuccessful: {IsSuccessful}",
+                callbackData.GatewayReference, callbackData.IsSuccessful);
 
             // 2. Find payment by tracking number (business logic)
-            var payment = await _paymentRepository.GetByTrackingNumberAsync(callbackData.TrackingNumber.ToString(), cancellationToken);
+            var payment = await _paymentRepository.GetByGatewayReferenceAsync(callbackData.GatewayReference.ToString(), cancellationToken);
             if (payment == null)
             {
-                _logger.LogWarning("Payment not found for TrackingNumber: {TrackingNumber}", callbackData.TrackingNumber);
+                _logger.LogWarning("Payment not found for GatewayReference: {GatewayReference}", callbackData.GatewayReference);
                 
                 // Return error with redirect to failure page
                 return ApplicationResult<PaymentCallbackResult>.Success(new PaymentCallbackResult
                 {
                     PaymentId = Guid.Empty,
                     BillId = Guid.Empty,
-                    TrackingNumber = callbackData.TrackingNumber,
+                    GatewayReference = callbackData.GatewayReference,
+                    BillTrackingCode = payment?.Bill.ReferenceTrackCode,
+                    BillType = payment?.Bill.ReferenceType,
                     IsSuccessful = false,
-                    Message = $"پرداخت مربوط به این شماره پیگیری یافت نشد: {callbackData.TrackingNumber}",
+                    Message = $"پرداخت مربوط به این شماره پیگیری یافت نشد: {callbackData.GatewayReference}",
                     TransactionCode = null,
                     Amount = Money.Zero,
                     ProcessedAt = DateTime.UtcNow,
                     NewStatus = PaymentStatus.Failed,
-                    RedirectUrl = "http://localhost:3000/payment/failed", // Generic failure page for payment not found
                     BillStatus = null,
                     BillTotalAmount = null,
                     BillPaidAmount = null,
@@ -137,19 +140,18 @@ public class HandlePaymentCallbackCommandHandler : IRequestHandler<HandlePayment
             if (callbackData.IsSuccessful)
             {
                 // 3. Verify payment with gateway (gateway operation)
-                var verificationResult = await _paymentService.VerifyPaymentAsync((long)callbackData.TrackingNumber, cancellationToken);
+                var verificationResult = await _paymentService.VerifyPaymentAsync((long)callbackData.GatewayReference, cancellationToken);
 
                 if (verificationResult.IsSuccess && verificationResult.Data != null && verificationResult.Data.IsSuccessful)
                 {
-                    _logger.LogInformation("Payment verified successfully - TrackingNumber: {TrackingNumber}, TransactionCode: {TransactionCode}",
-                        callbackData.TrackingNumber, verificationResult.Data.TransactionId);
+                    _logger.LogInformation("Payment verified successfully - GatewayReference: {GatewayReference}, TransactionCode: {TransactionCode}",
+                        callbackData.GatewayReference, verificationResult.Data.TransactionId);
 
                     // 4. Complete payment using proper business logic
                     var completePaymentCommand = new CompletePaymentCommand
                     {
                         PaymentId = payment.Id,
                         GatewayTransactionId = verificationResult.Data.TransactionId ?? string.Empty,
-                        GatewayReference = verificationResult.Data.Message
                     };
 
                     var completePaymentResult = await _mediator.Send(completePaymentCommand, cancellationToken);
@@ -164,15 +166,15 @@ public class HandlePaymentCallbackCommandHandler : IRequestHandler<HandlePayment
                         {
                             PaymentId = payment.Id,
                             BillId = payment.BillId,
-                            BillNumber = updatedBill?.BillNumber ?? payment.BillNumber,
-                            TrackingNumber = callbackData.TrackingNumber,
+                            GatewayReference = callbackData.GatewayReference,
                             IsSuccessful = true,
                             Message = "پرداخت با موفقیت انجام شد",
                             TransactionCode = verificationResult.Data.TransactionId,
                             Amount = payment.Amount,
                             ProcessedAt = DateTime.UtcNow,
                             NewStatus = PaymentStatus.Completed,
-                            RedirectUrl = _frontendSettings.GetPaymentSuccessUrl(payment.BillId),
+                            BillTrackingCode = payment?.Bill.ReferenceTrackCode,
+                            BillType = payment?.Bill.ReferenceType,
                             // Bill completion information
                             BillStatus = updatedBill?.Status.ToString(),
                             BillTotalAmount = updatedBill?.TotalAmount.AmountRials,
@@ -191,21 +193,22 @@ public class HandlePaymentCallbackCommandHandler : IRequestHandler<HandlePayment
                         {
                             PaymentId = payment.Id,
                             BillId = payment.BillId,
-                            TrackingNumber = callbackData.TrackingNumber,
+                            BillTrackingCode = payment.Bill.ReferenceTrackCode,
+                            BillType = payment.Bill.ReferenceType,
+                            GatewayReference = callbackData.GatewayReference,
                             IsSuccessful = false,
                             Message = $"خطا در تکمیل پرداخت: {completePaymentResult.Message}",
                             TransactionCode = verificationResult.Data.TransactionId,
                             Amount = payment.Amount,
                             ProcessedAt = DateTime.UtcNow,
                             NewStatus = PaymentStatus.Failed,
-                            RedirectUrl = _frontendSettings.GetPaymentFailureUrl(payment.BillId)
                         };
                     }
                 }
                 else
                 {
-                    _logger.LogWarning("Payment verification failed - TrackingNumber: {TrackingNumber}, Message: {Message}",
-                        callbackData.TrackingNumber, verificationResult.Data?.Message);
+                    _logger.LogWarning("Payment verification failed - GatewayReference: {GatewayReference}, Message: {Message}",
+                        callbackData.GatewayReference, verificationResult.Data?.Message);
 
                     // Mark payment as failed
                     payment.MarkAsFailed($"Gateway verification failed: {verificationResult.Data?.Message}");
@@ -216,21 +219,21 @@ public class HandlePaymentCallbackCommandHandler : IRequestHandler<HandlePayment
                     {
                         PaymentId = payment.Id,
                         BillId = payment.BillId,
-                        TrackingNumber = callbackData.TrackingNumber,
+                        BillTrackingCode = payment.Bill.ReferenceTrackCode,
+                        BillType = payment.Bill.ReferenceType,
                         IsSuccessful = false,
                         Message = $"تایید پرداخت ناموفق: {verificationResult.Data?.Message}",
                         TransactionCode = verificationResult.Data?.TransactionId,
                         Amount = payment.Amount,
                         ProcessedAt = DateTime.UtcNow,
                         NewStatus = PaymentStatus.Failed,
-                        RedirectUrl = _frontendSettings.GetPaymentFailureUrl(payment.BillId)
                     };
                 }
             }
             else
             {
-                _logger.LogWarning("Payment callback failed - TrackingNumber: {TrackingNumber}, Message: {Message}",
-                    callbackData.TrackingNumber, callbackData.Message);
+                _logger.LogWarning("Payment callback failed - GatewayReference: {GatewayReference}, Message: {Message}",
+                    callbackData.GatewayReference, callbackData.Message);
 
                 // Mark payment as failed
                 payment.MarkAsFailed($"Gateway callback failed: {callbackData.Message}");
@@ -244,15 +247,15 @@ public class HandlePaymentCallbackCommandHandler : IRequestHandler<HandlePayment
                 {
                     PaymentId = payment.Id,
                     BillId = payment.BillId,
-                    BillNumber = bill?.BillNumber ?? payment.BillNumber,
-                    TrackingNumber = callbackData.TrackingNumber,
+                    GatewayReference = callbackData.GatewayReference,
                     IsSuccessful = false,
                     Message = $"پرداخت ناموفق: {callbackData.Message}",
                     TransactionCode = null,
                     Amount = payment.Amount,
                     ProcessedAt = DateTime.UtcNow,
                     NewStatus = PaymentStatus.Failed,
-                    RedirectUrl = _frontendSettings.GetPaymentFailureUrl(payment.BillId),
+                    BillTrackingCode = payment?.Bill.ReferenceTrackCode,
+                    BillType = payment?.Bill.ReferenceType,
                     // Bill information even for failed payments
                     BillStatus = bill?.Status.ToString(),
                     BillTotalAmount = bill?.TotalAmount.AmountRials,
@@ -273,15 +276,19 @@ public class HandlePaymentCallbackCommandHandler : IRequestHandler<HandlePayment
             
             // Try to get BillId from any available context (this is best effort)
             Guid? billId = null;
+            string? trackingCode = null;
+            string? billType = null;
             try
             {
                 // If we have access to the request context, try to extract BillId
                 // This is a fallback attempt - may not always work
                 var gatewayResult = await _paymentService.FetchCallbackAsync(cancellationToken);
-                if (gatewayResult.IsSuccess && gatewayResult.Data?.TrackingNumber != null)
+                if (gatewayResult.IsSuccess && gatewayResult.Data?.GatewayReference != null)
                 {
-                    var paymentForException = await _paymentRepository.GetByTrackingNumberAsync(gatewayResult.Data.TrackingNumber.ToString(), cancellationToken);
+                    var paymentForException = await _paymentRepository.GetByGatewayReferenceAsync(gatewayResult.Data.GatewayReference.ToString(), cancellationToken);
                     billId = paymentForException?.BillId;
+                    trackingCode = paymentForException?.Bill.ReferenceTrackCode;
+                    billType = paymentForException?.Bill.ReferenceType;
                 }
             }
             catch
@@ -289,23 +296,21 @@ public class HandlePaymentCallbackCommandHandler : IRequestHandler<HandlePayment
                 // Ignore errors in this fallback attempt
             }
             
-            // Return error with redirect to failure page
-            var redirectUrl = billId.HasValue 
-                ? _frontendSettings.GetPaymentFailureUrl(billId.Value)
-                : _frontendSettings.GetGenericPaymentFailureUrl();
+          
                 
             return ApplicationResult<PaymentCallbackResult>.Success(new PaymentCallbackResult
             {
                 PaymentId = Guid.Empty,
                 BillId = billId ?? Guid.Empty,
-                TrackingNumber = 0,
+                GatewayReference = 0,
                 IsSuccessful = false,
                 Message = $"خطای سیستم: {ex.Message}",
+                BillTrackingCode = trackingCode,
+                BillType = billType,
                 TransactionCode = null,
                 Amount = Money.Zero,
                 ProcessedAt = DateTime.UtcNow,
                 NewStatus = PaymentStatus.Failed,
-                RedirectUrl = redirectUrl,
                 BillStatus = null,
                 BillTotalAmount = null,
                 BillPaidAmount = null,

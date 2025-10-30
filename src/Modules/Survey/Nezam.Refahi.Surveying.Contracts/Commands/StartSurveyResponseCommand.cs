@@ -24,6 +24,8 @@ public class StartSurveyResponseResponse
     public Guid SurveyId { get; set; }
     public int AttemptNumber { get; set; }
     public string AttemptStatus { get; set; } = string.Empty; // Active, Submitted, Canceled, Expired
+    public string ResponseStatus { get; set; } = string.Empty; // New response status
+    public string ResponseStatusText { get; set; } = string.Empty; // Persian text for response status
     public Guid? CurrentQuestionId { get; set; } // First unanswered question
     public int CurrentRepeatIndex { get; set; } = 1; // Current repeat index for repeatable questions
     public bool AllowsBackNavigation { get; set; }

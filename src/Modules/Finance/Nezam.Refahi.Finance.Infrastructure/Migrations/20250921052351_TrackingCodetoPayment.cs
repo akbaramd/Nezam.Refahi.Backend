@@ -11,7 +11,7 @@ namespace Nezam.Refahi.Finance.Infrastructure.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
-                name: "TrackingNumber",
+                name: "GatewayReference",
                 schema: "finance",
                 table: "Payments",
                 type: "nvarchar(max)",
@@ -22,7 +22,7 @@ namespace Nezam.Refahi.Finance.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "TrackingNumber",
+                name: "GatewayReference",
                 schema: "finance",
                 table: "Payments");
         }

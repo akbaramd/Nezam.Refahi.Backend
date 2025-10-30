@@ -1,6 +1,4 @@
-﻿using Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetUserCycleRequests;
-
-namespace Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilityCycles;
+﻿namespace Nezam.Refahi.Facilities.Application.Dtos;
 
 /// <summary>
 /// User request status data transfer object

@@ -6,6 +6,8 @@ using Nezam.Refahi.Surveying.Domain.Entities;
 using Nezam.Refahi.Surveying.Domain.Enums;
 using Nezam.Refahi.Surveying.Domain.Repositories;
 using Nezam.Refahi.Shared.Application.Common.Models;
+using Nezam.Refahi.Membership.Contracts.Services;
+using Nezam.Refahi.Shared.Domain.ValueObjects;
 
 namespace Nezam.Refahi.Surveying.Application.Queries;
 
@@ -16,13 +18,15 @@ public class GetResponseDetailsQueryHandler : IRequestHandler<GetResponseDetails
 {
     private readonly ISurveyRepository _surveyRepository;
     private readonly ILogger<GetResponseDetailsQueryHandler> _logger;
-
-    public GetResponseDetailsQueryHandler(
+    private readonly IMemberInfoService _memberInfoService;
+        public GetResponseDetailsQueryHandler(
         ISurveyRepository surveyRepository,
-        ILogger<GetResponseDetailsQueryHandler> logger)
+        ILogger<GetResponseDetailsQueryHandler> logger,
+        IMemberInfoService memberInfoService)
     {
         _surveyRepository = surveyRepository;
         _logger = logger;
+        _memberInfoService = memberInfoService;
     }
 
     public async Task<ApplicationResult<ResponseDetailsDto>> Handle(GetResponseDetailsQuery request, CancellationToken cancellationToken)
@@ -40,8 +44,14 @@ public class GetResponseDetailsQueryHandler : IRequestHandler<GetResponseDetails
                 return ApplicationResult<ResponseDetailsDto>.Failure("پاسخ یافت نشد");
 
             // Authorization check if MemberId is provided
-            if (request.MemberId.HasValue && response.Participant.MemberId != request.MemberId.Value)
-                return ApplicationResult<ResponseDetailsDto>.Failure("شما دسترسی به این پاسخ ندارید");
+            if (!string.IsNullOrWhiteSpace(request.UserNationalNumber))
+            {
+                var nationalId = new NationalId(request.UserNationalNumber);
+                var memberInfo = await _memberInfoService.GetMemberInfoAsync(nationalId);
+                
+                if (memberInfo == null || response.Participant.MemberId != memberInfo.Id)
+                    return ApplicationResult<ResponseDetailsDto>.Failure("شما دسترسی به این پاسخ ندارید");
+            }
             // Map to DTO
             var responseDto = new ResponseDetailsDto
             {

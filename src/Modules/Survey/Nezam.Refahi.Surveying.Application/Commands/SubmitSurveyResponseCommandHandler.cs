@@ -90,8 +90,24 @@ public class SubmitSurveyResponseCommandHandler : IRequestHandler<SubmitSurveyRe
                 if (question == null)
                     continue;
 
+                // Get question text and convert selected option IDs to dictionary with option texts
+                var questionText = question.Text;
+                var selectedOptionsWithTexts = new Dictionary<Guid, string>();
+                
+                if (answerDto.SelectedOptionIds != null && answerDto.SelectedOptionIds.Any())
+                {
+                    foreach (var optionId in answerDto.SelectedOptionIds)
+                    {
+                        var optionText = survey.GetOptionText(answerDto.QuestionId, optionId);
+                        if (!string.IsNullOrEmpty(optionText))
+                        {
+                            selectedOptionsWithTexts[optionId] = optionText;
+                        }
+                    }
+                }
+
                 // Use domain aggregate to set the answer
-                survey.SetResponseAnswer(request.ResponseId, answerDto.QuestionId, answerDto.TextAnswer, answerDto.SelectedOptionIds);
+                survey.SetResponseAnswer(request.ResponseId, answerDto.QuestionId, questionText, answerDto.TextAnswer, selectedOptionsWithTexts);
             }
 
             // Submit the response using domain aggregate
@@ -120,6 +136,8 @@ public class SubmitSurveyResponseCommandHandler : IRequestHandler<SubmitSurveyRe
                 AnsweredQuestions = answeredQuestions,
                 TotalQuestions = totalQuestions,
                 CompletionPercentage = completionPercentage,
+                ResponseStatus = response.Status.ToString(),
+                ResponseStatusText = ResponseStatusHelper.GetPersianText(response.Status),
                 Message = isComplete ? "نظرسنجی با موفقیت تکمیل شد" : "پاسخ‌ها با موفقیت ثبت شدند"
             };
 

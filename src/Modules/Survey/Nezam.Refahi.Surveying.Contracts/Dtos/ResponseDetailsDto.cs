@@ -80,6 +80,8 @@ public class ResponseStatisticsDto
 
 public class ResponseStatusDto
 {
+    public string ResponseStatus { get; set; } = string.Empty; // New response status
+    public string ResponseStatusText { get; set; } = string.Empty; // Persian text for response status
     public bool CanContinue { get; set; }
     public bool CanSubmit { get; set; }
     public bool IsSubmitted { get; set; }

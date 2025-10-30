@@ -1,11 +1,13 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Nezam.Refahi.Membership.Contracts.Services;
+using Nezam.Refahi.Shared.Application.Common.Models;
+using Nezam.Refahi.Shared.Domain.ValueObjects;
 using Nezam.Refahi.Surveying.Contracts.Dtos;
 using Nezam.Refahi.Surveying.Contracts.Queries;
 using Nezam.Refahi.Surveying.Domain.Entities;
 using Nezam.Refahi.Surveying.Domain.Enums;
 using Nezam.Refahi.Surveying.Domain.Repositories;
-using Nezam.Refahi.Shared.Application.Common.Models;
 
 namespace Nezam.Refahi.Surveying.Application.Queries;
 
@@ -16,13 +18,16 @@ public class GetSurveyQuestionsWithAnswersQueryHandler : IRequestHandler<GetSurv
 {
     private readonly ISurveyRepository _surveyRepository;
     private readonly ILogger<GetSurveyQuestionsWithAnswersQueryHandler> _logger;
+    private readonly IMemberInfoService _memberInfoService;
 
     public GetSurveyQuestionsWithAnswersQueryHandler(
         ISurveyRepository surveyRepository,
-        ILogger<GetSurveyQuestionsWithAnswersQueryHandler> logger)
+        ILogger<GetSurveyQuestionsWithAnswersQueryHandler> logger,
+        IMemberInfoService memberInfoService)
     {
         _surveyRepository = surveyRepository;
         _logger = logger;
+        _memberInfoService = memberInfoService;
     }
 
     public async Task<ApplicationResult<SurveyQuestionsWithAnswersResponse>> Handle(GetSurveyQuestionsWithAnswersQuery request, CancellationToken cancellationToken)
@@ -46,9 +51,18 @@ public class GetSurveyQuestionsWithAnswersQueryHandler : IRequestHandler<GetSurv
                 CompletionPercentage = 0
             };
 
+            // Get member info if national number is provided
+            Guid? memberId = null;
+            if (!string.IsNullOrWhiteSpace(request.UserNationalNumber))
+            {
+                var nationalId = new NationalId(request.UserNationalNumber);
+                var memberInfo = await _memberInfoService.GetMemberInfoAsync(nationalId);
+                memberId = memberInfo?.Id;
+            }
+
             // Get survey with responses if needed
             Survey? surveyWithResponses = null;
-            if (request.ResponseId.HasValue || request.MemberId.HasValue)
+            if (request.ResponseId.HasValue || memberId.HasValue)
             {
                 surveyWithResponses = await _surveyRepository.GetWithResponsesAsync(request.SurveyId, cancellationToken);
             }
@@ -67,13 +81,13 @@ public class GetSurveyQuestionsWithAnswersQueryHandler : IRequestHandler<GetSurv
                     response.ResponseInfo = MapResponseToDto(specificResponse, survey.Questions.Count);
                 }
             }
-            else if (request.MemberId.HasValue)
+            else if (memberId.HasValue)
             {
                 if (request.AttemptNumber.HasValue)
                 {
                     // Get specific attempt
                     var memberResponses = surveyWithResponses?.Responses
-                        .Where(r => r.Participant.MemberId == request.MemberId.Value)
+                        .Where(r => r.Participant.MemberId == memberId.Value)
                         .ToList() ?? new List<Response>();
                     specificResponse = memberResponses.FirstOrDefault(r => r.AttemptNumber == request.AttemptNumber.Value); 
                     if (specificResponse != null)
@@ -86,7 +100,7 @@ public class GetSurveyQuestionsWithAnswersQueryHandler : IRequestHandler<GetSurv
                 {
                     // Get all attempts for this member
                     var memberResponses = surveyWithResponses?.Responses
-                        .Where(r => r.Participant.MemberId == request.MemberId.Value)
+                        .Where(r => r.Participant.MemberId == memberId.Value)
                         .OrderByDescending(r => r.AttemptNumber)
                         .ToList() ?? new List<Response>();
                     responses.AddRange(memberResponses);
@@ -99,7 +113,7 @@ public class GetSurveyQuestionsWithAnswersQueryHandler : IRequestHandler<GetSurv
                 {
                     // Get latest attempt
                     specificResponse = surveyWithResponses?.Responses
-                        .Where(r => r.Participant.MemberId == request.MemberId.Value)
+                        .Where(r => r.Participant.MemberId == memberId.Value)
                         .OrderByDescending(r => r.AttemptNumber)
                         .FirstOrDefault();
                     if (specificResponse != null)

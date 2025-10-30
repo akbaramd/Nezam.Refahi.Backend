@@ -1,11 +1,13 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Nezam.Refahi.Membership.Contracts.Services;
+using Nezam.Refahi.Shared.Application.Common.Models;
+using Nezam.Refahi.Shared.Domain.ValueObjects;
 using Nezam.Refahi.Surveying.Contracts.Dtos;
 using Nezam.Refahi.Surveying.Contracts.Queries;
 using Nezam.Refahi.Surveying.Domain.Entities;
 using Nezam.Refahi.Surveying.Domain.Enums;
 using Nezam.Refahi.Surveying.Domain.Repositories;
-using Nezam.Refahi.Shared.Application.Common.Models;
 
 namespace Nezam.Refahi.Surveying.Application.Queries;
 
@@ -16,13 +18,16 @@ public class GetNextQuestionQueryHandler : IRequestHandler<GetNextQuestionQuery,
 {
     private readonly ISurveyRepository _surveyRepository;
     private readonly ILogger<GetNextQuestionQueryHandler> _logger;
+    private readonly IMemberInfoService _memberInfoService;
 
     public GetNextQuestionQueryHandler(
         ISurveyRepository surveyRepository,
-        ILogger<GetNextQuestionQueryHandler> logger)
+        ILogger<GetNextQuestionQueryHandler> logger,
+        IMemberInfoService memberInfoService)
     {
         _surveyRepository = surveyRepository;
         _logger = logger;
+        _memberInfoService = memberInfoService;
     }
 
     public async Task<ApplicationResult<NextQuestionResponseDto>> Handle(GetNextQuestionQuery request, CancellationToken cancellationToken)
@@ -39,9 +44,15 @@ public class GetNextQuestionQueryHandler : IRequestHandler<GetNextQuestionQuery,
             if (response == null)
                 return ApplicationResult<NextQuestionResponseDto>.Failure("پاسخ یافت نشد");
 
-            // Authorization check if MemberId is provided
-            if (request.MemberId.HasValue && response.Participant.MemberId != request.MemberId.Value)
-                return ApplicationResult<NextQuestionResponseDto>.Failure("شما دسترسی به این پاسخ ندارید");
+            // Authorization check if UserNationalNumber is provided
+            if (!string.IsNullOrWhiteSpace(request.UserNationalNumber))
+            {
+                var nationalId = new NationalId(request.UserNationalNumber);
+                var memberInfo = await _memberInfoService.GetMemberInfoAsync(nationalId);
+                
+                if (memberInfo == null || response.Participant.MemberId != memberInfo.Id)
+                    return ApplicationResult<NextQuestionResponseDto>.Failure("شما دسترسی به این پاسخ ندارید");
+            }
 
             // Get all questions ordered by Order
             var orderedQuestions = survey.Questions.OrderBy(q => q.Order).ToList();

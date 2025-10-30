@@ -20,7 +20,8 @@ public class FacilitiesDbContext : DbContext
     public DbSet<FacilityCycleDependency> FacilityCycleDependencies { get; set; } = null!;
     public DbSet<FacilityRequest> FacilityRequests { get; set; } = null!;
     public DbSet<FacilityFeature> FacilityFeatures { get; set; } = null!;
-    public DbSet<FacilityCapabilityPolicy> FacilityCapabilityPolicies { get; set; } = null!;
+    public DbSet<FacilityCapability> FacilityCapabilityPolicies { get; set; } = null!;
+    public DbSet<FacilityRejection> FacilityRejections { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -32,7 +33,8 @@ public class FacilitiesDbContext : DbContext
         modelBuilder.ApplyConfiguration(new FacilityCycleDependencyConfiguration());
         modelBuilder.ApplyConfiguration(new FacilityRequestConfiguration());
         modelBuilder.ApplyConfiguration(new FacilityFeatureConfiguration());
-        modelBuilder.ApplyConfiguration(new FacilityCapabilityPolicyConfiguration());
+        modelBuilder.ApplyConfiguration(new FacilityCapabilityConfiguration());
+        modelBuilder.ApplyConfiguration(new FacilityRejectionConfiguration());
 
         // Configure schema
         modelBuilder.HasDefaultSchema("facilities");

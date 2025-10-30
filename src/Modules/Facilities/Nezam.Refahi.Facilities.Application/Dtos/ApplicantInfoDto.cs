@@ -1,4 +1,4 @@
-﻿namespace Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilityRequests;
+﻿namespace Nezam.Refahi.Facilities.Application.Dtos;
 
 /// <summary>
 /// Applicant information data transfer object

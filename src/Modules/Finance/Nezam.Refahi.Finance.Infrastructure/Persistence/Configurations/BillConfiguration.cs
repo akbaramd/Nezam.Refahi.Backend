@@ -34,8 +34,12 @@ public class BillConfiguration : IEntityTypeConfiguration<Bill>
         builder.Property(b => b.ReferenceId)
             .IsRequired()
             .HasMaxLength(100);
-
-        builder.Property(b => b.BillType)
+        builder.Property(b => b.ReferenceTrackCode)
+          .IsRequired()
+          .HasDefaultValue("sdad")
+          .HasMaxLength(100);
+        builder.Property(b => b.ReferenceType)
+          .HasColumnName("ReferenceType")
             .IsRequired()
             .HasMaxLength(50);
 
@@ -92,6 +96,20 @@ public class BillConfiguration : IEntityTypeConfiguration<Bill>
             // Ensure no key is configured for owned entity
         });
 
+        // Discount properties
+        builder.Property(b => b.DiscountCode)
+            .HasMaxLength(50);
+
+        builder.Property(b => b.DiscountCodeId);
+
+        // Discount amount as owned entity
+        builder.OwnsOne(b => b.DiscountAmount, money =>
+        {
+            money.Property(m => m.AmountRials)
+                .HasColumnName("DiscountAmountRials")
+                .HasColumnType("decimal(18,2)");
+        });
+
         // Metadata as JSON
         builder.Property(b => b.Metadata)
             .HasConversion(
@@ -119,7 +137,7 @@ public class BillConfiguration : IEntityTypeConfiguration<Bill>
         builder.HasIndex(b => b.BillNumber)
             .IsUnique();
 
-        builder.HasIndex(b => new { b.ReferenceId, b.BillType });
+        builder.HasIndex(b => new { b.ReferenceId, BillType = b.ReferenceType });
 
         builder.HasIndex(b => b.ExternalUserId);
 

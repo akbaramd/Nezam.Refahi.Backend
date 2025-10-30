@@ -42,14 +42,14 @@ public class TourReservationRepository : EfRepository<RecreationDbContext, TourR
 
     public async Task<IEnumerable<TourReservation>> GetPendingReservationsByTourIdAsync(Guid tourId, CancellationToken cancellationToken = default)
     {
-        return await GetByTourIdAndStatusAsync(tourId, ReservationStatus.Held, cancellationToken:cancellationToken);
+        return await GetByTourIdAndStatusAsync(tourId, ReservationStatus.OnHold, cancellationToken:cancellationToken);
     }
 
     public async Task<IEnumerable<TourReservation>> GetExpiredReservationsAsync(CancellationToken cancellationToken = default)
     {
         var currentTime = DateTime.UtcNow;
         return await PrepareQuery(_dbSet)
-            .Where(r => r.Status == ReservationStatus.Held &&
+            .Where(r => r.Status == ReservationStatus.OnHold &&
                        r.ExpiryDate.HasValue &&
                        r.ExpiryDate.Value < currentTime)
             .ToListAsync(cancellationToken);
@@ -77,7 +77,7 @@ public class TourReservationRepository : EfRepository<RecreationDbContext, TourR
         var currentTime = DateTime.UtcNow;
         return await PrepareQuery(_dbSet)
             .Where(r => r.TourId == tourId && 
-                       (r.Status == ReservationStatus.Held || r.Status == ReservationStatus.Paying) && // شامل رزروهای در حال پرداخت
+                       (r.Status == ReservationStatus.OnHold || r.Status == ReservationStatus.PendingConfirmation) && // شامل رزروهای در حال پرداخت
                        (r.ExpiryDate == null || r.ExpiryDate > currentTime)) // حذف رزروهای منقضی شده
             .SelectMany(r => r.Participants)
             .CountAsync(cancellationToken);
@@ -124,8 +124,8 @@ public class TourReservationRepository : EfRepository<RecreationDbContext, TourR
         return await PrepareQuery(_dbSet)
             .Where(r => r.CapacityId == capacityId &&
                        (r.Status == ReservationStatus.Confirmed || 
-                        r.Status == ReservationStatus.Held || 
-                        r.Status == ReservationStatus.Paying) && // اضافه کردن رزروهای در حال پرداخت
+                        r.Status == ReservationStatus.OnHold || 
+                        r.Status == ReservationStatus.PendingConfirmation) && // اضافه کردن رزروهای در حال پرداخت
                        (r.ExpiryDate == null || r.ExpiryDate > currentTime)) // چک انقضا
             .SelectMany(r => r.Participants)
             .CountAsync(cancellationToken);
@@ -137,8 +137,8 @@ public class TourReservationRepository : EfRepository<RecreationDbContext, TourR
         return await PrepareQuery(_dbSet)
             .Where(r => r.TourId == tourId &&
                        (r.Status == ReservationStatus.Confirmed || 
-                        r.Status == ReservationStatus.Held || 
-                        r.Status == ReservationStatus.Paying) && // اضافه کردن رزروهای در حال پرداخت
+                        r.Status == ReservationStatus.OnHold || 
+                        r.Status == ReservationStatus.PendingConfirmation) && // اضافه کردن رزروهای در حال پرداخت
                        (r.ExpiryDate == null || r.ExpiryDate > currentTime)) // چک انقضا
             .SelectMany(r => r.Participants)
             .CountAsync(cancellationToken);
@@ -149,7 +149,7 @@ public class TourReservationRepository : EfRepository<RecreationDbContext, TourR
         return await PrepareQuery(_dbSet)
             .Where(r => r.ExpiryDate.HasValue && 
                        r.ExpiryDate.Value <= cutoffTime &&
-                       (r.Status == ReservationStatus.Held || r.Status == ReservationStatus.Paying))
+                       (r.Status == ReservationStatus.OnHold || r.Status == ReservationStatus.PendingConfirmation))
             .Include(r => r.Participants)
             .ToListAsync(cancellationToken);
     }
@@ -160,7 +160,7 @@ public class TourReservationRepository : EfRepository<RecreationDbContext, TourR
             .Where(r => r.ExpiryDate.HasValue && 
                        r.ExpiryDate.Value <= expiryTime &&
                        r.ExpiryDate.Value > DateTime.UtcNow &&
-                       (r.Status == ReservationStatus.Held || r.Status == ReservationStatus.Paying))
+                       (r.Status == ReservationStatus.OnHold || r.Status == ReservationStatus.Confirmed))
             .Include(r => r.Participants)
             .ToListAsync(cancellationToken);
     }
@@ -175,8 +175,8 @@ public class TourReservationRepository : EfRepository<RecreationDbContext, TourR
         var utilizations = await PrepareQuery(_dbSet)
             .Where(r => tourIdsList.Contains(r.TourId) &&
                        (r.Status == ReservationStatus.Confirmed || 
-                        r.Status == ReservationStatus.Held || 
-                        r.Status == ReservationStatus.Paying) && // اضافه کردن رزروهای در حال پرداخت
+                        r.Status == ReservationStatus.OnHold || 
+                        r.Status == ReservationStatus.PendingConfirmation) && // اضافه کردن رزروهای در حال پرداخت
                        (r.ExpiryDate == null || r.ExpiryDate > currentTime)) // حذف رزروهای منقضی شده
             .SelectMany(r => r.Participants)
             .GroupBy(p => p.Reservation.TourId)
@@ -203,8 +203,8 @@ public class TourReservationRepository : EfRepository<RecreationDbContext, TourR
             .Where(r => r.CapacityId.HasValue && 
                        capacityIdsList.Contains(r.CapacityId.Value) &&
                        (r.Status == ReservationStatus.Confirmed || 
-                        r.Status == ReservationStatus.Held || 
-                        r.Status == ReservationStatus.Paying) && // اضافه کردن رزروهای در حال پرداخت
+                        r.Status == ReservationStatus.OnHold || 
+                        r.Status == ReservationStatus.PendingConfirmation) && // اضافه کردن رزروهای در حال پرداخت
                        (r.ExpiryDate == null || r.ExpiryDate > currentTime)) // حذف رزروهای منقضی شده
             .SelectMany(r => r.Participants)
             .GroupBy(p => p.Reservation.CapacityId)

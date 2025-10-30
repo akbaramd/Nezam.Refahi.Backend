@@ -34,4 +34,24 @@ public record RejectFacilityRequestResult
   /// Rejector user ID
   /// </summary>
   public Guid RejectorUserId { get; init; }
+
+  /// <summary>
+  /// Rejection record ID
+  /// </summary>
+  public Guid RejectionId { get; init; }
+
+  /// <summary>
+  /// Rejection type
+  /// </summary>
+  public string RejectionType { get; init; } = null!;
+
+  /// <summary>
+  /// Additional rejection details
+  /// </summary>
+  public string? Details { get; init; }
+
+  /// <summary>
+  /// Additional notes
+  /// </summary>
+  public string? Notes { get; init; }
 }

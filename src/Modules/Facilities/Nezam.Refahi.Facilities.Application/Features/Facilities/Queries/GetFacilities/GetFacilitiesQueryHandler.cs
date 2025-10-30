@@ -7,6 +7,10 @@ using Nezam.Refahi.Facilities.Application.Services;
 using Nezam.Refahi.Facilities.Domain.Enums;
 using Nezam.Refahi.Facilities.Domain.Repositories;
 using Nezam.Refahi.Shared.Application.Common.Models;
+using MCA.SharedKernel.Application.Contracts;
+using Nezam.Refahi.Facilities.Application.Dtos;
+using Nezam.Refahi.Facilities.Application.Spesifications;
+using Nezam.Refahi.Facilities.Domain.Entities;
 
 namespace Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilities;
 
@@ -18,15 +22,14 @@ public class GetFacilitiesQueryHandler : IRequestHandler<GetFacilitiesQuery, App
     private readonly IFacilityRepository _facilityRepository;
     private readonly IValidator<GetFacilitiesQuery> _validator;
     private readonly ILogger<GetFacilitiesQueryHandler> _logger;
+    private readonly IMapper<Facility, FacilityDto> _facilityMapper;
 
-    public GetFacilitiesQueryHandler(
-        IFacilityRepository facilityRepository,
-        IValidator<GetFacilitiesQuery> validator,
-        ILogger<GetFacilitiesQueryHandler> logger)
+    public GetFacilitiesQueryHandler(IFacilityRepository facilityRepository, IValidator<GetFacilitiesQuery> validator, ILogger<GetFacilitiesQueryHandler> logger, IMapper<Facility, FacilityDto> facilityMapper)
     {
         _facilityRepository = facilityRepository;
         _validator = validator;
         _logger = logger;
+        _facilityMapper = facilityMapper;
     }
 
     public async Task<ApplicationResult<GetFacilitiesResult>> Handle(
@@ -45,36 +48,34 @@ public class GetFacilitiesQueryHandler : IRequestHandler<GetFacilitiesQuery, App
                     "اطلاعات ورودی نامعتبر است");
             }
 
-            // Build query parameters
-            var queryParams = new FacilityQueryParameters
-            {
-                Page = request.Page,
-                PageSize = request.PageSize,
-                Type = request.Type,
-                Status = request.Status,
-                SearchTerm = request.SearchTerm,
-                OnlyActive = request.OnlyActive
-            };
-
+            // Build specification → parameters
+            var spec = new FacilityPaginatedSpec(
+                request.Page,
+                request.PageSize,
+                request.Type,
+                request.Status,
+                request.SearchTerm,
+                request.OnlyActive);
             // Get facilities
-            var facilities = await _facilityRepository.GetFacilitiesAsync(queryParams, cancellationToken);
-            var totalCount = await _facilityRepository.GetFacilitiesCountAsync(queryParams, cancellationToken);
+            var facilities = await _facilityRepository.GetPaginatedAsync(spec, cancellationToken);
 
             // Map to DTOs
-            var facilityDtos = facilities.Select(MapToDto).ToList();
+            var facilityDtos = new List<FacilityDto>();
+            foreach (var facility in facilities.Items)
+            {
+                facilityDtos.Add(await _facilityMapper.MapAsync(facility, cancellationToken));
+            }
 
-            var totalPages = (int)Math.Ceiling((double)totalCount / request.PageSize);
 
             _logger.LogInformation("Retrieved {Count} facilities for page {Page}",
                 facilityDtos.Count, request.Page);
 
             return ApplicationResult<GetFacilitiesResult>.Success(new GetFacilitiesResult
             {
-                Facilities = facilityDtos,
-                TotalCount = totalCount,
-                Page = request.Page,
-                PageSize = request.PageSize,
-                TotalPages = totalPages
+                Items = facilityDtos,
+                TotalCount = facilities.TotalCount,
+                PageNumber = facilities.PageNumber,
+                PageSize = facilities.PageSize
             });
         }
         catch (Exception ex)

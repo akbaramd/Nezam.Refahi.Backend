@@ -1,5 +1,5 @@
 using MediatR;
-using Nezam.Refahi.Recreation.Application.Dtos;
+using Nezam.Refahi.Recreation.Contracts.Dtos;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
 namespace Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.AddGuest;
@@ -13,6 +13,7 @@ public class AddGuestToReservationCommand : IRequest<ApplicationResult<AddGuestT
     /// Reservation ID to add guest to
     /// </summary>
     public Guid ReservationId { get; init; }
+    public Guid ExternalUserId { get; init; }
 
     /// <summary>
     /// Guest participant details

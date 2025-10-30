@@ -15,6 +15,6 @@ public class GetNextQuestionQuery : IRequest<ApplicationResult<NextQuestionRespo
     public Guid SurveyId { get; set; }
     public Guid ResponseId { get; set; }
     public Guid? CurrentQuestionId { get; set; } // If null, returns first question
-    public Guid? MemberId { get; set; } // Optional: for authorization check
+    public string? UserNationalNumber { get; set; } // Optional: for authorization check
     public bool IncludeUserAnswer { get; set; } = true; // Include user's answer if exists
 }

@@ -9,7 +9,7 @@ namespace Nezam.Refahi.Surveying.Contracts.Queries;
 /// </summary>
 public class GetActiveSurveysQuery : IRequest<ApplicationResult<ActiveSurveysResponse>>
 {
-    public Guid? UserId { get; set; } // For checking participation eligibility
+    public string? UserNationalNumber { get; set; } // For checking participation eligibility
     public string? FeatureKey { get; set; } // Filter by feature
     public string? CapabilityKey { get; set; } // Filter by capability
     public bool IncludeQuestions { get; set; } = false;

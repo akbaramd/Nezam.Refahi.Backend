@@ -136,4 +136,12 @@ public interface ISurveyRepository : IRepository<Survey, Guid>
     /// Gets survey with specific response and all related data
     /// </summary>
     Task<Survey?> GetSurveyWithResponseAndAllDataAsync(Guid responseId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets user's latest response for each survey in the provided list
+    /// </summary>
+    Task<Dictionary<Guid, Response?>> GetUserLatestResponsesAsync(
+        IEnumerable<Guid> surveyIds,
+        Guid userId,
+        CancellationToken cancellationToken = default);
 }

@@ -1,6 +1,7 @@
 using FluentValidation;
 using Nezam.Refahi.Finance.Application.Queries.Bills;
-
+using MCA.SharedKernel.Application.Contracts;
+using MCA.SharedKernel.Domain.Models;
 namespace Nezam.Refahi.Finance.Application.Features.Bills.Queries.GetBillPaymentStatus;
 
 /// <summary>
@@ -34,8 +35,5 @@ public sealed class GetBillDetailsByTrackingCodeQueryValidator : AbstractValidat
       .NotEmpty().WithMessage("TrackingCode is required.")
       .MaximumLength(128).WithMessage("TrackingCode is too long.");
 
-    RuleFor(x => x.BillType)
-      .NotEmpty().WithMessage("BillType is required.")
-      .MaximumLength(64).WithMessage("BillType is too long.");
   }
 }

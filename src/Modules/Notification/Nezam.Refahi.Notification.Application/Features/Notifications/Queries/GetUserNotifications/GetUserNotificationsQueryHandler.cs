@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Nezam.Refahi.Notifications.Domain.Repositories;
 using Nezam.Refahi.Shared.Application.Common.Models;
 using System.Text.Json;
+using MCA.SharedKernel.Domain.Models;
 
 namespace Nezam.Refahi.Notifications.Application.Features.Notifications.Queries.GetUserNotifications;
 

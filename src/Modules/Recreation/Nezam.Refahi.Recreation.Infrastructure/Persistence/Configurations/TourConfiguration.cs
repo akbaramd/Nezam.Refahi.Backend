@@ -2,6 +2,7 @@ using MCA.SharedKernel.Infrastructure.Configurations.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Nezam.Refahi.Recreation.Domain.Entities;
+using Nezam.Refahi.Recreation.Domain.Enums;
 
 namespace Nezam.Refahi.Recreation.Infrastructure.Persistence.Configurations;
 
@@ -19,6 +20,9 @@ public class TourConfiguration : IEntityTypeConfiguration<Tour>
             .IsRequired()
             .HasMaxLength(200);
 
+        builder.Property(t => t.Difficulty)
+          .IsRequired()
+          .HasDefaultValue(TourDifficulty.Easy);
         builder.Property(t => t.Description)
             .IsRequired()
             .HasMaxLength(2000);

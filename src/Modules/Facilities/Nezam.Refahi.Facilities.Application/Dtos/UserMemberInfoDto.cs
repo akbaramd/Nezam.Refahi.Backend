@@ -1,4 +1,4 @@
-﻿namespace Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetUserMemberInfo;
+﻿namespace Nezam.Refahi.Facilities.Application.Dtos;
 
 /// <summary>
 /// Simple user member information data transfer object

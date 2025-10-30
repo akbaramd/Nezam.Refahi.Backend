@@ -102,12 +102,12 @@ public interface IFacilityRequestRepository : IRepository<FacilityRequest, Guid>
     /// <summary>
     /// دریافت درخواست کاربر برای یک دوره خاص
     /// </summary>
-    Task<FacilityRequest?> GetUserRequestForCycleAsync(Guid userId, Guid cycleId, CancellationToken cancellationToken = default);
+    Task<FacilityRequest?> GetUserLastRequestForCycleAsync(Guid userId, Guid cycleId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// دریافت درخواست‌های کاربر برای چندین دوره (بهینه‌سازی شده)
     /// </summary>
-    Task<Dictionary<Guid, FacilityRequest>> GetUserRequestsForCyclesAsync(Guid userId, IEnumerable<Guid> cycleIds, CancellationToken cancellationToken = default);
+    Task<Dictionary<Guid, FacilityRequest>> GetUserRequestsForCycleAsync(Guid userId, Guid cycleId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// بررسی وجود درخواست کاربر برای چندین دوره (بهینه‌سازی شده)

@@ -1,12 +1,14 @@
+// =======================
+// Handler (pricing-only)
+// =======================
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Nezam.Refahi.Recreation.Application.Dtos;
 using Nezam.Refahi.Recreation.Domain.Repositories;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
 namespace Nezam.Refahi.Recreation.Application.Features.TourReservations.Queries.GetReservationPricing;
 
-public class GetReservationPricingQueryHandler
+public sealed class GetReservationPricingQueryHandler
     : IRequestHandler<GetReservationPricingQuery, ApplicationResult<ReservationPricingResponse>>
 {
     private readonly ITourReservationRepository _reservationRepository;
@@ -16,95 +18,70 @@ public class GetReservationPricingQueryHandler
         ITourReservationRepository reservationRepository,
         ILogger<GetReservationPricingQueryHandler> logger)
     {
-        _reservationRepository = reservationRepository;
-        _logger = logger;
+        _reservationRepository = reservationRepository ?? throw new ArgumentNullException(nameof(reservationRepository));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public async Task<ApplicationResult<ReservationPricingResponse>> Handle(
         GetReservationPricingQuery request,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
+        if (request.ReservationId == Guid.Empty)
+            return ApplicationResult<ReservationPricingResponse>.Failure("شناسه رزرو معتبر نیست");
+
         try
         {
-            _logger.LogInformation("Getting pricing for reservation {Identifier}",
-                request.ReservationIdentifier);
+            _logger.LogInformation("Calculating pricing for reservation {ReservationId}", request.ReservationId);
 
-            // Try to find reservation by ID first, then by tracking code
-            Domain.Entities.TourReservation? reservation = null;
+            // Expect repository to hydrate Participants (prefer an include-enabled method; adjust if needed)
+            var reservation = await _reservationRepository.GetByIdAsync(request.ReservationId, ct);
+            if (reservation is null)
+                return ApplicationResult<ReservationPricingResponse>.Failure("رزرو یافت نشد");
 
-            if (Guid.TryParse(request.ReservationIdentifier, out var reservationId))
+            // Project participant pricing (null-safe)
+            var participants = reservation.Participants.Select(p =>
             {
-                reservation = await _reservationRepository.FindOneAsync(x=>x.Id == reservationId, cancellationToken:cancellationToken);
-            }
+                var required = p.RequiredAmount?.AmountRials ?? 0m;
+                var paid     = p.PaidAmount?.AmountRials ?? 0m;
+                var remain   = p.RemainingAmount?.AmountRials ?? Math.Max(0m, required - paid);
+                var fully    = remain == 0m && required >= 0m;
 
-            reservation ??= await _reservationRepository.GetByTrackingCodeAsync(
-                request.ReservationIdentifier, cancellationToken:cancellationToken);
-
-            if (reservation == null)
-            {
-                return ApplicationResult<ReservationPricingResponse>.Failure("رزرو مورد نظر یافت نشد");
-            }
-
-            // Calculate pricing for each participant
-            var participantPricing = reservation.Participants.Select(participant =>
-                new ParticipantPricingDto
+                return new ParticipantPricingDto
                 {
-                    ParticipantId = participant.Id,
-                    FullName = participant.FullName,
-                    NationalNumber = participant.NationalNumber,
-                    ParticipantType = participant.ParticipantType.ToString(),
-                    RequiredAmount = participant.RequiredAmount.AmountRials,
-                    PaidAmount = participant.PaidAmount?.AmountRials ?? 0,
-                    RemainingAmount = participant.RemainingAmount.AmountRials,
-                    IsFullyPaid = participant.IsFullyPaid,
-                    PaymentDate = participant.PaymentDate,
-                    RegistrationDate = participant.RegistrationDate
-                }).ToList();
+                    ParticipantId   = p.Id,
+                    ParticipantType = p.ParticipantType.ToString(),
+                    RequiredAmount  = required,
+                    PaidAmount      = paid,
+                    RemainingAmount = remain,
+                    IsFullyPaid     = fully
+                };
+            }).ToList();
 
-            // Calculate totals
-            var totalRequired = participantPricing.Sum(p => p.RequiredAmount);
-            var totalPaid = participantPricing.Sum(p => p.PaidAmount);
-            var totalRemaining = participantPricing.Sum(p => p.RemainingAmount);
+            var totalRequired  = participants.Sum(x => x.RequiredAmount);
+            var totalPaid      = participants.Sum(x => x.PaidAmount);
+            var totalRemaining = participants.Sum(x => x.RemainingAmount);
+            var allPaid        = totalRemaining == 0m;
 
-            // Get tour details for enhanced response
-            var tour = reservation.Tour;
-            
             var response = new ReservationPricingResponse
             {
-                ReservationId = reservation.Id,
-                TrackingCode = reservation.TrackingCode,
-                TourTitle = tour?.Title ?? "نامشخص",
-                TourStart = tour?.TourStart,
-                TourEnd = tour?.TourEnd,
-                ReservationDate = reservation.ReservationDate,
-                ExpiryDate = reservation.ExpiryDate,
-                ConfirmationDate = reservation.ConfirmationDate,
-                ParticipantPricing = participantPricing,
-                TotalRequiredAmount = totalRequired,
-                TotalPaidAmount = totalPaid,
-                TotalRemainingAmount = totalRemaining,
-                IsFullyPaid = totalRemaining == 0,
-                PaymentDeadline = reservation.ExpiryDate,
-                Status = reservation.Status.ToString(),
-                IsExpired = reservation.IsExpired(),
-                IsPending = reservation.IsPending(),
-                IsConfirmed = reservation.IsConfirmed(),
-                ParticipantCount = reservation.GetParticipantCount(),
-                MainParticipantCount = participantPricing.Count(p => p.ParticipantType == "Member"),
-                GuestParticipantCount = participantPricing.Count(p => p.ParticipantType == "Guest")
+                ReservationId         = reservation.Id,
+                TotalRequiredAmount   = totalRequired,
+                TotalPaidAmount       = totalPaid,
+                TotalRemainingAmount  = totalRemaining,
+                IsFullyPaid           = allPaid,
+                Participants          = participants
             };
 
-            _logger.LogInformation("Successfully retrieved pricing for reservation {ReservationId}. " +
-                                 "Total Required: {TotalRequired}, Total Paid: {TotalPaid}, Remaining: {Remaining}",
-                reservation.Id, totalRequired, totalPaid, totalRemaining);
+            _logger.LogInformation(
+                "Pricing computed. ReservationId={ReservationId}, Required={Required}, Paid={Paid}, Remaining={Remaining}, FullyPaid={Fully}",
+                response.ReservationId, response.TotalRequiredAmount, response.TotalPaidAmount, response.TotalRemainingAmount, response.IsFullyPaid);
 
             return ApplicationResult<ReservationPricingResponse>.Success(response);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while getting pricing for reservation {Identifier}",
-                request.ReservationIdentifier);
-            return ApplicationResult<ReservationPricingResponse>.Failure("خطا در دریافت اطلاعات قیمت رزرو");
+            _logger.LogError(ex, "Failed to calculate pricing for reservation {ReservationId}", request.ReservationId);
+            return ApplicationResult<ReservationPricingResponse>.Failure("خطا در محاسبه قیمت رزرو");
         }
     }
 }

@@ -22,6 +22,8 @@ public class ResponseDto
     // Response status with Persian text
     public string AttemptStatus { get; set; } = string.Empty;
     public string AttemptStatusText { get; set; } = string.Empty;
+    public string ResponseStatus { get; set; } = string.Empty; // New response status
+    public string ResponseStatusText { get; set; } = string.Empty; // Persian text for response status
     public bool IsActive { get; set; }
     public bool IsSubmitted { get; set; }
     public bool IsExpired { get; set; }

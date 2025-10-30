@@ -66,7 +66,13 @@ public class TourSeedingService : ITourSeedingService
             new Feature("اقامت", "اقامت در هتل", "fas fa-hotel", null, 3, true, "هتل 4 ستاره", "required"),
             new Feature("راهنمای تور", "راهنمای حرفه‌ای تور", "fas fa-user-tie", null, 4, false, "راهنمای مجرب", "optional"),
             new Feature("بیمه مسافرتی", "بیمه مسافرتی شامل بسته", "fas fa-shield-alt", null, 5, true, "پوشش کامل", "required"),
-            new Feature("مجوز گردشگری", "مجوز گردشگری مخصوص تورها", "fas fa-certificate", null, 6, true, "مجوز رسمی", "required")
+            new Feature("مجوز گردشگری", "مجوز گردشگری مخصوص تورها", "fas fa-certificate", null, 6, true, "مجوز رسمی", "required"),
+            new Feature("has_licences", "مجوزهای مورد نیاز برای شرکت در تور", "fas fa-id-card", null, 7, true, "مجوزهای تخصصی", "required"),
+            new Feature("هتل", "اقامت در هتل مجهز", "fas fa-bed", null, 8, true, "هتل مناسب", "required"),
+            new Feature("تور لیدر", "راهنمای تور حرفه‌ای", "fas fa-user-tie", null, 9, true, "راهنمای مجرب", "required"),
+            new Feature("شب مانی", "اقامت شبانه در منطقه", "fas fa-moon", null, 10, true, "اقامت شبانه", "required"),
+            new Feature("کوهنوردی", "تجهیزات و راهنمای کوهنوردی", "fas fa-mountain", null, 11, true, "کوهنوردی حرفه‌ای", "required"),
+            new Feature("اقامتگاه", "اقامتگاه مناسب در طبیعت", "fas fa-campground", null, 12, true, "اقامتگاه طبیعت", "required")
         };
 
         foreach (var feature in features)
@@ -178,100 +184,74 @@ public class TourSeedingService : ITourSeedingService
 
     private static List<TourSeedData> GetPredefinedTours()
     {
-        var baseDate = DateTime.UtcNow;
-        var regStart1 = baseDate.AddDays(1);
-        var tourStart1 = baseDate.AddMonths(2);
-        var regEnd1 = tourStart1.AddDays(-10);
-        var tourEnd1 = tourStart1.AddDays(7);
+        // Kalibar tour dates (September 2025)
+        // اواسط شهریور 1404 = September 15, 2025
+        // 27 شهریور 1404 = September 27, 2025
+        var kalibarRegStart = new DateTime(2025, 9, 15); // اواسط شهریور 1404
+        var kalibarRegEnd = new DateTime(2025, 9, 25); // پایان شهریور 1404
+        var kalibarTourStart = new DateTime(2025, 9, 27); // 27 شهریور 1404
+        var kalibarTourEnd = kalibarTourStart.AddDays(2); // دو روزه
 
-        var regStart2 = baseDate.AddDays(5);
-        var tourStart2 = baseDate.AddMonths(3);
-        var regEnd2 = tourStart2.AddDays(-15);
-        var tourEnd2 = tourStart2.AddDays(5);
-
-        var regStart3 = baseDate.AddDays(3);
-        var tourStart3 = baseDate.AddMonths(4);
-        var regEnd3 = tourStart3.AddDays(-12);
-        var tourEnd3 = tourStart3.AddDays(6);
+        // Soledoakl waterfall tour dates (August 2025)
+        // 15 مرداد 1404 = August 6, 2025
+        // اواخر مرداد 1404 = August 25, 2025
+        var soledoaklRegStart = new DateTime(2025, 8, 6); // 15 مرداد 1404
+        var soledoaklRegEnd = new DateTime(2025, 8, 20); // اواخر مرداد 1404
+        var soledoaklTourStart = new DateTime(2025, 8, 25); // اواخر مرداد 1404
+        var soledoaklTourEnd = soledoaklTourStart.AddDays(1); // یک روزه
 
         return new List<TourSeedData>
         {
             new TourSeedData
             {
-                Title = "تور 7 روزه شمال ایران",
-                Description = "تور فوق‌العاده 7 روزه به مناطق دیدنی شمال ایران شامل گیلان و مازندران با بازدید از جنگل‌های هیرکانی، دریاچه انزلی، بندر انزلی و سایر مناطق توریستی. این تور شامل اقامت در هتل‌های 4 ستاره، وعده‌های غذایی کامل، حمل و نقل مجهز و راهنمای حرفه‌ای می‌باشد.",
-                RegistrationStart = regStart1,
-                RegistrationEnd = regEnd1,
-                TourStart = tourStart1,
-                TourEnd = tourEnd1,
-                MaxParticipants = 25,
+                Title = "تور 2 روزه کلیبر",
+                Description = "تور دو روزه کلیبر شامل بازدید از قلعه تاریخی بابک، جنگل‌های ارسباران، طبیعت بکر و مناظر زیبای منطقه کلیبر در استان آذربایجان شرقی. این تور شامل پیاده‌روی در طبیعت، بازدید از قلعه بابک که بر فراز کوهی قرار دارد و به عنوان نمادی از مقاومت تاریخی شناخته می‌شود، و همچنین لذت بردن از هوای پاک و طبیعت سرسبز منطقه می‌باشد.",
+                RegistrationStart = kalibarRegStart,
+                RegistrationEnd = kalibarRegEnd,
+                TourStart = kalibarTourStart,
+                TourEnd = kalibarTourEnd,
+                MaxParticipants = 20,
                 MinAge = 18,
                 MaxAge = 65,
                 Photos = new List<PhotoSeedData>
                 {
-                    new PhotoSeedData { ImageUrl = "/uploads/tours/northern-iran-1.jpg", Caption = "جنگل‌های سبز شمال", Order = 1 },
-                    new PhotoSeedData { ImageUrl = "/uploads/tours/northern-iran-2.jpg", Caption = "دریاچه انزلی", Order = 2 },
-                    new PhotoSeedData { ImageUrl = "/uploads/tours/northern-iran-3.jpg", Caption = "بندر زیبای انزلی", Order = 3 }
+                    new PhotoSeedData { ImageUrl = "/tours/kaleibar1.webp", Caption = "قلعه تاریخی بابک", Order = 1 },
+                    new PhotoSeedData { ImageUrl = "/tours/kaleibar2.webp", Caption = "جنگل‌های ارسباران", Order = 2 },
                 },
                 Pricing = new List<PricingSeedData>
                 {
-                    new PricingSeedData { ParticipantType = ParticipantType.Member, PriceInRials = 15000000 },
-                    new PricingSeedData { ParticipantType = ParticipantType.Guest, PriceInRials = 12000000 }
+                    new PricingSeedData { ParticipantType = ParticipantType.Member, PriceInRials = 1000000 },
+                    new PricingSeedData { ParticipantType = ParticipantType.Guest, PriceInRials = 1700000 }
                 },
-                MemberCapabilities = new List<string> {  },
-                MemberFeatures = new List<string> { "execute", "grade3" ,"grade1"},
-                FeatureIds = new List<int> { 1, 2, 3 }
+                MemberCapabilities = new List<string> { "has_licences" },
+                MemberFeatures = new List<string> { "has_licences" },
+                FeatureIds = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }
             },
             new TourSeedData
             {
-                Title = "تور 5 روزه اصفهان",
-                Description = "تور 5 روزه اصفهان شامل بازدید از میدان نقش جهان، مسجد شاه، مسجد شیخ لطف‌الله، کاخ عالی‌قاپو، سی و سه پل و سایر جاذبه‌های تاریخی و فرهنگی اصفهان.",
-                RegistrationStart = regStart2,
-                RegistrationEnd = regEnd2,
-                TourStart = tourStart2,
-                TourEnd = tourEnd2,
-                MaxParticipants = 20,
+                Title = "تور 1 روزه آبشار سوله دوکل",
+                Description = "تور یک روزه آبشار سوله دوکل در منطقه مرگور، استان آذربایجان غربی. این آبشار با ارتفاع حدود 30 متر، یکی از زیباترین و پرآب‌ترین آبشارهای ایران است که در دامنه کوه دالامپر واقع شده است. در فصل تابستان به دلیل ذوب برف‌ها، جریان آب قوی و پرصدایی دارد. اطراف آبشار با مناظر طبیعی بکر، جنگل‌های سرسبز و رودخانه‌ها احاطه شده است. این تور شامل پیاده‌روی در طبیعت، بازدید از آبشار و لذت بردن از هوای پاک کوهستانی می‌باشد.",
+                RegistrationStart = soledoaklRegStart,
+                RegistrationEnd = soledoaklRegEnd,
+                TourStart = soledoaklTourStart,
+                TourEnd = soledoaklTourEnd,
+                MaxParticipants = 15,
                 MinAge = 16,
-                MaxAge = 70,
+                MaxAge = 60,
                 Photos = new List<PhotoSeedData>
                 {
-                    new PhotoSeedData { ImageUrl = "/uploads/tours/isfahan-1.jpg", Caption = "میدان نقش جهان", Order = 1 },
-                    new PhotoSeedData { ImageUrl = "/uploads/tours/isfahan-2.jpg", Caption = "مسجد شاه", Order = 2 }
+                    new PhotoSeedData { ImageUrl = "/tours/sole1.jpg", Caption = "آبشار سوله دوکل", Order = 1 },
+                    new PhotoSeedData { ImageUrl = "/tours/sole2.webp", Caption = "طبیعت اطراف آبشار", Order = 2 },
+                    new PhotoSeedData { ImageUrl = "/tours/sole3.jpg", Caption = "کوه دوکل", Order = 3 }
                 },
                 Pricing = new List<PricingSeedData>
                 {
-                    new PricingSeedData { ParticipantType = ParticipantType.Member, PriceInRials = 10000000 },
-                    new PricingSeedData { ParticipantType = ParticipantType.Guest, PriceInRials = 8500000 }
+                    new PricingSeedData { ParticipantType = ParticipantType.Member, PriceInRials = 2000000 },
+                    new PricingSeedData { ParticipantType = ParticipantType.Guest, PriceInRials = 2000000 }
                 },
-                MemberCapabilities = new List<string> { "structure_supervisor_grade1" },
-                MemberFeatures = new List<string> { "structure", "grade1" },
-                FeatureIds = new List<int> { 1, 2, 4 }
-            },
-            new TourSeedData
-            {
-                Title = "تور 6 روزه شیراز",
-                Description = "تور 6 روزه شیراز شامل بازدید از تخت جمشید، نقش رستم، حافظیه، سعدیه، مسجد نصیرالملک، باغ ارم و سایر مناطق تاریخی و فرهنگی شیراز.",
-                RegistrationStart = regStart3,
-                RegistrationEnd = regEnd3,
-                TourStart = tourStart3,
-                TourEnd = tourEnd3,
-                MaxParticipants = 22,
-                MinAge = 18,
-                MaxAge = 68,
-                Photos = new List<PhotoSeedData>
-                {
-                    new PhotoSeedData { ImageUrl = "/uploads/tours/shiraz-1.jpg", Caption = "تخت جمشید", Order = 1 },
-                    new PhotoSeedData { ImageUrl = "/uploads/tours/shiraz-2.jpg", Caption = "حافظیه", Order = 2 },
-                    new PhotoSeedData { ImageUrl = "/uploads/tours/shiraz-3.jpg", Caption = "مسجد نصیرالملک", Order = 3 }
-                },
-                Pricing = new List<PricingSeedData>
-                {
-                    new PricingSeedData { ParticipantType = ParticipantType.Member, PriceInRials = 13000000 },
-                    new PricingSeedData { ParticipantType = ParticipantType.Guest, PriceInRials = 11000000 }
-                },
-                MemberCapabilities = new List<string> { "architecture_execute_grade2"  },
-                MemberFeatures = new List<string> { "architecture", "execute", "grade2" },
-                FeatureIds = new List<int> { 1, 2, 3, 5 }
+                MemberCapabilities = new List<string> { "has_licences" },
+                MemberFeatures = new List<string> { "has_licences" },
+                FeatureIds = new List<int> { 1, 2, 4, 5, 6, 7, 11, 12 }
             }
         };
     }

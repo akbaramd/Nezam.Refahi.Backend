@@ -20,14 +20,14 @@ namespace Nezam.Refahi.Finance.Application.Features.Bills.Queries.GetUserBills
     /// <summary>
     /// Handler returns ONLY BillDto (no custom response wrapper), paginated.
     /// </summary>
-    public sealed class GetUserBillsQueryHandler
+    public sealed class ListUserBillsByUserIdQueryHandler
         : IRequestHandler<ListUserBillsByUserIdQuery, ApplicationResult<PaginatedResult<BillDto>>>
     {
         private readonly IBillRepository _billRepository;
         private readonly IValidator<ListUserBillsByUserIdQuery> _validator;
         private readonly IMapper<Bill, BillDto> _billMapper;
 
-        public GetUserBillsQueryHandler(
+        public ListUserBillsByUserIdQueryHandler(
             IBillRepository billRepository,
             IValidator<ListUserBillsByUserIdQuery> validator,
             IMapper<Bill, BillDto> billMapper)
@@ -110,25 +110,14 @@ namespace Nezam.Refahi.Finance.Application.Features.Bills.Queries.GetUserBills
             // Type
             if (!string.IsNullOrWhiteSpace(request.BillType))
             {
-                q = q.Where(b => b.BillType.Equals(request.BillType, StringComparison.OrdinalIgnoreCase));
+                q = q.Where(b => b.ReferenceType.Equals(request.BillType, StringComparison.OrdinalIgnoreCase));
             }
 
-            // Only overdue
-            if (request.OnlyOverdue)
+            if (!string.IsNullOrWhiteSpace(request.SearchTerm))
             {
-                q = q.Where(b =>
-                    b.DueDate.HasValue &&
-                    b.DueDate.Value < DateTime.UtcNow &&
-                    b.Status != BillStatus.FullyPaid &&
-                    b.Status != BillStatus.Cancelled);
+              q = q.Where(x=>x.ReferenceId.Contains(request.SearchTerm) || x.ReferenceType.Contains(request.SearchTerm) || x.ReferenceId.Contains(request.SearchTerm));
             }
-
-            // Only unpaid (not fully paid and not cancelled)
-            if (request.OnlyUnpaid)
-            {
-                q = q.Where(b => b.Status != BillStatus.FullyPaid && b.Status != BillStatus.Cancelled);
-            }
-
+            
             return q;
         }
 

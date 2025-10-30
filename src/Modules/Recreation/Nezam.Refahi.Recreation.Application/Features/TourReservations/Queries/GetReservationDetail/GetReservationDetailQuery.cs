@@ -1,5 +1,5 @@
 using MediatR;
-using Nezam.Refahi.Recreation.Application.Dtos;
+using Nezam.Refahi.Recreation.Contracts.Dtos;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
 namespace Nezam.Refahi.Recreation.Application.Features.TourReservations.Queries.GetReservationDetail;
@@ -14,12 +14,11 @@ public class GetReservationDetailQuery : IRequest<ApplicationResult<ReservationD
     /// </summary>
     public Guid ReservationId { get; set; }
 
+    public string UserNationalNumber { get; set; } = string.Empty;
 
-
-    public GetReservationDetailQuery(Guid reservationId)
+    public GetReservationDetailQuery(Guid reservationId, string userNationalNumber)
     {
         ReservationId = reservationId;
+        UserNationalNumber = userNationalNumber;
     }
-
-    public GetReservationDetailQuery() { }
 }

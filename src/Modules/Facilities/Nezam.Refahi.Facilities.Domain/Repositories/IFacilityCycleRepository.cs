@@ -1,3 +1,5 @@
+using MCA.SharedKernel.Domain.Contracts.Repositories;
+using MCA.SharedKernel.Domain.Contracts.Specifications;
 using Nezam.Refahi.Facilities.Domain.Entities;
 
 namespace Nezam.Refahi.Facilities.Domain.Repositories;
@@ -5,12 +7,8 @@ namespace Nezam.Refahi.Facilities.Domain.Repositories;
 /// <summary>
 /// Repository interface for FacilityCycle aggregate root
 /// </summary>
-public interface IFacilityCycleRepository
+public interface IFacilityCycleRepository : IRepository<FacilityCycle,Guid>
 {
-    /// <summary>
-    /// Get facility cycle by ID
-    /// </summary>
-    Task<FacilityCycle?> GetByIdAsync(Guid cycleId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get facility cycle with facility details

@@ -9,7 +9,7 @@ namespace Nezam.Refahi.Notifications.Application.EventHandlers.Finance;
 /// <summary>
 /// Event handler for bill created events from Finance context
 /// </summary>
-public class BillCreatedEventHandler : INotificationHandler<BillCreatedForReservationIntegrationEvent>
+public class BillCreatedEventHandler : INotificationHandler<BillCreatedIntegrationEvent>
 {
     private readonly INotificationService _notificationService;
     private readonly ILogger<BillCreatedEventHandler> _logger;
@@ -22,7 +22,7 @@ public class BillCreatedEventHandler : INotificationHandler<BillCreatedForReserv
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
     
-    public async Task Handle(BillCreatedForReservationIntegrationEvent notification, CancellationToken cancellationToken)
+    public async Task Handle(BillCreatedIntegrationEvent notification, CancellationToken cancellationToken)
     {
         try
         {

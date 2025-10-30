@@ -23,5 +23,7 @@ public class SubmitSurveyResponseResponse
     public int AnsweredQuestions { get; set; }
     public int TotalQuestions { get; set; }
     public decimal CompletionPercentage { get; set; }
+    public string ResponseStatus { get; set; } = string.Empty; // Current response status
+    public string ResponseStatusText { get; set; } = string.Empty; // Persian text for response status
     public string? Message { get; set; }
 }

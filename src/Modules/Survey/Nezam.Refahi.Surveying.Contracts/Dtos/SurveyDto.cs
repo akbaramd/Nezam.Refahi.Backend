@@ -52,6 +52,9 @@ public class SurveyDto
     public int UserAttemptCount { get; set; }
     public int RemainingAttempts { get; set; }
     
+    // Detailed eligibility information
+    public UserEligibilityInfo? UserEligibility { get; set; }
+    
     // Statistics
     public int TotalQuestions { get; set; }
     public int RequiredQuestions { get; set; }
@@ -73,4 +76,38 @@ public class SurveyDto
     public decimal? UserCompletionPercentage { get; set; }
     public int UserAnsweredQuestions { get; set; }
     public bool UserHasCompletedSurvey { get; set; }
+}
+
+/// <summary>
+/// Detailed eligibility information for user participation
+/// </summary>
+public class UserEligibilityInfo
+{
+    public bool CanParticipate { get; set; }
+    public string Message { get; set; } = string.Empty;
+    public string ErrorCode { get; set; } = string.Empty;
+    
+    // Detailed checks
+    public bool IsSurveyActive { get; set; }
+    public bool IsWithinTimeWindow { get; set; }
+    public bool HasRequiredCapabilities { get; set; }
+    public bool HasRequiredFeatures { get; set; }
+    public bool WithinAttemptLimit { get; set; }
+    public bool NotInCooldown { get; set; }
+    public bool CanSubmitMultiple { get; set; }
+    
+    // Missing requirements
+    public List<string> MissingCapabilities { get; set; } = new();
+    public List<string> MissingFeatures { get; set; } = new();
+    
+    // Time information
+    public DateTime? SurveyStartTime { get; set; }
+    public DateTime? SurveyEndTime { get; set; }
+    public DateTime? CooldownEndTime { get; set; }
+    public int? RemainingCooldownSeconds { get; set; }
+    
+    // Attempt information
+    public int CurrentAttempts { get; set; }
+    public int MaxAllowedAttempts { get; set; }
+    public int RemainingAttempts { get; set; }
 }

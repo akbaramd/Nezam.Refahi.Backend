@@ -25,9 +25,7 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.Property(p => p.BillId)
             .IsRequired();
 
-        builder.Property(p => p.BillNumber)
-            .IsRequired()
-            .HasMaxLength(50);
+  
 
         builder.Property(p => p.Status)
             .IsRequired()
@@ -49,8 +47,6 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.Property(p => p.GatewayReference)
             .HasMaxLength(100);
 
-        builder.Property(p => p.CallbackUrl)
-            .HasMaxLength(500);
 
         builder.Property(p => p.Description)
             .HasMaxLength(500);
@@ -65,6 +61,15 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.Property(p => p.FailureReason)
             .HasMaxLength(1000);
 
+        // Discount properties
+        builder.Property(p => p.AppliedDiscountCode)
+            .HasMaxLength(50);
+
+        builder.Property(p => p.AppliedDiscountCodeId);
+
+        builder.Property(p => p.IsFreePayment)
+            .HasDefaultValue(false);
+
         builder.ConfigureSoftDeletableEntity();
         // Money value object
         builder.OwnsOne(p => p.Amount, money =>
@@ -73,6 +78,14 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
                 .HasColumnName("AmountRials")
                 .HasColumnType("decimal(18,2)")
                 .IsRequired();
+        });
+
+        // Applied discount amount as owned entity
+        builder.OwnsOne(p => p.AppliedDiscountAmount, money =>
+        {
+            money.Property(m => m.AmountRials)
+                .HasColumnName("AppliedDiscountAmountRials")
+                .HasColumnType("decimal(18,2)");
         });
 
         // Relationships
@@ -89,11 +102,10 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         // Indexes
         builder.HasIndex(p => p.BillId);
 
-        builder.HasIndex(p => p.BillNumber);
-
         builder.HasIndex(p => p.Status);
 
         builder.HasIndex(p => p.GatewayTransactionId);
+        builder.HasIndex(p => p.GatewayReference);
 
         builder.HasIndex(p => p.CreatedAt);
 

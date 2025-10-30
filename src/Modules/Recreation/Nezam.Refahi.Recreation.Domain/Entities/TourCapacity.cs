@@ -19,6 +19,9 @@ public sealed class TourCapacity : Entity<Guid>
     public int MaxParticipantsPerReservation { get; private set; } = 10;
     public CapacityState CapacityState { get; private set; }
     
+    // Special capacity for VIP members only
+    public bool IsSpecial { get; private set; }
+    
     // Multi-tenancy support
     public string? TenantId { get; private set; }
     
@@ -42,7 +45,8 @@ public sealed class TourCapacity : Entity<Guid>
         string? description = null,
         int minParticipantsPerReservation = 1,
         int maxParticipantsPerReservation = 10,
-        string? tenantId = null)
+        string? tenantId = null,
+        bool isSpecial = false)
         : base(Guid.NewGuid())
     {
         ValidateMaxParticipants(maxParticipants);
@@ -58,6 +62,7 @@ public sealed class TourCapacity : Entity<Guid>
         MinParticipantsPerReservation = minParticipantsPerReservation;
         MaxParticipantsPerReservation = maxParticipantsPerReservation;
         TenantId = tenantId;
+        IsSpecial = isSpecial;
         IsActive = true;
         CapacityState = CalculateCapacityState();
     }
@@ -122,12 +127,43 @@ public sealed class TourCapacity : Entity<Guid>
     public double UtilizationPercentage => MaxParticipants > 0 ? (double)AllocatedParticipants / MaxParticipants * 100 : 0;
 
     /// <summary>
+    /// Gets the number of currently allocated participants (excluding special capacities from public calculations)
+    /// </summary>
+    public int PublicAllocatedParticipants => IsSpecial ? 0 : AllocatedParticipants;
+
+    /// <summary>
+    /// Gets the utilization percentage (excluding special capacities from public calculations)
+    /// </summary>
+    public double PublicUtilizationPercentage => IsSpecial ? 0 : UtilizationPercentage;
+
+    /// <summary>
+    /// Gets the remaining participants count (excluding special capacities from public calculations)
+    /// </summary>
+    public int PublicRemainingParticipants => IsSpecial ? 0 : RemainingParticipants;
+
+    /// <summary>
+    /// Gets the maximum participants count (excluding special capacities from public calculations)
+    /// </summary>
+    public int PublicMaxParticipants => IsSpecial ? 0 : MaxParticipants;
+
+    /// <summary>
     /// Checks if capacity can accommodate the requested number of participants
     /// </summary>
     public bool CanAccommodate(int requestedCount)
     {
         return IsActive && 
                IsRegistrationOpen(DateTime.UtcNow) && 
+               requestedCount >= MinParticipantsPerReservation && 
+               requestedCount <= MaxParticipantsPerReservation && 
+               RemainingParticipants >= requestedCount;
+    }
+
+    /// <summary>
+    /// Checks if capacity can accommodate the requested number of participants for a specific member
+    /// </summary>
+    public bool CanAccommodateForMember(int requestedCount, bool memberIsSpecial)
+    {
+        return CanMemberReserve(memberIsSpecial) && 
                requestedCount >= MinParticipantsPerReservation && 
                requestedCount <= MaxParticipantsPerReservation && 
                RemainingParticipants >= requestedCount;
@@ -201,6 +237,42 @@ public sealed class TourCapacity : Entity<Guid>
     public void UpdateCapacityState()
     {
         CapacityState = CalculateCapacityState();
+    }
+
+    /// <summary>
+    /// Marks this capacity as special (VIP only)
+    /// </summary>
+    public void MarkAsSpecial()
+    {
+        IsSpecial = true;
+    }
+
+    /// <summary>
+    /// Removes special status from this capacity
+    /// </summary>
+    public void RemoveSpecialStatus()
+    {
+        IsSpecial = false;
+    }
+
+    /// <summary>
+    /// Checks if this capacity is visible to a member based on their special status
+    /// </summary>
+    public bool IsVisibleToMember(bool memberIsSpecial)
+    {
+        // Regular capacities are visible to everyone
+        // Special capacities are only visible to special members
+        return !IsSpecial || memberIsSpecial;
+    }
+
+    /// <summary>
+    /// Checks if a member can make reservations for this capacity
+    /// </summary>
+    public bool CanMemberReserve(bool memberIsSpecial)
+    {
+        return IsVisibleToMember(memberIsSpecial) && 
+               IsActive && 
+               IsRegistrationOpen(DateTime.UtcNow);
     }
 
     /// <summary>

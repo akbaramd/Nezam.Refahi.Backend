@@ -73,21 +73,23 @@ public class CreateRefundCommandHandler : IRequestHandler<CreateRefundCommand, A
             // Save changes
             await _billRepository.UpdateAsync(bill, cancellationToken:cancellationToken);
             await _unitOfWork.SaveAsync(cancellationToken);
-            await _unitOfWork.CommitAsync(cancellationToken);
 
-            // Publish RefundRequestedIntegrationEvent
+            // Publish RefundRequestedIntegrationEvent INSIDE transaction
             var refundRequestedEvent = new RefundRequestedIntegrationEvent
             {
                 RefundId = refund.Id,
                 PaymentId = bill.Payments.FirstOrDefault()?.Id ?? Guid.Empty,
                 ReferenceId = bill.ReferenceId,
-                ReferenceType = bill.BillType,
+                ReferenceType = bill.ReferenceType,
                 RefundAmountRials = (long)refund.Amount.AmountRials,
                 Reason = refund.Reason,
                 RequestedByNationalNumber = request.RequestedByExternalUserId?.ToString() ?? string.Empty, // Assuming this is the national number
                 RequestedAt = refund.RequestedAt
             };
             await _outboxPublisher.PublishAsync(refundRequestedEvent, cancellationToken);
+
+            // Commit transaction (saves domain changes + outbox messages)
+            await _unitOfWork.CommitAsync(cancellationToken);
 
             // Prepare response
             var response = new CreateRefundResponse

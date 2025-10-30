@@ -11,6 +11,7 @@ using Nezam.Refahi.Finance.Domain.Repositories;
 using Nezam.Refahi.Finance.Domain.Services;
 using Nezam.Refahi.Finance.Infrastructure.Persistence;
 using Nezam.Refahi.Finance.Infrastructure.Persistence.Repositories;
+using Nezam.Refahi.Finance.Infrastructure.Persistence.Seeders;
 using Nezam.Refahi.Finance.Infrastructure.Services;
 using Nezam.Refahi.Shared.Infrastructure;
 using Parbad.Builder;
@@ -79,6 +80,10 @@ public class NezamRefahiFinanceInfrastructureModule : BonWebModule
         context.Services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
         context.Services.AddScoped<IWalletDepositRepository, WalletDepositRepository>();
         context.Services.AddScoped<IWalletSnapshotRepository, WalletSnapshotRepository>();
+        
+        // Register discount repositories
+        context.Services.AddScoped<IDiscountCodeRepository, DiscountCodeRepository>();
+        context.Services.AddScoped<IDiscountCodeUsageRepository, DiscountCodeUsageRepository>();
 
         // Register Unit of Work
         context.Services.AddScoped<IFinanceUnitOfWork, FinanceUnitOfWork>();
@@ -86,7 +91,7 @@ public class NezamRefahiFinanceInfrastructureModule : BonWebModule
         // Register Services
         context.Services.AddScoped<IPaymentService, PaymentService>();
         context.Services.AddScoped<IWalletSnapshotService, WalletSnapshotService>();
-        context.Services.AddScoped<WalletDomainService>();
+        context.Services.AddScoped<WalletSnapshotService>();
 
         // Register Event Consumers
         context.Services.AddScoped<WalletChargePaymentCompletedConsumer>();
@@ -94,5 +99,17 @@ public class NezamRefahiFinanceInfrastructureModule : BonWebModule
         return base.OnConfigureAsync(context);
     }
 
-    
+    public override async Task OnPostApplicationAsync(BonWebApplicationContext context)
+    {
+        var app = context.Application;
+        
+        // Seed discount codes
+        using (var scope = app.Services.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<FinanceDbContext>();
+            await DiscountCodeSeeder.SeedAsync(dbContext);
+        }
+        
+        await base.OnPostApplicationAsync(context);
+    }
 }

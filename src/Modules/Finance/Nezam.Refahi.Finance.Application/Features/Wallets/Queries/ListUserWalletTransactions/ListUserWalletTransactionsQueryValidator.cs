@@ -2,7 +2,7 @@ using FluentValidation;
 using Nezam.Refahi.Finance.Application.Queries.Wallets;
 using Nezam.Refahi.Finance.Domain.Enums;
 
-namespace Nezam.Refahi.Finance.Application.Features.Wallets.Queries.GetWalletTransactions;
+namespace Nezam.Refahi.Finance.Application.Features.Wallets.Queries.ListUserWalletTransactions;
 
 /// <summary>
 /// Validator for ListUserWalletTransactionsQuery

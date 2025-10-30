@@ -1,5 +1,6 @@
+using MCA.SharedKernel.Domain.Models;
 using MediatR;
-using Nezam.Refahi.Recreation.Application.Dtos;
+using Nezam.Refahi.Recreation.Contracts.Dtos;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
 namespace Nezam.Refahi.Recreation.Application.Features.Tours.Queries.GetToursPaginated;
@@ -18,8 +19,4 @@ public class GetToursPaginatedQuery
 
   /// <summary>فیلتر بر اساس وضعیت فعال/غیرفعال</summary>
   public bool? IsActive { get; init; }
-
-
-
-
 }

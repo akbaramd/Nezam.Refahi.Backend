@@ -110,14 +110,11 @@ namespace Nezam.Refahi.Facilities.Infrastructure.Migrations
                     b.ToTable("Facilities", "facilities");
                 });
 
-            modelBuilder.Entity("Nezam.Refahi.Facilities.Domain.Entities.FacilityCapabilityPolicy", b =>
+            modelBuilder.Entity("Nezam.Refahi.Facilities.Domain.Entities.FacilityCapability", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("AssignedAt")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("CapabilityId")
                         .IsRequired()
@@ -130,18 +127,6 @@ namespace Nezam.Refahi.Facilities.Infrastructure.Migrations
                     b.Property<Guid>("FacilityId1")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<decimal?>("ModifierValue")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("decimal(18,4)");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("PolicyType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CapabilityId");
@@ -150,12 +135,10 @@ namespace Nezam.Refahi.Facilities.Infrastructure.Migrations
 
                     b.HasIndex("FacilityId1");
 
-                    b.HasIndex("PolicyType");
-
                     b.HasIndex("FacilityId", "CapabilityId")
                         .IsUnique();
 
-                    b.ToTable("FacilityCapabilityPolicies", "facilities");
+                    b.ToTable("FacilityCapability", "facilities");
                 });
 
             modelBuilder.Entity("Nezam.Refahi.Facilities.Domain.Entities.FacilityCycle", b =>
@@ -374,6 +357,57 @@ namespace Nezam.Refahi.Facilities.Infrastructure.Migrations
                     b.ToTable("FacilityFeatures", "facilities");
                 });
 
+            modelBuilder.Entity("Nezam.Refahi.Facilities.Domain.Entities.FacilityRejection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Details")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Metadata")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("RejectedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("RejectedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("RejectedByUserName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("RejectionType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RejectedAt");
+
+                    b.HasIndex("RejectedByUserId");
+
+                    b.HasIndex("RequestId")
+                        .IsUnique();
+
+                    b.ToTable("FacilityRejections", "facilities");
+                });
+
             modelBuilder.Entity("Nezam.Refahi.Facilities.Domain.Entities.FacilityRequest", b =>
                 {
                     b.Property<Guid>("Id")
@@ -463,6 +497,9 @@ namespace Nezam.Refahi.Facilities.Infrastructure.Migrations
                     b.Property<DateTime?>("RejectedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid?>("RejectionId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("RejectionReason")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
@@ -510,6 +547,8 @@ namespace Nezam.Refahi.Facilities.Infrastructure.Migrations
 
                     b.HasIndex("MemberId");
 
+                    b.HasIndex("RejectionId");
+
                     b.HasIndex("RequestNumber")
                         .IsUnique()
                         .HasFilter("[RequestNumber] IS NOT NULL");
@@ -519,12 +558,12 @@ namespace Nezam.Refahi.Facilities.Infrastructure.Migrations
                     b.ToTable("FacilityRequests", "facilities");
                 });
 
-            modelBuilder.Entity("Nezam.Refahi.Facilities.Domain.Entities.FacilityCapabilityPolicy", b =>
+            modelBuilder.Entity("Nezam.Refahi.Facilities.Domain.Entities.FacilityCapability", b =>
                 {
                     b.HasOne("Nezam.Refahi.Facilities.Domain.Entities.Facility", null)
                         .WithMany("CapabilityPolicies")
                         .HasForeignKey("FacilityId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Nezam.Refahi.Facilities.Domain.Entities.Facility", "Facility")
@@ -665,6 +704,17 @@ namespace Nezam.Refahi.Facilities.Infrastructure.Migrations
                     b.Navigation("Facility");
                 });
 
+            modelBuilder.Entity("Nezam.Refahi.Facilities.Domain.Entities.FacilityRejection", b =>
+                {
+                    b.HasOne("Nezam.Refahi.Facilities.Domain.Entities.FacilityRequest", "Request")
+                        .WithOne()
+                        .HasForeignKey("Nezam.Refahi.Facilities.Domain.Entities.FacilityRejection", "RequestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Request");
+                });
+
             modelBuilder.Entity("Nezam.Refahi.Facilities.Domain.Entities.FacilityRequest", b =>
                 {
                     b.HasOne("Nezam.Refahi.Facilities.Domain.Entities.FacilityCycle", "FacilityCycle")
@@ -678,6 +728,11 @@ namespace Nezam.Refahi.Facilities.Infrastructure.Migrations
                         .HasForeignKey("FacilityId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("Nezam.Refahi.Facilities.Domain.Entities.FacilityRejection", null)
+                        .WithMany()
+                        .HasForeignKey("RejectionId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.OwnsOne("Nezam.Refahi.Shared.Domain.ValueObjects.Money", "ApprovedAmount", b1 =>
                         {

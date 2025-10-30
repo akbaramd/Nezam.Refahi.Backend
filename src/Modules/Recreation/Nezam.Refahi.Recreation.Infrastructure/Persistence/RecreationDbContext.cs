@@ -18,6 +18,8 @@ public class RecreationDbContext : DbContext
     public DbSet<ApiIdempotency> ApiIdempotency { get; set; } = null!;
     public DbSet<TourPhoto> TourPhotos { get; set; } = null!;
     public DbSet<TourPricing> TourPricing { get; set; } = null!;
+    public DbSet<TourPricingCapability> TourPricingCapabilities { get; set; } = null!;
+    public DbSet<TourPricingFeature> TourPricingFeatures { get; set; } = null!;
     public DbSet<TourFeature> TourFeatures { get; set; } = null!;
     public DbSet<Feature> Features { get; set; } = null!;
     public DbSet<FeatureCategory> FeatureCategories { get; set; } = null!;

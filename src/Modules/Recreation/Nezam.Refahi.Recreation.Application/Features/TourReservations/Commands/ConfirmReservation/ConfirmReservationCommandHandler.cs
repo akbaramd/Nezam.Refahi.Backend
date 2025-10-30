@@ -70,13 +70,13 @@ public class ConfirmReservationCommandHandler : IRequestHandler<ConfirmReservati
             {
                 // For payment-confirmed reservations, we should allow confirmation even if expired
                 // because the payment was initiated before expiry
-                if (reservation.Status == Nezam.Refahi.Recreation.Domain.Enums.ReservationStatus.Paying)
+                if (reservation.Status == Nezam.Refahi.Recreation.Domain.Enums.ReservationStatus.PendingConfirmation)
                 {
                     // Special handling for payment-confirmed reservations
                     // Skip expiry check since payment was initiated before expiry
                     reservation.Confirm(totalAmount, skipExpiryCheck: true);
                     
-                    _logger.LogInformation("Confirmed expired reservation {ReservationId} due to successful payment", 
+                    _logger.LogInformation("Confirmed expired reservation {ReservationId} due to successful payment in PendingConfirmation state",  
                         reservation.Id);
                 }
                 else

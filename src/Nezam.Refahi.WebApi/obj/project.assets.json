@@ -2,10 +2,10 @@
   "version": 3,
   "targets": {
     "net8.0": {
-      "AkbarAmd.SharedKernel.Application/1.0.13": {
+      "AkbarAmd.SharedKernel.Application/1.0.15": {
         "type": "package",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Domain": "1.0.13",
+          "AkbarAmd.SharedKernel.Domain": "1.0.15",
           "AutoMapper": "12.0.1",
           "Bonyan": "1.5.6",
           "FluentValidation": "11.5.0",
@@ -23,7 +23,7 @@
           }
         }
       },
-      "AkbarAmd.SharedKernel.Domain/1.0.13": {
+      "AkbarAmd.SharedKernel.Domain/1.0.15": {
         "type": "package",
         "dependencies": {
           "Bonyan": "1.5.6",
@@ -40,10 +40,10 @@
           }
         }
       },
-      "AkbarAmd.SharedKernel.Infrastructure/1.0.13": {
+      "AkbarAmd.SharedKernel.Infrastructure/1.0.15": {
         "type": "package",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Domain": "1.0.13",
+          "AkbarAmd.SharedKernel.Domain": "1.0.15",
           "Bonyan": "1.5.6",
           "Microsoft.AspNetCore.Authorization": "8.0.18",
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "8.0.18",
@@ -2109,6 +2109,18 @@
           "lib/netstandard2.0/Mono.TextTemplating.dll": {}
         }
       },
+      "Moq/4.20.72": {
+        "type": "package",
+        "dependencies": {
+          "Castle.Core": "5.1.1"
+        },
+        "compile": {
+          "lib/net6.0/Moq.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/Moq.dll": {}
+        }
+      },
       "Newtonsoft.Json/13.0.3": {
         "type": "package",
         "compile": {
@@ -3188,11 +3200,93 @@
           }
         }
       },
+      "xunit/2.9.3": {
+        "type": "package",
+        "dependencies": {
+          "xunit.analyzers": "1.18.0",
+          "xunit.assert": "2.9.3",
+          "xunit.core": "[2.9.3]"
+        }
+      },
+      "xunit.abstractions/2.0.3": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/xunit.abstractions.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.0/xunit.abstractions.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "xunit.analyzers/1.18.0": {
+        "type": "package"
+      },
+      "xunit.assert/2.9.3": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/xunit.assert.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/xunit.assert.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "xunit.core/2.9.3": {
+        "type": "package",
+        "dependencies": {
+          "xunit.extensibility.core": "[2.9.3]",
+          "xunit.extensibility.execution": "[2.9.3]"
+        },
+        "build": {
+          "build/_._": {}
+        },
+        "buildMultiTargeting": {
+          "buildMultiTargeting/_._": {}
+        }
+      },
+      "xunit.extensibility.core/2.9.3": {
+        "type": "package",
+        "dependencies": {
+          "xunit.abstractions": "2.0.3"
+        },
+        "compile": {
+          "lib/netstandard1.1/xunit.core.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard1.1/xunit.core.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "xunit.extensibility.execution/2.9.3": {
+        "type": "package",
+        "dependencies": {
+          "xunit.extensibility.core": "[2.9.3]"
+        },
+        "compile": {
+          "lib/netstandard1.1/xunit.execution.dotnet.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard1.1/xunit.execution.dotnet.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Nezam.Refahi.BasicDefinitions.Application/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Application": "1.0.13",
+          "AkbarAmd.SharedKernel.Application": "1.0.15",
           "FluentValidation": "11.8.1",
           "FluentValidation.DependencyInjectionExtensions": "11.8.1",
           "Microsoft.EntityFrameworkCore": "8.0.18",
@@ -3226,7 +3320,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Domain": "1.0.13",
+          "AkbarAmd.SharedKernel.Domain": "1.0.15",
           "Nezam.Refahi.Shared.Domain": "1.0.0"
         },
         "compile": {
@@ -3240,7 +3334,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Infrastructure": "1.0.13",
+          "AkbarAmd.SharedKernel.Infrastructure": "1.0.15",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.18",
           "Microsoft.EntityFrameworkCore": "8.0.18",
           "Microsoft.EntityFrameworkCore.Relational": "8.0.18",
@@ -3283,7 +3377,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Application": "1.0.13",
+          "AkbarAmd.SharedKernel.Application": "1.0.15",
           "FluentValidation": "11.8.1",
           "FluentValidation.DependencyInjectionExtensions": "11.8.1",
           "Nezam.Refahi.Facilities.Contracts": "1.0.0",
@@ -3303,7 +3397,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Application": "1.0.13",
+          "AkbarAmd.SharedKernel.Application": "1.0.15",
           "Nezam.Refahi.Shared.Application": "1.0.0"
         },
         "compile": {
@@ -3317,7 +3411,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Domain": "1.0.13",
+          "AkbarAmd.SharedKernel.Domain": "1.0.15",
           "Nezam.Refahi.Shared.Domain": "1.0.0"
         },
         "compile": {
@@ -3331,7 +3425,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Infrastructure": "1.0.13",
+          "AkbarAmd.SharedKernel.Infrastructure": "1.0.15",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.18",
           "Microsoft.EntityFrameworkCore": "8.0.18",
           "Microsoft.EntityFrameworkCore.Relational": "8.0.18",
@@ -3374,7 +3468,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Application": "1.0.13",
+          "AkbarAmd.SharedKernel.Application": "1.0.15",
           "FluentValidation": "11.8.1",
           "FluentValidation.DependencyInjectionExtensions": "11.8.1",
           "Nezam.Refahi.Finance.Contracts": "1.0.0",
@@ -3394,7 +3488,8 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Application": "1.0.13",
+          "AkbarAmd.SharedKernel.Application": "1.0.15",
+          "Nezam.Refahi.Finance.Domain": "1.0.0",
           "Nezam.Refahi.Shared.Application": "1.0.0"
         },
         "compile": {
@@ -3408,7 +3503,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Domain": "1.0.13",
+          "AkbarAmd.SharedKernel.Domain": "1.0.15",
           "Nezam.Refahi.Shared.Domain": "1.0.0"
         },
         "compile": {
@@ -3422,7 +3517,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Infrastructure": "1.0.13",
+          "AkbarAmd.SharedKernel.Infrastructure": "1.0.15",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.18",
           "Microsoft.EntityFrameworkCore": "8.0.18",
           "Microsoft.EntityFrameworkCore.Relational": "8.0.18",
@@ -3468,7 +3563,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Application": "1.0.13",
+          "AkbarAmd.SharedKernel.Application": "1.0.15",
           "FluentValidation": "11.8.1",
           "FluentValidation.DependencyInjectionExtensions": "11.8.1",
           "Microsoft.Extensions.Http": "8.0.1",
@@ -3489,7 +3584,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Domain": "1.0.13",
+          "AkbarAmd.SharedKernel.Domain": "1.0.15",
           "Nezam.Refahi.Shared.Domain": "1.0.0"
         },
         "compile": {
@@ -3503,7 +3598,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Domain": "1.0.13",
+          "AkbarAmd.SharedKernel.Domain": "1.0.15",
           "Nezam.Refahi.Identity.Contracts": "1.0.0",
           "Nezam.Refahi.Shared.Domain": "1.0.0"
         },
@@ -3518,7 +3613,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Infrastructure": "1.0.13",
+          "AkbarAmd.SharedKernel.Infrastructure": "1.0.15",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.18",
           "Microsoft.EntityFrameworkCore": "8.0.18",
           "Microsoft.EntityFrameworkCore.Relational": "8.0.18",
@@ -3560,7 +3655,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Application": "1.0.13",
+          "AkbarAmd.SharedKernel.Application": "1.0.15",
           "FluentValidation": "11.8.1",
           "FluentValidation.DependencyInjectionExtensions": "11.8.1",
           "Microsoft.Extensions.Http": "8.0.0",
@@ -3595,7 +3690,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Domain": "1.0.13",
+          "AkbarAmd.SharedKernel.Domain": "1.0.15",
           "Nezam.Refahi.Shared.Domain": "1.0.0"
         },
         "compile": {
@@ -3609,7 +3704,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Infrastructure": "1.0.13",
+          "AkbarAmd.SharedKernel.Infrastructure": "1.0.15",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.18",
           "Microsoft.EntityFrameworkCore": "8.0.18",
           "Microsoft.EntityFrameworkCore.Relational": "8.0.18",
@@ -3651,7 +3746,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Application": "1.0.13",
+          "AkbarAmd.SharedKernel.Application": "1.0.15",
           "FluentValidation": "11.8.1",
           "FluentValidation.DependencyInjectionExtensions": "11.8.1",
           "Microsoft.Extensions.Http": "8.0.0",
@@ -3689,7 +3784,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Infrastructure": "1.0.13",
+          "AkbarAmd.SharedKernel.Infrastructure": "1.0.15",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.18",
           "Microsoft.EntityFrameworkCore": "8.0.18",
           "Microsoft.EntityFrameworkCore.Relational": "8.0.18",
@@ -3730,10 +3825,11 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Application": "1.0.13",
+          "AkbarAmd.SharedKernel.Application": "1.0.15",
           "FluentValidation": "11.8.1",
           "FluentValidation.DependencyInjectionExtensions": "11.8.1",
           "Microsoft.Extensions.Http": "8.0.1",
+          "Moq": "4.20.72",
           "Nezam.Refahi.Finance.Contracts": "1.0.0",
           "Nezam.Refahi.Identity.Contracts": "1.0.0",
           "Nezam.Refahi.Membership.Contracts": "1.0.0",
@@ -3741,7 +3837,8 @@
           "Nezam.Refahi.Recreation.Domain": "1.0.0",
           "Nezam.Refahi.Settings.Contracts": "1.0.0",
           "Nezam.Refahi.Shared.Application": "1.0.0",
-          "Nezam.Refahi.Shared.Infrastructure": "1.0.0"
+          "Nezam.Refahi.Shared.Infrastructure": "1.0.0",
+          "xunit": "2.9.3"
         },
         "compile": {
           "bin/placeholder/Nezam.Refahi.Recreation.Application.dll": {}
@@ -3770,7 +3867,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Domain": "1.0.13",
+          "AkbarAmd.SharedKernel.Domain": "1.0.15",
           "Nezam.Refahi.Shared.Domain": "1.0.0"
         },
         "compile": {
@@ -3784,7 +3881,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Infrastructure": "1.0.13",
+          "AkbarAmd.SharedKernel.Infrastructure": "1.0.15",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.18",
           "Microsoft.EntityFrameworkCore": "8.0.18",
           "Microsoft.EntityFrameworkCore.Relational": "8.0.18",
@@ -3827,7 +3924,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Application": "1.0.13",
+          "AkbarAmd.SharedKernel.Application": "1.0.15",
           "Microsoft.Extensions.Http": "8.0.0",
           "Nezam.Refahi.Settings.Contracts": "1.0.0",
           "Nezam.Refahi.Settings.Domain": "1.0.0",
@@ -3858,7 +3955,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Domain": "1.0.13",
+          "AkbarAmd.SharedKernel.Domain": "1.0.15",
           "Nezam.Refahi.Shared.Domain": "1.0.0"
         },
         "compile": {
@@ -3872,7 +3969,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Infrastructure": "1.0.13",
+          "AkbarAmd.SharedKernel.Infrastructure": "1.0.15",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.18",
           "Microsoft.EntityFrameworkCore": "8.0.18",
           "Microsoft.EntityFrameworkCore.Relational": "8.0.18",
@@ -3913,7 +4010,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Application": "1.0.13",
+          "AkbarAmd.SharedKernel.Application": "1.0.15",
           "FluentValidation": "11.8.0",
           "FluentValidation.DependencyInjectionExtensions": "11.8.0",
           "MediatR": "12.5.0",
@@ -3932,7 +4029,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Domain": "1.0.13"
+          "AkbarAmd.SharedKernel.Domain": "1.0.15"
         },
         "compile": {
           "bin/placeholder/Nezam.Refahi.Shared.Domain.dll": {}
@@ -3945,7 +4042,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Infrastructure": "1.0.13",
+          "AkbarAmd.SharedKernel.Infrastructure": "1.0.15",
           "Bonyan.AspNetCore": "1.5.7",
           "FluentValidation": "11.8.0",
           "FluentValidation.DependencyInjectionExtensions": "11.8.0",
@@ -4002,7 +4099,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Application": "1.0.13",
+          "AkbarAmd.SharedKernel.Application": "1.0.15",
           "FluentValidation": "11.8.1",
           "FluentValidation.DependencyInjectionExtensions": "11.8.1",
           "Nezam.Refahi.Membership.Contracts": "1.0.0",
@@ -4022,7 +4119,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Application": "1.0.13",
+          "AkbarAmd.SharedKernel.Application": "1.0.15",
           "Nezam.Refahi.Shared.Application": "1.0.0"
         },
         "compile": {
@@ -4036,7 +4133,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Domain": "1.0.13",
+          "AkbarAmd.SharedKernel.Domain": "1.0.15",
           "Nezam.Refahi.Shared.Domain": "1.0.0"
         },
         "compile": {
@@ -4050,7 +4147,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "AkbarAmd.SharedKernel.Infrastructure": "1.0.13",
+          "AkbarAmd.SharedKernel.Infrastructure": "1.0.15",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.18",
           "Microsoft.EntityFrameworkCore": "8.0.18",
           "Microsoft.EntityFrameworkCore.Relational": "8.0.18",
@@ -4070,42 +4167,42 @@
     }
   },
   "libraries": {
-    "AkbarAmd.SharedKernel.Application/1.0.13": {
-      "sha512": "AYnQP6Z3gQkhirpE0lXS+VAPtHpJ8hi34etxl4fF1DA7tcE5L90zonKyRdgMBs7Gt1LNAznTXOlICLNMBQ8s0g==",
+    "AkbarAmd.SharedKernel.Application/1.0.15": {
+      "sha512": "aJlIqPmKAotK4yZ4Xb9xRXa9TrP4W+U2Vhm3G2gc7Xz6v44gmhc8+yZg1fb+H3uwGXmKyQOSovTEEvXoW3t0lw==",
       "type": "package",
-      "path": "akbaramd.sharedkernel.application/1.0.13",
+      "path": "akbaramd.sharedkernel.application/1.0.15",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "akbaramd.sharedkernel.application.1.0.13.nupkg.sha512",
+        "akbaramd.sharedkernel.application.1.0.15.nupkg.sha512",
         "akbaramd.sharedkernel.application.nuspec",
         "lib/net8.0/MCA.SharedKernel.Application.dll",
         "lib/net8.0/MCA.SharedKernel.Application.xml",
         "logo.png"
       ]
     },
-    "AkbarAmd.SharedKernel.Domain/1.0.13": {
-      "sha512": "E6RGyT0CVjEmp486Alp0Ds9NoAnvT4CVoHRF2Nhxbtjmg+o+JhsbR6S0lmtrF5j7qHHue34eOnxKaGFG5xnl6w==",
+    "AkbarAmd.SharedKernel.Domain/1.0.15": {
+      "sha512": "VhetHZYGvPLAteI864MuWtXmesvImuQKCA5MJlIA0VMdZU3DfI+xeUq5rYmxrV2veEu8DijsOA6QHS79hHCn/A==",
       "type": "package",
-      "path": "akbaramd.sharedkernel.domain/1.0.13",
+      "path": "akbaramd.sharedkernel.domain/1.0.15",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "akbaramd.sharedkernel.domain.1.0.13.nupkg.sha512",
+        "akbaramd.sharedkernel.domain.1.0.15.nupkg.sha512",
         "akbaramd.sharedkernel.domain.nuspec",
         "lib/net8.0/MCA.SharedKernel.Domain.dll",
         "lib/net8.0/MCA.SharedKernel.Domain.xml",
         "logo.png"
       ]
     },
-    "AkbarAmd.SharedKernel.Infrastructure/1.0.13": {
-      "sha512": "SX1FF1vcPf7Zqd6Qt6u8IMgu/W9x/cygw0wywA1lokU0uMGZ+5e534Kp7PxzxnvRgtwalgS85OcJE7QwK4PvSA==",
+    "AkbarAmd.SharedKernel.Infrastructure/1.0.15": {
+      "sha512": "VJ6aR348e1olaXmXLz08H6d3POuV2b2eA5UJQs6nL25dT0MLOpVs6fAgEY+FyEK+Sp6FG3utNt4yW4J/fKHX4w==",
       "type": "package",
-      "path": "akbaramd.sharedkernel.infrastructure/1.0.13",
+      "path": "akbaramd.sharedkernel.infrastructure/1.0.15",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "akbaramd.sharedkernel.infrastructure.1.0.13.nupkg.sha512",
+        "akbaramd.sharedkernel.infrastructure.1.0.15.nupkg.sha512",
         "akbaramd.sharedkernel.infrastructure.nuspec",
         "lib/net8.0/MCA.SharedKernel.Infrastructure.dll",
         "lib/net8.0/MCA.SharedKernel.Infrastructure.runtimeconfig.json",
@@ -7088,6 +7185,23 @@
         "mono.texttemplating.nuspec"
       ]
     },
+    "Moq/4.20.72": {
+      "sha512": "EA55cjyNn8eTNWrgrdZJH5QLFp2L43oxl1tlkoYUKIE9pRwL784OWiTXeCV5ApS+AMYEAlt7Fo03A2XfouvHmQ==",
+      "type": "package",
+      "path": "moq/4.20.72",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "icon.png",
+        "lib/net462/Moq.dll",
+        "lib/net6.0/Moq.dll",
+        "lib/netstandard2.0/Moq.dll",
+        "lib/netstandard2.1/Moq.dll",
+        "moq.4.20.72.nupkg.sha512",
+        "moq.nuspec",
+        "readme.md"
+      ]
+    },
     "Newtonsoft.Json/13.0.3": {
       "sha512": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ==",
       "type": "package",
@@ -8670,6 +8784,125 @@
         "useSharedDesignerContext.txt"
       ]
     },
+    "xunit/2.9.3": {
+      "sha512": "TlXQBinK35LpOPKHAqbLY4xlEen9TBafjs0V5KnA4wZsoQLQJiirCR4CbIXvOH8NzkW4YeJKP5P/Bnrodm0h9Q==",
+      "type": "package",
+      "path": "xunit/2.9.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "_content/README.md",
+        "_content/logo-128-transparent.png",
+        "xunit.2.9.3.nupkg.sha512",
+        "xunit.nuspec"
+      ]
+    },
+    "xunit.abstractions/2.0.3": {
+      "sha512": "pot1I4YOxlWjIb5jmwvvQNbTrZ3lJQ+jUGkGjWE3hEFM0l5gOnBWS+H3qsex68s5cO52g+44vpGzhAt+42vwKg==",
+      "type": "package",
+      "path": "xunit.abstractions/2.0.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net35/xunit.abstractions.dll",
+        "lib/net35/xunit.abstractions.xml",
+        "lib/netstandard1.0/xunit.abstractions.dll",
+        "lib/netstandard1.0/xunit.abstractions.xml",
+        "lib/netstandard2.0/xunit.abstractions.dll",
+        "lib/netstandard2.0/xunit.abstractions.xml",
+        "xunit.abstractions.2.0.3.nupkg.sha512",
+        "xunit.abstractions.nuspec"
+      ]
+    },
+    "xunit.analyzers/1.18.0": {
+      "sha512": "OtFMHN8yqIcYP9wcVIgJrq01AfTxijjAqVDy/WeQVSyrDC1RzBWeQPztL49DN2syXRah8TYnfvk035s7L95EZQ==",
+      "type": "package",
+      "path": "xunit.analyzers/1.18.0",
+      "hasTools": true,
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "_content/README.md",
+        "_content/logo-128-transparent.png",
+        "analyzers/dotnet/cs/xunit.analyzers.dll",
+        "analyzers/dotnet/cs/xunit.analyzers.fixes.dll",
+        "tools/install.ps1",
+        "tools/uninstall.ps1",
+        "xunit.analyzers.1.18.0.nupkg.sha512",
+        "xunit.analyzers.nuspec"
+      ]
+    },
+    "xunit.assert/2.9.3": {
+      "sha512": "/Kq28fCE7MjOV42YLVRAJzRF0WmEqsmflm0cfpMjGtzQ2lR5mYVj1/i0Y8uDAOLczkL3/jArrwehfMD0YogMAA==",
+      "type": "package",
+      "path": "xunit.assert/2.9.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "_content/README.md",
+        "_content/logo-128-transparent.png",
+        "lib/net6.0/xunit.assert.dll",
+        "lib/net6.0/xunit.assert.xml",
+        "lib/netstandard1.1/xunit.assert.dll",
+        "lib/netstandard1.1/xunit.assert.xml",
+        "xunit.assert.2.9.3.nupkg.sha512",
+        "xunit.assert.nuspec"
+      ]
+    },
+    "xunit.core/2.9.3": {
+      "sha512": "BiAEvqGvyme19wE0wTKdADH+NloYqikiU0mcnmiNyXaF9HyHmE6sr/3DC5vnBkgsWaE6yPyWszKSPSApWdRVeQ==",
+      "type": "package",
+      "path": "xunit.core/2.9.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "_content/README.md",
+        "_content/logo-128-transparent.png",
+        "build/xunit.core.props",
+        "build/xunit.core.targets",
+        "buildMultiTargeting/xunit.core.props",
+        "buildMultiTargeting/xunit.core.targets",
+        "xunit.core.2.9.3.nupkg.sha512",
+        "xunit.core.nuspec"
+      ]
+    },
+    "xunit.extensibility.core/2.9.3": {
+      "sha512": "kf3si0YTn2a8J8eZNb+zFpwfoyvIrQ7ivNk5ZYA5yuYk1bEtMe4DxJ2CF/qsRgmEnDr7MnW1mxylBaHTZ4qErA==",
+      "type": "package",
+      "path": "xunit.extensibility.core/2.9.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "_content/README.md",
+        "_content/logo-128-transparent.png",
+        "lib/net452/xunit.core.dll",
+        "lib/net452/xunit.core.dll.tdnet",
+        "lib/net452/xunit.core.xml",
+        "lib/net452/xunit.runner.tdnet.dll",
+        "lib/net452/xunit.runner.utility.net452.dll",
+        "lib/netstandard1.1/xunit.core.dll",
+        "lib/netstandard1.1/xunit.core.xml",
+        "xunit.extensibility.core.2.9.3.nupkg.sha512",
+        "xunit.extensibility.core.nuspec"
+      ]
+    },
+    "xunit.extensibility.execution/2.9.3": {
+      "sha512": "yMb6vMESlSrE3Wfj7V6cjQ3S4TXdXpRqYeNEI3zsX31uTsGMJjEw6oD5F5u1cHnMptjhEECnmZSsPxB6ChZHDQ==",
+      "type": "package",
+      "path": "xunit.extensibility.execution/2.9.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "_content/README.md",
+        "_content/logo-128-transparent.png",
+        "lib/net452/xunit.execution.desktop.dll",
+        "lib/net452/xunit.execution.desktop.xml",
+        "lib/netstandard1.1/xunit.execution.dotnet.dll",
+        "lib/netstandard1.1/xunit.execution.dotnet.xml",
+        "xunit.extensibility.execution.2.9.3.nupkg.sha512",
+        "xunit.extensibility.execution.nuspec"
+      ]
+    },
     "Nezam.Refahi.BasicDefinitions.Application/1.0.0": {
       "type": "project",
       "path": "../Modules/BasicDefinitions/Nezam.Refahi.BasicDefinitions.Application/Nezam.Refahi.BasicDefinitions.Application.csproj",
@@ -8867,18 +9100,18 @@
     },
     "Nezam.Refahi.Shared.Application/1.0.0": {
       "type": "project",
-      "path": "../Nezam.Refahi.Shared.Application/Nezam.Refahi.Shared.Application.csproj",
-      "msbuildProject": "../Nezam.Refahi.Shared.Application/Nezam.Refahi.Shared.Application.csproj"
+      "path": "../Shareds/Nezam.Refahi.Shared.Application/Nezam.Refahi.Shared.Application.csproj",
+      "msbuildProject": "../Shareds/Nezam.Refahi.Shared.Application/Nezam.Refahi.Shared.Application.csproj"
     },
     "Nezam.Refahi.Shared.Domain/1.0.0": {
       "type": "project",
-      "path": "../Nezam.Refahi.Shared.Domain/Nezam.Refahi.Shared.Domain.csproj",
-      "msbuildProject": "../Nezam.Refahi.Shared.Domain/Nezam.Refahi.Shared.Domain.csproj"
+      "path": "../Shareds/Nezam.Refahi.Shared.Domain/Nezam.Refahi.Shared.Domain.csproj",
+      "msbuildProject": "../Shareds/Nezam.Refahi.Shared.Domain/Nezam.Refahi.Shared.Domain.csproj"
     },
     "Nezam.Refahi.Shared.Infrastructure/1.0.0": {
       "type": "project",
-      "path": "../Nezam.Refahi.Shared.Infrastructure/Nezam.Refahi.Shared.Infrastructure.csproj",
-      "msbuildProject": "../Nezam.Refahi.Shared.Infrastructure/Nezam.Refahi.Shared.Infrastructure.csproj"
+      "path": "../Shareds/Nezam.Refahi.Shared.Infrastructure/Nezam.Refahi.Shared.Infrastructure.csproj",
+      "msbuildProject": "../Shareds/Nezam.Refahi.Shared.Infrastructure/Nezam.Refahi.Shared.Infrastructure.csproj"
     },
     "Nezam.Refahi.Surveying.Presentation/1.0.0": {
       "type": "project",
@@ -8990,8 +9223,8 @@
             "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Survey\\Nezam.Refahi.Surveying.Presentation\\Nezam.Refahi.Surveying.Presentation.csproj": {
               "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Modules\\Survey\\Nezam.Refahi.Surveying.Presentation\\Nezam.Refahi.Surveying.Presentation.csproj"
             },
-            "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
-              "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
+            "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj": {
+              "projectPath": "D:\\Projects\\Nezam.Refahi\\Nezam.Refahi.Backend\\src\\Shareds\\Nezam.Refahi.Shared.Infrastructure\\Nezam.Refahi.Shared.Infrastructure.csproj"
             }
           }
         }

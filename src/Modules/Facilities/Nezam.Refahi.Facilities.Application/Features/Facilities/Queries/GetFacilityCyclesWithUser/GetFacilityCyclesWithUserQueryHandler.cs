@@ -19,7 +19,7 @@ namespace Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFac
 /// <summary>
 /// Handler for getting facility cycles with user context
 /// </summary>
-public class GetFacilityCyclesQueryHandler : IRequestHandler<GetFacilityCyclesWithUserQuery, ApplicationResult<GetFacilityCyclesResponse>>
+public class GetFacilityCyclesWithUserQueryHandler : IRequestHandler<GetFacilityCyclesWithUserQuery, ApplicationResult<GetFacilityCyclesWithUserQueryResponse>>
 {
     private readonly IFacilityRepository _facilityRepository;
     private readonly IFacilityCycleRepository _cycleRepository;
@@ -29,16 +29,16 @@ public class GetFacilityCyclesQueryHandler : IRequestHandler<GetFacilityCyclesWi
     private readonly IMapper<Domain.Entities.FacilityCycle, FacilityCycleWithUserDto> _cycleMapper;
     private readonly IMapper<Domain.Entities.FacilityRequest, FacilityRequestDto> _requestMapper;
     private readonly IValidator<GetFacilityCyclesWithUserQuery> _validator;
-    private readonly ILogger<GetFacilityCyclesQueryHandler> _logger;
+    private readonly ILogger<GetFacilityCyclesWithUserQueryHandler> _logger;
 
-    public GetFacilityCyclesQueryHandler(
+    public GetFacilityCyclesWithUserQueryHandler(
         IFacilityRepository facilityRepository,
         IFacilityCycleRepository cycleRepository,
         IFacilityRequestRepository requestRepository,
         IMemberInfoService memberInfoService,
         FacilityEligibilityDomainService eligibilityService,
         IValidator<GetFacilityCyclesWithUserQuery> validator,
-        ILogger<GetFacilityCyclesQueryHandler> logger,
+        ILogger<GetFacilityCyclesWithUserQueryHandler> logger,
         IMapper<Domain.Entities.FacilityCycle, FacilityCycleWithUserDto> cycleMapper,
         IMapper<Domain.Entities.FacilityRequest, FacilityRequestDto> requestMapper)
     {
@@ -53,7 +53,7 @@ public class GetFacilityCyclesQueryHandler : IRequestHandler<GetFacilityCyclesWi
         _requestMapper = requestMapper;
     }
 
-    public async Task<ApplicationResult<GetFacilityCyclesResponse>> Handle(
+    public async Task<ApplicationResult<GetFacilityCyclesWithUserQueryResponse>> Handle(
         GetFacilityCyclesWithUserQuery request,
         CancellationToken cancellationToken)
     {
@@ -64,7 +64,7 @@ public class GetFacilityCyclesQueryHandler : IRequestHandler<GetFacilityCyclesWi
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-                return ApplicationResult<GetFacilityCyclesResponse>.Failure(
+                return ApplicationResult<GetFacilityCyclesWithUserQueryResponse>.Failure(
                     errors,
                     "اطلاعات ورودی نامعتبر است");
             }
@@ -73,7 +73,7 @@ public class GetFacilityCyclesQueryHandler : IRequestHandler<GetFacilityCyclesWi
             var facility = await _facilityRepository.GetByIdAsync(request.FacilityId, cancellationToken);
             if (facility == null)
             {
-                return ApplicationResult<GetFacilityCyclesResponse>.Failure(
+                return ApplicationResult<GetFacilityCyclesWithUserQueryResponse>.Failure(
                     "تسهیلات مورد نظر یافت نشد");
             }
 
@@ -84,7 +84,7 @@ public class GetFacilityCyclesQueryHandler : IRequestHandler<GetFacilityCyclesWi
                 memberInfo = await _memberInfoService.GetMemberInfoAsync(new NationalId(request.NationalNumber));
                 if (memberInfo == null)
                 {
-                    return ApplicationResult<GetFacilityCyclesResponse>.Failure(
+                    return ApplicationResult<GetFacilityCyclesWithUserQueryResponse>.Failure(
                         "اطلاعات عضو یافت نشد");
                 }
             }
@@ -145,7 +145,7 @@ public class GetFacilityCyclesQueryHandler : IRequestHandler<GetFacilityCyclesWi
             _logger.LogInformation("Retrieved {Count} cycles for facility {FacilityId}, user {NationalNumber}",
                 cycleDtos.Count, request.FacilityId, request.NationalNumber);
 
-                return ApplicationResult<GetFacilityCyclesResponse>.Success(new GetFacilityCyclesResponse
+                return ApplicationResult<GetFacilityCyclesWithUserQueryResponse>.Success(new GetFacilityCyclesWithUserQueryResponse
                 {
                     Items = cycleDtos,
                     TotalCount = totalCount,
@@ -157,7 +157,7 @@ public class GetFacilityCyclesQueryHandler : IRequestHandler<GetFacilityCyclesWi
         {
             _logger.LogError(ex, "Error retrieving facility cycles for facility {FacilityId}, user {NationalNumber}",
                 request.FacilityId, request.NationalNumber);
-            return ApplicationResult<GetFacilityCyclesResponse>.Failure(
+            return ApplicationResult<GetFacilityCyclesWithUserQueryResponse>.Failure(
                 "خطای داخلی در دریافت لیست دوره‌های تسهیلات");
         }
     }

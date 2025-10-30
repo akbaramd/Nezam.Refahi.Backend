@@ -172,6 +172,11 @@ namespace Nezam.Refahi.Surveys.Infrastructure.Migrations
                     b.Property<DateTimeOffset?>("ExpiredAt")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<DateTimeOffset?>("SubmittedAt")
                         .HasColumnType("datetimeoffset");
 
@@ -181,6 +186,8 @@ namespace Nezam.Refahi.Surveys.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AttemptStatus");
+
+                    b.HasIndex("Status");
 
                     b.HasIndex("SubmittedAt");
 

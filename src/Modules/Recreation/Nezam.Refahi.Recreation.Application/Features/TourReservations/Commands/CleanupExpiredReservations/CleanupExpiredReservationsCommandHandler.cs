@@ -118,7 +118,7 @@ public class CleanupExpiredReservationsCommandHandler : IRequestHandler<CleanupE
 
                         // Only release capacity for Held reservations, NOT for Paying reservations
                         // Paying reservations should keep their capacity until payment is processed
-                        if (reservation.Status == ReservationStatus.Held && participantCount > 0)
+                        if (reservation.Status == ReservationStatus.OnHold && participantCount > 0)
                         {
                             if (reservation.CapacityId.HasValue)
                             {
@@ -134,7 +134,7 @@ public class CleanupExpiredReservationsCommandHandler : IRequestHandler<CleanupE
                                 }
                             }
                         }
-                        else if (reservation.Status == ReservationStatus.Paying)
+                        else if (reservation.Status == ReservationStatus.PendingConfirmation)
                         {
                             response.Errors.Add($"رزرو منقضی شده {reservation.Id} در وضعیت Paying است - ظرفیت آزاد نشد تا از overbooking جلوگیری شود");
                         }

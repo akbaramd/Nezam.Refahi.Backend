@@ -88,7 +88,7 @@ public class CompleteRefundCommandHandler : IRequestHandler<CompleteRefundComman
                 RefundId = updatedRefund.Id,
                 PaymentId = bill.Payments.FirstOrDefault()?.Id ?? Guid.Empty,
                 ReferenceId = bill.ReferenceId,
-                ReferenceType = bill.BillType,
+                ReferenceType = bill.ReferenceType,
                 RefundAmountRials = (long)updatedRefund.Amount.AmountRials,
                 RequestedByNationalNumber = bill.ExternalUserId.ToString(),
                 GatewayRefundId = request.GatewayRefundId,

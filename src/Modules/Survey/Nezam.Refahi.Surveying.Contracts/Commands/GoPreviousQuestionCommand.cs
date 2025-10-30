@@ -16,6 +16,8 @@ public class GoPreviousQuestionResponse
 {
     public Guid? CurrentQuestionId { get; set; }
     public int CurrentRepeatIndex { get; set; } = 1; // Current repeat index for repeatable questions
+    public string ResponseStatus { get; set; } = string.Empty; // New response status
+    public string ResponseStatusText { get; set; } = string.Empty; // Persian text for response status
     public CommandProgressDto Progress { get; set; } = new();
     public bool BackAllowed { get; set; }
     public string? Message { get; set; }

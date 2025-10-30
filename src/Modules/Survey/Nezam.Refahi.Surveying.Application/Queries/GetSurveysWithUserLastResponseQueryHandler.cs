@@ -8,8 +8,8 @@ using Nezam.Refahi.Surveying.Contracts.Queries;
 using Nezam.Refahi.Surveying.Domain.Entities;
 using Nezam.Refahi.Surveying.Domain.Enums;
 using Nezam.Refahi.Surveying.Domain.Repositories;
-using Nezam.Refahi.Surveying.Domain.Services;
 using Nezam.Refahi.Surveying.Domain.ValueObjects;
+using Nezam.Refahi.Surveying.Domain.Services;
 
 namespace Nezam.Refahi.Surveying.Application.Queries;
 
@@ -52,7 +52,7 @@ public class GetSurveysWithUserLastResponseQueryHandler : IRequestHandler<GetSur
                 }
             }
             
-            // Use repository method for complex query with pagination and filtering
+            // Get surveys with pagination and filtering
             var (surveys, totalCount) = await _surveyRepository.GetSurveysWithPaginationAsync(
                 pageNumber: request.PageNumber,
                 pageSize: request.PageSize,
@@ -65,35 +65,29 @@ public class GetSurveysWithUserLastResponseQueryHandler : IRequestHandler<GetSur
                 includeResponses: false, // We'll get user responses separately
                 cancellationToken: cancellationToken);
 
-            // Get user's last response for each survey if member ID is available
+            // Get user's latest responses for all surveys efficiently
             var userLastResponses = new Dictionary<Guid, Response>();
             if (memberId.HasValue && request.IncludeUserLastResponse)
             {
-                // Load surveys with responses to get user's responses
-                var (surveysWithResponses, _) = await _surveyRepository.GetSurveysWithUserResponsesAsync(
-                    memberId.Value, 1, int.MaxValue, string.Empty, null, null, null, null, null, null, null, null, "CreatedAt", "Desc", true, true, true, cancellationToken);
+                var surveyIds = surveys.Select(s => s.Id).ToList();
+                var latestResponses = await _surveyRepository.GetUserLatestResponsesAsync(
+                    surveyIds, 
+                    memberId.Value, 
+                    cancellationToken);
                 
-                foreach (var survey in surveysWithResponses)
+                // Convert to non-nullable dictionary
+                foreach (var kvp in latestResponses)
                 {
-                    var userResponse = survey.Responses
-                        .Where(r => r.Participant.MemberId == memberId.Value)
-                        .OrderByDescending(r => r.AttemptNumber)
-                        .FirstOrDefault();
-                    
-                    if (userResponse != null)
+                    if (kvp.Value != null)
                     {
-                        userLastResponses[survey.Id] = userResponse;
+                        userLastResponses[kvp.Key] = kvp.Value;
                     }
                 }
             }
 
-            // Convert to DTOs
-            var surveyDtos = new List<SurveyDto>();
-            foreach (var survey in surveys)
-            {
-                var surveyDto = await MapToSurveyDto(survey, request, userLastResponses, memberId);
-                surveyDtos.Add(surveyDto);
-            }
+            // Convert surveys to DTOs
+            var surveyDtos = surveys.Select(survey => 
+                MapToSurveyDto(survey, request, userLastResponses, memberId)).ToList();
 
             var response = new SurveysWithUserLastResponseResponse
             {
@@ -126,7 +120,7 @@ public class GetSurveysWithUserLastResponseQueryHandler : IRequestHandler<GetSur
         }
     }
 
-    private Task<SurveyDto> MapToSurveyDto(Survey survey, GetSurveysWithUserLastResponseQuery request, Dictionary<Guid, Response> userLastResponses, Guid? memberId)
+    private SurveyDto MapToSurveyDto(Survey survey, GetSurveysWithUserLastResponseQuery request, Dictionary<Guid, Response> userLastResponses, Guid? memberId)
     {
         var dto = new SurveyDto
         {
@@ -231,7 +225,7 @@ public class GetSurveysWithUserLastResponseQueryHandler : IRequestHandler<GetSur
             dto.RemainingAttempts = survey.ParticipationPolicy.MaxAttemptsPerMember;
         }
 
-        return Task.FromResult(dto);
+        return dto;
     }
 
     private ResponseDto MapToResponseDto(Response response, Survey survey)

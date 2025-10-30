@@ -1,7 +1,7 @@
 using FluentValidation;
 using Nezam.Refahi.Finance.Application.Queries.Wallets;
 
-namespace Nezam.Refahi.Finance.Application.Features.Wallets.Queries.GetWalletBalance;
+namespace Nezam.Refahi.Finance.Application.Features.Wallets.Queries.GetUserWalletBalance;
 
 /// <summary>
 /// Validator for GetUserWalletBalance

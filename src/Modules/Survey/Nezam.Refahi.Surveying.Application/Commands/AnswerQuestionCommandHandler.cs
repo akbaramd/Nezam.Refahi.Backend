@@ -127,28 +127,52 @@ public class AnswerQuestionCommandHandler : IRequestHandler<AnswerQuestionComman
                 }
             }
 
-            // Use domain aggregate to set the answer
-            survey.SetResponseAnswer(request.ResponseId, request.QuestionId, request.TextAnswer, request.SelectedOptionIds);
-
-            // Save all changes
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            // Calculate completion statistics
-            var totalQuestions = survey.Questions.Count;
+            // Get question text and convert selected option IDs to dictionary with option texts
+            var questionText = question.Text;
+            var selectedOptionsWithTexts = new Dictionary<Guid, string>();
             
-            // Count unique answered questions (not repeats)
+            if (request.SelectedOptionIds != null && request.SelectedOptionIds.Any())
+            {
+                foreach (var optionId in request.SelectedOptionIds)
+                {
+                    var optionText = survey.GetOptionText(request.QuestionId, optionId);
+                    if (!string.IsNullOrEmpty(optionText))
+                    {
+                        selectedOptionsWithTexts[optionId] = optionText;
+                    }
+                }
+            }
+
+            // Use domain aggregate to set the answer
+            survey.SetResponseAnswer(request.ResponseId, request.QuestionId, questionText, request.TextAnswer, selectedOptionsWithTexts);
+
+            // Manage response status based on completion
+            var totalQuestions = survey.Questions.Count;
             var answeredQuestionIds = response.QuestionAnswers
                 .Where(qa => qa.HasAnswer())
                 .Select(qa => qa.QuestionId)
                 .Distinct()
                 .Count();
             
-            var requiredQuestions = survey.Questions.Count(q => q.IsRequired);
-            var requiredAnsweredQuestions = survey.Questions
-                .Where(q => q.IsRequired)
-                .Count(q => response.QuestionAnswers.Any(qa => qa.QuestionId == q.Id && qa.HasAnswer()));
-
             var completionPercentage = totalQuestions > 0 ? (double)answeredQuestionIds / totalQuestions * 100 : 0;
+            
+            // If response is nearly complete (80% or more), move to reviewing status
+            if (completionPercentage >= 80 && response.Status == ResponseStatus.Answering)
+            {
+                response.StartReviewing();
+                _logger.LogInformation("Response {ResponseId} moved to reviewing status due to {CompletionPercentage}% completion", 
+                    request.ResponseId, completionPercentage);
+            }
+            // If response is less than 80% complete and in reviewing, move back to answering
+            else if (completionPercentage < 80 && response.Status == ResponseStatus.Reviewing)
+            {
+                response.ResumeAnswering();
+                _logger.LogInformation("Response {ResponseId} moved back to answering status due to {CompletionPercentage}% completion", 
+                    request.ResponseId, completionPercentage);
+            }
+
+            // Save all changes
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             // Calculate repeatable question statistics
             var answeredRepeatsForThisQuestion = response.QuestionAnswers
@@ -167,6 +191,8 @@ public class AnswerQuestionCommandHandler : IRequestHandler<AnswerQuestionComman
                 AnsweredRepeatsForThisQuestion = answeredRepeatsForThisQuestion,
                 TotalRepeatsAllowed = totalRepeatsAllowed,
                 CompletionPercentage = completionPercentage,
+                ResponseStatus = response.Status.ToString(),
+                ResponseStatusText = ResponseStatusHelper.GetPersianText(response.Status),
                 Message = "پاسخ با موفقیت ثبت شد",
                 ValidationErrors = validationResult.ValidationErrors ?? new List<string>()
             };

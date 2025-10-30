@@ -250,7 +250,7 @@ namespace Nezam.Refahi.Finance.Infrastructure.Migrations
                 name: "IX_Bills_ReferenceId_BillType",
                 schema: "finance",
                 table: "Bills",
-                columns: new[] { "ReferenceId", "BillType" });
+                columns: new[] { "ReferenceId", "ReferenceType" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Bills_Status",

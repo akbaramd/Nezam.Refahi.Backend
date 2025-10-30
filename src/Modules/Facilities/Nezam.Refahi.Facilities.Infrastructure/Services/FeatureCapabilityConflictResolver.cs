@@ -66,7 +66,7 @@ public class FeatureCapabilityConflictResolver : IFeatureCapabilityConflictResol
     }
 
     public async Task<CapabilityConflictResolution> ResolveCapabilityConflictsAsync(
-        List<FacilityCapabilityPolicy> facilityCapabilityPolicies,
+        List<FacilityCapability> facilityCapabilityPolicies,
         List<string> memberCapabilities,
         CancellationToken cancellationToken = default)
     {
@@ -80,57 +80,22 @@ public class FeatureCapabilityConflictResolver : IFeatureCapabilityConflictResol
 
         foreach (var capabilityPolicy in facilityCapabilityPolicies)
         {
-            switch (capabilityPolicy.PolicyType)
+            // All capabilities are now treated as required
+            if (!memberCapabilities.Contains(capabilityPolicy.CapabilityId))
             {
-                case Domain.Enums.CapabilityPolicyType.Required:
-                    if (!memberCapabilities.Contains(capabilityPolicy.CapabilityId))
-                    {
-                        resolution.IsEligible = false;
-                        resolution.MissingCapabilities.Add(capabilityPolicy.CapabilityId);
-                        resolution.Violations.Add(new CapabilityViolation
-                        {
-                            CapabilityId = capabilityPolicy.CapabilityId,
-                            ViolationType = "Required",
-                            Message = $"Required capability '{capabilityPolicy.CapabilityId}' is missing",
-                            Severity = "Error"
-                        });
-                    }
-                    else
-                    {
-                        resolution.RequiredCapabilities.Add(capabilityPolicy.CapabilityId);
-                    }
-                    break;
-
-                case Domain.Enums.CapabilityPolicyType.Prohibited:
-                    if (memberCapabilities.Contains(capabilityPolicy.CapabilityId))
-                    {
-                        resolution.IsEligible = false;
-                        resolution.BlacklistedCapabilities.Add(capabilityPolicy.CapabilityId);
-                        resolution.Violations.Add(new CapabilityViolation
-                        {
-                            CapabilityId = capabilityPolicy.CapabilityId,
-                            ViolationType = "Prohibited",
-                            Message = $"Capability '{capabilityPolicy.CapabilityId}' is prohibited",
-                            Severity = "Error"
-                        });
-                    }
-                    break;
-
-                case Domain.Enums.CapabilityPolicyType.AmountModifier:
-                case Domain.Enums.CapabilityPolicyType.QuotaModifier:
-                case Domain.Enums.CapabilityPolicyType.PriorityModifier:
-                    if (memberCapabilities.Contains(capabilityPolicy.CapabilityId))
-                    {
-                        var adjuster = new CapabilityAdjuster
-                        {
-                            CapabilityId = capabilityPolicy.CapabilityId,
-                            AdjusterType = capabilityPolicy.PolicyType.ToString(),
-                            Value = capabilityPolicy.ModifierValue ?? 1.0m,
-                            Priority = 0
-                        };
-                        resolution.AppliedAdjusters.Add(adjuster);
-                    }
-                    break;
+                resolution.IsEligible = false;
+                resolution.MissingCapabilities.Add(capabilityPolicy.CapabilityId);
+                resolution.Violations.Add(new CapabilityViolation
+                {
+                    CapabilityId = capabilityPolicy.CapabilityId,
+                    ViolationType = "Required",
+                    Message = $"Required capability '{capabilityPolicy.CapabilityId}' is missing",
+                    Severity = "Error"
+                });
+            }
+            else
+            {
+                resolution.RequiredCapabilities.Add(capabilityPolicy.CapabilityId);
             }
         }
 
@@ -148,21 +113,20 @@ public class FeatureCapabilityConflictResolver : IFeatureCapabilityConflictResol
         {
             IsEligible = featureResolution.IsEligible && capabilityResolution.IsEligible,
             ResolutionStrategy = "Strict",
-            FinalAmount = 0 // This would be calculated based on adjusters
+            FinalAmount = 0 // No adjusters anymore, so amount remains unchanged
         };
 
         // Combine all violations
         combinedResolution.AllViolations.AddRange(featureResolution.Violations.Select(v => v.Message));
         combinedResolution.AllViolations.AddRange(capabilityResolution.Violations.Select(v => v.Message));
 
-        // Combine adjusters
-        combinedResolution.FinalAdjusters.AddRange(capabilityResolution.AppliedAdjusters);
+        // No adjusters to combine since capabilities no longer have modifiers
 
         // Set resolution details
         combinedResolution.ResolutionDetails["FeatureEligible"] = featureResolution.IsEligible;
         combinedResolution.ResolutionDetails["CapabilityEligible"] = capabilityResolution.IsEligible;
         combinedResolution.ResolutionDetails["TotalViolations"] = combinedResolution.AllViolations.Count;
-        combinedResolution.ResolutionDetails["AppliedAdjusters"] = combinedResolution.FinalAdjusters.Count;
+        combinedResolution.ResolutionDetails["AppliedAdjusters"] = 0; // No adjusters anymore
 
         return combinedResolution;
     }
@@ -174,39 +138,8 @@ public class FeatureCapabilityConflictResolver : IFeatureCapabilityConflictResol
     {
         await Task.CompletedTask;
 
-        var adjustedAmount = baseAmount;
-
-        // Sort adjusters by priority (higher priority first)
-        var sortedAdjusters = adjusters.OrderByDescending(a => a.Priority).ToList();
-
-        foreach (var adjuster in sortedAdjusters)
-        {
-            switch (adjuster.AdjusterType.ToLower())
-            {
-                case "amountmodifier":
-                    adjustedAmount *= adjuster.Value;
-                    break;
-                case "quotamodifier":
-                    // Quota modifiers don't affect amount directly
-                    break;
-                case "prioritymodifier":
-                    // Priority modifiers don't affect amount directly
-                    break;
-                case "multiply":
-                    adjustedAmount *= adjuster.Value;
-                    break;
-                case "add":
-                    adjustedAmount += adjuster.Value;
-                    break;
-                case "subtract":
-                    adjustedAmount -= adjuster.Value;
-                    break;
-                case "set":
-                    adjustedAmount = adjuster.Value;
-                    break;
-            }
-        }
-
-        return adjustedAmount;
+        // Since capabilities no longer have modifiers/adjusters, 
+        // simply return the base amount unchanged
+        return baseAmount;
     }
 }

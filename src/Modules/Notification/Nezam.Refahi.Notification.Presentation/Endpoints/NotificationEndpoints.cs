@@ -2,6 +2,7 @@
 // Notification.Presentation/Endpoints/NotificationEndpoints.cs
 // -----------------------------------------------------------------------------
 
+using MCA.SharedKernel.Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;

@@ -22,6 +22,7 @@ public sealed class Tour : FullAggregateRoot<Guid>
     public int MaxParticipants => _capacities.Where(c => c.IsActive).Sum(c => c.MaxParticipants);
 
     public TourStatus Status { get; private set; }
+    public TourDifficulty Difficulty { get; private set; } = TourDifficulty.Easy;
     public bool IsActive { get; private set; }
 
     // Age restrictions
@@ -77,6 +78,7 @@ public sealed class Tour : FullAggregateRoot<Guid>
         DateTime tourEnd,
         int? minAge = null,
         int? maxAge = null,
+        TourDifficulty difficulty = TourDifficulty.Easy,
         int? maxGuestsPerReservation = null,
         IEnumerable<TourPhoto>? photos = null)
         : base(Guid.NewGuid())
@@ -94,6 +96,7 @@ public sealed class Tour : FullAggregateRoot<Guid>
         IsActive = true;
         MinAge = minAge;
         MaxAge = maxAge;
+        Difficulty = difficulty;
         MaxGuestsPerReservation = maxGuestsPerReservation;
 
         if (photos != null)
@@ -358,22 +361,22 @@ public sealed class Tour : FullAggregateRoot<Guid>
     }
 
     /// <summary>
-    /// تعداد کل شرکت‌کنندگان در رزروهای Held
+    /// تعداد کل شرکت‌کنندگان در رزروهای OnHold
     /// </summary>
     public int GetHeldReservationCount()
     {
         return _reservations
-            .Where(r => r.Status == ReservationStatus.Held)
+            .Where(r => r.Status == ReservationStatus.OnHold)
             .Sum(r => r.GetParticipantCount());
     }
 
     /// <summary>
-    /// تعداد کل شرکت‌کنندگان در رزروهای در انتظار (Held + Paying)
+    /// تعداد کل شرکت‌کنندگان در رزروهای در انتظار (OnHold + PendingConfirmation)
     /// </summary>
     public int GetPendingReservationCount()
     {
         return _reservations
-            .Where(r => r.Status == ReservationStatus.Held || r.Status == ReservationStatus.Paying)
+            .Where(r => r.Status == ReservationStatus.OnHold || r.Status == ReservationStatus.PendingConfirmation)
             .Where(r => !r.IsExpired()) // حذف رزروهای منقضی شده
             .Sum(r => r.GetParticipantCount());
     }
@@ -420,15 +423,19 @@ public sealed class Tour : FullAggregateRoot<Guid>
         if (pricing.TourId != Id)
             throw new ArgumentException("Pricing does not belong to this tour", nameof(pricing));
 
-        // Check if there's already an active pricing for this participant type
-        var existingPricing = _pricing.FirstOrDefault(p =>
-            p.ParticipantType == pricing.ParticipantType &&
-            p.IsActive &&
-            p.IsValidFor(DateTime.UtcNow, 1));
-
-        if (existingPricing != null)
+        // If setting as default, ensure no other default exists for this participant type
+        if (pricing.IsDefault)
         {
-            throw new InvalidOperationException($"Active pricing already exists for {pricing.ParticipantType} participants.");
+            var existingDefault = _pricing.FirstOrDefault(p =>
+                p.ParticipantType == pricing.ParticipantType &&
+                p.IsDefault &&
+                p.IsActive &&
+                p.Id != pricing.Id);
+
+            if (existingDefault != null)
+            {
+                throw new InvalidOperationException($"A default pricing already exists for {pricing.ParticipantType} participants.");
+            }
         }
 
         _pricing.Add(pricing);
@@ -447,14 +454,93 @@ public sealed class Tour : FullAggregateRoot<Guid>
     }
 
     /// <summary>
-    /// Gets pricing for a specific participant type
+    /// Sets a pricing as default for its participant type.
+    /// Ensures only one default exists per participant type.
+    /// </summary>
+    public void SetPricingAsDefault(Guid pricingId)
+    {
+        var pricing = _pricing.FirstOrDefault(p => p.Id == pricingId);
+        if (pricing == null)
+            throw new ArgumentException("Pricing not found", nameof(pricingId));
+
+        if (!pricing.IsActive)
+            throw new InvalidOperationException("Cannot set inactive pricing as default");
+
+        // Unset other defaults for the same participant type
+        var otherDefaults = _pricing
+            .Where(p => p.ParticipantType == pricing.ParticipantType &&
+                       p.Id != pricingId &&
+                       p.IsDefault &&
+                       p.IsActive)
+            .ToList();
+
+        foreach (var otherDefault in otherDefaults)
+        {
+            otherDefault.SetAsDefault(false);
+        }
+
+        pricing.SetAsDefault(true);
+    }
+
+    /// <summary>
+    /// Gets the default pricing for a specific participant type
+    /// </summary>
+    public TourPricing? GetDefaultPricing(ParticipantType participantType)
+    {
+        return _pricing
+            .FirstOrDefault(p => p.ParticipantType == participantType &&
+                                p.IsDefault &&
+                                p.IsActive);
+    }
+
+    /// <summary>
+    /// Gets pricing for a specific participant type (basic overload, uses default or first available)
     /// </summary>
     public TourPricing? GetPricing(ParticipantType participantType, DateTime? date = null)
     {
+        return GetPricing(participantType, date, null, null);
+    }
+
+    /// <summary>
+    /// Gets pricing for a specific participant type considering member capabilities and features.
+    /// Priority: 1) Matching requirements, 2) Default, 3) First available
+    /// </summary>
+    public TourPricing? GetPricing(
+        ParticipantType participantType, 
+        DateTime? date = null,
+        IEnumerable<string>? memberCapabilities = null,
+        IEnumerable<string>? memberFeatures = null)
+    {
         var checkDate = date ?? DateTime.UtcNow;
-        return _pricing
-            .Where(p => p.ParticipantType == participantType && p.IsActive)
-            .FirstOrDefault(p => p.IsValidFor(checkDate, 1));
+        var candidatePricings = _pricing
+            .Where(p => p.ParticipantType == participantType && p.IsActive && p.IsValidFor(checkDate, 1))
+            .ToList();
+
+        if (!candidatePricings.Any())
+            return null;
+
+        // Priority 1: Pricing with matching capabilities/features (most specific)
+        var matchingWithRequirements = candidatePricings
+            .Where(p => p.HasRequirements() && p.MatchesCapabilitiesAndFeatures(memberCapabilities, memberFeatures))
+            .OrderByDescending(p => p.Capabilities.Count + p.Features.Count) // More requirements = more specific
+            .ThenByDescending(p => p.IsDefault) // Prefer default among equally specific
+            .FirstOrDefault();
+
+        if (matchingWithRequirements != null)
+            return matchingWithRequirements;
+
+        // Priority 2: Default pricing (no requirements)
+        var defaultPricing = candidatePricings
+            .FirstOrDefault(p => p.IsDefault && !p.HasRequirements());
+
+        if (defaultPricing != null)
+            return defaultPricing;
+
+        // Priority 3: Any pricing without requirements (fallback)
+        var fallbackPricing = candidatePricings
+            .FirstOrDefault(p => !p.HasRequirements());
+
+        return fallbackPricing;
     }
 
     /// <summary>
@@ -670,11 +756,23 @@ public sealed class Tour : FullAggregateRoot<Guid>
 
 
     /// <summary>
-    /// Calculates the total price for a participant
+    /// Calculates the total price for a participant (basic overload)
     /// </summary>
     public Money? CalculateParticipantPrice(ParticipantType participantType, DateTime? date = null)
     {
-        var pricing = GetPricing(participantType, date);
+        return CalculateParticipantPrice(participantType, date, null, null);
+    }
+
+    /// <summary>
+    /// Calculates the total price for a participant considering capabilities and features
+    /// </summary>
+    public Money? CalculateParticipantPrice(
+        ParticipantType participantType, 
+        DateTime? date = null,
+        IEnumerable<string>? memberCapabilities = null,
+        IEnumerable<string>? memberFeatures = null)
+    {
+        var pricing = GetPricing(participantType, date, memberCapabilities, memberFeatures);
         if (pricing != null)
         {
             return pricing.GetEffectivePrice();

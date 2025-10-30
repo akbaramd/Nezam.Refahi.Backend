@@ -1,36 +1,31 @@
 using FluentValidation;
+using MCA.SharedKernel.Application.Contracts;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilityCycleDetails;
-using Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilityCycles;
-using Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilityRequests;
-using Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetUserCycleRequests;
-using Nezam.Refahi.Facilities.Application.Services;
-using Nezam.Refahi.Facilities.Domain.Enums;
+using Nezam.Refahi.Facilities.Application.Dtos;
+using Nezam.Refahi.Facilities.Application.Spesifications;
 using Nezam.Refahi.Facilities.Domain.Repositories;
 using Nezam.Refahi.Membership.Contracts.Services;
 using Nezam.Refahi.Shared.Application.Common.Models;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
-using FacilityInfoDto = Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilityCycleDetails.FacilityInfoDto;
-using MCA.SharedKernel.Application.Contracts;
 
-namespace Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilityRequests;
+namespace Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilityRequestsByUser;
 
 /// <summary>
 /// Handler for getting facility requests
 /// </summary>
-public class GetFacilityRequestsQueryHandler : IRequestHandler<GetFacilityRequestsByUserQuery, ApplicationResult<GetFacilityRequestsResult>>
+public class GetFacilityRequestsByUserQueryHandler : IRequestHandler<GetFacilityRequestsByUserQuery, ApplicationResult<GetFacilityRequestsByUserQueryResult>>
 {
     private readonly IFacilityRequestRepository _requestRepository;
     private readonly IMapper<Domain.Entities.FacilityRequest, FacilityRequestDto> _requestMapper;
     private readonly IValidator<GetFacilityRequestsByUserQuery> _validator;
-    private readonly ILogger<GetFacilityRequestsQueryHandler> _logger;
+    private readonly ILogger<GetFacilityRequestsByUserQueryHandler> _logger;
     private readonly IMemberInfoService _memberInfoService;
 
-    public GetFacilityRequestsQueryHandler(
+    public GetFacilityRequestsByUserQueryHandler(
         IFacilityRequestRepository requestRepository,
         IValidator<GetFacilityRequestsByUserQuery> validator,
-        ILogger<GetFacilityRequestsQueryHandler> logger,
+        ILogger<GetFacilityRequestsByUserQueryHandler> logger,
         IMemberInfoService memberInfoService,
         IMapper<Domain.Entities.FacilityRequest, FacilityRequestDto> requestMapper)
     {
@@ -41,7 +36,7 @@ public class GetFacilityRequestsQueryHandler : IRequestHandler<GetFacilityReques
         _requestMapper = requestMapper;
     }
 
-    public async Task<ApplicationResult<GetFacilityRequestsResult>> Handle(
+    public async Task<ApplicationResult<GetFacilityRequestsByUserQueryResult>> Handle(
         GetFacilityRequestsByUserQuery requestByUser,
         CancellationToken cancellationToken)
     {
@@ -52,7 +47,7 @@ public class GetFacilityRequestsQueryHandler : IRequestHandler<GetFacilityReques
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-                return ApplicationResult<GetFacilityRequestsResult>.Failure(
+                return ApplicationResult<GetFacilityRequestsByUserQueryResult>.Failure(
                     errors, 
                     "اطلاعات ورودی نامعتبر است");
             }
@@ -67,13 +62,13 @@ public class GetFacilityRequestsQueryHandler : IRequestHandler<GetFacilityReques
                 var memberInfo = await _memberInfoService.GetMemberInfoAsync(nationalId);
                 if (memberInfo == null)
                 {
-                    return ApplicationResult<GetFacilityRequestsResult>.Failure(
+                    return ApplicationResult<GetFacilityRequestsByUserQueryResult>.Failure(
                         "عضو یافت نشد");
                 }
                 memberId = memberInfo.Id;
             }
 
-            var spec = new Specifications.FacilityRequestPaginatedSpec(
+            var spec = new FacilityRequestPaginatedSpec(
                 requestByUser.Page,
                 requestByUser.PageSize,
                 requestByUser.FacilityId,
@@ -85,22 +80,19 @@ public class GetFacilityRequestsQueryHandler : IRequestHandler<GetFacilityReques
                 requestByUser.DateTo);
 
             // Get requests (if repo supports spec, else fallback to parameters)
-            var requests = await _requestRepository.GetFacilityRequestsAsync(spec.ToParameters(), cancellationToken);
-            var totalCount = await _requestRepository.GetFacilityRequestsCountAsync(spec.ToParameters(), cancellationToken);
+            var requests = await _requestRepository.GetPaginatedAsync(spec, cancellationToken);
 
             // Map to DTOs via DI mapper
-            var requestDtos = (await Task.WhenAll(requests.Select(r => _requestMapper.MapAsync(r, cancellationToken)))).ToList();
-
-            var totalPages = (int)Math.Ceiling((double)totalCount / requestByUser.PageSize);
+            var requestDtos = (await Task.WhenAll(requests.Items.Select(r => _requestMapper.MapAsync(r, cancellationToken)))).ToList();
 
             _logger.LogInformation("Retrieved {Count} facility requests for page {Page}",
                 requestDtos.Count, requestByUser.Page);
 
-            return ApplicationResult<GetFacilityRequestsResult>.Success(
-                new GetFacilityRequestsResult
+            return ApplicationResult<GetFacilityRequestsByUserQueryResult>.Success(
+                new GetFacilityRequestsByUserQueryResult
                 {
                     Items = requestDtos,
-                    TotalCount = totalCount,
+                    TotalCount = requests.TotalCount,
                     PageNumber = requestByUser.Page,
                     PageSize = requestByUser.PageSize
                 });
@@ -108,7 +100,7 @@ public class GetFacilityRequestsQueryHandler : IRequestHandler<GetFacilityReques
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving facility requests");
-            return ApplicationResult<GetFacilityRequestsResult>.Failure(
+            return ApplicationResult<GetFacilityRequestsByUserQueryResult>.Failure(
                 "خطای داخلی در دریافت لیست درخواست‌های تسهیلات");
         }
     }

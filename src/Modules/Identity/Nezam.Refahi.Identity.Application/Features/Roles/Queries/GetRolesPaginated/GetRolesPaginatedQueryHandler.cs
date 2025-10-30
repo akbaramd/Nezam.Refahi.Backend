@@ -1,3 +1,4 @@
+using MCA.SharedKernel.Domain.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Nezam.Refahi.Identity.Domain.Dtos;

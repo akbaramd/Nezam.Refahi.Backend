@@ -115,7 +115,8 @@ public class NezamRefahiIdentityInfrastructureModule : BonModule
         context.Services.AddScoped<IUserSeedOrchestrator, UserSeedOrchestrator>();
         
         // Register user seeding hosted service
-        // context.Services.AddHostedService<UserSeedingHostedService>();
+        context.Services.AddHostedService<UserSeedingHostedService>();
+        context.Services.AddHostedService<IdentitySeedingService>();
         
     return base.OnConfigureAsync(context);
   }

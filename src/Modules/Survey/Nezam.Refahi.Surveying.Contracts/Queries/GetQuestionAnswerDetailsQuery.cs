@@ -11,7 +11,7 @@ public class GetQuestionAnswerDetailsQuery : IRequest<ApplicationResult<Question
 {
     public Guid ResponseId { get; set; }
     public Guid QuestionId { get; set; }
-    public Guid? MemberId { get; set; } // Optional: for authorization check
+    public string? UserNationalNumber { get; set; } // Optional: for authorization check
     public bool IncludeQuestionDetails { get; set; } = true; // Include full question information
     public bool IncludeSurveyDetails { get; set; } = false; // Include survey information
 }

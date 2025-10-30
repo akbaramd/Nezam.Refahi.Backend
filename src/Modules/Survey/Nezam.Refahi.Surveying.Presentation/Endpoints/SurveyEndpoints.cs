@@ -1,3 +1,4 @@
+
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Nezam.Refahi.Surveying.Contracts.Commands;
@@ -51,7 +52,9 @@ public static class SurveyEndpoints
                 var query = new GetSurveyByIdQuery 
                 { 
                     SurveyId = surveyId,
-                    UserId = currentUserService.UserId
+                    UserNationalNumber = currentUserService.UserNationalNumber,
+                    IncludeQuestions = true,
+                    IncludeUserAnswers = true
                 };
                 var result = await mediator.Send(query);
                 return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
@@ -67,7 +70,17 @@ public static class SurveyEndpoints
                 [FromServices] IMediator mediator,
                 [FromServices] ICurrentUserService currentUserService) =>
             {
-                var query = new GetParticipationStatusQuery(surveyId, currentUserService.UserId ?? Guid.Empty);
+                if (string.IsNullOrWhiteSpace(currentUserService.UserNationalNumber))
+                {
+                    return Results.BadRequest(new ApplicationResult<ParticipationStatusResponse>
+                    {
+                        IsSuccess = false,
+                        Message = "User national number not found in token",
+                        Errors = new[] { "User authentication token is missing national_id claim" }
+                    });
+                }
+
+                var query = new GetParticipationStatusQuery(surveyId, currentUserService.UserNationalNumber);
                 var result = await mediator.Send(query);
                 return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
             })
@@ -255,7 +268,7 @@ public static class SurveyEndpoints
                 var query = new GetSurveyQuestionsQuery
                 {
                     SurveyId = surveyId,
-                    UserId = currentUserService?.UserId,
+                    UserNationalNumber = currentUserService?.UserNationalNumber,
                     IncludeUserAnswers = includeUserAnswers
                 };
                 var result = await mediator.Send(query);
@@ -276,7 +289,7 @@ public static class SurveyEndpoints
                 var query = new GetSurveyQuestionsDetailsQuery
                 {
                     SurveyId = surveyId,
-                    MemberId = currentUserService?.UserId,
+                    UserNationalNumber = currentUserService?.UserNationalNumber,
                     IncludeUserAnswers = includeUserAnswers,
                     IncludeStatistics = includeStatistics
                 };
@@ -297,7 +310,7 @@ public static class SurveyEndpoints
                 var query = new GetSurveyQuestionsWithAnswersQuery
                 {
                     SurveyId = surveyId,
-                    MemberId = currentUserService.UserId ?? Guid.Empty,
+                    UserNationalNumber = currentUserService.UserNationalNumber,
                     AttemptNumber = attemptNumber
                 };
                 var result = await mediator.Send(query);
@@ -342,7 +355,7 @@ public static class SurveyEndpoints
                 var query = new GetResponseDetailsQuery
                 {
                     ResponseId = responseId,
-                    MemberId = currentUserService.UserId,
+                    UserNationalNumber = currentUserService.UserNationalNumber,
                     IncludeQuestionDetails = includeQuestionDetails,
                     IncludeSurveyDetails = includeSurveyDetails
                 };
@@ -367,7 +380,7 @@ public static class SurveyEndpoints
                 {
                     ResponseId = responseId,
                     QuestionId = questionId,
-                    MemberId = currentUserService.UserId,
+                    UserNationalNumber = currentUserService.UserNationalNumber,
                     IncludeQuestionDetails = includeQuestionDetails,
                     IncludeSurveyDetails = includeSurveyDetails
                 };
@@ -393,7 +406,7 @@ public static class SurveyEndpoints
                     SurveyId = surveyId,
                     ResponseId = responseId,
                     CurrentQuestionId = currentQuestionId,
-                    MemberId = currentUserService.UserId,
+                    UserNationalNumber = currentUserService.UserNationalNumber,
                     IncludeUserAnswer = includeUserAnswer
                 };
                 var result = await mediator.Send(query);
@@ -417,6 +430,7 @@ public static class SurveyEndpoints
                     SurveyId = surveyId,
                     NationalNumber = currentUserService.UserNationalNumber,
                     ParticipantHash = request.ParticipantHash,
+                    ForceNewAttempt = request.ForceNewAttempt,
                     DemographyData = request.DemographySnapshot,
                     ResumeActiveIfAny = request.ResumeActiveIfAny,
                     IdempotencyKey = idempotencyKey
@@ -591,8 +605,68 @@ public static class SurveyEndpoints
 
 
 
-            return app;
-        }
+        // ───────────────────── Get Specific Question by Index ─────────────────────
+        surveyGroup.MapGet("/{surveyId:guid}/questions/{questionIndex:int}", async (
+                Guid surveyId,
+                int questionIndex,
+                [FromServices] IMediator mediator,
+                [FromQuery] string? userNationalNumber,
+                [FromQuery] Guid? responseId,
+                [FromQuery] bool includeUserAnswers = true,
+                [FromQuery] bool includeNavigationInfo = true,
+                [FromQuery] bool includeStatistics = false
+                ) =>
+            {
+                var query = new GetSpecificQuestionQuery
+                {
+                    SurveyId = surveyId,
+                    QuestionIndex = questionIndex,
+                    UserNationalNumber = userNationalNumber,
+                    ResponseId = responseId,
+                    IncludeUserAnswers = includeUserAnswers,
+                    IncludeNavigationInfo = includeNavigationInfo,
+                    IncludeStatistics = includeStatistics
+                };
+                var result = await mediator.Send(query);
+                return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
+            })
+            .WithName("GetSpecificQuestion")
+            .Produces<ApplicationResult<GetSpecificQuestionResponse>>()
+            .Produces(400)
+            .AllowAnonymous();
+
+        // ───────────────────── Get Previous Questions ─────────────────────
+        surveyGroup.MapGet("/{surveyId:guid}/questions/previous", async (
+                Guid surveyId,
+                [FromServices] IMediator mediator,
+                [FromQuery] int currentQuestionIndex,
+                [FromQuery] int maxCount = 10,
+                [FromQuery] string? userNationalNumber = null,
+                [FromQuery] Guid? responseId = null,
+                [FromQuery] bool includeUserAnswers = true,
+                [FromQuery] bool includeNavigationInfo = true
+                ) =>
+            {
+                var query = new GetPreviousQuestionsQuery
+                {
+                    SurveyId = surveyId,
+                    CurrentQuestionIndex = currentQuestionIndex,
+                    MaxCount = maxCount,
+                    UserNationalNumber = userNationalNumber,
+                    ResponseId = responseId,
+                    IncludeUserAnswers = includeUserAnswers,
+                    IncludeNavigationInfo = includeNavigationInfo
+                };
+                var result = await mediator.Send(query);
+                return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
+            })
+            .WithName("GetPreviousQuestions")
+            .Produces<ApplicationResult<GetPreviousQuestionsResponse>>()
+            .Produces(400)
+            .AllowAnonymous();
+
+        return app;
+    }
 }
 
 // ───────────────────── Request Models ─────────────────────
@@ -600,6 +674,7 @@ public static class SurveyEndpoints
 public record StartSurveyResponseRequest
 {
     public string? ParticipantHash { get; init; }
+    public bool ForceNewAttempt { get; init; }
     public Dictionary<string, string>? DemographySnapshot { get; init; }
     public bool ResumeActiveIfAny { get; init; } = true;
 }

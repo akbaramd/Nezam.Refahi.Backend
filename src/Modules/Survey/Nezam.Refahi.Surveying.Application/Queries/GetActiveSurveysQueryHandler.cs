@@ -1,11 +1,13 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Nezam.Refahi.Membership.Contracts.Services;
+using Nezam.Refahi.Shared.Application.Common.Models;
+using Nezam.Refahi.Shared.Domain.ValueObjects;
 using Nezam.Refahi.Surveying.Contracts.Dtos;
 using Nezam.Refahi.Surveying.Contracts.Queries;
 using Nezam.Refahi.Surveying.Domain.Entities;
 using Nezam.Refahi.Surveying.Domain.Enums;
 using Nezam.Refahi.Surveying.Domain.Repositories;
-using Nezam.Refahi.Shared.Application.Common.Models;
 
 namespace Nezam.Refahi.Surveying.Application.Queries;
 
@@ -16,13 +18,16 @@ public class GetActiveSurveysQueryHandler : IRequestHandler<GetActiveSurveysQuer
 {
     private readonly ISurveyRepository _surveyRepository;
     private readonly ILogger<GetActiveSurveysQueryHandler> _logger;
+    private readonly IMemberInfoService _memberInfoService;
 
     public GetActiveSurveysQueryHandler(
         ISurveyRepository surveyRepository,
-        ILogger<GetActiveSurveysQueryHandler> logger)
+        ILogger<GetActiveSurveysQueryHandler> logger,
+        IMemberInfoService memberInfoService)
     {
         _surveyRepository = surveyRepository;
         _logger = logger;
+        _memberInfoService = memberInfoService;
     }
 
     public async Task<ApplicationResult<ActiveSurveysResponse>> Handle(GetActiveSurveysQuery request, CancellationToken cancellationToken)
@@ -86,22 +91,29 @@ public class GetActiveSurveysQueryHandler : IRequestHandler<GetActiveSurveysQuer
                     .ToList();
 
                 // Check participation eligibility
-                if (request.UserId.HasValue)
+                if (!string.IsNullOrWhiteSpace(request.UserNationalNumber))
                 {
-                    // Load survey with responses to get user's response
-                    var surveyWithResponses = await _surveyRepository.GetWithResponsesAsync(survey.Id, cancellationToken);
-                    var userResponse = surveyWithResponses?.Responses
-                        .Where(r => r.Participant.MemberId == request.UserId.Value)
-                        .OrderByDescending(r => r.AttemptNumber)
-                        .FirstOrDefault();
-
-                    surveyDto.ResponseCount = surveyWithResponses?.Responses.Count ?? 0;
-                    surveyDto.CanParticipate = CanUserParticipate(survey, userResponse, request.UserId.Value);
-                    surveyDto.IsAcceptingResponses = survey.State == SurveyState.Active;
+                    // Get member info from national number
+                    var nationalId = new NationalId(request.UserNationalNumber);
+                    var memberInfo = await _memberInfoService.GetMemberInfoAsync(nationalId);
                     
-                    if (!surveyDto.CanParticipate)
+                    if (memberInfo != null)
                     {
-                        surveyDto.ParticipationMessage = GetParticipationMessage(survey, userResponse);
+                        // Load survey with responses to get user's response
+                        var surveyWithResponses = await _surveyRepository.GetWithResponsesAsync(survey.Id, cancellationToken);
+                        var userResponse = surveyWithResponses?.Responses
+                            .Where(r => r.Participant.MemberId == memberInfo.Id)
+                            .OrderByDescending(r => r.AttemptNumber)
+                            .FirstOrDefault();
+
+                        surveyDto.ResponseCount = surveyWithResponses?.Responses.Count ?? 0;
+                        surveyDto.CanParticipate = CanUserParticipate(survey, userResponse, memberInfo.Id);
+                        surveyDto.IsAcceptingResponses = survey.State == SurveyState.Active;
+                        
+                        if (!surveyDto.CanParticipate)
+                        {
+                            surveyDto.ParticipationMessage = GetParticipationMessage(survey, userResponse);
+                        }
                     }
                 }
 

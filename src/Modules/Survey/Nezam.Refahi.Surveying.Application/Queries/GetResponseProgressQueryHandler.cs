@@ -91,33 +91,63 @@ public class GetResponseProgressQueryHandler : IRequestHandler<GetResponseProgre
             ? response.SubmittedAt.Value - response.SubmittedAt 
             : (TimeSpan?)null;
 
-        var questionsProgress = orderedQuestions.Select(q => new QuestionProgressDto
+        var questionsProgress = orderedQuestions.Select(q => 
         {
-            QuestionId = q.Id,
-            QuestionText = q.Text,
-            Order = q.Order,
-            IsRequired = q.IsRequired,
-            IsAnswered = answeredQuestionIds.Contains(q.Id),
-            IsComplete = answeredQuestionIds.Contains(q.Id),
-            LastAnsweredAt = DateTime.MinValue // QuestionAnswer doesn't have CreatedAt
+            var questionAnswer = response.QuestionAnswers.FirstOrDefault(qa => qa.QuestionId == q.Id);
+            var isAnswered = questionAnswer != null && questionAnswer.HasAnswer();
+            
+            return new QuestionProgressDto
+            {
+                QuestionId = q.Id,
+                QuestionText = q.Text,
+                Order = q.Order,
+                IsRequired = q.IsRequired,
+                IsAnswered = isAnswered,
+                IsComplete = isAnswered,
+                LastAnsweredAt = DateTime.MinValue, // QuestionAnswer doesn't have CreatedAt
+                
+                // User answer data
+                UserTextAnswer = questionAnswer?.TextAnswer,
+                UserSelectedOptionIds = questionAnswer?.GetSelectedOptionIds().ToList() ?? new List<Guid>(),
+                UserSelectedOptionValues = questionAnswer?.SelectedOptions.Select(so => so.OptionText).ToList() ?? new List<string>(),
+                RepeatIndex = questionAnswer?.RepeatIndex ?? 1
+            };
         }).ToList();
 
         // Calculate repeatable questions progress
         var repeatables = orderedQuestions
             .Where(q => q.RepeatPolicy.Kind != Domain.ValueObjects.RepeatPolicyKind.None)
-            .Select(q => new RepeatableQuestionProgressDto
+            .Select(q => 
             {
-                QuestionId = q.Id,
-                QuestionText = q.Text,
-                RepeatPolicy = new RepeatPolicyDto
+                var answeredRepeatIndices = response.GetAnsweredRepeatIndices(q.Id).ToList();
+                var repeatAnswers = answeredRepeatIndices.Select(repeatIndex =>
                 {
-                    Kind = q.RepeatPolicy.Kind.ToString(),
-                    MaxRepeats = q.RepeatPolicy.MaxRepeats
-                },
-                AnsweredRepeats = response.GetAnsweredRepeatCount(q.Id),
-                RequiredRepeats = q.IsRequired ? 1 : null, // At least 1 repeat required for required questions
-                CanAddMoreRepeats = q.CanAddMoreRepeats(response.GetAnsweredRepeatCount(q.Id)),
-                AnsweredRepeatIndices = response.GetAnsweredRepeatIndices(q.Id).ToList()
+                    var questionAnswer = response.QuestionAnswers.FirstOrDefault(qa => qa.QuestionId == q.Id && qa.RepeatIndex == repeatIndex);
+                    return new RepeatableAnswerDto
+                    {
+                        RepeatIndex = repeatIndex,
+                        UserTextAnswer = questionAnswer?.TextAnswer,
+                        UserSelectedOptionIds = questionAnswer?.GetSelectedOptionIds().ToList() ?? new List<Guid>(),
+                        UserSelectedOptionValues = questionAnswer?.SelectedOptions.Select(so => so.OptionText).ToList() ?? new List<string>(),
+                        IsAnswered = questionAnswer != null && questionAnswer.HasAnswer()
+                    };
+                }).ToList();
+
+                return new RepeatableQuestionProgressDto
+                {
+                    QuestionId = q.Id,
+                    QuestionText = q.Text,
+                    RepeatPolicy = new RepeatPolicyDto
+                    {
+                        Kind = q.RepeatPolicy.Kind.ToString(),
+                        MaxRepeats = q.RepeatPolicy.MaxRepeats
+                    },
+                    AnsweredRepeats = response.GetAnsweredRepeatCount(q.Id),
+                    RequiredRepeats = q.IsRequired ? 1 : null, // At least 1 repeat required for required questions
+                    CanAddMoreRepeats = q.CanAddMoreRepeats(response.GetAnsweredRepeatCount(q.Id)),
+                    AnsweredRepeatIndices = answeredRepeatIndices,
+                    RepeatAnswers = repeatAnswers
+                };
             })
             .ToList();
 
@@ -127,6 +157,8 @@ public class GetResponseProgressQueryHandler : IRequestHandler<GetResponseProgre
             SurveyId = survey.Id,
             AttemptNumber = response.AttemptNumber,
             AttemptStatus = response.AttemptStatus.ToString(),
+            ResponseStatus = response.Status.ToString(),
+            ResponseStatusText = ResponseStatusHelper.GetPersianText(response.Status),
             
             TotalQuestions = orderedQuestions.Count,
             AnsweredQuestions = answeredQuestions,

@@ -81,7 +81,7 @@ namespace Nezam.Refahi.Finance.Application.Features.Bills.Queries.GetBillPayment
             return ApplicationResult<BillDetailDto>.Success(dto, "Bill details retrieved.");
         }
 
-        // ---------------- by TrackingCode + BillType ----------
+        // ---------------- by TrackingCode + ReferenceType ----------
         public async Task<ApplicationResult<BillDetailDto>> Handle(GetBillDetailsByTrackingCodeQuery request, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
@@ -90,8 +90,8 @@ namespace Nezam.Refahi.Finance.Application.Features.Bills.Queries.GetBillPayment
             if (!validation.IsValid)
                 return ApplicationResult<BillDetailDto>.Failure(validation.Errors.Select(e => e.ErrorMessage).ToList(), "Validation failed.");
 
-            // Resolve bill id by reference(TrackingCode) + BillType; then load full graph
-            var basic = await _billRepository.GetByReferenceAsync(request.TrackingCode, request.BillType, ct);
+            // Resolve bill id by reference(TrackingCode) + ReferenceType; then load full graph
+            var basic = await _billRepository.GetByReferenceTrackingCodeAsync(request.TrackingCode,  ct);
             if (basic is null)
                 return ApplicationResult<BillDetailDto>.Failure("Bill not found for the given tracking code.");
 

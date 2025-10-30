@@ -30,10 +30,10 @@ public class PaymentRepository : EfRepository<FinanceDbContext, Payment, Guid>, 
             .FirstOrDefaultAsync(p => p.GatewayTransactionId == gatewayTransactionId, cancellationToken);
     }
 
-    public async Task<Payment?> GetByTrackingNumberAsync(string trackingNumber, CancellationToken cancellationToken = default)
+    public async Task<Payment?> GetByGatewayReferenceAsync(string gatewayReference, CancellationToken cancellationToken = default)
     {
         return await PrepareQuery(_dbSet)
-            .FirstOrDefaultAsync(p => p.TrackingNumber == trackingNumber, cancellationToken);
+            .FirstOrDefaultAsync(p => p.GatewayReference == gatewayReference, cancellationToken);
     }
 
     public async Task<IEnumerable<Payment>> GetByStatusAsync(PaymentStatus status, CancellationToken cancellationToken = default)
@@ -94,6 +94,6 @@ public class PaymentRepository : EfRepository<FinanceDbContext, Payment, Guid>, 
 
     protected override IQueryable<Payment> PrepareQuery(IQueryable<Payment> query)
     {
-        return query.Include(p => p.Transactions);
+        return query.Include(x=>x.Bill).Include(p => p.Transactions);
     }
 }

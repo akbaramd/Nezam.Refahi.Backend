@@ -18,6 +18,8 @@ public class ResponseProgressResponse
     public Guid SurveyId { get; set; }
     public int AttemptNumber { get; set; }
     public string AttemptStatus { get; set; } = string.Empty; // Active, Submitted, Canceled, Expired
+    public string ResponseStatus { get; set; } = string.Empty; // New response status
+    public string ResponseStatusText { get; set; } = string.Empty; // Persian text for response status
     
     // Progress statistics
     public int TotalQuestions { get; set; }
@@ -52,6 +54,12 @@ public class QuestionProgressDto
     public bool IsAnswered { get; set; }
     public bool IsComplete { get; set; }
     public DateTime? LastAnsweredAt { get; set; }
+    
+    // User answer data
+    public string? UserTextAnswer { get; set; }
+    public List<Guid> UserSelectedOptionIds { get; set; } = new();
+    public List<string> UserSelectedOptionValues { get; set; } = new();
+    public int RepeatIndex { get; set; } = 1;
 }
 
 /// <summary>
@@ -66,4 +74,19 @@ public class RepeatableQuestionProgressDto
     public int? RequiredRepeats { get; set; }
     public bool CanAddMoreRepeats { get; set; }
     public List<int> AnsweredRepeatIndices { get; set; } = new();
+    
+    // User answer data for each repeat
+    public List<RepeatableAnswerDto> RepeatAnswers { get; set; } = new();
+}
+
+/// <summary>
+/// Answer data for a specific repeat of a repeatable question
+/// </summary>
+public class RepeatableAnswerDto
+{
+    public int RepeatIndex { get; set; }
+    public string? UserTextAnswer { get; set; }
+    public List<Guid> UserSelectedOptionIds { get; set; } = new();
+    public List<string> UserSelectedOptionValues { get; set; } = new();
+    public bool IsAnswered { get; set; }
 }

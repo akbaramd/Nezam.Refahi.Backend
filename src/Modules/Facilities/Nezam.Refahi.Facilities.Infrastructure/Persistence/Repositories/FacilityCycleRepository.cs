@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MCA.SharedKernel.Infrastructure.Repositories;
+using MCA.SharedKernel.Domain.Contracts.Specifications;
+using Nezam.Refahi.Shared.Application.Common.Models;
 using Nezam.Refahi.Facilities.Domain.Entities;
 using Nezam.Refahi.Facilities.Domain.Repositories;
 using Nezam.Refahi.Facilities.Infrastructure.Persistence;
@@ -29,11 +31,6 @@ public class FacilityCycleRepository : EfRepository<FacilitiesDbContext, Facilit
             .Include(c => c.Applications);
     }
 
-    public new async Task<FacilityCycle?> GetByIdAsync(Guid cycleId, CancellationToken cancellationToken = default)
-    {
-        return await PrepareQuery(_dbSet)
-            .FirstOrDefaultAsync(c => c.Id == cycleId, cancellationToken);
-    }
 
     public async Task AddAsync(FacilityCycle cycle, CancellationToken cancellationToken = default)
     {
@@ -85,6 +82,8 @@ public class FacilityCycleRepository : EfRepository<FacilitiesDbContext, Facilit
             .OrderByDescending(c => c.StartDate)
             .ToListAsync(cancellationToken);
     }
+
+    
 
     public async Task<List<FacilityCycle>> GetByDateRangeAsync(DateTime startDate, DateTime endDate, CancellationToken cancellationToken = default)
     {

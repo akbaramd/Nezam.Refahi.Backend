@@ -313,15 +313,14 @@ public class CancelReservationCommandHandler : IRequestHandler<CancelReservation
         }
         
         // Guard 3: Special handling for Paying state - prevent race with PSP callback
-        if (reservation.Status == ReservationStatus.Paying)
+        if (reservation.Status == ReservationStatus.PendingConfirmation)
         {
             return (false, "رزرو در حال پردازش پرداخت است. لطفاً چند دقیقه صبر کنید و مجدداً تلاش کنید");
         }
         
         // Guard 4: Already cancelled states
         if (reservation.Status == ReservationStatus.Cancelled || 
-            reservation.Status == ReservationStatus.SystemCancelled ||
-            reservation.Status == ReservationStatus.Refunded)
+            reservation.Status == ReservationStatus.SystemCancelled )
         {
             return (false, "این رزرو قبلاً لغو شده است");
         }
@@ -344,7 +343,7 @@ public class CancelReservationCommandHandler : IRequestHandler<CancelReservation
         // Confirmed reservations held capacity, others might not have
         if (!reservation.CapacityId.HasValue || 
             (reservation.Status != ReservationStatus.Confirmed && 
-             reservation.Status != ReservationStatus.Held))
+             reservation.Status != ReservationStatus.OnHold))
         {
             return;
         }

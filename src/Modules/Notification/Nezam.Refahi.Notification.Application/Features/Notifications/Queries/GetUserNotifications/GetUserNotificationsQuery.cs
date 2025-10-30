@@ -1,3 +1,4 @@
+using MCA.SharedKernel.Domain.Models;
 using MediatR;
 using Nezam.Refahi.Shared.Application.Common.Models;
 

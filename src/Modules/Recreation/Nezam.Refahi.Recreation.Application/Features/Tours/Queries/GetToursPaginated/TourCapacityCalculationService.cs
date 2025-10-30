@@ -1,5 +1,6 @@
 using Nezam.Refahi.Recreation.Domain.Entities;
 using Nezam.Refahi.Recreation.Domain.Repositories;
+using Nezam.Refahi.Recreation.Domain.Services;
 
 namespace Nezam.Refahi.Recreation.Application.Features.Tours.Queries.GetToursPaginated;
 
@@ -9,10 +10,12 @@ namespace Nezam.Refahi.Recreation.Application.Features.Tours.Queries.GetToursPag
 public class TourCapacityCalculationService
 {
     private readonly ITourReservationRepository _tourReservationRepository;
+    private readonly SpecialCapacityService _specialCapacityService;
 
     public TourCapacityCalculationService(ITourReservationRepository tourReservationRepository)
     {
         _tourReservationRepository = tourReservationRepository;
+        _specialCapacityService = new SpecialCapacityService();
     }
 
     /// <summary>
@@ -20,6 +23,7 @@ public class TourCapacityCalculationService
     /// </summary>
     public async Task<Dictionary<Guid, TourCapacityInfo>> CalculateTourCapacitiesAsync(
         IEnumerable<Tour> tours, 
+        bool memberIsSpecial = false,
         CancellationToken cancellationToken = default)
     {
         var tourIds = tours.Select(t => t.Id).ToList();
@@ -31,20 +35,36 @@ public class TourCapacityCalculationService
         // Calculate capacity info for each tour
         foreach (var tour in tours)
         {
-            var totalUtilization = utilizationDict.GetValueOrDefault(tour.Id, 0);
-            var maxCapacity = tour.MaxParticipants;
-            var remainingCapacity = Math.Max(0, maxCapacity - totalUtilization);
-            var utilizationPercentage = maxCapacity > 0 ? (double)totalUtilization / maxCapacity * 100 : 0;
+            // Get all capacities for this tour
+            var allCapacities = tour.GetActiveCapacities().ToList();
+            
+            // Filter capacities based on member's special status
+            var visibleCapacities = _specialCapacityService.FilterCapacitiesForMember(allCapacities, memberIsSpecial).ToList();
+            
+            // Calculate public capacity statistics (excluding special capacities)
+            var publicStats = _specialCapacityService.CalculatePublicCapacityStatistics(allCapacities);
+            
+            // Calculate special capacity statistics (only for special members)
+            var specialStats = memberIsSpecial 
+                ? _specialCapacityService.CalculateSpecialCapacityStatistics(allCapacities)
+                : new CapacityStatistics(0, 0, 0, 0, 0);
 
             result[tour.Id] = new TourCapacityInfo
             {
                 TourId = tour.Id,
-                MaxCapacity = maxCapacity,
-                ReservedCapacity = totalUtilization,
-                RemainingCapacity = remainingCapacity,
-                UtilizationPercentage = Math.Round(utilizationPercentage, 2),
-                IsFullyBooked = remainingCapacity == 0,
-                IsNearlyFull = utilizationPercentage > 80
+                MaxCapacity = publicStats.TotalMaxParticipants,
+                ReservedCapacity = publicStats.TotalAllocatedParticipants,
+                RemainingCapacity = publicStats.TotalRemainingParticipants,
+                UtilizationPercentage = Math.Round(publicStats.TotalUtilizationPercentage, 2),
+                IsFullyBooked = publicStats.TotalRemainingParticipants == 0,
+                IsNearlyFull = publicStats.TotalUtilizationPercentage > 80,
+                
+                // Special capacity info (only for special members)
+                SpecialMaxCapacity = specialStats.TotalMaxParticipants,
+                SpecialReservedCapacity = specialStats.TotalAllocatedParticipants,
+                SpecialRemainingCapacity = specialStats.TotalRemainingParticipants,
+                SpecialUtilizationPercentage = Math.Round(specialStats.TotalUtilizationPercentage, 2),
+                HasSpecialCapacities = specialStats.CapacityCount > 0
             };
         }
 
@@ -56,6 +76,7 @@ public class TourCapacityCalculationService
     /// </summary>
     public async Task<Dictionary<Guid, CapacityInfo>> CalculateCapacitiesAsync(
         IEnumerable<TourCapacity> capacities,
+        bool memberIsSpecial = false,
         CancellationToken cancellationToken = default)
     {
         var capacityIds = capacities.Select(c => c.Id).ToList();
@@ -67,6 +88,10 @@ public class TourCapacityCalculationService
         // Calculate capacity info for each capacity
         foreach (var capacity in capacities)
         {
+            // Check if this capacity is visible to the member
+            if (!capacity.IsVisibleToMember(memberIsSpecial))
+                continue; // Skip special capacities for non-special members
+
             var utilization = utilizationDict.GetValueOrDefault(capacity.Id, 0);
             var remainingParticipants = Math.Max(0, capacity.MaxParticipants - utilization);
             var utilizationPercentage = capacity.MaxParticipants > 0 ? (double)utilization / capacity.MaxParticipants * 100 : 0;
@@ -79,7 +104,8 @@ public class TourCapacityCalculationService
                 RemainingParticipants = remainingParticipants,
                 UtilizationPercentage = Math.Round(utilizationPercentage, 2),
                 IsFullyBooked = remainingParticipants == 0,
-                IsNearlyFull = utilizationPercentage > 80
+                IsNearlyFull = utilizationPercentage > 80,
+                IsSpecial = capacity.IsSpecial
             };
         }
 
@@ -93,12 +119,21 @@ public class TourCapacityCalculationService
 public class TourCapacityInfo
 {
     public Guid TourId { get; set; }
+    
+    // Public capacity info (excluding special capacities)
     public int MaxCapacity { get; set; }
     public int ReservedCapacity { get; set; }
     public int RemainingCapacity { get; set; }
     public double UtilizationPercentage { get; set; }
     public bool IsFullyBooked { get; set; }
     public bool IsNearlyFull { get; set; }
+    
+    // Special capacity info (only for special members)
+    public int SpecialMaxCapacity { get; set; }
+    public int SpecialReservedCapacity { get; set; }
+    public int SpecialRemainingCapacity { get; set; }
+    public double SpecialUtilizationPercentage { get; set; }
+    public bool HasSpecialCapacities { get; set; }
 }
 
 /// <summary>
@@ -113,4 +148,5 @@ public class CapacityInfo
     public double UtilizationPercentage { get; set; }
     public bool IsFullyBooked { get; set; }
     public bool IsNearlyFull { get; set; }
+    public bool IsSpecial { get; set; }
 }

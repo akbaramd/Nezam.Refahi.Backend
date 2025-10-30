@@ -22,10 +22,10 @@ public class BillRepository : EfRepository<FinanceDbContext, Bill, Guid>, IBillR
             .FirstOrDefaultAsync(b => b.BillNumber == billNumber, cancellationToken);
     }
 
-    public async Task<Bill?> GetByReferenceAsync(string referenceId, string billType, CancellationToken cancellationToken = default)
+    public async Task<Bill?> GetByReferenceTrackingCodeAsync(string refTrackingCode, CancellationToken cancellationToken = default)
     {
         return await PrepareQuery(_dbSet)
-            .FirstOrDefaultAsync(b => b.ReferenceId == referenceId && b.BillType == billType, cancellationToken);
+            .FirstOrDefaultAsync(b => b.ReferenceTrackCode == refTrackingCode , cancellationToken);
     }
 
     public async Task<IEnumerable<Bill>> GetByExternalUserIdAsync(Guid externalUserId, CancellationToken cancellationToken = default)
@@ -47,7 +47,7 @@ public class BillRepository : EfRepository<FinanceDbContext, Bill, Guid>, IBillR
     public async Task<IEnumerable<Bill>> GetByBillTypeAsync(string billType, CancellationToken cancellationToken = default)
     {
         return await PrepareQuery(_dbSet)
-            .Where(b => b.BillType == billType)
+            .Where(b => b.ReferenceType == billType)
             .OrderByDescending(b => b.IssueDate)
             .ToListAsync(cancellationToken);
     }

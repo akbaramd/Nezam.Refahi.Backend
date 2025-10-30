@@ -3,6 +3,7 @@ using Bonyan.Modularity.Abstractions;
 using Castle.Core.Configuration;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using MCA.SharedKernel.Application.Mappers.Extensions;
 using Nezam.Refahi.Recreation.Application.Services;
 using Nezam.Refahi.Recreation.Application.Configuration;
 using Nezam.Refahi.Recreation.Application.Services.Contracts;
@@ -23,8 +24,8 @@ public class NezamRefahiRecreationApplicationModule : BonModule
   
   public override Task OnConfigureAsync(BonConfigurationContext context)
   {
-    // This module will be configured by the shared infrastructure
-    // which has access to all the required packages
+    // Register mappers
+    context.Services.AddMappers(c => c.AddAssembly(typeof(NezamRefahiRecreationApplicationModule).Assembly));
 
     context.Services.AddMediatR(v =>
     {

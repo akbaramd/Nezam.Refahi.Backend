@@ -5,6 +5,7 @@ using Bonyan.Modularity;
 using Bonyan.Modularity.Abstractions;
 using MediatR;
 using Nezam.Refahi.Facilities.Domain;
+using MCA.SharedKernel.Application.Mappers.Extensions;
 
 namespace Nezam.Refahi.Facilities.Application;
 
@@ -22,6 +23,7 @@ public class NezamRefahiFacilitiesApplicationModule : BonModule
   {
     var assembly = Assembly.GetExecutingAssembly();
 
+    context.Services.AddMappers(c => c.AddAssembly(assembly));
     // Add MediatR
     context.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(assembly));
 

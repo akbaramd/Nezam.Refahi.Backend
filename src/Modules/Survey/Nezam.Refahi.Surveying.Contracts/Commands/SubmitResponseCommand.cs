@@ -18,6 +18,8 @@ public class SubmitResponseResponse
 {
     public bool Submitted { get; set; }
     public DateTimeOffset? SubmittedAt { get; set; }
+    public string ResponseStatus { get; set; } = string.Empty; // New response status
+    public string ResponseStatusText { get; set; } = string.Empty; // Persian text for response status
     public ResponseSummaryDto Summary { get; set; } = new();
     public List<string> ValidationErrors { get; set; } = new();
 }

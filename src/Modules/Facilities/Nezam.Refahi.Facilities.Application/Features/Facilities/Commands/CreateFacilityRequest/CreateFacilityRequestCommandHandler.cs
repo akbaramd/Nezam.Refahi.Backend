@@ -118,7 +118,7 @@ public class CreateFacilityRequestCommandHandler : IRequestHandler<CreateFacilit
                 }
 
                 // Check if user already has an active request for this cycle
-                var existingUserRequest = await _requestRepository.GetUserRequestForCycleAsync(memberInfo.Id, request.FacilityCycleId, cancellationToken);
+                var existingUserRequest = await _requestRepository.GetUserLastRequestForCycleAsync(memberInfo.Id, request.FacilityCycleId, cancellationToken);
                 if (existingUserRequest != null)
                 {
                     // Check if the existing request is still active (not completed/rejected/cancelled)

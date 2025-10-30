@@ -1,6 +1,4 @@
-﻿using Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilityCycleDetails;
-
-namespace Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilities;
+﻿namespace Nezam.Refahi.Facilities.Application.Dtos;
 
 /// <summary>
 /// Enterprise-grade Facility data transfer object
@@ -11,72 +9,72 @@ public record FacilityDto
   /// <summary>
   /// Unique facility identifier
   /// </summary>
-  public Guid Id { get; init; }
+  public Guid Id { get; set; }
 
   /// <summary>
   /// Facility display name
   /// </summary>
-  public string Name { get; init; } = null!;
+  public string Name { get; set; } = null!;
 
   /// <summary>
   /// Unique facility code for system identification
   /// </summary>
-  public string Code { get; init; } = null!;
+  public string Code { get; set; } = null!;
 
   /// <summary>
   /// Facility type (Loan, Grant, Card, WelfareVoucher, Other)
   /// </summary>
-  public string Type { get; init; } = null!;
+  public string Type { get; set; } = null!;
 
   /// <summary>
   /// Human-readable facility type text
   /// </summary>
-  public string TypeText { get; init; } = null!;
+  public string TypeText { get; set; } = null!;
 
   /// <summary>
   /// Current facility status (Draft, Active, Suspended, Closed, Maintenance)
   /// </summary>
-  public string Status { get; init; } = null!;
+  public string Status { get; set; } = null!;
 
   /// <summary>
   /// Human-readable status text
   /// </summary>
-  public string StatusText { get; init; } = null!;
+  public string StatusText { get; set; } = null!;
 
   /// <summary>
   /// Indicates if facility is currently active and accepting applications
   /// </summary>
-  public bool IsActive { get; init; }
+  public bool IsActive { get; set; }
 
   /// <summary>
   /// Detailed facility description
   /// </summary>
-  public string? Description { get; init; }
+  public string? Description { get; set; }
 
   /// <summary>
   /// Associated bank information
   /// </summary>
-  public BankInfoDto? BankInfo { get; init; }
+  public BankInfoDto? BankInfo { get; set; }
 
   /// <summary>
   /// Current cycle statistics
   /// </summary>
-  public FacilityCycleStatisticsDto? CycleStatistics { get; init; }
+  public FacilityCycleStatisticsDto? CycleStatistics { get; set; }
 
   /// <summary>
   /// Facility metadata and additional properties
   /// </summary>
-  public Dictionary<string, string> Metadata { get; init; } = new();
+  public Dictionary<string, string> Metadata { get; set; } = new();
 
   /// <summary>
   /// Facility creation timestamp
   /// </summary>
-  public DateTime CreatedAt { get; init; }
+  public DateTime CreatedAt { get; set; }
 
   /// <summary>
   /// Last modification timestamp
   /// </summary>
-  public DateTime? LastModifiedAt { get; init; }
+  public DateTime? LastModifiedAt { get; set; }
 
   /// <summary>
   /// Indicates if facility has any active cycles

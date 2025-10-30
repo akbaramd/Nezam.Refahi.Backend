@@ -89,11 +89,21 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
             .HasColumnType("date")
             .IsRequired(false);
             
+        // Special member status for VIP privileges
+        builder.Property(m => m.IsSpecial)
+            .IsRequired()
+            .HasDefaultValue(false)
+            .HasComment("Indicates if member has special VIP status");
+            
         // Indexes for performance
         builder.HasIndex(m => m.ExternalUserId)
             .IsUnique()
             .HasFilter("[ExternalUserId] IS NOT NULL")
             .HasDatabaseName("IX_Members_ExternalUserId");
+            
+        // Index for special members
+        builder.HasIndex(m => m.IsSpecial)
+            .HasDatabaseName("IX_Members_IsSpecial");
  
         // Audit properties (inherited from FullAggregateRoot)
         builder.ConfigureFullAuditableEntity();

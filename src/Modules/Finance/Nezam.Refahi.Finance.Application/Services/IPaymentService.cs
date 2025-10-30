@@ -74,13 +74,14 @@ public class PaymentProcessingResult
 /// </summary>
 public class GatewayCallbackResult
 {
-    public decimal TrackingNumber { get; set; }
+    public decimal GatewayReference { get; set; }
     public bool IsSuccessful { get; set; }
     public string? Message { get; set; }
     public string? GatewayName { get; set; }
     public decimal AmountRials { get; set; } // Using primitive long instead of Money value object
     public DateTime ProcessedAt { get; set; }
     public Dictionary<string, string> AdditionalData { get; set; } = new();
+    public string TransactionCode { get; set; } = string.Empty;
 }
 
 /// <summary>

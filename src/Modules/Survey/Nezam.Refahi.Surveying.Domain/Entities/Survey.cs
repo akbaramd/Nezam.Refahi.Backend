@@ -124,7 +124,7 @@ public sealed class Survey : FullAggregateRoot<Guid>
     /// <summary>
     /// Sets an answer for a specific question in a response
     /// </summary>
-    public void SetResponseAnswer(Guid responseId, Guid questionId, string? textAnswer = null, IEnumerable<Guid>? selectedOptionIds = null)
+    public void SetResponseAnswer(Guid responseId, Guid questionId, string questionText, string? textAnswer = null, Dictionary<Guid,string>? selectedOptionIds = null)
     {
         var response = _responses.FirstOrDefault(r => r.Id == responseId);
         if (response == null)
@@ -334,11 +334,118 @@ public sealed class Survey : FullAggregateRoot<Guid>
     }
 
     /// <summary>
+    /// Gets the latest valid response for a participant
+    /// Latest response is determined by SubmittedAt, not AttemptNumber
+    /// Only considers Submitted responses as valid for "latest" determination
+    /// </summary>
+    public Response? GetLatestValidResponse(ParticipantInfo participant)
+    {
+        return _responses
+            .Where(r => r.Participant.Equals(participant) && r.AttemptStatus == AttemptStatus.Submitted)
+            .OrderByDescending(r => r.SubmittedAt ?? DateTimeOffset.MinValue)
+            .FirstOrDefault();
+    }
+
+    /// <summary>
+    /// Gets the latest response (any status) for a participant
+    /// This includes Active, Submitted, Canceled, and Expired responses
+    /// </summary>
+    public Response? GetLatestResponse(ParticipantInfo participant)
+    {
+        return _responses
+            .Where(r => r.Participant.Equals(participant))
+            .OrderByDescending(r => r.SubmittedAt ?? r.CanceledAt ?? r.ExpiredAt ?? DateTimeOffset.MinValue)
+            .FirstOrDefault();
+    }
+
+    /// <summary>
+    /// Gets all responses for a participant ordered by submission time
+    /// </summary>
+    public IEnumerable<Response> GetParticipantResponses(ParticipantInfo participant)
+    {
+        return _responses
+            .Where(r => r.Participant.Equals(participant))
+            .OrderByDescending(r => r.SubmittedAt ?? r.CanceledAt ?? r.ExpiredAt ?? DateTimeOffset.MinValue);
+    }
+
+    /// <summary>
+    /// Checks if participant has any submitted responses
+    /// </summary>
+    public bool HasParticipantSubmittedResponse(ParticipantInfo participant)
+    {
+        return _responses.Any(r => r.Participant.Equals(participant) && r.AttemptStatus == AttemptStatus.Submitted);
+    }
+
+    /// <summary>
+    /// Gets the count of submitted responses for a participant
+    /// </summary>
+    public int GetParticipantSubmittedResponseCount(ParticipantInfo participant)
+    {
+        return _responses.Count(r => r.Participant.Equals(participant) && r.AttemptStatus == AttemptStatus.Submitted);
+    }
+
+    /// <summary>
     /// Gets questions ordered by their order property
     /// </summary>
     public IEnumerable<Question> GetOrderedQuestions()
     {
         return _questions.OrderBy(q => q.Order);
+    }
+
+    /// <summary>
+    /// Gets the option text for a specific question and option ID
+    /// </summary>
+    public string? GetOptionText(Guid questionId, Guid optionId)
+    {
+        var question = _questions.FirstOrDefault(q => q.Id == questionId);
+        if (question == null)
+            return null;
+
+        var option = question.Options.FirstOrDefault(o => o.Id == optionId);
+        return option?.Text;
+    }
+
+    /// <summary>
+    /// Gets all option texts for a specific question
+    /// </summary>
+    public Dictionary<Guid, string> GetQuestionOptionTexts(Guid questionId)
+    {
+        var question = _questions.FirstOrDefault(q => q.Id == questionId);
+        if (question == null)
+            return new Dictionary<Guid, string>();
+
+        return question.Options.ToDictionary(o => o.Id, o => o.Text);
+    }
+
+    /// <summary>
+    /// Updates a response with selected options, ensuring proper option text is used
+    /// </summary>
+    public void UpdateResponseWithSelectedOptions(Guid responseId, Guid questionId, IEnumerable<Guid> selectedOptionIds)
+    {
+        var response = _responses.FirstOrDefault(r => r.Id == responseId);
+        if (response == null)
+            throw new InvalidOperationException($"Response {responseId} not found");
+
+        var optionTexts = GetQuestionOptionTexts(questionId);
+        
+        // Update the response with proper option texts
+        response.UpdateSelectedOptions(questionId, selectedOptionIds, optionTexts);
+    }
+
+    /// <summary>
+    /// Adds a selected option to a response with proper option text
+    /// </summary>
+    public void AddSelectedOptionToResponse(Guid responseId, Guid questionId, Guid optionId)
+    {
+        var response = _responses.FirstOrDefault(r => r.Id == responseId);
+        if (response == null)
+            throw new InvalidOperationException($"Response {responseId} not found");
+
+        var optionText = GetOptionText(questionId, optionId);
+        if (string.IsNullOrEmpty(optionText))
+            throw new InvalidOperationException($"Option {optionId} not found for question {questionId}");
+
+        response.AddSelectedOptionWithText(questionId, optionId, optionText);
     }
 
     /// <summary>

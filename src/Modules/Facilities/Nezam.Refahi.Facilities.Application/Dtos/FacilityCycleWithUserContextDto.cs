@@ -1,124 +1,118 @@
-﻿using Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilityCycleDetails;
-
-namespace Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilityCycles;
+﻿namespace Nezam.Refahi.Facilities.Application.Dtos;
 
 /// <summary>
 /// Facility cycle with user context data transfer object
 /// </summary>
-public record FacilityCycleWithUserContextDto
+public class FacilityCycleWithUserDto
 {
   /// <summary>
   /// Cycle ID
   /// </summary>
-  public Guid Id { get; init; }
+  public Guid Id { get; set; }
 
   /// <summary>
   /// Cycle name
   /// </summary>
-  public string Name { get; init; } = null!;
+  public string Name { get; set; } = null!;
 
   /// <summary>
   /// Cycle start date
   /// </summary>
-  public DateTime StartDate { get; init; }
+  public DateTime StartDate { get; set; }
 
   /// <summary>
   /// Cycle end date
   /// </summary>
-  public DateTime EndDate { get; init; }
+  public DateTime EndDate { get; set; }
 
   /// <summary>
   /// Days remaining until cycle starts
   /// </summary>
-  public int DaysUntilStart { get; init; }
+  public int DaysUntilStart { get; set; }
 
   /// <summary>
   /// Days remaining until cycle ends
   /// </summary>
-  public int DaysUntilEnd { get; init; }
+  public int DaysUntilEnd { get; set; }
 
   /// <summary>
   /// Indicates if cycle has started
   /// </summary>
-  public bool HasStarted { get; init; }
+  public bool HasStarted { get; set; }
 
   /// <summary>
   /// Indicates if cycle has ended
   /// </summary>
-  public bool HasEnded { get; init; }
+  public bool HasEnded { get; set; }
 
   /// <summary>
   /// Indicates if cycle is currently active
   /// </summary>
-  public bool IsActive { get; init; }
+  public bool IsActive { get; set; }
 
   /// <summary>
   /// Indicates if cycle is accepting applications
   /// </summary>
-  public bool IsAcceptingApplications { get; init; }
+  public bool IsAcceptingApplications { get; set; }
 
   /// <summary>
   /// Total quota for this cycle
   /// </summary>
-  public int Quota { get; init; }
+  public int Quota { get; set; }
 
   /// <summary>
   /// Used quota count
   /// </summary>
-  public int UsedQuota { get; init; }
+  public int UsedQuota { get; set; }
 
   /// <summary>
   /// Available quota count
   /// </summary>
-  public int AvailableQuota { get; init; }
+  public int AvailableQuota { get; set; }
 
   /// <summary>
   /// Quota utilization percentage
   /// </summary>
-  public decimal QuotaUtilizationPercentage { get; init; }
+  public decimal QuotaUtilizationPercentage { get; set; }
 
   /// <summary>
   /// Cycle status
   /// </summary>
-  public string Status { get; init; } = null!;
+  public string Status { get; set; } = null!;
 
   /// <summary>
   /// Human-readable status description
   /// </summary>
-  public string StatusDescription { get; init; } = null!;
+  public string StatusText { get; set; } = null!;
 
   /// <summary>
   /// Cycle description
   /// </summary>
-  public string? Description { get; init; }
+  public string? Description { get; set; }
 
   /// <summary>
   /// Financial terms for this cycle
   /// </summary>
-  public FinancialTermsDto FinancialTerms { get; init; } = null!;
+  public FinancialTermsDto FinancialTerms { get; set; } = null!;
 
   /// <summary>
   /// Cycle rules and policies
   /// </summary>
-  public CycleRulesDto Rules { get; init; } = null!;
+  public CycleRulesDto Rules { get; set; } = null!;
 
   /// <summary>
   /// User eligibility information (if NationalNumber provided)
   /// </summary>
-  public UserEligibilityDto? UserEligibility { get; init; }
+  public UserEligibilityDto? UserEligibility { get; set; }
 
   /// <summary>
   /// User request history for this cycle (if NationalNumber provided)
   /// </summary>
-  public List<UserRequestHistoryDto> UserRequestHistory { get; init; } = new();
-
-  /// <summary>
-  /// Last request for this cycle (if user has requests)
   /// </summary>
-  public UserRequestHistoryDto? LastRequest { get; init; }
+  public FacilityRequestDto? LastRequest { get; set; }
 
   /// <summary>
   /// Cycle creation timestamp
   /// </summary>
-  public DateTime CreatedAt { get; init; }
+  public DateTime CreatedAt { get; set; }
 }

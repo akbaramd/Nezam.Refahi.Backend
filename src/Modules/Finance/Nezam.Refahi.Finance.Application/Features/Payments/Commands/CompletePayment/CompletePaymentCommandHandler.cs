@@ -70,28 +70,22 @@ public class CompletePaymentCommandHandler : IRequestHandler<CompletePaymentComm
             // Record payment in bill (this will mark payment as completed and update bill status)
             bill.RecordPayment(
                 paymentId: request.PaymentId,
-                gatewayTransactionId: request.GatewayTransactionId,
-                gatewayReference: request.GatewayReference
+                gatewayTransactionId: request.GatewayTransactionId
             );
 
-            // Save changes
-            await _billRepository.UpdateAsync(bill, cancellationToken:cancellationToken);
-            await _unitOfWork.SaveAsync(cancellationToken);
-            await _unitOfWork.CommitAsync(cancellationToken);
-
-            // Get updated payment
+            // Get updated payment before saving
             var updatedPayment = bill.Payments.First(p => p.Id == request.PaymentId);
 
-            // Publish PaymentCompletedIntegrationEvent
+            // Publish Integration Events INSIDE transaction (Transactional Outbox Pattern)
             var paymentCompletedEvent = new PaymentCompletedIntegrationEvent
             {
                 PaymentId = updatedPayment.Id,
                 ReferenceId = bill.ReferenceId,
-                ReferenceType = bill.BillType,
+                ReferenceType = bill.ReferenceType,
                 ExternalUserId = bill.ExternalUserId,
                 AmountRials = (long)updatedPayment.Amount.AmountRials,
                 GatewayTransactionId = request.GatewayTransactionId,
-                GatewayReference = request.GatewayReference,
+                GatewayReference = updatedPayment.GatewayReference,
                 CompletedAt = updatedPayment.CompletedAt!.Value,
                 Metadata = new Dictionary<string, string>
                 {
@@ -100,33 +94,58 @@ public class CompletePaymentCommandHandler : IRequestHandler<CompletePaymentComm
                     ["PaymentMethod"] = updatedPayment.Method.ToString()
                 }
             };
-            await _outboxPublisher.PublishAsync(paymentCompletedEvent, cancellationToken);
+            
+            // Publish with Idempotency Key for reliability
+            var paymentIdempotencyKey = $"payment_completed_{updatedPayment.Id}_{DateTime.UtcNow:yyyyMMddHHmmss}";
+            await _outboxPublisher.PublishAsync(
+                paymentCompletedEvent, 
+                aggregateId: bill.Id,
+                correlationId: request.GatewayTransactionId,
+                idempotencyKey: paymentIdempotencyKey,
+                cancellationToken);
 
-            // Check if bill is fully paid and publish BillFullyPaidIntegrationEvent
+            // Check if bill is fully paid and publish BillFullyPaidCompletedIntegrationEvent
             if (bill.Status == Nezam.Refahi.Finance.Domain.Enums.BillStatus.FullyPaid)
             {
-                var billFullyPaidEvent = new BillFullyPaidIntegrationEvent
+                var billFullyPaidCompletedEvent = new BillFullyPaidCompletedIntegrationEvent
                 {
                     BillId = bill.Id,
                     BillNumber = bill.BillNumber,
                     ReferenceId = bill.ReferenceId,
-                    ReferenceType = bill.BillType,
+                    ReferenceType = bill.ReferenceType,
                     PaidAmountRials = (long)bill.TotalAmount.AmountRials,
                     PaidAt = updatedPayment.CompletedAt!.Value,
                     PaymentId = updatedPayment.Id,
                     GatewayTransactionId = request.GatewayTransactionId,
-                    GatewayReference = request.GatewayReference,
+                    GatewayReference = updatedPayment.GatewayReference,
                     Gateway = updatedPayment.Gateway?.ToString() ?? "Unknown",
                     ExternalUserId = bill.ExternalUserId,
                     UserFullName = bill.UserFullName ?? string.Empty,
                     Metadata = new Dictionary<string, string>
                     {
                         ["PaymentMethod"] = updatedPayment.Method.ToString(),
-                        ["CompletedAt"] = updatedPayment.CompletedAt!.Value.ToString("O")
+                        ["CompletedAt"] = updatedPayment.CompletedAt!.Value.ToString("O"),
+                        ["TotalAmount"] = bill.TotalAmount.AmountRials.ToString(),
+                        ["PaymentCount"] = bill.Payments.Count.ToString(),
+                        ["LastPaymentMethod"] = updatedPayment.Method.ToString(),
+                        ["LastGateway"] = updatedPayment.Gateway?.ToString() ?? "Unknown"
                     }
                 };
-                await _outboxPublisher.PublishAsync(billFullyPaidEvent, cancellationToken);
+                
+                // Publish with Idempotency Key for reliability
+                var billIdempotencyKey = $"bill_fully_paid_{bill.Id}_{DateTime.UtcNow:yyyyMMddHHmmss}";
+                await _outboxPublisher.PublishAsync(
+                    billFullyPaidCompletedEvent, 
+                    aggregateId: bill.Id,
+                    correlationId: request.GatewayTransactionId,
+                    idempotencyKey: billIdempotencyKey,
+                    cancellationToken);
             }
+
+            // Save changes (including Outbox messages) and commit transaction
+            await _billRepository.UpdateAsync(bill, cancellationToken:cancellationToken);
+            await _unitOfWork.SaveAsync(cancellationToken);
+            await _unitOfWork.CommitAsync(cancellationToken);
 
             // Prepare response
             var response = new CompletePaymentResponse

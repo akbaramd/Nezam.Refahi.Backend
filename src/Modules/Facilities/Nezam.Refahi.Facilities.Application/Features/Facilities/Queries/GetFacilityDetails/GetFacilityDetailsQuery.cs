@@ -1,4 +1,5 @@
 using MediatR;
+using Nezam.Refahi.Facilities.Application.Dtos;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
 namespace Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilityDetails;
@@ -6,7 +7,7 @@ namespace Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFac
 /// <summary>
 /// Query to get facility details by ID
 /// </summary>
-public record GetFacilityDetailsQuery : IRequest<ApplicationResult<GetFacilityDetailsResult>>
+public record GetFacilityDetailsQuery : IRequest<ApplicationResult<FacilityDetailsDto>>
 {
     /// <summary>
     /// Facility ID

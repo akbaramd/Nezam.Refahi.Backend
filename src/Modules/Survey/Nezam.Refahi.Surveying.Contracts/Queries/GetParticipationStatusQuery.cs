@@ -6,7 +6,7 @@ namespace Nezam.Refahi.Surveying.Contracts.Queries;
 /// <summary>
 /// Query to get user's participation status in a specific survey
 /// </summary>
-public record GetParticipationStatusQuery(Guid SurveyId, Guid MemberId) : IRequest<ApplicationResult<ParticipationStatusResponse>>;
+public record GetParticipationStatusQuery(Guid SurveyId, string UserNationalNumber) : IRequest<ApplicationResult<ParticipationStatusResponse>>;
 
 /// <summary>
 /// Response containing user's participation status
@@ -14,7 +14,8 @@ public record GetParticipationStatusQuery(Guid SurveyId, Guid MemberId) : IReque
 public class ParticipationStatusResponse
 {
     public Guid SurveyId { get; set; }
-    public Guid MemberId { get; set; }
+    public string UserNationalNumber { get; set; } = string.Empty;
+    public Guid? MemberId { get; set; }
     
     // Eligibility
     public bool IsEligible { get; set; }

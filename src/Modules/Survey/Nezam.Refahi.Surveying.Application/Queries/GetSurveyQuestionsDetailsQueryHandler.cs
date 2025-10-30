@@ -1,11 +1,14 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Nezam.Refahi.Membership.Contracts.Services;
+using Nezam.Refahi.Shared.Application.Common.Models;
+using Nezam.Refahi.Shared.Domain.ValueObjects;
 using Nezam.Refahi.Surveying.Contracts.Dtos;
 using Nezam.Refahi.Surveying.Contracts.Queries;
 using Nezam.Refahi.Surveying.Domain.Entities;
 using Nezam.Refahi.Surveying.Domain.Enums;
 using Nezam.Refahi.Surveying.Domain.Repositories;
-using Nezam.Refahi.Shared.Application.Common.Models;
+using Nezam.Refahi.Surveying.Domain.ValueObjects;
 
 namespace Nezam.Refahi.Surveying.Application.Queries;
 
@@ -16,13 +19,16 @@ public class GetSurveyQuestionsDetailsQueryHandler : IRequestHandler<GetSurveyQu
 {
     private readonly ISurveyRepository _surveyRepository;
     private readonly ILogger<GetSurveyQuestionsDetailsQueryHandler> _logger;
+    private readonly IMemberInfoService _memberInfoService;
 
     public GetSurveyQuestionsDetailsQueryHandler(
         ISurveyRepository surveyRepository,
-        ILogger<GetSurveyQuestionsDetailsQueryHandler> logger)
+        ILogger<GetSurveyQuestionsDetailsQueryHandler> logger,
+        IMemberInfoService memberInfoService)
     {
         _surveyRepository = surveyRepository;
         _logger = logger;
+        _memberInfoService = memberInfoService;
     }
 
     public async Task<ApplicationResult<SurveyQuestionsDetailsResponse>> Handle(GetSurveyQuestionsDetailsQuery request, CancellationToken cancellationToken)
@@ -45,16 +51,27 @@ public class GetSurveyQuestionsDetailsQueryHandler : IRequestHandler<GetSurveyQu
                 RequiredQuestions = survey.Questions.Count(q => q.IsRequired)
             };
 
-            // Get user's response if MemberId is provided
+            // Get user's response if UserNationalNumber is provided
             Response? userResponse = null;
-            if (request.MemberId.HasValue && request.IncludeUserAnswers)
+            Guid? memberId = null;
+            if (!string.IsNullOrWhiteSpace(request.UserNationalNumber) && request.IncludeUserAnswers)
             {
-                // Load survey with responses to get user's response
-                var surveyWithResponses = await _surveyRepository.GetWithResponsesAsync(request.SurveyId, cancellationToken);
-                userResponse = surveyWithResponses?.Responses
-                    .Where(r => r.Participant.MemberId == request.MemberId.Value)
-                    .OrderByDescending(r => r.AttemptNumber)
-                    .FirstOrDefault();
+                // Get member info from national number
+                var nationalId = new NationalId(request.UserNationalNumber);
+                var memberInfo = await _memberInfoService.GetMemberInfoAsync(nationalId);
+                
+                if (memberInfo != null)
+                {
+                    memberId = memberInfo.Id;
+                    // Load survey with responses to get user's response
+                    var surveyWithResponses = await _surveyRepository.GetWithResponsesAsync(request.SurveyId, cancellationToken);
+                    if (surveyWithResponses != null)
+                    {
+                        var participant = ParticipantInfo.ForMember(memberInfo.Id);
+                        // Get the latest valid response (submitted responses only)
+                        userResponse = surveyWithResponses.GetLatestValidResponse(participant);
+                    }
+                }
             }
 
             // Map questions with user answers

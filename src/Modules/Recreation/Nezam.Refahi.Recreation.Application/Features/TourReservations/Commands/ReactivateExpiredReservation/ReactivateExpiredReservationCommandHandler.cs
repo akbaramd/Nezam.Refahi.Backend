@@ -145,7 +145,7 @@ public class ReactivateExpiredReservationCommandHandler : IRequestHandler<Reacti
 
             response.WasReactivated = true;
             response.WasDeleted = false;
-            response.NewStatus = ReservationStatus.Held.ToString();
+            response.NewStatus = ReservationStatus.OnHold.ToString();
             response.NewExpiryDate = reservation.ExpiryDate;
 
             _logger.LogInformation("Successfully reactivated expired reservation - ReservationId: {ReservationId}, NewExpiry: {NewExpiry}",

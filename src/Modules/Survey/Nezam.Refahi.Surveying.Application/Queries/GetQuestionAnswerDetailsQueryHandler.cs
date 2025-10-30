@@ -6,6 +6,8 @@ using Nezam.Refahi.Surveying.Domain.Entities;
 using Nezam.Refahi.Surveying.Domain.Enums;
 using Nezam.Refahi.Surveying.Domain.Repositories;
 using Nezam.Refahi.Shared.Application.Common.Models;
+using Nezam.Refahi.Shared.Domain.ValueObjects;
+using Nezam.Refahi.Membership.Contracts.Services;
 
 namespace Nezam.Refahi.Surveying.Application.Queries;
 
@@ -16,13 +18,15 @@ public class GetQuestionAnswerDetailsQueryHandler : IRequestHandler<GetQuestionA
 {
     private readonly ISurveyRepository _surveyRepository;
     private readonly ILogger<GetQuestionAnswerDetailsQueryHandler> _logger;
-
+    private readonly IMemberInfoService _memberInfoService;
     public GetQuestionAnswerDetailsQueryHandler(
         ISurveyRepository surveyRepository,
-        ILogger<GetQuestionAnswerDetailsQueryHandler> logger)
+        ILogger<GetQuestionAnswerDetailsQueryHandler> logger,
+        IMemberInfoService memberInfoService)
     {
         _surveyRepository = surveyRepository;
         _logger = logger;
+        _memberInfoService = memberInfoService;
     }
 
     public async Task<ApplicationResult<QuestionAnswerDetailsDto>> Handle(GetQuestionAnswerDetailsQuery request, CancellationToken cancellationToken)
@@ -39,9 +43,15 @@ public class GetQuestionAnswerDetailsQueryHandler : IRequestHandler<GetQuestionA
             if (response == null)
                 return ApplicationResult<QuestionAnswerDetailsDto>.Failure("پاسخ یافت نشد");
 
-            // Authorization check if MemberId is provided
-            if (request.MemberId.HasValue && response.Participant.MemberId != request.MemberId.Value)
-                return ApplicationResult<QuestionAnswerDetailsDto>.Failure("شما دسترسی به این پاسخ ندارید");
+                    // Authorization check if MemberId is provided
+            if (!string.IsNullOrWhiteSpace(request.UserNationalNumber))
+            {
+                var nationalId = new NationalId(request.UserNationalNumber);
+                var memberInfo = await _memberInfoService.GetMemberInfoAsync(nationalId);
+                
+                if (memberInfo == null || response.Participant.MemberId != memberInfo.Id)
+                    return ApplicationResult<QuestionAnswerDetailsDto>.Failure("شما دسترسی به این پاسخ ندارید");
+            }
 
             // Get question answer from response
             var questionAnswer = response.GetQuestionAnswer(request.QuestionId, 1);

@@ -6,7 +6,7 @@ namespace Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFac
 /// <summary>
 /// Query to get cycles for a specific facility with user context
 /// </summary>
-public record GetFacilityCyclesQuery : IRequest<ApplicationResult<GetFacilityCyclesResponse>>
+public record GetFacilityCyclesWithUserQuery : IRequest<ApplicationResult<GetFacilityCyclesWithUserQueryResponse>>
 {
     /// <summary>
     /// Facility ID to get cycles for

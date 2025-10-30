@@ -14,14 +14,14 @@ public enum ReservationStatus
     Draft = 0,
 
     /// <summary>
-    /// Reservation is held/pending payment (15 minutes timeout)
+    /// Reservation is on hold for a short time window (e.g., 15 minutes)
     /// </summary>
-    Held = 1,
+    OnHold = 1,
 
     /// <summary>
-    /// Payment is in progress
+    /// Processing in progress; awaiting confirmation
     /// </summary>
-    Paying = 2,
+    PendingConfirmation = 2,
 
     /// <summary>
     /// Reservation is confirmed and payment received
@@ -44,19 +44,19 @@ public enum ReservationStatus
     SystemCancelled = 6,
 
     /// <summary>
-    /// Payment failed after attempts
+    /// Processing failed during confirmation workflow
     /// </summary>
-    PaymentFailed = 7,
+    ProcessingFailed = 7,
 
     /// <summary>
-    /// Refund is being processed
+    /// Post-cancellation processing in progress
     /// </summary>
-    Refunding = 8,
+    CancellationProcessing = 8,
 
     /// <summary>
-    /// Refund completed
+    /// Post-cancellation processing completed
     /// </summary>
-    Refunded = 9,
+    CancellationProcessed = 9,
 
     /// <summary>
     /// User is waitlisted for capacity; needed for fair distribution and automated promotion
@@ -64,14 +64,14 @@ public enum ReservationStatus
     Waitlisted = 10,
 
     /// <summary>
-    /// Cancellation requested in Paying or Confirmed status, but financial arbitration (PSP) not yet completed. Prevents race conditions with callbacks
+    /// Cancellation has been requested and is awaiting processing; prevents race conditions with callbacks
     /// </summary>
-    CancelRequested = 11,
+    CancellationRequested = 11,
 
     /// <summary>
     /// Request to modify participants/room/service that requires operator review
     /// </summary>
-    AmendRequested = 12,
+    AmendmentRequested = 12,
 
     /// <summary>
     /// No-show at tour start; essential for penalties and KPIs

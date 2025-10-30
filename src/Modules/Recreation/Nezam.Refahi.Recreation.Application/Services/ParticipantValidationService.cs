@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Nezam.Refahi.Membership.Contracts.Dtos;
 using Nezam.Refahi.Membership.Contracts.Services;
-using Nezam.Refahi.Recreation.Application.Dtos;
+using Nezam.Refahi.Recreation.Contracts.Dtos;
 using Nezam.Refahi.Recreation.Domain.Enums;
 using Nezam.Refahi.Shared.Application.Common.Models;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
@@ -40,13 +40,13 @@ public class ParticipantValidationService
         }
 
         // If participant type is Member, validate membership
-        if (participant.ParticipantType == ParticipantType.Member)
+        if (participant.ParticipantType == ParticipantType.Member.ToString())
         {
             return await ValidateMembershipAsync(participant, cancellationToken);
         }
 
         // For guests, no additional validation needed beyond basic DTO validation
-        return ParticipantValidationResult.Success(participant.ParticipantType);
+        return ParticipantValidationResult.Success(ParticipantType.Guest);
     }
 
     /// <summary>

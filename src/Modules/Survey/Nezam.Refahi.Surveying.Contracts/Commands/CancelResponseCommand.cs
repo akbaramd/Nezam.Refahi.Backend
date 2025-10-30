@@ -16,5 +16,7 @@ public class CancelResponseResponse
 {
     public bool Canceled { get; set; }
     public bool IsAbandoned { get; set; }
+    public string ResponseStatus { get; set; } = string.Empty; // New response status
+    public string ResponseStatusText { get; set; } = string.Empty; // Persian text for response status
     public string? Message { get; set; }
 }

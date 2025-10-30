@@ -5,44 +5,29 @@ using Nezam.Refahi.Shared.Domain.ValueObjects;
 namespace Nezam.Refahi.Finance.Domain.Events;
 
 /// <summary>
-/// Domain event raised when a payment starts processing
+/// رویداد دامنه‌ای زمانی که پرداخت وارد وضعیت در حال پردازش می‌شود.
 /// </summary>
-public class PaymentProcessingEvent : DomainEvent
+public sealed class PaymentProcessingEvent : DomainEvent
 {
-    public Guid PaymentId { get; }
-    public Guid BillId { get; }
-    public string BillNumber { get; }
-    public string ReferenceId { get; }
-    public Guid ExternalUserId { get; }
-    public Money Amount { get; }
-    public PaymentGateway Gateway { get; }
-    public string? GatewayTransactionId { get; }
-    public string? TrackingNumber { get; }
-    public DateTime ProcessingStartedAt { get; }
-    public string? CallbackUrl { get; }
+  public Guid PaymentId { get; }
+  public Guid BillId { get; }
+  public Money Amount { get; }
+  public PaymentGateway? Gateway { get; }
+  public string? GatewayTransactionId { get; }
+  public DateTime ProcessingStartedAt { get; }
 
-    public PaymentProcessingEvent(
-        Guid paymentId,
-        Guid billId,
-        string billNumber,
-        string referenceId,
-        Guid externalUserId,
-        Money amount,
-        PaymentGateway gateway,
-        string? gatewayTransactionId = null,
-        string? trackingNumber = null,
-        string? callbackUrl = null)
-    {
-        PaymentId = paymentId;
-        BillId = billId;
-        BillNumber = billNumber;
-        ReferenceId = referenceId;
-        ExternalUserId = externalUserId;
-        Amount = amount;
-        Gateway = gateway;
-        GatewayTransactionId = gatewayTransactionId;
-        TrackingNumber = trackingNumber;
-        ProcessingStartedAt = DateTime.UtcNow;
-        CallbackUrl = callbackUrl;
-    }
+  public PaymentProcessingEvent(
+    Guid paymentId,
+    Guid billId,
+    Money amount,
+    PaymentGateway? gateway,
+    string? gatewayTransactionId = null)
+  {
+    PaymentId = paymentId;
+    BillId = billId;
+    Amount = amount;
+    Gateway = gateway;
+    GatewayTransactionId = gatewayTransactionId;
+    ProcessingStartedAt = DateTime.UtcNow;
+  }
 }

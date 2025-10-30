@@ -16,6 +16,7 @@ public record CreateBillCommand : IRequest<ApplicationResult<CreateBillResponse>
     /// <summary>
     /// Reference identifier for tracking
     /// </summary>
+    public string ReferenceTrackingCode { get; init; } = string.Empty;
     public string ReferenceId { get; init; } = string.Empty;
 
     /// <summary>

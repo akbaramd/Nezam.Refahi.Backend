@@ -27,6 +27,9 @@ public class ReservationPriceSnapshotConfiguration : IEntityTypeConfiguration<Re
             .IsRequired()
             .HasConversion<int>();
 
+        builder.Property(ps => ps.TourPricingId)
+            .IsRequired(false);
+
         // Configure Money value objects
         builder.OwnsOne(ps => ps.BasePrice, money =>
         {
@@ -60,6 +63,30 @@ public class ReservationPriceSnapshotConfiguration : IEntityTypeConfiguration<Re
         builder.Property(ps => ps.PricingRules)
             .HasColumnType("nvarchar(max)"); // JSON
 
+        builder.Property(ps => ps.RequiredCapabilityIds)
+            .HasColumnType("nvarchar(max)") // JSON array
+            .IsRequired(false);
+
+        builder.Property(ps => ps.RequiredFeatureIds)
+            .HasColumnType("nvarchar(max)") // JSON array
+            .IsRequired(false);
+
+        builder.Property(ps => ps.WasDefaultPricing)
+            .IsRequired()
+            .HasDefaultValue(false);
+
+        builder.Property(ps => ps.AppliedDiscountPercentage)
+            .HasColumnType("decimal(5,2)")
+            .IsRequired(false);
+
+        builder.Property(ps => ps.WasEarlyBird)
+            .IsRequired()
+            .HasDefaultValue(false);
+
+        builder.Property(ps => ps.WasLastMinute)
+            .IsRequired()
+            .HasDefaultValue(false);
+
         builder.Property(ps => ps.SnapshotDate)
             .IsRequired()
             .HasColumnType("datetime2");
@@ -90,5 +117,9 @@ public class ReservationPriceSnapshotConfiguration : IEntityTypeConfiguration<Re
         builder.HasIndex(ps => ps.DiscountCode)
             .HasDatabaseName("IX_ReservationPriceSnapshots_DiscountCode")
             .HasFilter("[DiscountCode] IS NOT NULL");
+
+        builder.HasIndex(ps => ps.TourPricingId)
+            .HasDatabaseName("IX_ReservationPriceSnapshots_TourPricingId")
+            .HasFilter("[TourPricingId] IS NOT NULL");
     }
 }

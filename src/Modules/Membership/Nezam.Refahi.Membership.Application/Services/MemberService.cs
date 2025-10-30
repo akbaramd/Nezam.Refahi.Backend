@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 using Nezam.Refahi.BasicDefinitions.Contracts.Services;
 using Nezam.Refahi.Membership.Application.Dtos;
 using Nezam.Refahi.Membership.Application.Services;
@@ -90,6 +91,7 @@ public class MemberService : IMemberService
                     Email = existingMember.Email,
                     PhoneNumber = existingMember.PhoneNumber?.Value,
                     IsActive = true,
+                    IsSpecial = existingMember.IsSpecial,
                     CreatedAt = existingMember.CreatedAt,
                     ModifiedAt = existingMember.LastModifiedAt
                 };
@@ -132,6 +134,7 @@ public class MemberService : IMemberService
                     Email = newMember.Email,
                     PhoneNumber = newMember.PhoneNumber?.Value,
                     IsActive = true,
+                    IsSpecial = newMember.IsSpecial,
                     CreatedAt = newMember.CreatedAt,
                     ModifiedAt = newMember.LastModifiedAt
                 };
@@ -179,6 +182,7 @@ public class MemberService : IMemberService
                     Email = member.Email,
                     PhoneNumber = member.PhoneNumber?.Value,
                     IsActive = true,
+                    IsSpecial = member.IsSpecial,
                     CreatedAt = member.CreatedAt,
                     ModifiedAt = member.LastModifiedAt
                 };
@@ -217,6 +221,8 @@ public class MemberService : IMemberService
                             await _unitOfWork.SaveChangesAsync();
 
                             // Get and save capabilities from external member data
+                            var processedFeatureKeys = new HashSet<string>();
+                            
                             foreach (var externalCapability in externalMember.Capabilities)
                             {
                                 var memberCapability = new MemberCapability(
@@ -233,10 +239,28 @@ public class MemberService : IMemberService
                                 // Save individual features from this capability
                                 foreach (var claim in externalCapability.Claims)
                                 {
+                                    var featureKey = claim.Value;
+                                    
+                                    // Skip if feature key is null or empty
+                                    if (string.IsNullOrWhiteSpace(featureKey))
+                                    {
+                                        _logger.LogWarning("Skipping feature with empty key for new member {MemberId}", newMember.Id);
+                                        continue;
+                                    }
+                                    
+                                    // Skip if we've already processed this feature key
+                                    if (processedFeatureKeys.Contains(featureKey))
+                                    {
+                                        _logger.LogDebug("Skipping duplicate feature {FeatureKey} for new member {MemberId}", featureKey, newMember.Id);
+                                        continue;
+                                    }
+                                    
+                                    processedFeatureKeys.Add(featureKey);
+                                    
                                     var memberFeature = new MemberFeature(
                                         newMember.Id,
-                                        claim.Value, // Use claim value as feature key
-                                        claim.ClaimTypeTitle ?? claim.Value, // Use claim type title as feature title
+                                        featureKey, // Use claim value as feature key
+                                        claim.ClaimTypeTitle ?? featureKey, // Use claim type title as feature title
                                         claim.ValidFrom ?? externalCapability.ValidFrom,
                                         claim.ValidTo ?? externalCapability.ValidTo ?? DateTime.UtcNow.AddYears(1),
                                         claim.AssignedBy ?? externalCapability.AssignedBy,
@@ -259,6 +283,7 @@ public class MemberService : IMemberService
                                 Email = newMember.Email,
                                 PhoneNumber = newMember.PhoneNumber?.Value,
                                 IsActive = true,
+                                IsSpecial = newMember.IsSpecial,
                                 CreatedAt = newMember.CreatedAt,
                                 ModifiedAt = newMember.LastModifiedAt
                             };
@@ -311,6 +336,7 @@ public class MemberService : IMemberService
                 Email = member.Email,
                 PhoneNumber = member.PhoneNumber?.Value,
                 IsActive = true,
+                IsSpecial = member.IsSpecial,
                 CreatedAt = member.CreatedAt,
                 ModifiedAt = member.LastModifiedAt
             };
@@ -354,6 +380,7 @@ public class MemberService : IMemberService
                 Email = member.Email,
                 PhoneNumber = member.PhoneNumber?.Value,
                 IsActive = true,
+                IsSpecial = member.IsSpecial,
                 CreatedAt = member.CreatedAt,
                 ModifiedAt = member.LastModifiedAt
             };
@@ -397,6 +424,7 @@ public class MemberService : IMemberService
                 Email = member.Email,
                 PhoneNumber = member.PhoneNumber?.Value,
                     IsActive = true,
+                    IsSpecial = member.IsSpecial,
                 CreatedAt = member.CreatedAt,
                 ModifiedAt = member.LastModifiedAt
             };
@@ -440,7 +468,8 @@ public class MemberService : IMemberService
                 Email = member.Email,
                 PhoneNumber = member.PhoneNumber?.Value,
                 IsActive = true,
-                CreatedAt = member.CreatedAt,
+                IsSpecial = member.IsSpecial,
+                    CreatedAt = member.CreatedAt,
                 ModifiedAt = member.LastModifiedAt
             };
 
@@ -792,7 +821,6 @@ public class MemberService : IMemberService
             _logger.LogDebug("Syncing existing member {MemberId} with external data", existingMember.Id);
 
             // Update basic member information if needed
-            var needsUpdate = false;
 
             // Check if basic info needs updating
             if (existingMember.FullName.FirstName != externalMember.FirstName ||
@@ -818,12 +846,47 @@ public class MemberService : IMemberService
             // Always sync capabilities and features
             await SyncMemberCapabilitiesAndFeaturesAsync(existingMember, externalMember);
 
-            if (needsUpdate)
+            // Retry pattern for concurrency conflicts
+            const int maxRetries = 3;
+            for (int attempt = 1; attempt <= maxRetries; attempt++)
             {
-                await _memberRepository.UpdateAsync(existingMember);
-                await _unitOfWork.SaveChangesAsync();
-                _logger.LogDebug("Updated basic member information for MemberId: {MemberId}", existingMember.Id);
+                try
+                {
+                    await _memberRepository.UpdateAsync(existingMember);
+                    await _unitOfWork.SaveChangesAsync();
+                    _logger.LogDebug("Updated basic member information for MemberId: {MemberId}", existingMember.Id);
+                    break; // Success, exit retry loop
+                }
+                catch (DbUpdateConcurrencyException) when (attempt < maxRetries)
+                {
+                    _logger.LogWarning("Concurrency conflict on attempt {Attempt} for member {MemberId}. Retrying...", 
+                        attempt, existingMember.Id);
+                    
+                    // Reload the entity from database to get latest version
+                    var reloadedMember = await _memberRepository.GetByIdAsync(existingMember.Id);
+                    if (reloadedMember == null)
+                    {
+                        _logger.LogError("Member {MemberId} not found during retry", existingMember.Id);
+                        throw;
+                    }
+                    
+                    // Update the existing member with latest data
+                    existingMember = reloadedMember;
+                    
+                    // Re-sync with external data
+                    await SyncMemberCapabilitiesAndFeaturesAsync(existingMember, externalMember);
+                    
+                    // Wait a bit before retry
+                    await Task.Delay(100 * attempt);
+                }
+                catch (DbUpdateConcurrencyException ex) when (attempt == maxRetries)
+                {
+                    _logger.LogError(ex, "Concurrency conflict persisted after {MaxRetries} attempts for member {MemberId}", 
+                        maxRetries, existingMember.Id);
+                    throw;
+                }
             }
+           
 
             _logger.LogDebug("Successfully synced existing member {MemberId} with external data", existingMember.Id);
         }
@@ -852,6 +915,9 @@ public class MemberService : IMemberService
             // Create sets for comparison
             var existingCapabilityKeys = existingCapabilities.Select(c => c.CapabilityKey).ToHashSet();
             var existingFeatureKeys = existingFeatures.Select(f => f.FeatureKey).ToHashSet();
+
+            // Track features that have been processed in this sync to avoid duplicates
+            var processedFeatureKeys = new HashSet<string>();
 
             // Process external capabilities
             var externalCapabilityKeys = new HashSet<string>();
@@ -890,11 +956,25 @@ public class MemberService : IMemberService
                 }
 
                 // Process features for this capability
-                var externalFeatureKeys = new HashSet<string>();
                 foreach (var claim in externalCapability.Claims)
                 {
                     var featureKey = claim.Value;
-                    externalFeatureKeys.Add(featureKey);
+
+                    // Skip if feature key is null or empty
+                    if (string.IsNullOrWhiteSpace(featureKey))
+                    {
+                        _logger.LogWarning("Skipping feature with empty key for member {MemberId}", member.Id);
+                        continue;
+                    }
+
+                    // Skip if we've already processed this feature key in this sync
+                    if (processedFeatureKeys.Contains(featureKey))
+                    {
+                        _logger.LogDebug("Skipping duplicate feature {FeatureKey} for member {MemberId}", featureKey, member.Id);
+                        continue;
+                    }
+
+                    processedFeatureKeys.Add(featureKey);
 
                     if (!existingFeatureKeys.Contains(featureKey))
                     {
@@ -927,8 +1007,7 @@ public class MemberService : IMemberService
                         _logger.LogDebug("Updated existing feature {FeatureKey} for member {MemberId}", featureKey, member.Id);
                     }
                 }
-
-                }
+            }
 
             // Remove features that are no longer in external data
             var allExternalFeatureKeys = externalMember.Capabilities

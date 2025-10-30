@@ -1,15 +1,21 @@
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Nezam.Refahi.Recreation.Application.Dtos;
+using Nezam.Refahi.Recreation.Contracts.Dtos;
 using Nezam.Refahi.Recreation.Application.Services;
 using Nezam.Refahi.Recreation.Domain.Entities;
 using Nezam.Refahi.Recreation.Domain.Enums;
 using Nezam.Refahi.Recreation.Domain.Repositories;
 using Nezam.Refahi.Shared.Application.Common.Models;
+using Nezam.Refahi.Shared.Domain.ValueObjects;
 
 namespace Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.AddGuest;
 
-public class AddGuestToReservationCommandHandler
+public sealed class AddGuestToReservationCommandHandler
     : IRequestHandler<AddGuestToReservationCommand, ApplicationResult<AddGuestToReservationResponse>>
 {
     private readonly ITourReservationRepository _reservationRepository;
@@ -25,150 +31,149 @@ public class AddGuestToReservationCommandHandler
         ParticipantValidationService participantValidationService,
         ILogger<AddGuestToReservationCommandHandler> logger)
     {
-        _reservationRepository = reservationRepository;
-        _tourRepository = tourRepository;
-        _unitOfWork = unitOfWork;
-        _participantValidationService = participantValidationService;
-        _logger = logger;
+        _reservationRepository        = reservationRepository ?? throw new ArgumentNullException(nameof(reservationRepository));
+        _tourRepository               = tourRepository ?? throw new ArgumentNullException(nameof(tourRepository));
+        _unitOfWork                   = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+        _participantValidationService = participantValidationService ?? throw new ArgumentNullException(nameof(participantValidationService));
+        _logger                       = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public async Task<ApplicationResult<AddGuestToReservationResponse>> Handle(
         AddGuestToReservationCommand request,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
+        if (request.ReservationId == Guid.Empty)
+            return ApplicationResult<AddGuestToReservationResponse>.Failure("شناسه رزرو معتبر نیست");
+        if (request.ExternalUserId == Guid.Empty)
+            return ApplicationResult<AddGuestToReservationResponse>.Failure("شناسه کاربر الزامی است");
+        if (string.IsNullOrWhiteSpace(request.Guest?.NationalNumber))
+            return ApplicationResult<AddGuestToReservationResponse>.Failure("کد ملی مهمان الزامی است");
+
         try
         {
-            _logger.LogInformation("Adding participant {NationalNumber} to reservation {ReservationId}",
-                request.Guest.NationalNumber, request.ReservationId);
+            // Validate participant basic/profile constraints (and determine ParticipantType)
+            var validation = await _participantValidationService.ValidateParticipantAsync(request.Guest, ct);
+            if (!validation.IsValid)
+                return ApplicationResult<AddGuestToReservationResponse>.Failure(validation.ErrorMessage!);
 
-            // Validate participant and check membership if needed
-            var validationResult = await _participantValidationService.ValidateParticipantAsync(request.Guest, cancellationToken);
-            if (!validationResult.IsValid)
-            {
-                return ApplicationResult<AddGuestToReservationResponse>.Failure(validationResult.ErrorMessage!);
-            }
+            // Load reservation (with Participants)
+            var reservation = await _reservationRepository.GetByIdAsync(request.ReservationId, ct);
+            if (reservation is null)
+                return ApplicationResult<AddGuestToReservationResponse>.Failure("رزرو یافت نشد");
 
-            // Get reservation with tour information
-            var reservation = await _reservationRepository.FindOneAsync(x=>x.Id==request.ReservationId, cancellationToken:cancellationToken);
-            if (reservation == null)
-            {
-                return ApplicationResult<AddGuestToReservationResponse>.Failure("رزرو مورد نظر یافت نشد");
-            }
+            // Ownership
+            if (reservation.ExternalUserId != request.ExternalUserId)
+                return ApplicationResult<AddGuestToReservationResponse>.Failure("دسترسی به این رزرو مجاز نیست");
 
-            // Check reservation status
-            if (reservation.Status != ReservationStatus.Held)
-            {
-                return ApplicationResult<AddGuestToReservationResponse>.Failure("امکان اضافه کردن مهمان به رزرو تأیید شده یا لغو شده وجود ندارد");
-            }
+            // Status gate — by your current policy: allow only OnHold
+            if (reservation.Status != ReservationStatus.OnHold)
+                return ApplicationResult<AddGuestToReservationResponse>.Failure("افزودن مهمان فقط در وضعیت «رزرو نگه‌داشته‌شده (OnHold)» مجاز است");
 
-            // Check if reservation is expired
             if (reservation.IsExpired())
-            {
                 return ApplicationResult<AddGuestToReservationResponse>.Failure("رزرو منقضی شده است");
-            }
 
-            // Get tour information
-            var tour = await _tourRepository.FindOneAsync(x=>x.Id==reservation.TourId, cancellationToken:cancellationToken);
-            if (tour == null)
-            {
+            // Load tour (pricing, limits)
+            var tour = await _tourRepository.FindOneAsync(t => t.Id == reservation.TourId, ct);
+            if (tour is null)
                 return ApplicationResult<AddGuestToReservationResponse>.Failure("تور مرتبط با رزرو یافت نشد");
-            }
 
-            // Check if tour still has available spots
+            if (!tour.IsActive || !tour.IsRegistrationOpen(DateTime.UtcNow))
+                return ApplicationResult<AddGuestToReservationResponse>.Failure("ثبت‌نام برای این تور مجاز نیست");
+
+            // Per-tour uniqueness of NationalNumber across all reservations (Draft/Held/Confirmed that are not voided)
+            var existingInTour = await _reservationRepository
+                .GetByTourIdAndNationalNumberAsync(tour.Id, request.Guest.NationalNumber, ct);
+
+            // Exclude current reservation self-duplicates only if not present
+            var duplicateInOtherReservation = existingInTour.Any(r => r.Id != reservation.Id && r.IsActive());
+            if (duplicateInOtherReservation)
+                return ApplicationResult<AddGuestToReservationResponse>.Failure("این کد ملی قبلاً برای این تور ثبت شده است");
+
+            // Not duplicate inside current reservation
+            if (reservation.Participants.Any(p => p.NationalNumber == request.Guest.NationalNumber))
+                return ApplicationResult<AddGuestToReservationResponse>.Failure("این شرکت‌کننده قبلاً به همین رزرو اضافه شده است");
+
+                var age = CalculateAge(request.Guest.BirthDate);
+                if (tour.MinAge.HasValue && age < tour.MinAge.Value)
+                    return ApplicationResult<AddGuestToReservationResponse>.Failure($"حداقل سن مجاز برای این تور {tour.MinAge} سال است");
+                if (tour.MaxAge.HasValue && age > tour.MaxAge.Value)
+                    return ApplicationResult<AddGuestToReservationResponse>.Failure($"حداکثر سن مجاز برای این تور {tour.MaxAge} سال است");
+
+            // Tour-level limits: MaxParticipants and reservation-level MaxGuestsPerReservation
             var currentTotalParticipants = tour.GetConfirmedReservationCount() + tour.GetPendingReservationCount();
             if (currentTotalParticipants >= tour.MaxParticipants)
-            {
                 return ApplicationResult<AddGuestToReservationResponse>.Failure("ظرفیت تور تکمیل شده است");
-            }
 
-            // Check if adding this guest would exceed the maximum guests per reservation limit
             if (!tour.CanAddGuestToReservation(reservation))
             {
                 var maxGuests = tour.MaxGuestsPerReservation ?? 0;
                 return ApplicationResult<AddGuestToReservationResponse>.Failure($"حداکثر تعداد مهمان مجاز برای هر رزرو {maxGuests} نفر است");
             }
 
-            // Check if participant already exists in this reservation
-            if (reservation.Participants.Any(p => p.NationalNumber == request.Guest.NationalNumber))
-            {
-                return ApplicationResult<AddGuestToReservationResponse>.Failure("این شرکت‌کننده قبلاً به رزرو اضافه شده است");
-            }
-
-           
-                var age = CalculateAge(request.Guest.BirthDate);
-                if (tour.MinAge.HasValue && age < tour.MinAge.Value)
-                {
-                    return ApplicationResult<AddGuestToReservationResponse>.Failure($"حداقل سن مجاز برای این تور {tour.MinAge} سال است");
-                }
-                if (tour.MaxAge.HasValue && age > tour.MaxAge.Value)
-                {
-                    return ApplicationResult<AddGuestToReservationResponse>.Failure($"حداکثر سن مجاز برای این تور {tour.MaxAge} سال است");
-                }
-           
-           
-
-            // Get pricing based on participant type
-            var activePricing = tour.GetActivePricing();
-            var participantPricing = activePricing.FirstOrDefault(p => p.ParticipantType == validationResult.ParticipantType);
-            var participantTypeText = validationResult.ParticipantType == ParticipantType.Member ? "عضو" : "مهمان";
-            if (participantPricing == null)
-            {
+            // Pricing
+            var pricingList = tour.GetActivePricing();
+            var participantPricing = pricingList.FirstOrDefault(p => p.ParticipantType == validation.ParticipantType);
+            var participantTypeText = validation.ParticipantType == ParticipantType.Member ? "عضو" : "مهمان";
+            if (participantPricing is null)
                 return ApplicationResult<AddGuestToReservationResponse>.Failure($"قیمت‌گذاری برای {participantTypeText} یافت نشد");
-            }
 
-            var requiredAmount = participantPricing.GetEffectivePrice();
+            var requiredPrice = participantPricing.GetEffectivePrice(); // Money
 
-            // Create participant with correct type and pricing
+            // Create Participant aggregate
             var participant = new Participant(
                 reservationId: reservation.Id,
                 firstName: request.Guest.FirstName,
                 lastName: request.Guest.LastName,
                 nationalNumber: request.Guest.NationalNumber,
                 phoneNumber: request.Guest.PhoneNumber,
-                participantType: validationResult.ParticipantType,
-                requiredAmount: requiredAmount,
+                participantType: validation.ParticipantType,
+                requiredAmount: requiredPrice,
                 email: request.Guest.Email,
                 birthDate: request.Guest.BirthDate,
                 emergencyContactName: request.Guest.EmergencyContactName,
                 emergencyContactPhone: request.Guest.EmergencyContactPhone,
                 notes: request.Guest.Notes);
 
-            // Add participant to reservation
+            // Transactional add
+            await _unitOfWork.BeginAsync(ct);
             reservation.AddParticipant(participant);
 
-            // Save changes
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            // Persist
+            await _unitOfWork.SaveChangesAsync(ct);
+            await _unitOfWork.CommitAsync(ct);
 
-         
-            _logger.LogInformation("Successfully added {ParticipantType} {ParticipantName} to reservation {ReservationId}",
-                participantTypeText, $"{request.Guest.FirstName} {request.Guest.LastName}", request.ReservationId);
+            _logger.LogInformation("Added {Type} {Name} to reservation {ReservationId}",
+                participantTypeText, $"{participant.FirstName} {participant.LastName}", reservation.Id);
 
-            // Calculate updated pricing
-            activePricing = tour.GetActivePricing();
-            var guestPricing = activePricing.FirstOrDefault(p => p.ParticipantType == ParticipantType.Guest);
-            var memberPricing = activePricing.FirstOrDefault(p => p.ParticipantType == ParticipantType.Member);
+            // Recompute totals using Money to avoid unit mistakes
+            pricingList = tour.GetActivePricing();
+            var guestPrice  = pricingList.FirstOrDefault(p => p.ParticipantType == ParticipantType.Guest)?.GetEffectivePrice()  ?? Money.Zero;
+            var memberPrice = pricingList.FirstOrDefault(p => p.ParticipantType == ParticipantType.Member)?.GetEffectivePrice() ?? Money.Zero;
 
-            var memberParticipants = reservation.Participants.Count(p => p.ParticipantType == ParticipantType.Member);
-            var guestParticipants = reservation.Participants.Count(p => p.ParticipantType == ParticipantType.Guest);
+            var memberCount = reservation.Participants.Count(p => p.ParticipantType == ParticipantType.Member);
+            var guestCount  = reservation.Participants.Count(p => p.ParticipantType == ParticipantType.Guest);
 
-            var updatedTotalPrice = (memberParticipants * (memberPricing?.GetEffectivePrice().AmountRials ?? 0)) +
-                                   (guestParticipants * (guestPricing?.GetEffectivePrice().AmountRials ?? 0));
+            var updatedTotal = Money.FromRials(memberCount * memberPrice.AmountRials + guestCount * guestPrice.AmountRials);
 
             var response = new AddGuestToReservationResponse
             {
-                ParticipantId = participant.Id,
-                TrackingCode = reservation.TrackingCode,
-                TotalParticipants = reservation.Participants.Count,
-                UpdatedTotalPrice = updatedTotalPrice,
-                GuestName = $"{request.Guest.FirstName} {request.Guest.LastName}"
+                ParticipantId     = participant.Id,
+                ReservationId      = reservation.Id,
+                CapacityId = reservation.CapacityId,
             };
 
             return ApplicationResult<AddGuestToReservationResponse>.Success(response);
         }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            _logger.LogWarning(ex, "Concurrency while adding guest. ReservationId={ReservationId}", request.ReservationId);
+            try { await _unitOfWork.RollbackAsync(ct); } catch { /* ignore */ }
+            return ApplicationResult<AddGuestToReservationResponse>.Failure("تداخل همزمانی رخ داد. دوباره تلاش کنید");
+        }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while adding guest to reservation {ReservationId}",
-                request.ReservationId);
+            _logger.LogError(ex, "Error while adding guest to reservation {ReservationId}", request.ReservationId);
+            try { await _unitOfWork.RollbackAsync(ct); } catch { /* ignore */ }
             return ApplicationResult<AddGuestToReservationResponse>.Failure("خطا در اضافه کردن مهمان به رزرو");
         }
     }
@@ -177,8 +182,7 @@ public class AddGuestToReservationCommandHandler
     {
         var today = DateTime.Today;
         var age = today.Year - birthDate.Year;
-        if (birthDate.Date > today.AddYears(-age))
-            age--;
+        if (birthDate.Date > today.AddYears(-age)) age--;
         return age;
     }
 }

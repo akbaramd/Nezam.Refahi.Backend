@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using MCA.SharedKernel.Domain.Models;
+using MediatR;
 using Nezam.Refahi.Identity.Domain.Dtos;
 using Nezam.Refahi.Shared.Application.Common.Models;
 

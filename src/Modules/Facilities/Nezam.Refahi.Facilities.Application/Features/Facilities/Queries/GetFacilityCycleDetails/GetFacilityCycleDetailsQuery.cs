@@ -1,4 +1,5 @@
 using MediatR;
+using Nezam.Refahi.Facilities.Application.Dtos;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
 namespace Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilityCycleDetails;
@@ -6,7 +7,7 @@ namespace Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFac
 /// <summary>
 /// Query to get detailed information about a specific facility cycle with user context
 /// </summary>
-public record GetFacilityCycleDetailsQuery : IRequest<ApplicationResult<GetFacilityCycleDetailsResponse>>
+public record GetFacilityCycleDetailsQuery : IRequest<ApplicationResult<FacilityCycleWithUserDetailDto>>
 {
     /// <summary>
     /// Facility cycle ID

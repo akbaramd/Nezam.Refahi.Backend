@@ -46,8 +46,6 @@ public class ChargeWalletCommandValidator : AbstractValidator<ChargeWalletComman
         RuleForEach(x => x.Metadata)
             .Must(kvp => !string.IsNullOrEmpty(kvp.Key) && kvp.Key.Length <= 50)
             .WithMessage("Metadata key cannot be empty and must not exceed 50 characters")
-            .Must(kvp => !string.IsNullOrEmpty(kvp.Value) && kvp.Value.Length <= 200)
-            .WithMessage("Metadata value cannot be empty and must not exceed 200 characters")
             .When(x => x.Metadata != null);
     }
 }

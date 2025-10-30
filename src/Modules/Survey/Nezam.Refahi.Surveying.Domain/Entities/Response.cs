@@ -14,6 +14,7 @@ public sealed class Response : Entity<Guid>
     public ParticipantInfo Participant { get; private set; } = null!;
     public int AttemptNumber { get; private set; }
     public AttemptStatus AttemptStatus { get; private set; }
+    public ResponseStatus Status { get; private set; }
     public DemographySnapshot? DemographySnapshot { get; private set; }
     public DateTimeOffset? SubmittedAt { get; private set; }
     public DateTimeOffset? CanceledAt { get; private set; }
@@ -49,13 +50,56 @@ public sealed class Response : Entity<Guid>
         Participant = participant;
         AttemptNumber = attemptNumber;
         AttemptStatus = AttemptStatus.Active;
+        Status = ResponseStatus.Answering;
         DemographySnapshot = demographySnapshot;
     }
 
     /// <summary>
     /// Adds or updates an answer for a specific question
     /// </summary>
-    public void SetQuestionAnswer(Guid questionId, string? textAnswer = null, IEnumerable<Guid>? selectedOptionIds = null, int repeatIndex = 1)
+    public void SetQuestionAnswer(Guid questionId, string? textAnswer = null, Dictionary<Guid,string>? selectedOptionIds = null, int repeatIndex = 1)
+    {
+        if (questionId == Guid.Empty)
+            throw new ArgumentException("Question ID cannot be empty", nameof(questionId));
+
+        if (repeatIndex < 1)
+            throw new ArgumentException("Repeat index must be at least 1", nameof(repeatIndex));
+
+        if (!CanBeModified())
+            throw new InvalidOperationException($"Response cannot be modified in current status: {Status}. Only responses in 'Answering' or 'Reviewing' status can be modified.");
+
+        // Find existing answer for this repeat index or create new one
+        var existingAnswer = _questionAnswers.FirstOrDefault(qa => qa.QuestionId == questionId && qa.RepeatIndex == repeatIndex);
+        if (existingAnswer == null)
+        {
+            existingAnswer = new QuestionAnswer(Id, questionId, repeatIndex);
+            _questionAnswers.Add(existingAnswer);
+        }
+
+        // Set text answer if provided
+        if (!string.IsNullOrWhiteSpace(textAnswer))
+        {
+            existingAnswer.SetTextAnswer(textAnswer);
+        }
+
+        // Set selected options if provided
+        if (selectedOptionIds != null)
+        {
+            existingAnswer.ClearSelectedOptions();
+            foreach (var optionId in selectedOptionIds)
+            {
+                if (optionId.Key != Guid.Empty)
+                {
+                    existingAnswer.AddSelectedOption(optionId.Key, optionId.Value); // TODO: Get actual option text
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Adds or updates an answer for a specific question with proper option texts
+    /// </summary>
+    public void SetQuestionAnswerWithOptionTexts(Guid questionId, string? textAnswer = null, IEnumerable<Guid>? selectedOptionIds = null, Dictionary<Guid, string>? optionTexts = null, int repeatIndex = 1)
     {
         if (questionId == Guid.Empty)
             throw new ArgumentException("Question ID cannot be empty", nameof(questionId));
@@ -85,7 +129,8 @@ public sealed class Response : Entity<Guid>
             {
                 if (optionId != Guid.Empty)
                 {
-                    existingAnswer.AddSelectedOption(optionId, "Option Text"); // TODO: Get actual option text
+                    var optionText = optionTexts?.GetValueOrDefault(optionId) ?? "Option Text";
+                    existingAnswer.AddSelectedOption(optionId, optionText);
                 }
             }
         }
@@ -110,7 +155,63 @@ public sealed class Response : Entity<Guid>
             _questionAnswers.Add(existingAnswer);
         }
 
-        existingAnswer.AddSelectedOption(optionId, "Option Text"); // TODO: Get actual option text
+        // This method should not be used directly - use AddSelectedOptionWithText instead
+        throw new InvalidOperationException("Use AddSelectedOptionWithText method to provide proper option text");
+    }
+
+    /// <summary>
+    /// Updates selected options for a specific question with proper option texts
+    /// </summary>
+    public void UpdateSelectedOptions(Guid questionId, IEnumerable<Guid>? selectedOptionIds, Dictionary<Guid, string> optionTexts)
+    {
+        if (questionId == Guid.Empty)
+            throw new ArgumentException("Question ID cannot be empty", nameof(questionId));
+
+        // Find existing answer or create new one
+        var existingAnswer = _questionAnswers.FirstOrDefault(qa => qa.QuestionId == questionId);
+        if (existingAnswer == null)
+        {
+            existingAnswer = new QuestionAnswer(Id, questionId);
+            _questionAnswers.Add(existingAnswer);
+        }
+
+        // Set selected options if provided
+        if (selectedOptionIds != null)
+        {
+            existingAnswer.ClearSelectedOptions();
+            foreach (var optionId in selectedOptionIds)
+            {
+                if (optionId != Guid.Empty && optionTexts.TryGetValue(optionId, out var optionText))
+                {
+                    existingAnswer.AddSelectedOption(optionId, optionText);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Adds a selected option to the response with proper option text
+    /// </summary>
+    public void AddSelectedOptionWithText(Guid questionId, Guid optionId, string optionText)
+    {
+        if (questionId == Guid.Empty)
+            throw new ArgumentException("Question ID cannot be empty", nameof(questionId));
+
+        if (optionId == Guid.Empty)
+            throw new ArgumentException("Option ID cannot be empty", nameof(optionId));
+
+        if (string.IsNullOrWhiteSpace(optionText))
+            throw new ArgumentException("Option text cannot be empty", nameof(optionText));
+
+        // Find existing answer or create new one
+        var existingAnswer = _questionAnswers.FirstOrDefault(qa => qa.QuestionId == questionId);
+        if (existingAnswer == null)
+        {
+            existingAnswer = new QuestionAnswer(Id, questionId);
+            _questionAnswers.Add(existingAnswer);
+        }
+
+        existingAnswer.AddSelectedOption(optionId, optionText);
     }
 
     /// <summary>
@@ -242,6 +343,7 @@ public sealed class Response : Entity<Guid>
 
         SubmittedAt = DateTimeOffset.UtcNow;
         AttemptStatus = AttemptStatus.Submitted;
+        Status = ResponseStatus.Completed;
     }
 
     /// <summary>
@@ -254,6 +356,7 @@ public sealed class Response : Entity<Guid>
 
         CanceledAt = DateTimeOffset.UtcNow;
         AttemptStatus = AttemptStatus.Canceled;
+        Status = ResponseStatus.Cancelled;
     }
 
     /// <summary>
@@ -266,6 +369,53 @@ public sealed class Response : Entity<Guid>
 
         ExpiredAt = DateTimeOffset.UtcNow;
         AttemptStatus = AttemptStatus.Expired;
+        Status = ResponseStatus.Expired;
+    }
+
+    /// <summary>
+    /// Changes the response status to reviewing
+    /// </summary>
+    public void StartReviewing()
+    {
+        if (Status != ResponseStatus.Answering)
+            throw new InvalidOperationException("Only responses in answering status can be moved to reviewing");
+
+        Status = ResponseStatus.Reviewing;
+    }
+
+    /// <summary>
+    /// Changes the response status back to answering from reviewing
+    /// </summary>
+    public void ResumeAnswering()
+    {
+        if (Status != ResponseStatus.Reviewing)
+            throw new InvalidOperationException("Only responses in reviewing status can be resumed to answering");
+
+        Status = ResponseStatus.Answering;
+    }
+
+    /// <summary>
+    /// Checks if the response can be modified
+    /// </summary>
+    public bool CanBeModified()
+    {
+        return Status == ResponseStatus.Answering || Status == ResponseStatus.Reviewing;
+    }
+
+    /// <summary>
+    /// Checks if the response is in reviewing state
+    /// </summary>
+    public bool IsReviewing()
+    {
+        return Status == ResponseStatus.Reviewing;
+    }
+
+    /// <summary>
+    /// Checks if the response is completed
+    /// </summary>
+    public bool IsCompleted()
+    {
+        return Status == ResponseStatus.Completed;
     }
 
     /// <summary>

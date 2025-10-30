@@ -62,15 +62,14 @@ public class CancelBillCommandHandler : IRequestHandler<CancelBillCommand, Appli
             // Save changes
             await _billRepository.UpdateAsync(bill, cancellationToken:cancellationToken);
             await _unitOfWork.SaveAsync(cancellationToken);
-            await _unitOfWork.CommitAsync(cancellationToken);
 
-            // Publish BillCancelledIntegrationEvent
+            // Publish BillCancelledIntegrationEvent INSIDE transaction
             var billCancelledEvent = new BillCancelledIntegrationEvent
             {
                 BillId = bill.Id,
                 BillNumber = bill.BillNumber,
                 ReferenceId = bill.ReferenceId,
-                ReferenceType = bill.BillType,
+                ReferenceType = bill.ReferenceType,
                 Reason = request.Reason ?? string.Empty,
                 CancelledAt = DateTime.UtcNow,
                 ExternalUserId = bill.ExternalUserId,
@@ -83,6 +82,9 @@ public class CancelBillCommandHandler : IRequestHandler<CancelBillCommand, Appli
                 }
             };
             await _outboxPublisher.PublishAsync(billCancelledEvent, cancellationToken);
+
+            // Commit transaction (saves domain changes + outbox messages)
+            await _unitOfWork.CommitAsync(cancellationToken);
 
             // Prepare response
             var response = new CancelBillResponse

@@ -383,6 +383,11 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
+                    b.Property<int>("Difficulty")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -483,6 +488,9 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<Guid>("AgencyId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("AgencyName")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -510,9 +518,6 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
-                    b.Property<Guid>("AgencyId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid>("TourId")
                         .HasColumnType("uniqueidentifier");
 
@@ -526,9 +531,9 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
 
                     b.HasIndex("AgencyCode");
 
-                    b.HasIndex("IsActive");
-
                     b.HasIndex("AgencyId");
+
+                    b.HasIndex("IsActive");
 
                     b.HasIndex("TourId");
 
@@ -558,6 +563,12 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
+
+                    b.Property<bool>("IsSpecial")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasComment("Indicates if this capacity is only visible to special VIP members");
 
                     b.Property<int>("MaxParticipants")
                         .HasColumnType("int");
@@ -609,6 +620,9 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
 
                     b.HasIndex("TenantId", "TourId", "IsActive")
                         .HasDatabaseName("IX_TourCapacity_TenantTourActive");
+
+                    b.HasIndex("TenantId", "TourId", "IsSpecial")
+                        .HasDatabaseName("IX_TourCapacity_TenantTourSpecial");
 
                     b.HasIndex("TenantId", "TourId", "RegistrationStart", "RegistrationEnd")
                         .IsUnique()
@@ -777,6 +791,12 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
+
+                    b.Property<bool>("IsEarlyBird")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsLastMinute")
+                        .HasColumnType("bit");
 
                     b.Property<int?>("MaxQuantity")
                         .HasColumnType("int");
@@ -1224,7 +1244,7 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("Nezam.Refahi.Shared.Domain.ValueObjects.Money", "Price", b1 =>
+                    b.OwnsOne("Nezam.Refahi.Shared.Domain.ValueObjects.Money", "BasePrice", b1 =>
                         {
                             b1.Property<Guid>("TourPricingId")
                                 .HasColumnType("uniqueidentifier");
@@ -1241,7 +1261,7 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
                                 .HasForeignKey("TourPricingId");
                         });
 
-                    b.Navigation("Price")
+                    b.Navigation("BasePrice")
                         .IsRequired();
 
                     b.Navigation("Tour");

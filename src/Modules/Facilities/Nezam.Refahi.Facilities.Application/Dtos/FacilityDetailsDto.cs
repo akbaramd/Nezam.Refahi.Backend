@@ -1,7 +1,4 @@
-﻿using Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilityCycleDetails;
-using Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilities;
-
-namespace Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFacilityDetails;
+﻿namespace Nezam.Refahi.Facilities.Application.Dtos;
 
 /// <summary>
 /// Detailed facility data transfer object
@@ -27,7 +24,7 @@ public record FacilityDetailsDto : FacilityDto
   /// <summary>
   /// Facility cycles
   /// </summary>
-  public List<FacilityCycleDetailsDto> Cycles { get; init; } = new();
+  public List<FacilityCycleWithUserDto> Cycles { get; init; } = new();
 
   /// <summary>
   /// Facility features

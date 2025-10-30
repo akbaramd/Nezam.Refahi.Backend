@@ -57,6 +57,12 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
+                    b.Property<bool>("IsSpecial")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasComment("Indicates if member has special VIP status");
+
                     b.Property<DateTime?>("LastModifiedAt")
                         .HasColumnType("datetime2");
 
@@ -101,6 +107,9 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
 
                     b.HasIndex("IsDeleted")
                         .HasDatabaseName("IX_Member_IsDeleted");
+
+                    b.HasIndex("IsSpecial")
+                        .HasDatabaseName("IX_Members_IsSpecial");
 
                     b.HasIndex("LastModifiedAt")
                         .HasDatabaseName("IX_Member_LastModifiedAt")
@@ -443,7 +452,7 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
 
             modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.Member", b =>
                 {
-                    b.OwnsOne("Nezam.Refahi.Membership.Domain.Entities.Member.Email#Nezam.Refahi.Membership.Domain.ValueObjects.Email", "Email", b1 =>
+                    b.OwnsOne("Nezam.Refahi.Membership.Domain.ValueObjects.Email", "Email", b1 =>
                         {
                             b1.Property<Guid>("MemberId")
                                 .HasColumnType("uniqueidentifier");
@@ -465,7 +474,7 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
                                 .HasForeignKey("MemberId");
                         });
 
-                    b.OwnsOne("Nezam.Refahi.Membership.Domain.Entities.Member.FullName#Nezam.Refahi.Membership.Domain.ValueObjects.FullName", "FullName", b1 =>
+                    b.OwnsOne("Nezam.Refahi.Membership.Domain.ValueObjects.FullName", "FullName", b1 =>
                         {
                             b1.Property<Guid>("MemberId")
                                 .HasColumnType("uniqueidentifier");
@@ -494,7 +503,7 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
                                 .HasForeignKey("MemberId");
                         });
 
-                    b.OwnsOne("Nezam.Refahi.Membership.Domain.Entities.Member.NationalCode#Nezam.Refahi.Shared.Domain.ValueObjects.NationalId", "NationalCode", b1 =>
+                    b.OwnsOne("Nezam.Refahi.Shared.Domain.ValueObjects.NationalId", "NationalCode", b1 =>
                         {
                             b1.Property<Guid>("MemberId")
                                 .HasColumnType("uniqueidentifier");
@@ -517,7 +526,7 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
                                 .HasForeignKey("MemberId");
                         });
 
-                    b.OwnsOne("Nezam.Refahi.Membership.Domain.Entities.Member.PhoneNumber#Nezam.Refahi.Shared.Domain.ValueObjects.PhoneNumber", "PhoneNumber", b1 =>
+                    b.OwnsOne("Nezam.Refahi.Shared.Domain.ValueObjects.PhoneNumber", "PhoneNumber", b1 =>
                         {
                             b1.Property<Guid>("MemberId")
                                 .HasColumnType("uniqueidentifier");

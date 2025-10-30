@@ -1,21 +1,22 @@
 using FluentValidation;
 
-namespace Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.CreateReservation;
+namespace Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.StartReservation;
 
-public class CreateTourReservationCommandValidator : AbstractValidator<CreateTourReservationCommand>
+public class StartReservationCommandValidator : AbstractValidator<StartReservationCommand>
 {
-    public CreateTourReservationCommandValidator()
+    public StartReservationCommandValidator()
     {
         RuleFor(x => x.TourId)
             .NotEmpty()
             .WithMessage("شناسه تور الزامی است");
+        RuleFor(x => x. CapacityId)
+          .NotEmpty()
+          .WithMessage("شناسه ظرفیت الزامی است");
 
       
-
-
-        RuleFor(x => x.Notes)
-            .MaximumLength(1000)
-            .WithMessage("یادداشت نمی‌تواند بیش از 1000 کاراکتر باشد");
+        RuleFor(x => x.UserNationalNumber)
+          .NotEmpty()
+          .WithMessage("کد ملی برای پاسخ مشخص شده الزامی است");
     }
 
     private static bool BeValidExpiryDate(DateTime? expiryDate)

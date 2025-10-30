@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Nezam.Refahi.Facilities.Application;
 using Nezam.Refahi.Facilities.Application.Features.Facilities.Commands.RejectFacilityRequest;
+using Nezam.Refahi.Facilities.Domain.Entities;
 using Nezam.Refahi.Facilities.Domain.Repositories;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
@@ -14,17 +15,20 @@ namespace Nezam.Refahi.Facilities.Application.Features.Facilities.Commands.Rejec
 public class RejectFacilityRequestCommandHandler : IRequestHandler<RejectFacilityRequestCommand, ApplicationResult<RejectFacilityRequestResult>>
 {
     private readonly IFacilityRequestRepository _requestRepository;
+    private readonly IFacilityRejectionRepository _rejectionRepository;
     private readonly IFacilitiesUnitOfWork _unitOfWork;
     private readonly IValidator<RejectFacilityRequestCommand> _validator;
     private readonly ILogger<RejectFacilityRequestCommandHandler> _logger;
 
     public RejectFacilityRequestCommandHandler(
         IFacilityRequestRepository requestRepository,
+        IFacilityRejectionRepository rejectionRepository,
         IFacilitiesUnitOfWork unitOfWork,
         IValidator<RejectFacilityRequestCommand> validator,
         ILogger<RejectFacilityRequestCommandHandler> logger)
     {
         _requestRepository = requestRepository;
+        _rejectionRepository = rejectionRepository;
         _unitOfWork = unitOfWork;
         _validator = validator;
         _logger = logger;
@@ -50,6 +54,7 @@ public class RejectFacilityRequestCommandHandler : IRequestHandler<RejectFacilit
             await _unitOfWork.BeginAsync(cancellationToken);
 
             Domain.Entities.FacilityRequest facilityRequest;
+            FacilityRejection? rejection = null; // ensure availability after inner try/catch scope
 
             try
             {
@@ -70,8 +75,21 @@ public class RejectFacilityRequestCommandHandler : IRequestHandler<RejectFacilit
                         $"درخواست در وضعیت فعلی ({facilityRequest.Status}) قابل رد نیست");
                 }
 
-                // Reject the request using domain method
-                facilityRequest.Reject(request.Reason);
+                // Create rejection record first
+                rejection = new FacilityRejection(
+                    requestId: facilityRequest.Id,
+                    reason: request.Reason,
+                    rejectedByUserId: request.RejectorUserId,
+                    rejectionType: request.RejectionType,
+                    details: request.Details,
+                    rejectedByUserName: request.RejectorUserName,
+                    notes: request.Notes);
+
+                // Add rejection to repository
+                await _rejectionRepository.AddAsync(rejection, cancellationToken);
+
+                // Reject the request using domain method with rejection ID
+                facilityRequest.Reject(request.Reason, rejection.Id);
 
                 // Update the request
                 await _requestRepository.UpdateAsync(facilityRequest);
@@ -95,7 +113,11 @@ public class RejectFacilityRequestCommandHandler : IRequestHandler<RejectFacilit
                 Status = facilityRequest.Status.ToString(),
                 Reason = facilityRequest.RejectionReason!,
                 RejectedAt = facilityRequest.RejectedAt!.Value,
-                RejectorUserId = request.RejectorUserId
+                RejectorUserId = request.RejectorUserId,
+                RejectionId = rejection!.Id,
+                RejectionType = rejection!.RejectionType.ToString(),
+                Details = rejection!.Details,
+                Notes = rejection!.Notes
             });
         }
         catch (Exception ex)

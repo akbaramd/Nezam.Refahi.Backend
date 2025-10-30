@@ -37,11 +37,11 @@ public class PaymentService : IPaymentService
     {
         try
         {
-            _logger.LogInformation("Processing payment gateway request - TrackingNumber: {TrackingNumber}, Amount: {Amount}, Gateway: {Gateway}",
+            _logger.LogInformation("Processing payment gateway request - GatewayReference: {GatewayReference}, Amount: {Amount}, Gateway: {Gateway}",
                 request.TrackingNumber, request.AmountRials, request.Gateway);
 
             // Generate proper callback URL if not provided or relative
-            var finalCallbackUrl = GenerateCallbackUrl(request.CallbackUrl);
+            var finalCallbackUrl = GenerateCallbackUrl();
 
             // Prepare payment request using Parbad
             var payResult = await _onlinePayment.RequestAsync(invoice =>
@@ -58,16 +58,16 @@ public class PaymentService : IPaymentService
 
             if (payResult == null)
             {
-                _logger.LogError("Payment gateway request failed - TrackingNumber: {TrackingNumber}", request.TrackingNumber);
+                _logger.LogError("Payment gateway request failed - GatewayReference: {GatewayReference}", request.TrackingNumber);
                 return ApplicationResult<PaymentProcessingResult>.Failure("درخواست پرداخت با خطا مواجه شد");
             }
 
-            _logger.LogInformation("Payment gateway request result - TrackingNumber: {TrackingNumber}, IsSucceed: {IsSucceed}, Status: {Status}, Message: {Message}",
+            _logger.LogInformation("Payment gateway request result - GatewayReference: {GatewayReference}, IsSucceed: {IsSucceed}, Status: {Status}, Message: {Message}",
                 request.TrackingNumber, payResult.IsSucceed, payResult.Status, payResult.Message);
 
             if (!payResult.IsSucceed)
             {
-                _logger.LogWarning("Payment gateway request failed - TrackingNumber: {TrackingNumber}, Message: {Message}",
+                _logger.LogWarning("Payment gateway request failed - GatewayReference: {GatewayReference}, Message: {Message}",
                     request.TrackingNumber, payResult.Message);
                 return ApplicationResult<PaymentProcessingResult>.Failure($"خطا در درخواست پرداخت: {payResult.Message}");
             }
@@ -87,7 +87,7 @@ public class PaymentService : IPaymentService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error processing payment gateway request for TrackingNumber: {TrackingNumber}", request.TrackingNumber);
+            _logger.LogError(ex, "Error processing payment gateway request for GatewayReference: {GatewayReference}", request.TrackingNumber);
             return ApplicationResult<PaymentProcessingResult>.Failure(ex, "خطا در پردازش درخواست پرداخت");
         }
     }
@@ -107,12 +107,13 @@ public class PaymentService : IPaymentService
                 return ApplicationResult<GatewayCallbackResult>.Failure("نتیجه پرداخت دریافت نشد");
             }
 
-            _logger.LogInformation("Payment callback received - TrackingNumber: {TrackingNumber}, IsSucceed: {IsSucceed}, Message: {Message}",
+            _logger.LogInformation("Payment callback received - GatewayReference: {GatewayReference}, IsSucceed: {IsSucceed}, Message: {Message}",
                 paymentResult.TrackingNumber, paymentResult.IsSucceed, paymentResult.Message);
 
             var result = new GatewayCallbackResult
             {
-                TrackingNumber = paymentResult.TrackingNumber,
+                GatewayReference = paymentResult.TrackingNumber,
+                TransactionCode = paymentResult.TransactionCode,
                 IsSuccessful = paymentResult.IsSucceed,
                 Message = paymentResult.Message,
                 GatewayName = paymentResult.GatewayName,
@@ -140,17 +141,17 @@ public class PaymentService : IPaymentService
     {
         try
         {
-            _logger.LogInformation("Verifying payment with gateway - TrackingNumber: {TrackingNumber}", trackingNumber);
+            _logger.LogInformation("Verifying payment with gateway - GatewayReference: {GatewayReference}", trackingNumber);
 
             var verifyResult = await _onlinePayment.VerifyAsync(trackingNumber);
 
             if (verifyResult == null)
             {
-                _logger.LogError("Payment verification result is null - TrackingNumber: {TrackingNumber}", trackingNumber);
+                _logger.LogError("Payment verification result is null - GatewayReference: {GatewayReference}", trackingNumber);
                 return ApplicationResult<PaymentVerificationResult>.Failure("خطا در تایید پرداخت");
             }
 
-            _logger.LogInformation("Payment verification result - TrackingNumber: {TrackingNumber}, IsSucceed: {IsSucceed}, Status: {Status}",
+            _logger.LogInformation("Payment verification result - GatewayReference: {GatewayReference}, IsSucceed: {IsSucceed}, Status: {Status}",
                 trackingNumber, verifyResult.IsSucceed, verifyResult.Status);
 
             var result = new PaymentVerificationResult
@@ -169,7 +170,7 @@ public class PaymentService : IPaymentService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error verifying payment for TrackingNumber: {TrackingNumber}", trackingNumber);
+            _logger.LogError(ex, "Error verifying payment for GatewayReference: {GatewayReference}", trackingNumber);
             return ApplicationResult<PaymentVerificationResult>.Failure(ex, "خطا در تایید پرداخت");
         }
     }
@@ -248,19 +249,13 @@ public class PaymentService : IPaymentService
         return payResult.GatewayTransporter?.Descriptor?.Url;
     }
 
-    private string GenerateCallbackUrl(string? providedCallbackUrl)
+    private string GenerateCallbackUrl()
     {
-        // If a full URL is provided, use it as is
-        if (!string.IsNullOrEmpty(providedCallbackUrl) && 
-            (providedCallbackUrl.StartsWith("http://") || providedCallbackUrl.StartsWith("https://")))
-        {
-            return providedCallbackUrl;
-        }
-
+      
         // Generate default callback URL
         var baseUrl = _environment.IsDevelopment() 
             ? "https://localhost:5001" // Default development URL
-            : "https://api.nezam-refahi.ir"; // Production URL - this should be configurable
+            : "https://auth.wa-nezam.org"; // Production URL - this should be configurable
 
         return $"{baseUrl}/api/v1/payments/callback";
     }

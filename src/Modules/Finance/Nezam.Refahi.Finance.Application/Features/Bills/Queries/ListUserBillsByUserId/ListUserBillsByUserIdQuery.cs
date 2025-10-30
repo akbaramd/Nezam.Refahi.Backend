@@ -25,16 +25,11 @@ public record ListUserBillsByUserIdQuery : IRequest<ApplicationResult<PaginatedR
     /// </summary>
     public string? BillType { get; init; }
 
-    /// <summary>
-    /// Include only overdue bills
-    /// </summary>
-    public bool OnlyOverdue { get; init; } = false;
 
     /// <summary>
-    /// Include only unpaid bills
+    /// Filter by bill type (optional)
     /// </summary>
-    public bool OnlyUnpaid { get; init; } = false;
-
+    public string? SearchTerm { get; init; }
     /// <summary>
     /// Page number for pagination (default: 1)
     /// </summary>

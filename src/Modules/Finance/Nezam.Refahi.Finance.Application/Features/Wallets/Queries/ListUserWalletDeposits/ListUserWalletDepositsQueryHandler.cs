@@ -1,22 +1,21 @@
 using FluentValidation;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Nezam.Refahi.Finance.Application.Queries.Wallets;
 using Nezam.Refahi.Finance.Domain.Enums;
 using Nezam.Refahi.Finance.Domain.Repositories;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
-namespace Nezam.Refahi.Finance.Application.Features.Wallets.Queries.GetWalletDeposits;
+namespace Nezam.Refahi.Finance.Application.Features.Wallets.Queries.ListUserWalletDeposits;
 
 /// <summary>
 /// Handler for ListUserWalletDepositsQuery
 /// </summary>
-public class GetWalletDepositsQueryHandler : IRequestHandler<ListUserWalletDepositsQuery, ApplicationResult<WalletDepositsResponse>>
+public class ListUserWalletDepositsQueryHandler : IRequestHandler<ListUserWalletDepositsQuery, ApplicationResult<WalletDepositsResponse>>
 {
     private readonly IWalletDepositRepository _walletDepositRepository;
     private readonly IValidator<ListUserWalletDepositsQuery> _validator;
 
-    public GetWalletDepositsQueryHandler(
+    public ListUserWalletDepositsQueryHandler(
         IWalletDepositRepository walletDepositRepository,
         IValidator<ListUserWalletDepositsQuery> validator)
     {

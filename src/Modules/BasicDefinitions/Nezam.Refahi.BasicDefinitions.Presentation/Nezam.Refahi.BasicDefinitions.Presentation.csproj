@@ -18,7 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Nezam.Refahi.BasicDefinitions.Contracts\Nezam.Refahi.BasicDefinitions.Contracts.csproj" />
     <ProjectReference Include="..\Nezam.Refahi.BasicDefinitions.Infrastructure\Nezam.Refahi.BasicDefinitions.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\..\Nezam.Refahi.Shared.Application\Nezam.Refahi.Shared.Application.csproj" />
+    <ProjectReference Include="..\..\..\Shareds\Nezam.Refahi.Shared.Application\Nezam.Refahi.Shared.Application.csproj" />
   </ItemGroup>
 
 </Project>

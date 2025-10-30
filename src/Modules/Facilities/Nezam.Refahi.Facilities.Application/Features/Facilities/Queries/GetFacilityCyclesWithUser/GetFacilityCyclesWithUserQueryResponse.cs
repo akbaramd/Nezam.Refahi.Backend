@@ -7,7 +7,7 @@ namespace Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFac
 /// <summary>
 /// Response for facility cycles query
 /// </summary>
-public class GetFacilityCyclesResponse : PaginatedResult<FacilityCycleWithUserDto>
+public class GetFacilityCyclesWithUserQueryResponse : PaginatedResult<FacilityCycleWithUserDto>
 {
  
 }

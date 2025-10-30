@@ -24,6 +24,7 @@ public sealed class FacilityRequest : FullAggregateRoot<Guid>
     public string? RejectionReason { get; private set; }
     public DateTime? ApprovedAt { get; private set; }
     public DateTime? RejectedAt { get; private set; }
+    public Guid? RejectionId { get; private set; } // Reference to FacilityRejection table
     public DateTime? DispatchedToBankAt { get; private set; }
     public DateTime? ProcessedByBankAt { get; private set; }
     public DateTime? CompletedAt { get; private set; }
@@ -215,7 +216,7 @@ public sealed class FacilityRequest : FullAggregateRoot<Guid>
     /// - نباید: درخواست‌های غیر UnderReview رد شوند.
     /// - نباید: بدون دلیل رد شود.
     /// </remarks>
-    public void Reject(string reason)
+    public void Reject(string reason, Guid? rejectionId = null)
     {
         if (Status != FacilityRequestStatus.UnderReview)
             throw new InvalidOperationException("Can only reject requests under review");
@@ -226,6 +227,7 @@ public sealed class FacilityRequest : FullAggregateRoot<Guid>
         Status = FacilityRequestStatus.Rejected;
         RejectionReason = reason.Trim();
         RejectedAt = DateTime.UtcNow;
+        RejectionId = rejectionId;
     }
 
     /// <summary>

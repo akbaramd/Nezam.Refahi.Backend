@@ -148,6 +148,37 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Appli
 
                 // Save changes within transaction
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+                // Mark idempotency as processed
+                if (!string.IsNullOrEmpty(idempotencyKey))
+                {
+                    await _idempotencyService.MarkEventAsProcessedAsync(idempotencyKey, user.Id, cancellationToken);
+                }
+
+                // Publish UserCreatedIntegrationEvent with enhanced metadata INSIDE transaction
+                var userCreatedEvent = new UserCreatedIntegrationEvent
+                {
+                    UserId = user.Id,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    NationalId = user.NationalId?.Value,
+                    PhoneNumber = user.PhoneNumber?.Value ?? string.Empty,
+                    Email = user.Email,
+                    Username = user.Username,
+                    ExternalUserId = user.ExternalUserId,
+                    SourceSystem = request.SourceSystem,
+                    SourceVersion = request.SourceVersion,
+                    CreatedAt = user.CreatedAt,
+                    CorrelationId = correlationId,
+                    IdempotencyKey = idempotencyKey,
+                    IsSeedingOperation = request.IsSeedingOperation,
+                    Claims = request.Claims
+                };
+
+                // Publish to outbox with idempotency and correlation INSIDE transaction
+                await _outboxPublisher.PublishAsync(userCreatedEvent, user.Id, correlationId, idempotencyKey, cancellationToken);
+
+                // Commit transaction (saves domain changes + outbox messages)
                 await _unitOfWork.CommitAsync(cancellationToken);
             }
             catch (Exception)
@@ -156,35 +187,6 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Appli
                 await _unitOfWork.RollbackAsync(cancellationToken);
                 throw;
             }
-
-            // Mark idempotency as processed
-            if (!string.IsNullOrEmpty(idempotencyKey))
-            {
-                await _idempotencyService.MarkEventAsProcessedAsync(idempotencyKey, user.Id, cancellationToken);
-            }
-
-            // Publish UserCreatedIntegrationEvent with enhanced metadata
-            var userCreatedEvent = new UserCreatedIntegrationEvent
-            {
-                UserId = user.Id,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                NationalId = user.NationalId?.Value,
-                PhoneNumber = user.PhoneNumber?.Value ?? string.Empty,
-                Email = user.Email,
-                Username = user.Username,
-                ExternalUserId = user.ExternalUserId,
-                SourceSystem = request.SourceSystem,
-                SourceVersion = request.SourceVersion,
-                CreatedAt = user.CreatedAt,
-                CorrelationId = correlationId,
-                IdempotencyKey = idempotencyKey,
-                IsSeedingOperation = request.IsSeedingOperation,
-                Claims = request.Claims
-            };
-
-            // Publish to outbox with idempotency and correlation
-            await _outboxPublisher.PublishAsync(userCreatedEvent, user.Id, correlationId, idempotencyKey, cancellationToken);
 
             _logger.LogInformation("Successfully created user {UserId} with correlation {CorrelationId}", user.Id, correlationId);
 

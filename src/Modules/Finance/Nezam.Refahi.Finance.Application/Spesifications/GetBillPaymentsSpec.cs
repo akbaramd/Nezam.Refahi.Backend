@@ -8,25 +8,28 @@ using Nezam.Refahi.Finance.Domain.Entities;
 
 namespace Nezam.Refahi.Finance.Application.Spesifications;
 
-public class GetBillsByUserSpec : IPaginatedSpecification<Bill>
+public class GetBillPaymentsSpec : IPaginatedSpecification<Payment>
 {
-    public Guid ExternalUserId { get; private set; }
+    public Guid BillId { get; private set; }
     // paginated
     private readonly int _pageNumber;
     private readonly int _pageSize;
-    public GetBillsByUserSpec(Guid externalUserId, int pageNumber, int pageSize)
+    
+    public GetBillPaymentsSpec(Guid billId, int pageNumber, int pageSize)
     {
-        ExternalUserId = externalUserId;
+      BillId = billId;
         _pageNumber = pageNumber;
         _pageSize = pageSize;
     }
-  public IQueryable<Bill> Apply(IQueryable<Bill> query)
+  public IQueryable<Payment> Apply(IQueryable<Payment> query)
     {
         // Note: Includes should be handled by the repository's PrepareQuery
         // Apply only filtering and ordering, not pagination
         return query
-            .Where(b => b.ExternalUserId == ExternalUserId)
-            .OrderByDescending(b => b.IssueDate);
+          .Include(x=>x.Bill)
+          .Include(x=>x.Transactions)
+            .Where(b => b.BillId == BillId)
+            .OrderByDescending(b => b.Id);
     }
     public int PageNumber => _pageNumber;
     public int PageSize => _pageSize;

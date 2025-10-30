@@ -5,9 +5,9 @@ namespace Nezam.Refahi.Facilities.Application.Features.Facilities.Queries.GetFac
 /// <summary>
 /// Validator for GetFacilityCyclesWithUserQuery
 /// </summary>
-public class GetFacilityCyclesQueryValidator : AbstractValidator<GetFacilityCyclesWithUserQuery>
+public class GetFacilityCyclesWithUserQueryValidator : AbstractValidator<GetFacilityCyclesWithUserQuery>
 {
-    public GetFacilityCyclesQueryValidator()
+    public GetFacilityCyclesWithUserQueryValidator()
     {
         RuleFor(x => x.FacilityId)
             .NotEmpty().WithMessage("شناسه تسهیلات الزامی است");

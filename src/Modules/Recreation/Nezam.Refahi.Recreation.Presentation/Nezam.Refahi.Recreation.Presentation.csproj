@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Nezam.Refahi.Recreation.Infrastructure\Nezam.Refahi.Recreation.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\..\Nezam.Refahi.Shared.Application\Nezam.Refahi.Shared.Application.csproj" />
+    <ProjectReference Include="..\..\..\Shareds\Nezam.Refahi.Shared.Application\Nezam.Refahi.Shared.Application.csproj" />
   </ItemGroup>
 
 </Project>

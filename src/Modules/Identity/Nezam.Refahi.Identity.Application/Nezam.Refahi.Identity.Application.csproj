@@ -8,7 +8,7 @@
 
 
     <ItemGroup>
-        <PackageReference Include="AkbarAmd.SharedKernel.Application" Version="1.0.13" />
+        <PackageReference Include="AkbarAmd.SharedKernel.Application" Version="1.0.15" />
         <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
         <PackageReference Include="FluentValidation" Version="11.8.1" />
         <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.8.1" />
@@ -16,8 +16,8 @@
 
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\Nezam.Refahi.Shared.Application\Nezam.Refahi.Shared.Application.csproj" />
-      <ProjectReference Include="..\..\..\Nezam.Refahi.Shared.Infrastructure\Nezam.Refahi.Shared.Infrastructure.csproj" />
+      <ProjectReference Include="..\..\..\Shareds\Nezam.Refahi.Shared.Application\Nezam.Refahi.Shared.Application.csproj" />
+      <ProjectReference Include="..\..\..\Shareds\Nezam.Refahi.Shared.Infrastructure\Nezam.Refahi.Shared.Infrastructure.csproj" />
       <!-- Removed direct dependency to Membership - using events instead -->
       <ProjectReference Include="..\..\Settings\Nezam.Refahi.Settings.Contracts\Nezam.Refahi.Settings.Contracts.csproj" />
       <ProjectReference Include="..\Nezam.Refahi.Identity.Contracts\Nezam.Refahi.Identity.Contracts.csproj" />

@@ -54,6 +54,12 @@ public class TourCapacityConfiguration : IEntityTypeConfiguration<TourCapacity>
             .IsRequired(false)
             .HasMaxLength(500);
 
+        // Special capacity for VIP members only
+        builder.Property(tc => tc.IsSpecial)
+            .IsRequired()
+            .HasDefaultValue(false)
+            .HasComment("Indicates if this capacity is only visible to special VIP members");
+
         // Multi-tenancy support
         builder.Property(tc => tc.TenantId)
             .IsRequired(false)
@@ -89,5 +95,9 @@ public class TourCapacityConfiguration : IEntityTypeConfiguration<TourCapacity>
 
         builder.HasIndex(tc => tc.RemainingParticipants)
             .HasDatabaseName("IX_TourCapacity_RemainingParticipants");
+
+        // Index for special capacities
+        builder.HasIndex(tc => new { tc.TenantId, tc.TourId, tc.IsSpecial })
+            .HasDatabaseName("IX_TourCapacity_TenantTourSpecial");
     }
 }

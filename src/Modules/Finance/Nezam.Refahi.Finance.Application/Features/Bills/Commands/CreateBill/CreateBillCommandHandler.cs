@@ -56,6 +56,7 @@ public class CreateBillCommandHandler : IRequestHandler<CreateBillCommand, Appli
 
             // Create new bill
             var bill = new Bill(
+                referenceTrackingCode:request.ReferenceTrackingCode,
                 title: request.Title,
                 referenceId: request.ReferenceId,
                 billType: request.BillType,

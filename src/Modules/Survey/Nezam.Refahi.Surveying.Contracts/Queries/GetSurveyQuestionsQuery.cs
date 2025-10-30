@@ -10,7 +10,7 @@ namespace Nezam.Refahi.Surveying.Contracts.Queries;
 public class GetSurveyQuestionsQuery : IRequest<ApplicationResult<SurveyQuestionsResponse>>
 {
     public Guid SurveyId { get; set; }
-    public Guid? UserId { get; set; } // For including user answers
+    public string? UserNationalNumber { get; set; } // For including user answers
     public bool IncludeUserAnswers { get; set; } = true;
     public bool IncludeOptions { get; set; } = true;
 }

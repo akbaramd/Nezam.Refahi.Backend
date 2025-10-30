@@ -7,115 +7,101 @@ using Nezam.Refahi.Finance.Application.Features.Payments.Commands.HandleCallback
 using Nezam.Refahi.Finance.Application.Configuration;
 using Nezam.Refahi.Finance.Application.Commands.Bills;
 using Nezam.Refahi.Finance.Application.Commands.Payments;
+using Nezam.Refahi.Finance.Application.DTOs;
+using Nezam.Refahi.Finance.Application.Features.Payments.Queries.GetPaymentDetail;
 using Nezam.Refahi.Finance.Application.Queries.Bills;
 using Nezam.Refahi.Finance.Application.Services;
+using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
 
 namespace Nezam.Refahi.Finance.Presentation.Endpoints;
 
 public static class PaymentEndpoints
 {
-    public static WebApplication MapPaymentEndpoints(this WebApplication app)
+  public static WebApplication MapPaymentEndpoints(this WebApplication app)
+  {
+    var group = app.MapGroup("/api/v1/payments")
+      .WithTags("Payments");
+
+    // ───────────────────── Get Payment Details ─────────────────────
+    group.MapGet("/{paymentId:guid}", async (
+        [FromRoute] Guid paymentId,
+        [FromServices] IMediator mediator) =>
+      {
+        var query = new GetPaymentDetailQuery { PaymentId = paymentId };
+
+        var result = await mediator.Send(query);
+        return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
+      })
+      .RequireAuthorization()
+      .WithName("GetPaymentDetail")
+      .Produces<ApplicationResult<PaymentDetailDto>>(200)
+      .Produces(400)
+      .WithOpenApi(op => new(op)
+      {
+        Summary = "Get payment details by ID",
+        Description =
+          "Returns detailed information about a specific payment (PaymentDetailDto) including status, amount, method, and metadata.",
+        Tags = new List<OpenApiTag> { new() { Name = "Payments" } }
+      });
+    // ───────────────────── Payment Callback (GET + POST, Anonymous) ─────────────────────
+    group.MapMethods("/callback", new[] { "GET", "POST" }, async (
+        [FromServices] IMediator mediator,
+        [FromServices] IOptions<FrontendSettings> frontendSettings) =>
+      {
+        var result = await mediator.Send(new HandlePaymentCallbackCommand());
+        var frontend = frontendSettings.Value;
+
+        if (result.IsSuccess && result.Data != null)
+        {
+          var callbackResult = result.Data;
+
+          // Determine target redirect (success or failure)
+          string redirectUrl = callbackResult.IsSuccessful
+            ? frontend.GetPaymentSuccessUrl(callbackResult.BillId, callbackResult.PaymentId,
+              callbackResult.BillTrackingCode, callbackResult.BillType)
+            : frontend.GetPaymentFailureUrl(callbackResult.BillId, callbackResult.PaymentId,
+              callbackResult.BillTrackingCode, callbackResult.BillType);
+
+          // Normalize redirect URL
+          redirectUrl = NormalizeEncodedInternalPath(redirectUrl, frontend.GenericPaymentFailurePath);
+
+          return Results.Redirect(redirectUrl);
+        }
+
+        // Generic fallback
+        return Results.Redirect(frontend.GenericPaymentFailurePath);
+      })
+      .AllowAnonymous()
+      .WithName("PaymentCallback")
+      .Produces<ApplicationResult<PaymentCallbackResult>>()
+      .Produces(302)
+      .Produces(400);
+
+// ───────────────────── Helper: Normalize Redirect URL ─────────────────────
+    static string NormalizeEncodedInternalPath(string encoded, string fallback)
     {
-        var group = app.MapGroup("/api/v1/payments")
-            .WithTags("Payments");
+      if (string.IsNullOrWhiteSpace(encoded))
+        return fallback;
 
-        
-        // ───────────────────── Payment Callback (Anonymous) ─────────────────────
-        group.MapGet("/callback", async (
-                [FromServices] IMediator mediator,
-                [FromServices] IOptions<FrontendSettings> frontendSettings) =>
-            {
-                var command = new HandlePaymentCallbackCommand();
-                var result = await mediator.Send(command);
+      // Decode %2F → /
+      string decoded = Uri.UnescapeDataString(encoded).Trim();
 
-                if (result.IsSuccess && result.Data != null)
-                {
-                    var callbackResult = result.Data;
-                    
-                    // Always redirect to the specified URL
-                    if (!string.IsNullOrEmpty(callbackResult.RedirectUrl))
-                    {
-                        return Results.Redirect(callbackResult.RedirectUrl);
-                    }
-                    
-                    // Fallback redirect if no URL provided
-                    if (callbackResult.IsSuccessful)
-                    {
-                        return Results.Redirect(frontendSettings.Value.GetPaymentSuccessUrl(callbackResult.BillId));
-                    }
-                    else
-                    {
-                        return Results.Redirect(frontendSettings.Value.GetPaymentFailureUrl(callbackResult.BillId));
-                    }
-                }
-                else
-                {
-                    // Return error response with redirect to failure page
-                    // Try to get BillId from result if available
-                    if (result.Data?.BillId != null && result.Data.BillId != Guid.Empty)
-                    {
-                        return Results.Redirect(frontendSettings.Value.GetPaymentFailureUrl(result.Data.BillId));
-                    }
-                    return Results.Redirect(frontendSettings.Value.GetGenericPaymentFailureUrl());
-                }
-            })
-            .AllowAnonymous() // Payment callbacks should be anonymous
-            .WithName("PaymentCallback")
-            .Produces<ApplicationResult<PaymentCallbackResult>>()
-            .Produces(302) // Redirect
-            .Produces(400);
+      // If still double-encoded (e.g. "%252Fbills%252F..."), decode again
+      if (decoded.Contains("%2F"))
+        decoded = Uri.UnescapeDataString(decoded);
 
-        // ───────────────────── Payment Callback (POST) ─────────────────────
-        group.MapPost("/callback", async (
-                [FromServices] IMediator mediator,
-                [FromServices] IOptions<FrontendSettings> frontendSettings) =>
-            {
-                var command = new HandlePaymentCallbackCommand();
-                var result = await mediator.Send(command);
 
-                if (result.IsSuccess && result.Data != null)
-                {
-                    var callbackResult = result.Data;
-                    
-                    // Always redirect to the specified URL
-                    if (!string.IsNullOrEmpty(callbackResult.RedirectUrl))
-                    {
-                        return Results.Redirect(callbackResult.RedirectUrl);
-                    }
-                    
-                    // Fallback redirect if no URL provided
-                    if (callbackResult.IsSuccessful)
-                    {
-                        return Results.Redirect(frontendSettings.Value.GetPaymentSuccessUrl(callbackResult.BillId));
-                    }
-                    else
-                    {
-                        return Results.Redirect(frontendSettings.Value.GetPaymentFailureUrl(callbackResult.BillId));
-                    }
-                }
-                else
-                {
-                    // Return error response with redirect to failure page
-                    // Try to get BillId from result if available
-                    if (result.Data?.BillId != null && result.Data.BillId != Guid.Empty)
-                    {
-                        return Results.Redirect(frontendSettings.Value.GetPaymentFailureUrl(result.Data.BillId));
-                    }
-                    return Results.Redirect(frontendSettings.Value.GetGenericPaymentFailureUrl());
-                }
-            })
-            .AllowAnonymous() // Payment callbacks should be anonymous
-            .WithName("PaymentCallbackPost")
-            .Produces<ApplicationResult<PaymentCallbackResult>>()
-            .Produces(302) // Redirect
-            .Produces(400);
 
-        // ───────────────────── Payment Success Page ─────────────────────
-        group.MapGet("/success", () =>
-            {
-                // This could return a view or redirect to frontend success page
-                return Results.Content(@"
+
+      return decoded;
+    }
+
+    // ───────────────────── Payment Success Page ─────────────────────
+    group.MapGet("/success", () =>
+      {
+        // This could return a view or redirect to frontend success page
+        return Results.Content(@"
                     <html>
                         <body>
                             <h1>پرداخت موفق</h1>
@@ -127,15 +113,15 @@ public static class PaymentEndpoints
                             </script>
                         </body>
                     </html>", "text/html; charset=utf-8");
-            })
-            .AllowAnonymous()
-            .WithName("PaymentSuccess");
+      })
+      .AllowAnonymous()
+      .WithName("PaymentSuccess");
 
-        // ───────────────────── Payment Failed Page ─────────────────────
-        group.MapGet("/failed", () =>
-            {
-                // This could return a view or redirect to frontend failure page
-                return Results.Content(@"
+    // ───────────────────── Payment Failed Page ─────────────────────
+    group.MapGet("/failed", () =>
+      {
+        // This could return a view or redirect to frontend failure page
+        return Results.Content(@"
                     <html>
                         <body>
                             <h1>پرداخت ناموفق</h1>
@@ -147,81 +133,90 @@ public static class PaymentEndpoints
                             </script>
                         </body>
                     </html>", "text/html; charset=utf-8");
-            })
-            .AllowAnonymous()
-            .WithName("PaymentFailed");
+      })
+      .AllowAnonymous()
+      .WithName("PaymentFailed");
 
-        // ───────────────────── Get Supported Gateways ─────────────────────
-        group.MapGet("/gateways", async (
-                [FromServices] IPaymentService paymentService) =>
-            {
-                var gateways = await paymentService.GetSupportedGatewaysAsync();
-                return Results.Ok(gateways);
-            })
-            .RequireAuthorization()
-            .WithName("GetSupportedPaymentGateways")
-            .Produces<IEnumerable<PaymentGatewayInfo>>();
+    // ───────────────────── Get Supported Gateways ─────────────────────
+    group.MapGet("/gateways", async (
+        [FromServices] IPaymentService paymentService) =>
+      {
+        var gateways = await paymentService.GetSupportedGatewaysAsync();
+        return Results.Ok(gateways);
+      })
+      .RequireAuthorization()
+      .WithName("GetSupportedPaymentGateways")
+      .Produces<IEnumerable<PaymentGatewayInfo>>();
 
-        // ───────────────────── Create Payment ─────────────────────
-        group.MapPost("", async (
-                [FromBody] CreatePaymentCommand command,
-                [FromServices] IMediator mediator) =>
-            {
-                var result = await mediator.Send(command);
-
-                if (result.IsSuccess)
-                {
-                    return Results.Ok(result);
-                }
-
-                return Results.BadRequest(result);
-            })
-            .RequireAuthorization()
-            .WithName("CreatePayment")
-            .Produces<ApplicationResult<CreatePaymentResponse>>()
-            .Produces(400);
-
-        // ───────────────────── Pay with Wallet ─────────────────────
-        group.MapPost("/wallet", async (
-                [FromBody] PayWithWalletCommand command,
-                [FromServices] IMediator mediator) =>
-            {
-                var result = await mediator.Send(command);
-
-                if (result.IsSuccess)
-                {
-                    return Results.Ok(result);
-                }
-
-                return Results.BadRequest(result);
-            })
-            .RequireAuthorization()
-            .WithName("PayWithWallet")
-            .Produces<ApplicationResult<PayWithWalletResponse>>()
-            .Produces(400);
-
-        // ═══════════════════════ BILL MANAGEMENT ENDPOINTS ═══════════════════════
-        if (app.Environment.IsDevelopment())
+    // ───────────────────── Create Payment ─────────────────────
+    group.MapPost("", async (
+        [FromBody] CreatePaymentCommand command,
+        [FromServices] IMediator mediator,
+        [FromServices] ICurrentUserService currentUserService) =>
+      {
+        if (!currentUserService.IsAuthenticated || !currentUserService.UserId.HasValue)
         {
-          group.MapPost("complete", async (
-              [FromBody] CompletePaymentCommand command,
-              [FromServices] IMediator mediator) =>
-            {
-              var result = await mediator.Send(command);
-
-              if (result.IsSuccess)
-              {
-                return Results.Ok(result);
-              }
-
-              return Results.BadRequest(result);
-            })
-            .AllowAnonymous()
-            .WithName("CompletePayment")
-            .Produces<ApplicationResult<CreatePaymentResponse>>()
-            .Produces(400);
+          return Results.Unauthorized();
         }
-       
-        return app;
+
+        // Set the external user ID from the current user service
+        var commandWithUser = command with { ExternalUserId = currentUserService.UserId.Value };
+        var result = await mediator.Send(commandWithUser);
+
+        if (result.IsSuccess)
+        {
+          return Results.Ok(result);
+        }
+
+        return Results.BadRequest(result);
+      })
+      .RequireAuthorization()
+      .WithName("CreatePayment")
+      .Produces<ApplicationResult<CreatePaymentResponse>>()
+      .Produces(400)
+      .Produces(401);
+
+    // ───────────────────── Pay with Wallet ─────────────────────
+    group.MapPost("/wallet", async (
+        [FromBody] PayWithWalletCommand command,
+        [FromServices] IMediator mediator) =>
+      {
+        var result = await mediator.Send(command);
+
+        if (result.IsSuccess)
+        {
+          return Results.Ok(result);
+        }
+
+        return Results.BadRequest(result);
+      })
+      .RequireAuthorization()
+      .WithName("PayWithWallet")
+      .Produces<ApplicationResult<PayWithWalletResponse>>()
+      .Produces(400);
+
+    // ═══════════════════════ BILL MANAGEMENT ENDPOINTS ═══════════════════════
+    if (app.Environment.IsDevelopment())
+    {
+      group.MapPost("complete", async (
+          [FromBody] CompletePaymentCommand command,
+          [FromServices] IMediator mediator) =>
+        {
+          var result = await mediator.Send(command);
+
+          if (result.IsSuccess)
+          {
+            return Results.Ok(result);
+          }
+
+          return Results.BadRequest(result);
+        })
+        .AllowAnonymous()
+        .WithName("CompletePayment")
+        .Produces<ApplicationResult<CreatePaymentResponse>>()
+        .Produces(400);
     }
+
+    return app;
+  }
 }

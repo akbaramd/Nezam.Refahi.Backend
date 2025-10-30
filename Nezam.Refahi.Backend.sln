@@ -5,13 +5,15 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A5F1D2C1-0A0B-4F0A-8E6E-D89C99B1F353}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.Shared.Domain", "src\Nezam.Refahi.Shared.Domain\Nezam.Refahi.Shared.Domain.csproj", "{C7F1D2C3-0A0B-4F0A-8E6E-D89C99B1F355}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.Shared.Domain", "src\Shareds\Nezam.Refahi.Shared.Domain\Nezam.Refahi.Shared.Domain.csproj", "{C7F1D2C3-0A0B-4F0A-8E6E-D89C99B1F355}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.Shared.Infrastructure", "src\Nezam.Refahi.Shared.Infrastructure\Nezam.Refahi.Shared.Infrastructure.csproj", "{CBBA3DBC-B972-4065-9311-E6ADA157D967}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.Shared.Infrastructure", "src\Shareds\Nezam.Refahi.Shared.Infrastructure\Nezam.Refahi.Shared.Infrastructure.csproj", "{CBBA3DBC-B972-4065-9311-E6ADA157D967}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.Shared.Application", "src\Nezam.Refahi.Shared.Application\Nezam.Refahi.Shared.Application.csproj", "{D5B2820C-A773-40D8-B18B-37153A048172}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.Shared.Application", "src\Shareds\Nezam.Refahi.Shared.Application\Nezam.Refahi.Shared.Application.csproj", "{D5B2820C-A773-40D8-B18B-37153A048172}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.WebApi", "src\Nezam.Refahi.WebApi\Nezam.Refahi.WebApi.csproj", "{5F5C6210-9EFE-4F53-B3EF-A751C2B935F6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.Orchestrator", "src\Orchestrator\Nezam.Refahi.Orchestrator\Nezam.Refahi.Orchestrator.csproj", "{DD7ADD67-06EA-4AB5-9516-3F1F93CB30C1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{286C3AE0-ACCA-455B-819F-9D19E8486035}"
 EndProject
@@ -130,6 +132,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.Facilities.Infrastructure", "src\Modules\Facilities\Nezam.Refahi.Facilities.Infrastructure\Nezam.Refahi.Facilities.Infrastructure.csproj", "{72D64214-99B4-47BB-9F33-7AAC3B92ABFB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.Facilities.Presentation", "src\Modules\Facilities\Nezam.Refahi.Facilities.Presentation\Nezam.Refahi.Facilities.Presentation.csproj", "{8260C9D7-FB7E-464F-B60D-5E9C4FD9E557}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.Web", "src\Nezam.Refahi.Web\Nezam.Refahi.Web.csproj", "{67DA2EC5-CA44-47D9-ADFC-E96E86D0E139}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezam.Refahi.Identity.Presentation", "src\Modules\Identity\Nezam.Refahi.Identity.Presentation\Nezam.Refahi.Identity.Presentation.csproj", "{9772CED1-BD11-4E15-82AB-81DC0E0D939F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -741,6 +747,42 @@ Global
 		{8260C9D7-FB7E-464F-B60D-5E9C4FD9E557}.Release|x64.Build.0 = Release|Any CPU
 		{8260C9D7-FB7E-464F-B60D-5E9C4FD9E557}.Release|x86.ActiveCfg = Release|Any CPU
 		{8260C9D7-FB7E-464F-B60D-5E9C4FD9E557}.Release|x86.Build.0 = Release|Any CPU
+		{67DA2EC5-CA44-47D9-ADFC-E96E86D0E139}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67DA2EC5-CA44-47D9-ADFC-E96E86D0E139}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67DA2EC5-CA44-47D9-ADFC-E96E86D0E139}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{67DA2EC5-CA44-47D9-ADFC-E96E86D0E139}.Debug|x64.Build.0 = Debug|Any CPU
+		{67DA2EC5-CA44-47D9-ADFC-E96E86D0E139}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{67DA2EC5-CA44-47D9-ADFC-E96E86D0E139}.Debug|x86.Build.0 = Debug|Any CPU
+		{67DA2EC5-CA44-47D9-ADFC-E96E86D0E139}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67DA2EC5-CA44-47D9-ADFC-E96E86D0E139}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67DA2EC5-CA44-47D9-ADFC-E96E86D0E139}.Release|x64.ActiveCfg = Release|Any CPU
+		{67DA2EC5-CA44-47D9-ADFC-E96E86D0E139}.Release|x64.Build.0 = Release|Any CPU
+		{67DA2EC5-CA44-47D9-ADFC-E96E86D0E139}.Release|x86.ActiveCfg = Release|Any CPU
+		{67DA2EC5-CA44-47D9-ADFC-E96E86D0E139}.Release|x86.Build.0 = Release|Any CPU
+		{9772CED1-BD11-4E15-82AB-81DC0E0D939F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9772CED1-BD11-4E15-82AB-81DC0E0D939F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9772CED1-BD11-4E15-82AB-81DC0E0D939F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9772CED1-BD11-4E15-82AB-81DC0E0D939F}.Debug|x64.Build.0 = Debug|Any CPU
+		{9772CED1-BD11-4E15-82AB-81DC0E0D939F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9772CED1-BD11-4E15-82AB-81DC0E0D939F}.Debug|x86.Build.0 = Debug|Any CPU
+		{9772CED1-BD11-4E15-82AB-81DC0E0D939F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9772CED1-BD11-4E15-82AB-81DC0E0D939F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9772CED1-BD11-4E15-82AB-81DC0E0D939F}.Release|x64.ActiveCfg = Release|Any CPU
+		{9772CED1-BD11-4E15-82AB-81DC0E0D939F}.Release|x64.Build.0 = Release|Any CPU
+		{9772CED1-BD11-4E15-82AB-81DC0E0D939F}.Release|x86.ActiveCfg = Release|Any CPU
+		{9772CED1-BD11-4E15-82AB-81DC0E0D939F}.Release|x86.Build.0 = Release|Any CPU
+		{DD7ADD67-06EA-4AB5-9516-3F1F93CB30C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD7ADD67-06EA-4AB5-9516-3F1F93CB30C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD7ADD67-06EA-4AB5-9516-3F1F93CB30C1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DD7ADD67-06EA-4AB5-9516-3F1F93CB30C1}.Debug|x64.Build.0 = Debug|Any CPU
+		{DD7ADD67-06EA-4AB5-9516-3F1F93CB30C1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DD7ADD67-06EA-4AB5-9516-3F1F93CB30C1}.Debug|x86.Build.0 = Debug|Any CPU
+		{DD7ADD67-06EA-4AB5-9516-3F1F93CB30C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD7ADD67-06EA-4AB5-9516-3F1F93CB30C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD7ADD67-06EA-4AB5-9516-3F1F93CB30C1}.Release|x64.ActiveCfg = Release|Any CPU
+		{DD7ADD67-06EA-4AB5-9516-3F1F93CB30C1}.Release|x64.Build.0 = Release|Any CPU
+		{DD7ADD67-06EA-4AB5-9516-3F1F93CB30C1}.Release|x86.ActiveCfg = Release|Any CPU
+		{DD7ADD67-06EA-4AB5-9516-3F1F93CB30C1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -750,6 +792,7 @@ Global
 		{CBBA3DBC-B972-4065-9311-E6ADA157D967} = {8A9D6589-4729-4DBF-830F-DB1CFAE5CCD7}
 		{D5B2820C-A773-40D8-B18B-37153A048172} = {8A9D6589-4729-4DBF-830F-DB1CFAE5CCD7}
 		{5F5C6210-9EFE-4F53-B3EF-A751C2B935F6} = {A5F1D2C1-0A0B-4F0A-8E6E-D89C99B1F353}
+		{DD7ADD67-06EA-4AB5-9516-3F1F93CB30C1} = {A5F1D2C1-0A0B-4F0A-8E6E-D89C99B1F353}
 		{286C3AE0-ACCA-455B-819F-9D19E8486035} = {A5F1D2C1-0A0B-4F0A-8E6E-D89C99B1F353}
 		{B4C11D64-24C4-442B-9E58-0F01300707C7} = {286C3AE0-ACCA-455B-819F-9D19E8486035}
 		{6C8D7378-F2F7-4074-9543-E5856C4680BA} = {B4C11D64-24C4-442B-9E58-0F01300707C7}
@@ -809,6 +852,8 @@ Global
 		{FC6218A4-09CD-4FA8-90FE-AC0D6E87B496} = {14592135-A5B9-39FA-1627-6FA9B473BD32}
 		{72D64214-99B4-47BB-9F33-7AAC3B92ABFB} = {14592135-A5B9-39FA-1627-6FA9B473BD32}
 		{8260C9D7-FB7E-464F-B60D-5E9C4FD9E557} = {14592135-A5B9-39FA-1627-6FA9B473BD32}
+		{67DA2EC5-CA44-47D9-ADFC-E96E86D0E139} = {A5F1D2C1-0A0B-4F0A-8E6E-D89C99B1F353}
+		{9772CED1-BD11-4E15-82AB-81DC0E0D939F} = {19578C6A-F061-4B93-9A86-3FD2F5563C9C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E9F1D2C5-0A0B-4F0A-8E6E-D89C99B1F357}

@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AkbarAmd.SharedKernel.Infrastructure" Version="1.0.13" />
+    <PackageReference Include="AkbarAmd.SharedKernel.Infrastructure" Version="1.0.15" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.18" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.18" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.18">
@@ -28,7 +28,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Nezam.Refahi.Notification.Domain\Nezam.Refahi.Notification.Domain.csproj" />
     <ProjectReference Include="..\Nezam.Refahi.Notification.Application\Nezam.Refahi.Notification.Application.csproj" />
-    <ProjectReference Include="..\..\..\Nezam.Refahi.Shared.Infrastructure\Nezam.Refahi.Shared.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Shareds\Nezam.Refahi.Shared.Infrastructure\Nezam.Refahi.Shared.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

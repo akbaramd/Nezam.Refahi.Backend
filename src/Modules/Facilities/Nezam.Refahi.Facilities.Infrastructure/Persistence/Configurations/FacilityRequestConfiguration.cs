@@ -46,6 +46,9 @@ public class FacilityRequestConfiguration : IEntityTypeConfiguration<FacilityReq
         builder.Property(r => r.RejectionReason)
             .HasMaxLength(1000);
 
+        // Optional reference to FacilityRejection record
+        builder.Property(r => r.RejectionId);
+
         builder.Property(r => r.BankAppointmentReference)
             .HasMaxLength(100);
 
@@ -113,6 +116,17 @@ public class FacilityRequestConfiguration : IEntityTypeConfiguration<FacilityReq
         builder.HasOne(r => r.FacilityCycle)
             .WithMany(c => c.Applications)
             .HasForeignKey(r => r.FacilityCycleId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Relationship to FacilityRejection (optional one-to-one via RejectionId)
+        builder.HasOne<FacilityRejection>()
+            .WithOne(x => x.Request)
+            .HasForeignKey<FacilityRejection>(x => x.RequestId)
+            .OnDelete(DeleteBehavior.Restrict);
+        
+        builder.HasOne<FacilityRejection>()
+            .WithMany()
+            .HasForeignKey(r => r.RejectionId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

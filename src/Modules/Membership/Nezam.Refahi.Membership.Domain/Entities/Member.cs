@@ -16,6 +16,9 @@ public sealed class Member : FullAggregateRoot<Guid>
     public Email Email { get; private set; } = null!;
     public PhoneNumber PhoneNumber { get; private set; } = null!;
     public DateTime? BirthDate { get; private set; }
+    
+    // Special member status for VIP privileges
+    public bool IsSpecial { get; private set; }
 
     private readonly List<MemberRole> _roles = new();
     public IReadOnlyCollection<MemberRole> Roles => _roles.AsReadOnly();
@@ -38,7 +41,7 @@ public sealed class Member : FullAggregateRoot<Guid>
     /// <summary>
     /// Creates a new member with required ExternalUserId
     /// </summary>
-    public Member(Guid externalUserId, string membershipNumber, NationalId nationalCode, FullName fullName, Email email, PhoneNumber phoneNumber, DateTime? birthDate = null)
+    public Member(Guid externalUserId, string membershipNumber, NationalId nationalCode, FullName fullName, Email email, PhoneNumber phoneNumber, DateTime? birthDate = null, bool isSpecial = false)
         : base(Guid.NewGuid())
     {
         if (externalUserId == Guid.Empty)
@@ -51,6 +54,7 @@ public sealed class Member : FullAggregateRoot<Guid>
         Email = email ?? throw new ArgumentNullException(nameof(email));
         PhoneNumber = phoneNumber ?? throw new ArgumentNullException(nameof(phoneNumber));
         BirthDate = birthDate;
+        IsSpecial = isSpecial;
     }
 
     /// <summary>
@@ -342,5 +346,45 @@ public sealed class Member : FullAggregateRoot<Guid>
             a.AgencyId == AgencyId && 
             a.IsValid() && 
             a.HasReadOnlyAccess());
+    }
+
+    /// <summary>
+    /// Grants special status to the member
+    /// </summary>
+    public void GrantSpecialStatus()
+    {
+        IsSpecial = true;
+    }
+
+    /// <summary>
+    /// Revokes special status from the member
+    /// </summary>
+    public void RevokeSpecialStatus()
+    {
+        IsSpecial = false;
+    }
+
+    /// <summary>
+    /// Checks if the member has special status
+    /// </summary>
+    public bool HasSpecialStatus()
+    {
+        return IsSpecial;
+    }
+
+    /// <summary>
+    /// Checks if the member can access special tour capacities
+    /// </summary>
+    public bool CanAccessSpecialCapacities()
+    {
+        return IsSpecial;
+    }
+
+    /// <summary>
+    /// Checks if the member can see special tour capacities
+    /// </summary>
+    public bool CanSeeSpecialCapacities()
+    {
+        return IsSpecial;
     }
 }

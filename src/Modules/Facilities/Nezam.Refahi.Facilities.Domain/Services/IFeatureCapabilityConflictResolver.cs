@@ -20,7 +20,7 @@ public interface IFeatureCapabilityConflictResolver
     /// حل تعارضات بین Capabilities
     /// </summary>
     Task<CapabilityConflictResolution> ResolveCapabilityConflictsAsync(
-        List<FacilityCapabilityPolicy> facilityCapabilityPolicies,
+        List<FacilityCapability> facilityCapabilityPolicies,
         List<string> memberCapabilities,
         CancellationToken cancellationToken = default);
 

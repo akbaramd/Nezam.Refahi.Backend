@@ -96,12 +96,12 @@ namespace Nezam.Refahi.Finance.Application.Features.Bills.Queries.GetUserBills
             // Type
             if (!string.IsNullOrWhiteSpace(request.BillType))
             {
-                q = q.Where(b => b.BillType.Equals(request.BillType, StringComparison.OrdinalIgnoreCase));
+                q = q.Where(b => b.ReferenceType.Equals(request.BillType, StringComparison.OrdinalIgnoreCase));
             }
 
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
             {
-              q = q.Where(x=>x.ReferenceId.Contains(request.SearchTerm) || x.BillType.Contains(request.SearchTerm) || x.ReferenceId.Contains(request.SearchTerm));
+              q = q.Where(x=>x.ReferenceId.Contains(request.SearchTerm) || x.ReferenceType.Contains(request.SearchTerm) || x.ReferenceId.Contains(request.SearchTerm));
             }
             
             return q;
