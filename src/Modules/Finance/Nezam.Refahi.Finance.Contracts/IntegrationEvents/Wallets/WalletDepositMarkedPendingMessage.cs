@@ -1,12 +1,12 @@
 using MediatR;
 
-namespace Nezam.Refahi.Finance.Contracts.IntegrationEvents;
+namespace Nezam.Refahi.Contracts.Finance.v1.Messages;
 
 /// <summary>
 /// Published by orchestrator once the bill is created for the wallet deposit.
 /// Indicates the deposit is Pending (awaiting payment).
 /// </summary>
-public class PendWalletDepositIntegrationEvent : INotification
+public class WalletDepositMarkedPendingMessage : INotification
 {
 
     public DateTime OccurredOn { get; set; } = DateTime.UtcNow;
@@ -25,5 +25,6 @@ public class PendWalletDepositIntegrationEvent : INotification
 
     public Dictionary<string, string> Metadata { get; set; } = new();
 }
+
 
 

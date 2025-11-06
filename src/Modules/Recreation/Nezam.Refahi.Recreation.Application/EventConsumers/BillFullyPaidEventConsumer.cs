@@ -36,7 +36,7 @@ public class BillFullyPaidEventConsumer : INotificationHandler<BillFullyPaidEven
     {
         try
         {
-            _logger.LogInformation("Processing BillFullyPaidEventMessage for Bill {BillId}, ReferenceId: {ReferenceId}", 
+            _logger.LogInformation("AwaitingBill BillFullyPaidEventMessage for Bill {BillId}, ReferenceId: {ReferenceId}", 
 notification.BillId, notification.ReferenceId);
 
             // Check if this is a tour reservation bill

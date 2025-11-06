@@ -35,7 +35,7 @@ public class BillCancelledEventConsumer : INotificationHandler<BillCancelledInte
     {
         try
         {
-            _logger.LogInformation("Processing BillCancelledEvent for Bill {BillId}, ReferenceId: {ReferenceId}", 
+            _logger.LogInformation("AwaitingBill BillCancelledEvent for Bill {BillId}, ReferenceId: {ReferenceId}", 
 notification.BillId, notification.ReferenceId);
 
             // Check if this is a tour reservation bill

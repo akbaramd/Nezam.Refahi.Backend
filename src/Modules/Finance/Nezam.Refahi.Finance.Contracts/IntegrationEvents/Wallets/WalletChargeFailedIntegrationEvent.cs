@@ -2,7 +2,7 @@ using MediatR;
 
 namespace Nezam.Refahi.Finance.Contracts.IntegrationEvents;
 
-public class WalletChargeRequestedIntegrationEvent : INotification
+public class WalletChargeFailedIntegrationEvent : INotification
 {
     public Guid EventId { get; set; } = Guid.NewGuid();
     public DateTime OccurredOn { get; set; } = DateTime.UtcNow;
@@ -15,13 +15,18 @@ public class WalletChargeRequestedIntegrationEvent : INotification
     public Guid ExternalUserId { get; set; }
     public string UserFullName { get; set; } = string.Empty;
     public decimal AmountRials { get; set; }
-    public DateTime PaidAt { get; set; }
+    public DateTime FailedAt { get; set; }
     public Guid PaymentId { get; set; }
     public string? GatewayTransactionId { get; set; }
     public string? GatewayReference { get; set; }
     public string Gateway { get; set; } = string.Empty;
     public string PaymentMethod { get; set; } = string.Empty;
+    public string ErrorCode { get; set; } = string.Empty;
+    public string ErrorMessage { get; set; } = string.Empty;
+    public int RetryCount { get; set; }
+    public DateTime? NextRetryAt { get; set; }
     public Dictionary<string, string> Metadata { get; set; } = new();
 }
+
 
 

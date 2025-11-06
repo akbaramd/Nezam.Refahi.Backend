@@ -1,15 +1,13 @@
-using MediatR;
+using System;
+using System.Collections.Generic;
 
-namespace Nezam.Refahi.Finance.Contracts.IntegrationEvents;
+namespace Nezam.Refahi.Contracts.Finance.v1.Messages;
 
 /// <summary>
-/// Published when a wallet deposit is completed (bill fully paid).
+/// Command message to complete a wallet deposit after full payment.
 /// </summary>
-public class WalletDepositCompletedIntegrationEvent : INotification
+public class CompleteWalletDepositCommandMessage
 {
-    public DateTime OccurredOn { get; set; } = DateTime.UtcNow;
-    public string EventVersion { get; set; } = "1.0";
-
     public Guid WalletDepositId { get; set; }
     public string TrackingCode { get; set; } = string.Empty;
 
@@ -25,5 +23,6 @@ public class WalletDepositCompletedIntegrationEvent : INotification
 
     public Dictionary<string, string> Metadata { get; set; } = new();
 }
+
 
 

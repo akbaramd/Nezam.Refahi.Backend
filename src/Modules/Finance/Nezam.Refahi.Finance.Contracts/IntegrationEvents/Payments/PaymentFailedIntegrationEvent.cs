@@ -34,3 +34,4 @@ public class PaymentFailedIntegrationEvent : INotification
     // Additional metadata
     public Dictionary<string, string> Metadata { get; set; } = new();
 }
+

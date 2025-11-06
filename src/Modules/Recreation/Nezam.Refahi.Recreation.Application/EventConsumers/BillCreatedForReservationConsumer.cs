@@ -28,7 +28,7 @@ public class BillCreatedForReservationConsumer : INotificationHandler<BillCreate
 
     public async Task Handle(BillCreatedEventMessage notification, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Processing bill created event for reference {ReferenceType}:{ReferenceId}, bill {BillId}", 
+        _logger.LogInformation("AwaitingBill bill created event for reference {ReferenceType}:{ReferenceId}, bill {BillId}", 
             notification.ReferenceType, notification.ReferenceId, notification.BillId);
 
         try

@@ -1,29 +1,21 @@
-using MediatR;
+using System;
+using System.Collections.Generic;
 
-namespace Nezam.Refahi.Finance.Contracts.IntegrationEvents;
+namespace Nezam.Refahi.Contracts.Finance.v1.Messages;
 
 /// <summary>
-/// Integration event instructing Finance to create a bill.
-/// Treated as a command message across bounded contexts.
+/// Command message to instruct Finance module to create a bill.
 /// </summary>
-public class CreateBillIntegrationEvent : INotification
+public class IssueBillCommandMessage
 {
-    // Envelope
-    public Guid EventId { get; set; } = Guid.NewGuid();
-    public DateTime OccurredOn { get; set; } = DateTime.UtcNow;
-    public string EventVersion { get; set; } = "1.0";
-
+    // Correlation
     public string TrackingCode { get; set; } = string.Empty;
     public string ReferenceId { get; set; } = string.Empty; // e.g., ReservationId or TrackingCode
-    public string ReferenceType { get; set; } = "TourReservation"; // entity name for correlation
+    public string ReferenceType { get; set; } = string.Empty; // entity name for correlation
 
     // User
     public Guid ExternalUserId { get; set; }
     public string UserFullName { get; set; } = string.Empty;
-
-    // Money
-    public decimal AmountRials { get; set; }
-    public string Currency { get; set; } = "IRR";
 
     // Bill presentation
     public string BillTitle { get; set; } = string.Empty;
@@ -33,10 +25,10 @@ public class CreateBillIntegrationEvent : INotification
     public Dictionary<string, string> Metadata { get; set; } = new();
 
     // Optional items
-    public List<CreateBillItemDto> Items { get; set; } = new();
+    public List<CreateBillItemMessage> Items { get; set; } = new();
 }
 
-public class CreateBillItemDto
+public class CreateBillItemMessage
 {
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
@@ -44,5 +36,6 @@ public class CreateBillItemDto
     public int Quantity { get; set; }
     public decimal? DiscountPercentage { get; set; }
 }
+
 
 

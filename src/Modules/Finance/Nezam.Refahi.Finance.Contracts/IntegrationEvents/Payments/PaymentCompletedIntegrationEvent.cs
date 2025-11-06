@@ -17,3 +17,4 @@ public class PaymentCompletedIntegrationEvent : INotification
     public DateTime CompletedAt { get; set; }
     public Dictionary<string, string> Metadata { get; set; } = new();
 }
+

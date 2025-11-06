@@ -3,9 +3,10 @@ using MediatR;
 namespace Nezam.Refahi.Finance.Contracts.IntegrationEvents;
 
 /// <summary>
-/// Integration event published when a bill is created
+/// Integration event published when a bill is cancelled
+/// This event is consumed by other modules to handle bill cancellation
 /// </summary>
-public class BillCreatedIntegrationEvent : INotification
+public class BillCancelledIntegrationEvent : INotification
 {
     public Guid EventId { get; set; } = Guid.NewGuid();
     public DateTime OccurredOn { get; set; } = DateTime.UtcNow;
@@ -14,17 +15,10 @@ public class BillCreatedIntegrationEvent : INotification
     // Bill details
     public Guid BillId { get; set; }
     public string BillNumber { get; set; } = string.Empty;
-    public string Status { get; set; } = string.Empty;
-    public DateTime IssueDate { get; set; }
-
-    // Reference details
-    public string TrackingCode { get; set; } = string.Empty;
-    public Guid ReferenceId { get; set; } = Guid.Empty;
+    public string ReferenceId { get; set; } = string.Empty;
     public string ReferenceType { get; set; } = string.Empty;
-
-    // Payment details
-    public decimal TotalAmountRials { get; set; }
-    public string Currency { get; set; } = "IRR";
+    public string Reason { get; set; } = string.Empty;
+    public DateTime CancelledAt { get; set; }
 
     // User details
     public Guid ExternalUserId { get; set; }
@@ -33,5 +27,4 @@ public class BillCreatedIntegrationEvent : INotification
     // Additional metadata
     public Dictionary<string, string> Metadata { get; set; } = new();
 }
-
 
