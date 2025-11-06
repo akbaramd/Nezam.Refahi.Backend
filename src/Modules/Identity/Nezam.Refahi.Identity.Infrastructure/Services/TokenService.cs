@@ -200,7 +200,9 @@ public class TokenService : ITokenService
         string? deviceFingerprint = null, 
         string? ipAddress = null, 
         string? userAgent = null, 
-        int expiryDays = 30)
+        int expiryDays = 30,
+        Guid? sessionFamilyId = null,
+        Guid? parentTokenId = null)
     {
       
         // Generate cryptographically secure random token
@@ -211,7 +213,9 @@ public class TokenService : ITokenService
         var refreshToken = UserToken.CreateRefreshToken(
             userId, 
             rawToken, 
-            expiryDays, 
+            expiryDays,
+            sessionFamilyId: sessionFamilyId,
+            parentTokenId: parentTokenId,
             deviceFingerprint: deviceFingerprint,
             ipAddress: ipAddress,
             userAgent: userAgent,
@@ -332,22 +336,17 @@ public class TokenService : ITokenService
             // Generate new access token
             var (newAccessToken,newExpiryMinutes,jwtId) =  await GenerateAccessTokenAsync(user);
             
-            // Generate new refresh token (rotation)
+            // Generate new refresh token (rotation) in the same session family
             var (newRawToken, newHashedToken, newTokenId) = await GenerateRefreshTokenAsync(
                 user.Id,
                 deviceFingerprint,
                 ipAddress,
                 userAgent,
-                30); // 30 days expiry
+                30,
+                sessionFamilyId: matchingToken.SessionFamilyId,
+                parentTokenId: matchingToken.Id);
             
-            // Update the new refresh token to be in the same session family
-            var newRefreshToken = await _userTokenRepository.FindOneAsync(x=>x.Id==newTokenId);
-            if (newRefreshToken != null)
-            {
-                // This would require updating the entity, but for now we'll work with what we have
-                _logger.LogDebug("Generated new refresh token {NewTokenId} in session family {SessionFamilyId}", 
-                    newTokenId, matchingToken.SessionFamilyId);
-            }
+            _logger.LogDebug("Generated new refresh token {NewTokenId} in session family {SessionFamilyId}", newTokenId, matchingToken.SessionFamilyId);
             
             _logger.LogInformation("Successfully rotated refresh token for user {UserId}", user.Id);
             

@@ -25,8 +25,8 @@ public class VerifyOtpCommandHandler
     // Configuration Constants
     // ========================================================================
     
-    private const int AccessTokenExpiryMinutes = 60 * 12;  // 15 minutes (production-grade)
-    private const int RefreshTokenExpiryDays = 60 * 24;    // 30 days (production-grade)
+    private const int AccessTokenExpiryMinutes = 15;       // 15 minutes (production-grade)
+    private const int RefreshTokenExpiryDays = 30;         // 30 days (production-grade)
 
     // ========================================================================
     // Dependencies

@@ -60,7 +60,9 @@ public interface ITokenService
     string? deviceFingerprint = null, 
     string? ipAddress = null, 
     string? userAgent = null, 
-    int expiryDays = 30);
+    int expiryDays = 30,
+    Guid? sessionFamilyId = null,
+    Guid? parentTokenId = null);
 
   /// <summary>
   /// Validates and rotates a refresh token (one-time use)
