@@ -105,6 +105,7 @@ public class TokenService : ITokenService
         {
             Subject = new ClaimsIdentity(claims),
             Expires = exp,
+            NotBefore = now,
             Issuer = _configuration["Jwt:Issuer"],
             Audience = _configuration["Jwt:Audience"],
             SigningCredentials = new SigningCredentials(signingKey, algorithm)
@@ -117,17 +118,20 @@ public class TokenService : ITokenService
         _logger.LogDebug("Generated access token for user {UserId} with jti {JwtId}, expires in {ExpiryMinutes} minutes", 
             user.Id, jwtId, expiryMinutes);
         
-        // Create refresh token entity
-        var refreshToken = UserToken.CreateAccessToken(
+        // Persist access token metadata (store only jti, not the raw JWT)
+        var accessTokenEntity = UserToken.CreateAccessToken(
           user.Id, 
-          tokenString, 
-          expiresInMinutes:expiryMinutes, 
+          jwtId,
+          expiresInMinutes: expiryMinutes,
           deviceFingerprint: deviceFingerprint,
           ipAddress: ipAddress,
           userAgent: userAgent);
         
-        // Save to database
-        await _userTokenRepository.AddAsync(refreshToken,true);
+        await _userTokenRepository.AddAsync(accessTokenEntity, true);
+
+        // Prune excess access tokens to prevent unbounded growth
+        var (maxAccess, _) = GetPruneLimits();
+        await PruneActiveTokensForUserAsync(user.Id, "AccessToken", maxAccess);
       
         
         return (tokenString ,  expiryMinutes,jwtId);
@@ -215,6 +219,10 @@ public class TokenService : ITokenService
         
         // Save to database
         await _userTokenRepository.AddAsync(refreshToken,true);
+        
+        // Prune excess refresh tokens (sessions) to keep only a reasonable number
+        var (_, maxRefresh) = GetPruneLimits();
+        await PruneActiveTokensForUserAsync(userId, "RefreshToken", maxRefresh);
         
         
         _logger.LogDebug("Generated refresh token for user {UserId}, expires in {ExpiryDays} days", 
@@ -464,5 +472,102 @@ public class TokenService : ITokenService
         {
             claims.Add(new Claim(ClaimTypes.Role, role.Name));
         }
+    }
+
+    /// <summary>
+    /// Reads prune limits from configuration with sensible defaults.
+    /// </summary>
+    private (int MaxAccess, int MaxRefresh) GetPruneLimits()
+    {
+        int maxAccess = 50;
+        int maxRefresh = 10;
+        if (int.TryParse(_configuration["TokenService:MaxActiveAccessTokens"], out var cfgAccess) && cfgAccess > 0)
+            maxAccess = cfgAccess;
+        if (int.TryParse(_configuration["TokenService:MaxActiveRefreshTokens"], out var cfgRefresh) && cfgRefresh > 0)
+            maxRefresh = cfgRefresh;
+        return (maxAccess, maxRefresh);
+    }
+
+    /// <summary>
+    /// Prunes excess active tokens for a user by token type, keeping the newest by expiration.
+    /// </summary>
+    private async Task PruneActiveTokensForUserAsync(Guid userId, string tokenType, int maxActive)
+    {
+        try
+        {
+            var tokens = await _userTokenRepository.GetActiveTokensForUserAsync(userId, tokenType);
+            var activeList = tokens
+                .OrderBy(t => t.ExpiresAt)
+                .ToList();
+
+            if (activeList.Count <= maxActive)
+                return;
+
+            var excess = activeList.Count - maxActive;
+            foreach (var t in activeList.Take(excess))
+            {
+                t.Revoke();
+                await _userTokenRepository.UpdateAsync(t);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to prune active {TokenType} tokens for user {UserId}", tokenType, userId);
+        }
+    }
+
+    // ========================================================================
+    // Global pruning
+    // ========================================================================
+
+    public async Task<int> PruneActiveTokensAsync(int? maxActiveAccessTokens = null, int? maxActiveRefreshTokens = null)
+    {
+        var (defaultAccess, defaultRefresh) = GetPruneLimits();
+        var maxAccess = maxActiveAccessTokens ?? defaultAccess;
+        var maxRefresh = maxActiveRefreshTokens ?? defaultRefresh;
+
+        var totalRevoked = 0;
+        try
+        {
+            // Access tokens
+            var activeAccess = await _userTokenRepository.GetAllActiveTokensByTypeAsync("AccessToken");
+            foreach (var group in activeAccess.GroupBy(t => t.UserId))
+            {
+                var ordered = group.OrderBy(t => t.ExpiresAt).ToList();
+                var excess = ordered.Count - maxAccess;
+                if (excess > 0)
+                {
+                    foreach (var t in ordered.Take(excess))
+                    {
+                        t.Revoke();
+                        await _userTokenRepository.UpdateAsync(t);
+                        totalRevoked++;
+                    }
+                }
+            }
+
+            // Refresh tokens
+            var activeRefresh = await _userTokenRepository.GetAllActiveTokensByTypeAsync("RefreshToken");
+            foreach (var group in activeRefresh.GroupBy(t => t.UserId))
+            {
+                var ordered = group.OrderBy(t => t.ExpiresAt).ToList();
+                var excess = ordered.Count - maxRefresh;
+                if (excess > 0)
+                {
+                    foreach (var t in ordered.Take(excess))
+                    {
+                        t.Revoke();
+                        await _userTokenRepository.UpdateAsync(t);
+                        totalRevoked++;
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Global token pruning failed");
+        }
+
+        return totalRevoked;
     }
 }

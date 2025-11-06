@@ -24,18 +24,13 @@ public sealed class FacilityInfoMapper : IMapper<Facility, FacilityInfoDto>
             Id = source.Id,
             Name = source.Name,
             Code = source.Code,
-            Type = source.Type.ToString(),
-            TypeText = EnumTextMappingService.GetFacilityTypeDescription(source.Type),
-            Status = source.Status.ToString(),
-            StatusText = EnumTextMappingService.GetFacilityStatusDescription(source.Status),
             Description = source.Description,
             BankInfo = new BankInfoDto
             {
                 BankName = source.BankName,
                 BankCode = source.BankCode,
                 BankAccountNumber = source.BankAccountNumber
-            },
-            IsActive = EnumTextMappingService.IsFacilityActive(source.Status)
+            }
         };
 
         return Task.FromResult(dto);

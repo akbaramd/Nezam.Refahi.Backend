@@ -462,6 +462,51 @@ public sealed class Bill : FullAggregateRoot<Guid>
     }
 
     /// <summary>
+    /// Reopens a cancelled or voided bill back to Draft for re-issuing
+    /// </summary>
+    /// <remarks>
+    /// Rules:
+    /// - Only Cancelled or Voided bills can be reopened
+    /// - No payments must have been captured (PaidAmount must be zero)
+    /// - Status transitions to Draft
+    /// </remarks>
+    public void ReopenToDraft(string? reason = null, DateTime? newDueDate = null)
+    {
+        if (Status != BillStatus.Cancelled && Status != BillStatus.Voided)
+            throw new InvalidOperationException("Only cancelled or voided bills can be reopened to draft");
+        if (PaidAmount.AmountRials > 0)
+            throw new InvalidOperationException("Cannot reopen bill with captured payments. Refund first");
+
+        var previousStatus = Status;
+        Status = BillStatus.Draft;
+        
+        // Refresh dates for reuse: clear old overdue context
+        // DueDate policy: prefer provided newDueDate; otherwise if missing or past, set to +7 days as a safe default
+        if (newDueDate.HasValue)
+        {
+            DueDate = newDueDate.Value;
+        }
+        else
+        {
+            if (!DueDate.HasValue || DueDate.Value <= DateTime.UtcNow)
+                DueDate = DateTime.UtcNow.AddDays(7);
+        }
+        // IssueDate will be set fresh on Issue(); no need to change here
+        if (!string.IsNullOrWhiteSpace(reason))
+        {
+            Metadata["ReopenedReason"] = reason;
+        }
+
+        // Raise domain event
+        AddDomainEvent(new BillStatusChangedEvent(
+            Id,
+            BillNumber,
+            previousStatus,
+            Status,
+            reason ?? "Bill reopened to draft"));
+    }
+
+    /// <summary>
     /// Writes off the bill as bad debt (with financial documentation)
     /// </summary>
     /// <remarks>

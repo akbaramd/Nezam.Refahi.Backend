@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Nezam.Refahi.Settings.Presentation</name>
+    </assembly>
+    <members>
+        <member name="T:Nezam.Refahi.Settings.Presentation.Endpoints.SettingsEndpoints">
+            <summary>
+            Minimal API endpoints for Settings management
+            </summary>
+        </member>
+        <member name="M:Nezam.Refahi.Settings.Presentation.Endpoints.SettingsEndpoints.MapSettingsEndpoints(Microsoft.AspNetCore.Builder.WebApplication)">
+            <summary>
+            Maps all settings endpoints
+            </summary>
+        </member>
+        <member name="M:Nezam.Refahi.Settings.Presentation.Endpoints.SettingsEndpoints.CreateSection(Nezam.Refahi.Settings.Application.Commands.CreateSection.CreateSectionCommand,MediatR.IMediator,Nezam.Refahi.Shared.Application.Common.Interfaces.ICurrentUserService)">
+            <summary>
+            Creates a new settings section
+            </summary>
+        </member>
+        <member name="M:Nezam.Refahi.Settings.Presentation.Endpoints.SettingsEndpoints.CreateCategory(Nezam.Refahi.Settings.Application.Commands.CreateCategory.CreateCategoryCommand,MediatR.IMediator,Nezam.Refahi.Shared.Application.Common.Interfaces.ICurrentUserService)">
+            <summary>
+            Creates a new settings category
+            </summary>
+        </member>
+        <member name="M:Nezam.Refahi.Settings.Presentation.Endpoints.SettingsEndpoints.SetSetting(Nezam.Refahi.Settings.Application.Commands.SetSetting.SetSettingCommand,MediatR.IMediator,Nezam.Refahi.Shared.Application.Common.Interfaces.ICurrentUserService)">
+            <summary>
+            Creates or updates a setting
+            </summary>
+        </member>
+        <member name="M:Nezam.Refahi.Settings.Presentation.Endpoints.SettingsEndpoints.UpdateSetting(System.Guid,Nezam.Refahi.Settings.Application.Commands.UpdateSetting.UpdateSettingCommand,MediatR.IMediator,Nezam.Refahi.Shared.Application.Common.Interfaces.ICurrentUserService)">
+            <summary>
+            Updates an existing setting value
+            </summary>
+        </member>
+        <member name="M:Nezam.Refahi.Settings.Presentation.Endpoints.SettingsEndpoints.BulkUpdateSettings(Nezam.Refahi.Settings.Application.Commands.BulkUpdateSettings.BulkUpdateSettingsCommand,MediatR.IMediator,Nezam.Refahi.Shared.Application.Common.Interfaces.ICurrentUserService)">
+            <summary>
+            Bulk updates multiple settings
+            </summary>
+        </member>
+        <member name="M:Nezam.Refahi.Settings.Presentation.Endpoints.SettingsEndpoints.GetSettings(Nezam.Refahi.Settings.Application.Queries.GetSettings.GetSettingsQuery,MediatR.IMediator)">
+            <summary>
+            Gets settings with filters and pagination
+            </summary>
+        </member>
+        <member name="M:Nezam.Refahi.Settings.Presentation.Endpoints.SettingsEndpoints.GetSettingByKey(System.String,Nezam.Refahi.Settings.Application.Queries.GetSettingByKey.GetSettingByKeyQuery,MediatR.IMediator)">
+            <summary>
+            Gets a specific setting by its key
+            </summary>
+        </member>
+        <member name="M:Nezam.Refahi.Settings.Presentation.Endpoints.SettingsEndpoints.GetSettingsBySection(Nezam.Refahi.Settings.Application.Queries.GetSettingsBySection.GetSettingsBySectionQuery,MediatR.IMediator)">
+            <summary>
+            Gets settings organized by section and category
+            </summary>
+        </member>
+    </members>
+</doc>

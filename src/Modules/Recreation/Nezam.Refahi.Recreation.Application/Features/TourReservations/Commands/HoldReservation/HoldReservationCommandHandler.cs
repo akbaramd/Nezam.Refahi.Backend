@@ -3,11 +3,12 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Nezam.Refahi.Membership.Contracts.Dtos;
+using Nezam.Refahi.Membership.Contracts.Services;
 using Nezam.Refahi.Recreation.Application.Configuration;
-using Nezam.Refahi.Recreation.Application.Services;
 using Nezam.Refahi.Recreation.Application.Services.Contracts;
 using Nezam.Refahi.Recreation.Contracts.Dtos;
 using Nezam.Refahi.Recreation.Contracts.IntegrationEvents;
+using Nezam.Refahi.Recreation.Contracts.Services;
 using Nezam.Refahi.Recreation.Domain.Entities;
 using Nezam.Refahi.Recreation.Domain.Enums;
 using Nezam.Refahi.Recreation.Domain.Repositories;
@@ -17,6 +18,7 @@ using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
 using MassTransit;
+using Nezam.Refahi.Recreation.Application.Services;
 
 namespace Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.HoldReservation;
 
@@ -29,36 +31,33 @@ public class HoldReservationCommandHandler : IRequestHandler<HoldReservationComm
     private readonly ITourReservationRepository _reservationRepository;
     private readonly ITourRepository _tourRepository;
     private readonly IRecreationUnitOfWork _unitOfWork;
-    private readonly MemberValidationService _memberValidationService;
+    private readonly IMemberService _memberService;
     private readonly ICurrentUserService _currentUserService;
-    private readonly ParticipantValidationService _participantValidationService;
+    private readonly IParticipantValidationService _participantValidationService;
     private readonly IValidationService _validationService;
-    private readonly IDisplayNameService _displayNameService;
     private readonly ReservationSettings _settings;
     private readonly ILogger<HoldReservationCommandHandler> _logger;
-    private readonly IPublishEndpoint _publishEndpoint;
+    private readonly IBus _publishEndpoint;
 
     public HoldReservationCommandHandler(
         ITourReservationRepository reservationRepository,
         ITourRepository tourRepository,
         IRecreationUnitOfWork unitOfWork,
-        MemberValidationService memberValidationService,
+        IMemberService memberService,
         ICurrentUserService currentUserService,
-        ParticipantValidationService participantValidationService,
+        IParticipantValidationService participantValidationService,
         IValidationService validationService,
-        IDisplayNameService displayNameService,
         IOptions<ReservationSettings> settings,
         ILogger<HoldReservationCommandHandler> logger,
-        IPublishEndpoint publishEndpoint)
+        IBus publishEndpoint)
     {
         _reservationRepository = reservationRepository;
         _tourRepository = tourRepository;
         _unitOfWork = unitOfWork;
-        _memberValidationService = memberValidationService;
+        _memberService = memberService ?? throw new ArgumentNullException(nameof(memberService));
         _currentUserService = currentUserService;
         _participantValidationService = participantValidationService;
         _validationService = validationService;
-        _displayNameService = displayNameService;
         _settings = settings.Value;
         _logger = logger;
         _publishEndpoint = publishEndpoint;
@@ -83,12 +82,12 @@ public class HoldReservationCommandHandler : IRequestHandler<HoldReservationComm
                 return ApplicationResult<HoldReservationResponse>.Failure("رزرو مورد نظر یافت نشد");
             }
 
-            // Validate reservation is in Draft status
-            if (reservation.Status != ReservationStatus.Draft)
+            // Validate reservation can be held (domain behavior)
+            if (!reservation.CanHold(out var canHoldError))
             {
-                _logger.LogWarning("Reservation is not in Draft status - ReservationId: {ReservationId}, Status: {Status}",
-                    request.ReservationId, reservation.Status);
-                return ApplicationResult<HoldReservationResponse>.Failure("فقط رزروهای در وضعیت پیش‌نویس قابل نگهداری هستند");
+                _logger.LogWarning("Reservation cannot be held - ReservationId: {ReservationId}, Error: {Error}",
+                    request.ReservationId, canHoldError);
+                return ApplicationResult<HoldReservationResponse>.Failure(canHoldError!);
             }
 
             // Get tour with capacities and pricing
@@ -125,41 +124,54 @@ public class HoldReservationCommandHandler : IRequestHandler<HoldReservationComm
                 return ApplicationResult<HoldReservationResponse>.Failure("کاربر درخواست کننده یافت نشد");
             }
 
-            var member = await _memberValidationService.GetMemberInfoByExternalIdAsync(userId.Value.ToString());
-            if (member == null)
+            // Get member by external user ID
+            var memberDto = await _memberService.GetMemberByExternalIdAsync(userId.Value.ToString());
+            if (memberDto == null)
             {
                 return ApplicationResult<HoldReservationResponse>.Failure("عضو یافت نشد");
             }
 
+            // Get detailed member information including capabilities and features
+            var nationalId = new NationalId(memberDto.NationalCode);
+            var memberDetail = await _memberService.GetMemberDetailByNationalCodeAsync(nationalId);
+            if (memberDetail == null)
+            {
+                return ApplicationResult<HoldReservationResponse>.Failure("اطلاعات عضو یافت نشد");
+            }
+
             // Validate member has active membership
-            var hasActiveMembership = await _memberValidationService.HasActiveMembershipAsync(member.NationalCode);
+            var hasActiveMembership = await _memberService.HasActiveMembershipAsync(nationalId);
             if (!hasActiveMembership)
             {
                 return ApplicationResult<HoldReservationResponse>.Failure("عضویت فعال برای این کد ملی یافت نشد");
             }
 
-            // Get member info for validation
-            var memberInfo = await _memberValidationService.GetMemberInfoAsync(member.NationalCode);
-            if (memberInfo == null)
-            {
-                return ApplicationResult<HoldReservationResponse>.Failure("اطلاعات عضو یافت نشد");
-            }
+            // Validate member eligibility using the new service method
+            var requiredCapabilities = tour.MemberCapabilities.Select(mc => mc.CapabilityId).Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+            var requiredFeatures = tour.MemberFeatures.Select(mf => mf.FeatureId).Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+            var requiredAgencies = tour.TourAgencies?.Select(ta => ta.AgencyId).ToList();
 
-            // Validate member capabilities and features
-            var capabilityValidation = await ValidateMemberCapabilitiesAsync(tour, memberInfo, cancellationToken);
-            if (!capabilityValidation.IsSuccess)
+            var eligibilityResult = await _memberService.ValidateMemberEligibilityAsync(
+                nationalId,
+                requiredCapabilities.Any() ? requiredCapabilities : null,
+                requiredFeatures.Any() ? requiredFeatures : null,
+                requiredAgencies?.Any() == true ? requiredAgencies : null);
+
+            if (!eligibilityResult.IsEligible)
             {
-                return ApplicationResult<HoldReservationResponse>.Failure(capabilityValidation.Errors);
+                var errorMessage = eligibilityResult.Errors.Any()
+                    ? string.Join("، ", eligibilityResult.Errors)
+                    : "عضو شرایط لازم برای شرکت در این تور را ندارد";
+                return ApplicationResult<HoldReservationResponse>.Failure(errorMessage);
             }
 
             // Validate main participant's national ID format
-            if (!_validationService.IsValidNationalId(memberInfo.NationalCode))
+            if (!_validationService.IsValidNationalId(memberDetail.NationalCode))
             {
                 return ApplicationResult<HoldReservationResponse>.Failure("کد ملی شرکت‌کننده اصلی معتبر نیست");
             }
 
             // Check restricted tours
-            var nationalId = new NationalId(memberInfo.NationalCode);
             var restrictedTourValidation = await ValidateRestrictedToursAsync(tour, nationalId, cancellationToken);
             if (!restrictedTourValidation.IsSuccess)
             {
@@ -168,7 +180,7 @@ public class HoldReservationCommandHandler : IRequestHandler<HoldReservationComm
 
             // Check for conflicting reservations (only Paying and Confirmed prevent new reservations)
             var existingReservations = await _reservationRepository.GetByTourIdAndNationalNumberAsync(
-                reservation.TourId, memberInfo.NationalCode, cancellationToken);
+                reservation.TourId, memberDetail.NationalCode, cancellationToken);
 
             if (existingReservations.Any(r => r.Id != reservation.Id && r.HasConflictingReservation()))
             {
@@ -380,8 +392,8 @@ public class HoldReservationCommandHandler : IRequestHandler<HoldReservationComm
                 ExpiryDate = reservation.ExpiryDate,
                 HeldAt = DateTime.UtcNow,
                 ExternalUserId = userId.Value,
-                UserFullName = member.FullName ?? string.Empty,
-                UserNationalCode = member.NationalCode,
+                UserFullName = memberDetail.FullName ?? string.Empty,
+                UserNationalCode = memberDetail.NationalCode,
                 MemberId = reservation.MemberId,
                 Status = reservation.Status.ToString(),
                 PreviousStatus = ReservationStatus.Draft.ToString(),
@@ -485,93 +497,6 @@ public class HoldReservationCommandHandler : IRequestHandler<HoldReservationComm
         }
 
         return ApplicationResult.Success();
-    }
-
-    private async Task<ApplicationResult> ValidateMemberCapabilitiesAsync(
-        Tour tour,
-        MemberInfoDto member,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            _logger.LogDebug("Validating member capabilities for tour {TourId} and member {NationalCode}",
-                tour.Id, member.NationalCode);
-
-            // Get required capabilities and features for the tour
-            var requiredCapabilities = tour.MemberCapabilities.Select(mc => mc.CapabilityId).ToList();
-            var requiredFeatures = tour.MemberFeatures.Select(mf => mf.FeatureId).ToList();
-
-            if (!requiredCapabilities.Any() && !requiredFeatures.Any())
-            {
-                _logger.LogDebug("Tour {TourId} has no capability or feature requirements", tour.Id);
-                return ApplicationResult.Success();
-            }
-
-            var nationalCode = new NationalId(member.NationalCode);
-            var errors = new List<string>();
-
-            // Validate required capabilities
-            if (requiredCapabilities.Any())
-            {
-                _logger.LogDebug("Checking {Count} required capabilities for member {NationalCode}",
-                    requiredCapabilities.Count, member.NationalCode);
-
-                foreach (var requiredCapability in requiredCapabilities)
-                {
-                    var hasCapability = await _memberValidationService.HasCapabilityAsync(nationalCode, requiredCapability);
-                    if (!hasCapability)
-                    {
-                        var capabilityName = _displayNameService.GetCapabilityDisplayName(requiredCapability);
-                        errors.Add($"عضو فاقد صلاحیت مورد نیاز «{capabilityName}» می‌باشد");
-
-                        _logger.LogWarning("Member {NationalCode} lacks required capability: {CapabilityId}",
-                            member.NationalCode, requiredCapability);
-                    }
-                }
-            }
-
-            // Validate required features
-            if (requiredFeatures.Any())
-            {
-                _logger.LogDebug("Checking {Count} required features for member {NationalCode}",
-                    requiredFeatures.Count, member.NationalCode);
-
-                foreach (var requiredFeature in requiredFeatures)
-                {
-                    var hasFeature = await _memberValidationService.HasFeatureAsync(nationalCode, requiredFeature);
-                    if (!hasFeature)
-                    {
-                        var featureName = _displayNameService.GetFeatureDisplayName(requiredFeature);
-                        errors.Add($"عضو فاقد ویژگی مورد نیاز «{featureName}» می‌باشد");
-
-                        _logger.LogWarning("Member {NationalCode} lacks required feature: {FeatureId}",
-                            member.NationalCode, requiredFeature);
-                    }
-                }
-            }
-
-            if (errors.Any())
-            {
-                var errorMessage = string.Join("، ", errors);
-                _logger.LogWarning("Member {NationalCode} cannot participate in tour {TourId}: {Errors}",
-                    member.NationalCode, tour.Id, errorMessage);
-
-                return ApplicationResult.Failure(errors,
-                    $"شما نمی‌توانید در این تور شرکت کنید: {errorMessage}");
-            }
-
-            _logger.LogInformation("Member {NationalCode} meets all capability and feature requirements for tour {TourId}",
-                member.NationalCode, tour.Id);
-
-            return ApplicationResult.Success();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error validating member capabilities for tour {TourId} and member {NationalCode}",
-                tour.Id, member?.NationalCode);
-
-            return ApplicationResult.Failure(ex, "خطا در بررسی صلاحیت‌های عضویت. لطفاً مجدداً تلاش کنید");
-        }
     }
 }
 

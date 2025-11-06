@@ -24,8 +24,8 @@ public class CreateFacilityRequestCommandHandler : IRequestHandler<CreateFacilit
     private readonly IFacilitiesUnitOfWork _unitOfWork;
     private readonly IValidator<CreateFacilityRequestCommand> _validator;
     private readonly ILogger<CreateFacilityRequestCommandHandler> _logger;
-    private readonly IMemberInfoService _memberInfoService;
-    private readonly FacilityEligibilityDomainService _eligibilityService;
+    private readonly IMemberService _memberService;
+    private readonly IFacilityDependencyService _dependencyService;
 
     public CreateFacilityRequestCommandHandler(
         IFacilityRepository facilityRepository,
@@ -34,8 +34,8 @@ public class CreateFacilityRequestCommandHandler : IRequestHandler<CreateFacilit
         IFacilitiesUnitOfWork unitOfWork,
         IValidator<CreateFacilityRequestCommand> validator,
         ILogger<CreateFacilityRequestCommandHandler> logger,
-        IMemberInfoService memberInfoService,
-        FacilityEligibilityDomainService eligibilityService)
+        IMemberService memberService,
+        IFacilityDependencyService dependencyService)
     {
         _facilityRepository = facilityRepository;
         _cycleRepository = cycleRepository;
@@ -43,8 +43,8 @@ public class CreateFacilityRequestCommandHandler : IRequestHandler<CreateFacilit
         _unitOfWork = unitOfWork;
         _validator = validator;
         _logger = logger;
-        _memberInfoService = memberInfoService;
-        _eligibilityService = eligibilityService;
+        _memberService = memberService;
+        _dependencyService = dependencyService;
     }
 
     public async Task<ApplicationResult<CreateFacilityRequestResult>> Handle(
@@ -77,8 +77,8 @@ public class CreateFacilityRequestCommandHandler : IRequestHandler<CreateFacilit
                 }
 
                 var nationalId = new NationalId(request.NationalNumber);
-                var memberInfo = await _memberInfoService.GetMemberInfoAsync(nationalId);
-                if (memberInfo == null)
+                var memberDetail = await _memberService.GetMemberDetailByNationalCodeAsync(nationalId);
+                if (memberDetail == null)
                 {
                     await _unitOfWork.RollbackAsync(cancellationToken);
                     return ApplicationResult<CreateFacilityRequestResult>.Failure(
@@ -101,24 +101,8 @@ public class CreateFacilityRequestCommandHandler : IRequestHandler<CreateFacilit
                         "دوره تسهیلات مورد نظر فعال نیست");
                 }
 
-                // Get facility from cycle
-                var facility = await _facilityRepository.GetByIdAsync(cycle.FacilityId, cancellationToken);
-                if (facility == null)
-                {
-                    await _unitOfWork.RollbackAsync(cancellationToken);
-                    return ApplicationResult<CreateFacilityRequestResult>.Failure(
-                        "تسهیلات مورد نظر یافت نشد");
-                }
-
-                if (facility.Status != Domain.Enums.FacilityStatus.Active)
-                {
-                    await _unitOfWork.RollbackAsync(cancellationToken);
-                    return ApplicationResult<CreateFacilityRequestResult>.Failure(
-                        "تسهیلات مورد نظر فعال نیست");
-                }
-
                 // Check if user already has an active request for this cycle
-                var existingUserRequest = await _requestRepository.GetUserLastRequestForCycleAsync(memberInfo.Id, request.FacilityCycleId, cancellationToken);
+                var existingUserRequest = await _requestRepository.GetUserLastRequestForCycleAsync(memberDetail.Id, request.FacilityCycleId, cancellationToken);
                 if (existingUserRequest != null)
                 {
                     // Check if the existing request is still active (not completed/rejected/cancelled)
@@ -131,7 +115,7 @@ public class CreateFacilityRequestCommandHandler : IRequestHandler<CreateFacilit
                     if (isRequestActive)
                     {
                         _logger.LogWarning("User {MemberId} (NationalNumber: {NationalNumber}) attempted to create duplicate request for cycle {CycleId}. Existing request status: {Status}",
-                            memberInfo.Id, request.NationalNumber, request.FacilityCycleId, existingUserRequest.Status);
+                            memberDetail.Id, request.NationalNumber, request.FacilityCycleId, existingUserRequest.Status);
                         
                         await _unitOfWork.RollbackAsync(cancellationToken);
                         return ApplicationResult<CreateFacilityRequestResult>.Failure(
@@ -139,20 +123,139 @@ public class CreateFacilityRequestCommandHandler : IRequestHandler<CreateFacilit
                     }
                 }
 
-                // Check member eligibility for facility based on features and capabilities
-                var eligibilityResult = _eligibilityService.ValidateMemberEligibilityWithDetails(
-                    cycle, 
-                    memberInfo.Features ?? new List<string>(), 
-                    memberInfo.Capabilities ?? new List<string>());
+                // Check member eligibility for cycle based on features and capabilities
+                // استخراج Features و Capabilities مورد نیاز از دوره
+                var requiredFeatures = cycle.Features.Select(f => f.FeatureId).ToList();
+                var requiredCapabilities = cycle.Capabilities.Select(c => c.CapabilityId).ToList();
+
+                // بررسی دسترسی عضو با استفاده از MemberService
+                // استفاده از nationalId که قبلاً در خط 76 تعریف شده است
+                var eligibilityResult = await _memberService.ValidateMemberEligibilityAsync(
+                    nationalId,
+                    requiredCapabilities: requiredCapabilities.Any() ? requiredCapabilities : null,
+                    requiredFeatures: requiredFeatures.Any() ? requiredFeatures : null,
+                    requiredAgencies: null);
+
                 if (!eligibilityResult.IsEligible)
                 {
                     await _unitOfWork.RollbackAsync(cancellationToken);
-                    return ApplicationResult<CreateFacilityRequestResult>.Failure(
-                        eligibilityResult.ErrorMessage ?? "شما مجاز به درخواست این تسهیلات نیستید");
+                    
+                    // اگر پیام خطا موجود باشد، از آن استفاده کن
+                    if (eligibilityResult.Errors != null && eligibilityResult.Errors.Any())
+                    {
+                        var errorMessage = string.Join("; ", eligibilityResult.Errors);
+                        return ApplicationResult<CreateFacilityRequestResult>.Failure(errorMessage);
+                    }
+                    
+                    // در غیر این صورت، پیام خطای پیش‌فرض
+                    var errorParts = new List<string>();
+                    if (!eligibilityResult.HasActiveMembership)
+                    {
+                        errorParts.Add("عضویت فعال برای شما یافت نشد");
+                    }
+                    if (eligibilityResult.MissingFeatures != null && eligibilityResult.MissingFeatures.Any())
+                    {
+                        errorParts.Add($"شما باید حداقل یکی از ویژگی‌های مورد نیاز را داشته باشید: {string.Join(", ", eligibilityResult.MissingFeatures)}");
+                    }
+                    if (eligibilityResult.MissingCapabilities != null && eligibilityResult.MissingCapabilities.Any())
+                    {
+                        errorParts.Add($"شما باید حداقل یکی از قابلیت‌های مورد نیاز را داشته باشید: {string.Join(", ", eligibilityResult.MissingCapabilities)}");
+                    }
+                    
+                    var finalErrorMessage = errorParts.Any() 
+                        ? string.Join("; ", errorParts)
+                        : "شما مجاز به درخواست این تسهیلات نیستید";
+                    
+                    return ApplicationResult<CreateFacilityRequestResult>.Failure(finalErrorMessage);
+                }
+
+                // بررسی محدودیت به دوره‌های قبلی همان وام (RestrictToPreviousCycles)
+                if (cycle.RestrictToPreviousCycles)
+                {
+                    // دریافت همه دوره‌های قبلی همین وام (با StartDate قبل از دوره فعلی)
+                    var previousCycles = await _cycleRepository.GetByFacilityIdAsync(cycle.FacilityId, cancellationToken);
+                    var previousCycleIds = previousCycles
+                        .Where(c => c.StartDate < cycle.StartDate)
+                        .Select(c => c.Id)
+                        .ToList();
+
+                    if (previousCycleIds.Any())
+                    {
+                        // بررسی اینکه آیا کاربر در دوره‌های قبلی همین وام درخواست تایید شده دارد
+                        var userRequestsForFacility = await _requestRepository.GetByFacilityIdAsync(cycle.FacilityId, cancellationToken);
+                        var approvedRequestsInPreviousCycles = userRequestsForFacility
+                            .Where(r => r.MemberId == memberDetail.Id && 
+                                       previousCycleIds.Contains(r.FacilityCycleId) &&
+                                       r.Status == Domain.Enums.FacilityRequestStatus.Approved)
+                            .ToList();
+
+                        if (approvedRequestsInPreviousCycles.Any())
+                        {
+                            await _unitOfWork.RollbackAsync(cancellationToken);
+                            return ApplicationResult<CreateFacilityRequestResult>.Failure(
+                                "شما قبلاً در دوره‌های قبلی این وام درخواست تایید شده دارید و امکان ثبت درخواست مجدد در این دوره را ندارید");
+                        }
+                    }
+                }
+
+                // بررسی وابستگی‌های دوره (Dependencies)
+                if (cycle.Dependencies.Any())
+                {
+                    // Get user's completed facility IDs for dependency validation
+                    var allUserRequests = await _requestRepository.GetByUserIdAsync(memberDetail.Id, cancellationToken);
+                    var completedFacilityIds = allUserRequests
+                        .Where(r => r.Status == Domain.Enums.FacilityRequestStatus.Completed)
+                        .Select(r => r.FacilityId)
+                        .Distinct()
+                        .ToList();
+
+                    // Use domain service to check if dependencies with MustBeCompleted are satisfied
+                    var dependenciesSatisfied = _dependencyService.AreDependenciesSatisfied(
+                        cycle.Dependencies,
+                        completedFacilityIds);
+
+                    if (!dependenciesSatisfied)
+                    {
+                        var missingDependencies = cycle.Dependencies
+                            .Where(d => d.MustBeCompleted && !completedFacilityIds.Contains(d.RequiredFacilityId))
+                            .ToList();
+
+                        if (missingDependencies.Any())
+                        {
+                            var missingNames = string.Join("، ", missingDependencies.Select(d => d.RequiredFacilityName));
+                            await _unitOfWork.RollbackAsync(cancellationToken);
+                            return ApplicationResult<CreateFacilityRequestResult>.Failure(
+                                $"برای ثبت درخواست در این دوره، باید درخواست شما در وام‌های زیر تکمیل شده باشد: {missingNames}");
+                        }
+                    }
+
+                    // Check for active requests in dependency facilities (application-specific rule)
+                    foreach (var dependency in cycle.Dependencies)
+                    {
+                        var dependencyFacilityRequests = await _requestRepository.GetByFacilityIdAsync(
+                            dependency.RequiredFacilityId, 
+                            cancellationToken);
+
+                        var activeRequestsInDependencyFacility = dependencyFacilityRequests
+                            .Where(r => r.MemberId == memberDetail.Id &&
+                                       r.Status != Domain.Enums.FacilityRequestStatus.Rejected &&
+                                       r.Status != Domain.Enums.FacilityRequestStatus.Cancelled &&
+                                       r.Status != Domain.Enums.FacilityRequestStatus.BankCancelled &&
+                                       r.Status != Domain.Enums.FacilityRequestStatus.Expired &&
+                                       r.Status != Domain.Enums.FacilityRequestStatus.Completed)
+                            .ToList();
+
+                        if (activeRequestsInDependencyFacility.Any())
+                        {
+                            await _unitOfWork.RollbackAsync(cancellationToken);
+                            return ApplicationResult<CreateFacilityRequestResult>.Failure(
+                                $"شما درخواست فعال در وام «{dependency.RequiredFacilityName}» دارید. برای ثبت درخواست در این دوره، ابتدا باید درخواست قبلی خود را تکمیل کنید");
+                        }
+                    }
                 }
 
 
-                // Check quota availability
+                // Check quota availability - UsedQuota is computed from Requests.Count
                 if (cycle.UsedQuota >= cycle.Quota)
                 {
                     await _unitOfWork.RollbackAsync(cancellationToken);
@@ -179,32 +282,27 @@ public class CreateFacilityRequestCommandHandler : IRequestHandler<CreateFacilit
                     }
                 }
 
-                // Create money value object with default currency (IRR)
-                var requestedAmount = new Money(request.RequestedAmountRials);
-
-                // Validate amount constraints using cycle limits
-                if (cycle.MinAmount != null && requestedAmount.AmountRials < cycle.MinAmount.AmountRials)
+                // Find and validate the selected price option
+                var priceOption = cycle.PriceOptions.FirstOrDefault(po => po.Id == request.PriceOptionId && po.IsActive);
+                if (priceOption == null)
                 {
                     await _unitOfWork.RollbackAsync(cancellationToken);
                     return ApplicationResult<CreateFacilityRequestResult>.Failure(
-                        $"مبلغ درخواستی کمتر از حداقل مجاز ({cycle.MinAmount.AmountRials:N0} {cycle.MinAmount.Currency}) است");
+                        "گزینه قیمت انتخاب شده یافت نشد یا غیرفعال است");
                 }
 
-                if (cycle.MaxAmount != null && requestedAmount.AmountRials > cycle.MaxAmount.AmountRials)
-                {
-                    await _unitOfWork.RollbackAsync(cancellationToken);
-                    return ApplicationResult<CreateFacilityRequestResult>.Failure(
-                        $"مبلغ درخواستی بیشتر از حداکثر مجاز ({cycle.MaxAmount.AmountRials:N0} {cycle.MaxAmount.Currency}) است");
-                }
+                // Get the amount from the selected price option
+                var requestedAmount = priceOption.Amount;
 
                 // Create facility request using domain constructor
                 var facilityRequest = new Domain.Entities.FacilityRequest(
                     cycle.FacilityId, // Use facility ID from cycle
                     request.FacilityCycleId,
-                    memberInfo.Id, // Use MemberId instead of ExternalUserId
-                    requestedAmount,
-                    memberInfo.FullName, // Use member info for user details
-                    memberInfo.NationalCode,
+                    memberDetail.Id, // Use MemberId instead of ExternalUserId
+                    request.PriceOptionId, // Selected price option ID
+                    requestedAmount, // Amount from price option
+                    memberDetail.FullName, // Use member info for user details
+                    memberDetail.NationalCode,
                     request.Description,
                     request.Metadata);
 
@@ -222,7 +320,7 @@ public class CreateFacilityRequestCommandHandler : IRequestHandler<CreateFacilit
                 await _unitOfWork.CommitAsync(cancellationToken);
 
                 _logger.LogInformation("Created facility request {RequestId} for facility {FacilityId} by member {MemberId} (NationalNumber: {NationalNumber})",
-                    facilityRequest.Id, cycle.FacilityId, memberInfo.Id, request.NationalNumber);
+                    facilityRequest.Id, cycle.FacilityId, memberDetail.Id, request.NationalNumber);
 
                 return ApplicationResult<CreateFacilityRequestResult>.Success(new CreateFacilityRequestResult
                 {

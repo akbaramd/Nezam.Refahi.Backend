@@ -14,21 +14,6 @@ public class FacilityCycleWithUserDetailDto : FacilityCycleWithUserDto
   public List<FacilityCycleDependencyDto> Dependencies { get; init; } = new();
 
   /// <summary>
-  /// Admission strategy (FIFO, Score, Lottery)
-  /// </summary>
-  public string AdmissionStrategy { get; init; } = null!;
-
-  /// <summary>
-  /// Human-readable admission strategy description
-  /// </summary>
-  public string AdmissionStrategyDescription { get; init; } = null!;
-
-  /// <summary>
-  /// Waitlist capacity
-  /// </summary>
-  public int? WaitlistCapacity { get; init; }
-
-  /// <summary>
   /// Cycle metadata
   /// </summary>
   public Dictionary<string, string> Metadata { get; init; } = new();

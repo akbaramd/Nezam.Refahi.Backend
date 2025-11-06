@@ -67,7 +67,7 @@ public class TourSeedingService : ITourSeedingService
             new Feature("راهنمای تور", "راهنمای حرفه‌ای تور", "fas fa-user-tie", null, 4, false, "راهنمای مجرب", "optional"),
             new Feature("بیمه مسافرتی", "بیمه مسافرتی شامل بسته", "fas fa-shield-alt", null, 5, true, "پوشش کامل", "required"),
             new Feature("مجوز گردشگری", "مجوز گردشگری مخصوص تورها", "fas fa-certificate", null, 6, true, "مجوز رسمی", "required"),
-            new Feature("has_licences", "مجوزهای مورد نیاز برای شرکت در تور", "fas fa-id-card", null, 7, true, "مجوزهای تخصصی", "required"),
+            new Feature("has_license", "مجوزهای مورد نیاز برای شرکت در تور", "fas fa-id-card", null, 7, true, "مجوزهای تخصصی", "required"),
             new Feature("هتل", "اقامت در هتل مجهز", "fas fa-bed", null, 8, true, "هتل مناسب", "required"),
             new Feature("تور لیدر", "راهنمای تور حرفه‌ای", "fas fa-user-tie", null, 9, true, "راهنمای مجرب", "required"),
             new Feature("شب مانی", "اقامت شبانه در منطقه", "fas fa-moon", null, 10, true, "اقامت شبانه", "required"),
@@ -200,6 +200,20 @@ public class TourSeedingService : ITourSeedingService
         var soledoaklTourStart = new DateTime(2025, 8, 25); // اواخر مرداد 1404
         var soledoaklTourEnd = soledoaklTourStart.AddDays(1); // یک روزه
 
+        
+
+        // Test tours (dynamic dates based on now)
+        var now = DateTime.UtcNow.Date;
+        var test1RegStart = now.AddDays(3);
+        var test1RegEnd = now.AddDays(10);
+        var test1Start = now.AddDays(12);
+        var test1End = test1Start.AddDays(1);
+
+        var test2RegStart = now.AddDays(7);
+        var test2RegEnd = now.AddDays(16);
+        var test2Start = now.AddDays(20);
+        var test2End = test2Start.AddDays(2);
+
         return new List<TourSeedData>
         {
             new TourSeedData
@@ -223,8 +237,8 @@ public class TourSeedingService : ITourSeedingService
                     new PricingSeedData { ParticipantType = ParticipantType.Member, PriceInRials = 1000000 },
                     new PricingSeedData { ParticipantType = ParticipantType.Guest, PriceInRials = 1700000 }
                 },
-                MemberCapabilities = new List<string> { "has_licences" },
-                MemberFeatures = new List<string> { "has_licences" },
+                MemberCapabilities = new List<string> { "has_license" },
+                MemberFeatures = new List<string> { "has_license" },
                 FeatureIds = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }
             },
             new TourSeedData
@@ -249,9 +263,64 @@ public class TourSeedingService : ITourSeedingService
                     new PricingSeedData { ParticipantType = ParticipantType.Member, PriceInRials = 2000000 },
                     new PricingSeedData { ParticipantType = ParticipantType.Guest, PriceInRials = 2000000 }
                 },
-                MemberCapabilities = new List<string> { "has_licences" },
-                MemberFeatures = new List<string> { "has_licences" },
+                MemberCapabilities = new List<string> { "has_license" },
+                MemberFeatures = new List<string> { "has_license" },
                 FeatureIds = new List<int> { 1, 2, 4, 5, 6, 7, 11, 12 }
+            }
+            ,
+            // Test Tour 1 (یک‌روزه)
+            new TourSeedData
+            {
+                Title = "تور تست 1 (یک‌روزه)",
+                Description = "تور تستی یک‌روزه برای بررسی فرایند رزرو، ظرفیت، تصاویر و قیمت‌گذاری.",
+                RegistrationStart = test1RegStart,
+                RegistrationEnd = test1RegEnd,
+                TourStart = test1Start,
+                TourEnd = test1End,
+                MaxParticipants = 25,
+                MinAge = 16,
+                MaxAge = 65,
+                Photos = new List<PhotoSeedData>
+                {
+                    new PhotoSeedData { ImageUrl = "/tours/test1-1.jpg", Caption = "نمایی از مقصد تست 1", Order = 1 },
+                    new PhotoSeedData { ImageUrl = "/tours/test1-2.webp", Caption = "مسیر طبیعت‌گردی", Order = 2 },
+                },
+                Pricing = new List<PricingSeedData>
+                {
+                    new PricingSeedData { ParticipantType = ParticipantType.Member, PriceInRials = 750000 },
+                    new PricingSeedData { ParticipantType = ParticipantType.Guest,  PriceInRials = 1200000 }
+                },
+                MemberCapabilities = new List<string> { "has_license" },
+                MemberFeatures = new List<string> { "has_license" },
+                FeatureIds = new List<int> { 1, 2, 3, 5, 9 }
+            }
+            ,
+            // Test Tour 2 (دو روزه)
+            new TourSeedData
+            {
+                Title = "تور تست 2 (دو روزه)",
+                Description = "تور تستی دو روزه با اقامت شبانه برای تست کامل همه منطق‌ها (ظرفیت، تصاویر، قیمت‌گذاری، قابلیت‌ها).",
+                RegistrationStart = test2RegStart,
+                RegistrationEnd = test2RegEnd,
+                TourStart = test2Start,
+                TourEnd = test2End,
+                MaxParticipants = 30,
+                MinAge = 18,
+                MaxAge = 60,
+                Photos = new List<PhotoSeedData>
+                {
+                    new PhotoSeedData { ImageUrl = "/tours/test2-1.jpg", Caption = "اقامت شبانه", Order = 1 },
+                    new PhotoSeedData { ImageUrl = "/tours/test2-2.webp", Caption = "مسیر کوهستانی", Order = 2 },
+                    new PhotoSeedData { ImageUrl = "/tours/test2-3.jpg", Caption = "نمای صبحگاهی", Order = 3 }
+                },
+                Pricing = new List<PricingSeedData>
+                {
+                    new PricingSeedData { ParticipantType = ParticipantType.Member, PriceInRials = 1800000 },
+                    new PricingSeedData { ParticipantType = ParticipantType.Guest,  PriceInRials = 2500000 }
+                },
+                MemberCapabilities = new List<string> { "has_license" },
+                MemberFeatures = new List<string> { "has_license" },
+                FeatureIds = new List<int> { 1, 2, 3, 4, 5, 6, 10, 12 }
             }
         };
     }

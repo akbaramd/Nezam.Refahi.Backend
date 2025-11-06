@@ -41,17 +41,12 @@ public class CapabilityUpdatedEventHandler : INotificationHandler<CapabilityUpda
                 return;
             }
 
-            // Update cached capability information in all related MemberCapability entities
-            foreach (var memberCapability in memberCapabilities)
-            {
-                memberCapability.UpdateCapabilityInformation(notification.Name);
-            }
-
-            // Save changes
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("Successfully updated {Count} MemberCapability entities for capability {CapabilityId}", 
-                memberCapabilities.Count(), notification.CapabilityId);
+            // No action needed - MemberCapability entities only store IDs
+            // Capability information is fetched from BasicDefinitions cache when needed
+            _logger.LogInformation("CapabilityUpdatedEvent received for capability {CapabilityId}. " +
+                "MemberCapability entities only store IDs, no update needed. " +
+                "Found {Count} related MemberCapability entities.", 
+                notification.CapabilityId, memberCapabilities.Count());
         }
         catch (Exception ex)
         {

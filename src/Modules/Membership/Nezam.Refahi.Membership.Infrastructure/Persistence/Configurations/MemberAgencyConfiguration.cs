@@ -23,55 +23,10 @@ public class MemberAgencyConfiguration : IEntityTypeConfiguration<MemberAgency>
         builder.Property(ma => ma.AgencyId)
             .IsRequired();
 
-        // IsActive configuration
-        builder.Property(ma => ma.IsActive)
-            .IsRequired()
-            .HasDefaultValue(true);
-
-        // ValidFrom configuration
-        builder.Property(ma => ma.ValidFrom)
-            .HasColumnType("datetime2")
-            .IsRequired(false);
-
-        // ValidTo configuration
-        builder.Property(ma => ma.ValidTo)
-            .HasColumnType("datetime2")
-            .IsRequired(false);
-
-        // AssignedBy configuration
-        builder.Property(ma => ma.AssignedBy)
-            .HasMaxLength(100)
-            .IsRequired(false);
-
-        // AssignedAt configuration
-        builder.Property(ma => ma.AssignedAt)
-            .IsRequired()
-            .HasColumnType("datetime2");
-
-        // Notes configuration
-        builder.Property(ma => ma.Notes)
-            .HasMaxLength(500)
-            .IsRequired(false);
-
-        // AccessLevel configuration
-        builder.Property(ma => ma.AccessLevel)
-            .HasMaxLength(50)
-            .IsRequired(false);
-
-        // Cached office information configuration
-        builder.Property(ma => ma.OfficeCode)
-            .HasMaxLength(50)
-            .IsRequired();
-
-        builder.Property(ma => ma.OfficeTitle)
-            .HasMaxLength(200)
-            .IsRequired();
-
         // Composite unique index to prevent duplicate assignments
         builder.HasIndex(ma => new { ma.MemberId, ma.AgencyId })
             .IsUnique()
-            .HasFilter("[IsActive] = 1")
-            .HasDatabaseName("IX_MemberAgencies_Member_Office_Active");
+            .HasDatabaseName("IX_MemberAgencies_MemberId_AgencyId");
 
         // Indexes for performance
         builder.HasIndex(ma => ma.MemberId)
@@ -80,25 +35,10 @@ public class MemberAgencyConfiguration : IEntityTypeConfiguration<MemberAgency>
         builder.HasIndex(ma => ma.AgencyId)
             .HasDatabaseName("IX_MemberAgencies_AgencyId");
 
-        builder.HasIndex(ma => ma.IsActive)
-            .HasDatabaseName("IX_MemberAgencies_IsActive");
-
-        builder.HasIndex(ma => new { ma.ValidFrom, ma.ValidTo })
-            .HasDatabaseName("IX_MemberAgencies_ValidityPeriod");
-
-        builder.HasIndex(ma => ma.AssignedAt)
-            .HasDatabaseName("IX_MemberAgencies_AssignedAt");
-
-        builder.HasIndex(ma => ma.AccessLevel)
-            .HasDatabaseName("IX_MemberAgencies_AccessLevel");
-
         // Configure relationship with Member
         builder.HasOne(ma => ma.Member)
             .WithMany(m => m.Agencies)
             .HasForeignKey(ma => ma.MemberId)
             .OnDelete(DeleteBehavior.Cascade);
-
-  
-       
     }
 }

@@ -37,6 +37,7 @@ public class ReservationPriceSnapshotConfiguration : IEntityTypeConfiguration<Re
                 .HasColumnName("BasePriceRials")
                 .HasColumnType("bigint")
                 .IsRequired();
+            // No need for WithOwner() - EF Core automatically sets ownership
         });
 
         builder.OwnsOne(ps => ps.FinalPrice, money =>
@@ -45,6 +46,7 @@ public class ReservationPriceSnapshotConfiguration : IEntityTypeConfiguration<Re
                 .HasColumnName("FinalPriceRials")
                 .HasColumnType("bigint")
                 .IsRequired();
+            // No need for WithOwner() - EF Core automatically sets ownership
         });
 
         builder.OwnsOne(ps => ps.DiscountAmount, money =>
@@ -52,6 +54,7 @@ public class ReservationPriceSnapshotConfiguration : IEntityTypeConfiguration<Re
             money.Property(m => m.AmountRials)
                 .HasColumnName("DiscountAmountRials")
                 .HasColumnType("bigint");
+            // No need for WithOwner() - EF Core automatically sets ownership
         });
 
         builder.Property(ps => ps.DiscountCode)
@@ -97,10 +100,12 @@ public class ReservationPriceSnapshotConfiguration : IEntityTypeConfiguration<Re
             .HasMaxLength(50);
 
         // Configure relationship with TourReservation
+        // IMPORTANT: Navigation property must be explicitly configured to ensure proper tracking
         builder.HasOne(ps => ps.Reservation)
             .WithMany(r => r.PriceSnapshots)
             .HasForeignKey(ps => ps.ReservationId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired();
 
         // Unique constraint: One snapshot per reservation per participant type
         builder.HasIndex(ps => new { ps.TenantId, ps.ReservationId, ps.ParticipantType })

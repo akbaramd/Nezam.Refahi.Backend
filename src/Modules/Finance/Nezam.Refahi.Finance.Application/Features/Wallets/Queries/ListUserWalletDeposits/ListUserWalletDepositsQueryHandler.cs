@@ -117,7 +117,7 @@ public class ListUserWalletDepositsQueryHandler : IRequestHandler<ListUserWallet
     {
         return status switch
         {
-            WalletDepositStatus.Pending => "در انتظار",
+            WalletDepositStatus.Requested => "در انتظار",
             WalletDepositStatus.Completed => "تکمیل شده",
             WalletDepositStatus.Failed => "ناموفق",
             WalletDepositStatus.Cancelled => "لغو شده",

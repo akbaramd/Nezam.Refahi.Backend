@@ -6,7 +6,7 @@ using Nezam.Refahi.Shared.Application.Common.Models;
 namespace Nezam.Refahi.Recreation.Application.Features.Tours.Queries.GetToursPaginated;
 
 public class GetToursPaginatedQuery
-  : IRequest<ApplicationResult<PaginatedResult<TourDto>>>
+  : IRequest<ApplicationResult<PaginatedResult<TourWithUserReservationDto>>>
 {
   /// <summary>صفحه مورد نظر (۱ به بالا)</summary>
   public int PageNumber { get; init; } = 1;
@@ -19,4 +19,7 @@ public class GetToursPaginatedQuery
 
   /// <summary>فیلتر بر اساس وضعیت فعال/غیرفعال</summary>
   public bool? IsActive { get; init; }
+
+  /// <summary>Optional external user id to enrich with user's reservation context</summary>
+  public Guid? ExternalUserId { get; init; }
 }

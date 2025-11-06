@@ -37,7 +37,7 @@ public class PaymentService : IPaymentService
     {
         try
         {
-            _logger.LogInformation("Processing payment gateway request - GatewayReference: {GatewayReference}, Amount: {Amount}, Gateway: {Gateway}",
+            _logger.LogInformation("AwaitingBill payment gateway request - GatewayReference: {GatewayReference}, Amount: {Amount}, Gateway: {Gateway}",
                 request.TrackingNumber, request.AmountRials, request.Gateway);
 
             // Generate proper callback URL if not provided or relative

@@ -21,7 +21,7 @@ public class AddRoleToUserCommandHandler : IRequestHandler<AddRoleToUserCommand,
     private readonly IUserRoleRepository _userRoleRepository;
     private readonly IIdentityUnitOfWork _unitOfWork;
     private readonly ILogger<AddRoleToUserCommandHandler> _logger;
-    private readonly IPublishEndpoint _publishEndpoint;
+    private readonly IBus _publishEndpoint;
 
     public AddRoleToUserCommandHandler(
         IUserRepository userRepository,
@@ -29,7 +29,7 @@ public class AddRoleToUserCommandHandler : IRequestHandler<AddRoleToUserCommand,
         IUserRoleRepository userRoleRepository,
         IIdentityUnitOfWork unitOfWork,
         ILogger<AddRoleToUserCommandHandler> logger,
-        IPublishEndpoint publishEndpoint)
+        IBus publishEndpoint)
     {
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         _roleRepository = roleRepository ?? throw new ArgumentNullException(nameof(roleRepository));

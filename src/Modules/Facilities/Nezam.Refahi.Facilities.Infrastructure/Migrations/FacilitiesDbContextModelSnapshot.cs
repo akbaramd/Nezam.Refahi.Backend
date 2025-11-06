@@ -72,10 +72,6 @@ namespace Nezam.Refahi.Facilities.Infrastructure.Migrations
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Metadata")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -84,14 +80,6 @@ namespace Nezam.Refahi.Facilities.Infrastructure.Migrations
                     b.Property<byte[]>("RowVersion")
                         .IsRequired()
                         .HasColumnType("varbinary(max)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
 
                     b.Property<long>("Version")
                         .HasColumnType("bigint");
@@ -103,42 +91,7 @@ namespace Nezam.Refahi.Facilities.Infrastructure.Migrations
 
                     b.HasIndex("Name");
 
-                    b.HasIndex("Status");
-
-                    b.HasIndex("Type");
-
                     b.ToTable("Facilities", "facilities");
-                });
-
-            modelBuilder.Entity("Nezam.Refahi.Facilities.Domain.Entities.FacilityCapability", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("CapabilityId")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<Guid>("FacilityId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("FacilityId1")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CapabilityId");
-
-                    b.HasIndex("FacilityId");
-
-                    b.HasIndex("FacilityId1");
-
-                    b.HasIndex("FacilityId", "CapabilityId")
-                        .IsUnique();
-
-                    b.ToTable("FacilityCapability", "facilities");
                 });
 
             modelBuilder.Entity("Nezam.Refahi.Facilities.Domain.Entities.FacilityCycle", b =>
@@ -147,17 +100,9 @@ namespace Nezam.Refahi.Facilities.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("AdmissionStrategy")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasDefaultValue("FIFO");
-
-                    b.Property<int>("CooldownDays")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
+                    b.Property<string>("ApprovalMessage")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -179,10 +124,6 @@ namespace Nezam.Refahi.Facilities.Infrastructure.Migrations
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("ExclusiveSetId")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<Guid>("FacilityId")
                         .HasColumnType("uniqueidentifier");
 
@@ -193,24 +134,11 @@ namespace Nezam.Refahi.Facilities.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsExclusive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<bool>("IsRepeatable")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
                     b.Property<DateTime?>("LastModifiedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("LastModifiedBy")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("MaxActiveAcrossCycles")
-                        .HasColumnType("int");
 
                     b.Property<string>("Metadata")
                         .IsRequired()
@@ -221,13 +149,16 @@ namespace Nezam.Refahi.Facilities.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<int>("PaymentMonths")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(12);
+                    b.Property<int?>("PaymentMonths")
+                        .HasColumnType("int");
 
                     b.Property<int>("Quota")
                         .HasColumnType("int");
+
+                    b.Property<bool>("RestrictToPreviousCycles")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<byte[]>("RowVersion")
                         .IsRequired()
@@ -248,9 +179,6 @@ namespace Nezam.Refahi.Facilities.Infrastructure.Migrations
                     b.Property<long>("Version")
                         .HasColumnType("bigint");
 
-                    b.Property<int?>("WaitlistCapacity")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("EndDate");
@@ -266,6 +194,32 @@ namespace Nezam.Refahi.Facilities.Infrastructure.Migrations
                     b.HasIndex("FacilityId", "StartDate", "EndDate");
 
                     b.ToTable("FacilityCycles", "facilities");
+                });
+
+            modelBuilder.Entity("Nezam.Refahi.Facilities.Domain.Entities.FacilityCycleCapability", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CapabilityId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("FacilityCycleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CapabilityId");
+
+                    b.HasIndex("FacilityCycleId");
+
+                    b.HasIndex("FacilityCycleId", "CapabilityId")
+                        .IsUnique();
+
+                    b.ToTable("FacilityCycleCapabilities", "facilities");
                 });
 
             modelBuilder.Entity("Nezam.Refahi.Facilities.Domain.Entities.FacilityCycleDependency", b =>
@@ -313,19 +267,13 @@ namespace Nezam.Refahi.Facilities.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Nezam.Refahi.Facilities.Domain.Entities.FacilityFeature", b =>
+            modelBuilder.Entity("Nezam.Refahi.Facilities.Domain.Entities.FacilityCycleFeature", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("AssignedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("FacilityId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("FacilityId1")
+                    b.Property<Guid>("FacilityCycleId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("FeatureId")
@@ -333,28 +281,48 @@ namespace Nezam.Refahi.Facilities.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("RequirementType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("FacilityId");
-
-                    b.HasIndex("FacilityId1");
+                    b.HasIndex("FacilityCycleId");
 
                     b.HasIndex("FeatureId");
 
-                    b.HasIndex("RequirementType");
-
-                    b.HasIndex("FacilityId", "FeatureId")
+                    b.HasIndex("FacilityCycleId", "FeatureId")
                         .IsUnique();
 
-                    b.ToTable("FacilityFeatures", "facilities");
+                    b.ToTable("FacilityCycleFeatures", "facilities");
+                });
+
+            modelBuilder.Entity("Nezam.Refahi.Facilities.Domain.Entities.FacilityCyclePriceOption", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("DisplayOrder")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<Guid>("FacilityCycleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FacilityCycleId");
+
+                    b.HasIndex("FacilityCycleId", "DisplayOrder");
+
+                    b.ToTable("FacilityCyclePriceOptions", "facilities");
                 });
 
             modelBuilder.Entity("Nezam.Refahi.Facilities.Domain.Entities.FacilityRejection", b =>
@@ -512,6 +480,9 @@ namespace Nezam.Refahi.Facilities.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("varbinary(max)");
 
+                    b.Property<Guid>("SelectedPriceOptionId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -553,26 +524,11 @@ namespace Nezam.Refahi.Facilities.Infrastructure.Migrations
                         .IsUnique()
                         .HasFilter("[RequestNumber] IS NOT NULL");
 
+                    b.HasIndex("SelectedPriceOptionId");
+
                     b.HasIndex("Status");
 
                     b.ToTable("FacilityRequests", "facilities");
-                });
-
-            modelBuilder.Entity("Nezam.Refahi.Facilities.Domain.Entities.FacilityCapability", b =>
-                {
-                    b.HasOne("Nezam.Refahi.Facilities.Domain.Entities.Facility", null)
-                        .WithMany("CapabilityPolicies")
-                        .HasForeignKey("FacilityId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("Nezam.Refahi.Facilities.Domain.Entities.Facility", "Facility")
-                        .WithMany()
-                        .HasForeignKey("FacilityId1")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Facility");
                 });
 
             modelBuilder.Entity("Nezam.Refahi.Facilities.Domain.Entities.FacilityCycle", b =>
@@ -583,91 +539,18 @@ namespace Nezam.Refahi.Facilities.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("Nezam.Refahi.Shared.Domain.ValueObjects.Money", "DefaultAmount", b1 =>
-                        {
-                            b1.Property<Guid>("FacilityCycleId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<decimal>("AmountRials")
-                                .HasPrecision(18, 2)
-                                .HasColumnType("decimal(18,2)")
-                                .HasColumnName("DefaultAmountRials");
-
-                            b1.Property<string>("Currency")
-                                .IsRequired()
-                                .ValueGeneratedOnAdd()
-                                .HasMaxLength(3)
-                                .HasColumnType("nvarchar(3)")
-                                .HasDefaultValue("IRR")
-                                .HasColumnName("DefaultCurrency");
-
-                            b1.HasKey("FacilityCycleId");
-
-                            b1.ToTable("FacilityCycles", "facilities");
-
-                            b1.WithOwner()
-                                .HasForeignKey("FacilityCycleId");
-                        });
-
-                    b.OwnsOne("Nezam.Refahi.Shared.Domain.ValueObjects.Money", "MaxAmount", b1 =>
-                        {
-                            b1.Property<Guid>("FacilityCycleId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<decimal>("AmountRials")
-                                .HasPrecision(18, 2)
-                                .HasColumnType("decimal(18,2)")
-                                .HasColumnName("MaxAmountRials");
-
-                            b1.Property<string>("Currency")
-                                .IsRequired()
-                                .ValueGeneratedOnAdd()
-                                .HasMaxLength(3)
-                                .HasColumnType("nvarchar(3)")
-                                .HasDefaultValue("IRR")
-                                .HasColumnName("MaxCurrency");
-
-                            b1.HasKey("FacilityCycleId");
-
-                            b1.ToTable("FacilityCycles", "facilities");
-
-                            b1.WithOwner()
-                                .HasForeignKey("FacilityCycleId");
-                        });
-
-                    b.OwnsOne("Nezam.Refahi.Shared.Domain.ValueObjects.Money", "MinAmount", b1 =>
-                        {
-                            b1.Property<Guid>("FacilityCycleId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<decimal>("AmountRials")
-                                .HasPrecision(18, 2)
-                                .HasColumnType("decimal(18,2)")
-                                .HasColumnName("MinAmountRials");
-
-                            b1.Property<string>("Currency")
-                                .IsRequired()
-                                .ValueGeneratedOnAdd()
-                                .HasMaxLength(3)
-                                .HasColumnType("nvarchar(3)")
-                                .HasDefaultValue("IRR")
-                                .HasColumnName("MinCurrency");
-
-                            b1.HasKey("FacilityCycleId");
-
-                            b1.ToTable("FacilityCycles", "facilities");
-
-                            b1.WithOwner()
-                                .HasForeignKey("FacilityCycleId");
-                        });
-
-                    b.Navigation("DefaultAmount");
-
                     b.Navigation("Facility");
+                });
 
-                    b.Navigation("MaxAmount");
+            modelBuilder.Entity("Nezam.Refahi.Facilities.Domain.Entities.FacilityCycleCapability", b =>
+                {
+                    b.HasOne("Nezam.Refahi.Facilities.Domain.Entities.FacilityCycle", "FacilityCycle")
+                        .WithMany("Capabilities")
+                        .HasForeignKey("FacilityCycleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("MinAmount");
+                    b.Navigation("FacilityCycle");
                 });
 
             modelBuilder.Entity("Nezam.Refahi.Facilities.Domain.Entities.FacilityCycleDependency", b =>
@@ -687,21 +570,55 @@ namespace Nezam.Refahi.Facilities.Infrastructure.Migrations
                     b.Navigation("FacilityCycle");
                 });
 
-            modelBuilder.Entity("Nezam.Refahi.Facilities.Domain.Entities.FacilityFeature", b =>
+            modelBuilder.Entity("Nezam.Refahi.Facilities.Domain.Entities.FacilityCycleFeature", b =>
                 {
-                    b.HasOne("Nezam.Refahi.Facilities.Domain.Entities.Facility", null)
+                    b.HasOne("Nezam.Refahi.Facilities.Domain.Entities.FacilityCycle", "FacilityCycle")
                         .WithMany("Features")
-                        .HasForeignKey("FacilityId")
+                        .HasForeignKey("FacilityCycleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Nezam.Refahi.Facilities.Domain.Entities.Facility", "Facility")
-                        .WithMany()
-                        .HasForeignKey("FacilityId1")
+                    b.Navigation("FacilityCycle");
+                });
+
+            modelBuilder.Entity("Nezam.Refahi.Facilities.Domain.Entities.FacilityCyclePriceOption", b =>
+                {
+                    b.HasOne("Nezam.Refahi.Facilities.Domain.Entities.FacilityCycle", "FacilityCycle")
+                        .WithMany("PriceOptions")
+                        .HasForeignKey("FacilityCycleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Facility");
+                    b.OwnsOne("Nezam.Refahi.Shared.Domain.ValueObjects.Money", "Amount", b1 =>
+                        {
+                            b1.Property<Guid>("FacilityCyclePriceOptionId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<decimal>("AmountRials")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("AmountRials");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .ValueGeneratedOnAdd()
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasDefaultValue("IRR")
+                                .HasColumnName("Currency");
+
+                            b1.HasKey("FacilityCyclePriceOptionId");
+
+                            b1.ToTable("FacilityCyclePriceOptions", "facilities");
+
+                            b1.WithOwner()
+                                .HasForeignKey("FacilityCyclePriceOptionId");
+                        });
+
+                    b.Navigation("Amount")
+                        .IsRequired();
+
+                    b.Navigation("FacilityCycle");
                 });
 
             modelBuilder.Entity("Nezam.Refahi.Facilities.Domain.Entities.FacilityRejection", b =>
@@ -798,18 +715,20 @@ namespace Nezam.Refahi.Facilities.Infrastructure.Migrations
 
             modelBuilder.Entity("Nezam.Refahi.Facilities.Domain.Entities.Facility", b =>
                 {
-                    b.Navigation("CapabilityPolicies");
-
                     b.Navigation("Cycles");
-
-                    b.Navigation("Features");
                 });
 
             modelBuilder.Entity("Nezam.Refahi.Facilities.Domain.Entities.FacilityCycle", b =>
                 {
                     b.Navigation("Applications");
 
+                    b.Navigation("Capabilities");
+
                     b.Navigation("Dependencies");
+
+                    b.Navigation("Features");
+
+                    b.Navigation("PriceOptions");
                 });
 #pragma warning restore 612, 618
         }

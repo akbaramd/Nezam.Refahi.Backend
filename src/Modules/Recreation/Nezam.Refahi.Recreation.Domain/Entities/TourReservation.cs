@@ -72,7 +72,8 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
         ExternalUserId = externalUserId;
         Status = ReservationStatus.Draft; // Start in Draft state
         ReservationDate = DateTime.UtcNow;
-        ExpiryDate = expiryDate ?? DateTime.UtcNow.AddHours(2); // Default 15 minutes expiry
+        // In Draft state, expiry date is not relevant - will be set when Hold() is called
+        ExpiryDate = null;
         Notes = notes?.Trim();
         CapacityId = capacityId;
         MemberId = memberId;
@@ -82,6 +83,33 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     /// <summary>
     /// Adds a participant to this reservation
     /// </summary>
+    /// <summary>
+    /// Checks if participants can be added to this reservation
+    /// Validates that reservation is in Draft state and not expired
+    /// </summary>
+    /// <param name="errorMessage">Error message if participant cannot be added</param>
+    /// <returns>True if participant can be added, false otherwise</returns>
+    public bool CanAddParticipant(out string? errorMessage)
+    {
+        errorMessage = null;
+        
+        if (Status != ReservationStatus.Draft)
+        {
+            errorMessage = $"افزودن شرکت‌کننده فقط در وضعیت Draft مجاز است. وضعیت فعلی: {Status}";
+            return false;
+        }
+
+        if (IsExpired())
+        {
+            errorMessage = "رزرو منقضی شده است";
+            return false;
+        }
+
+        // Mark as expired if needed (side effect from IsExpired check)
+        // This ensures status is updated if expiration occurred
+        return true;
+    }
+
     public void AddParticipant(Participant participant)
     {
         if (participant == null)
@@ -89,9 +117,9 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
         if (participant.ReservationId != Id)
             throw new ArgumentException("شرکت‌کننده متعلق به این رزرو نمی‌باشد", nameof(participant));
         
-        // Only allow adding participants in Draft or OnHold state
-        if (Status != ReservationStatus.Draft && Status != ReservationStatus.OnHold)
-            throw new InvalidOperationException($"امکان اضافه کردن شرکت‌کننده در وضعیت {Status} وجود ندارد");
+        // Validate reservation can accept participants
+        if (!CanAddParticipant(out var errorMessage))
+            throw new InvalidOperationException(errorMessage);
 
         // Check if national number already exists in this reservation
         if (_participants.Any(p => p.NationalNumber == participant.NationalNumber))
@@ -101,12 +129,38 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     }
 
     /// <summary>
+    /// Checks if participants can be removed from this reservation
+    /// Validates that reservation is in Draft or OnHold state and not expired
+    /// </summary>
+    /// <param name="errorMessage">Error message if participant cannot be removed</param>
+    /// <returns>True if participant can be removed, false otherwise</returns>
+    public bool CanRemoveParticipant(out string? errorMessage)
+    {
+        errorMessage = null;
+        
+        if (Status != ReservationStatus.Draft && Status != ReservationStatus.OnHold)
+        {
+            errorMessage = $"حذف شرکت‌کننده فقط در وضعیت Draft یا OnHold مجاز است. وضعیت فعلی: {Status}";
+            return false;
+        }
+
+        if (IsExpired())
+        {
+            errorMessage = "رزرو منقضی شده است";
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
     /// Removes a participant from this reservation
     /// </summary>
     public void RemoveParticipant(Guid participantId)
     {
-        if (Status != ReservationStatus.Draft && Status != ReservationStatus.OnHold)
-            throw new InvalidOperationException("امکان حذف شرکت‌کننده از رزروهای غیردر انتظار وجود ندارد");
+        // Validate reservation allows participant removal
+        if (!CanRemoveParticipant(out var errorMessage))
+            throw new InvalidOperationException(errorMessage);
 
         var participant = _participants.FirstOrDefault(p => p.Id == participantId);
         if (participant != null)
@@ -116,19 +170,49 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     }
 
     /// <summary>
+    /// Checks if reservation can be held (transitioned from Draft to OnHold)
+    /// Validates that reservation is in Draft state and not expired
+    /// </summary>
+    /// <param name="errorMessage">Error message if reservation cannot be held</param>
+    /// <returns>True if reservation can be held, false otherwise</returns>
+    public bool CanHold(out string? errorMessage)
+    {
+        errorMessage = null;
+        
+        if (Status != ReservationStatus.Draft)
+        {
+            errorMessage = $"فقط رزروهای در وضعیت Draft قابل نگهداری هستند. وضعیت فعلی: {Status}";
+            return false;
+        }
+
+        if (IsExpired())
+        {
+            errorMessage = "رزرو منقضی شده است";
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
     /// Transitions from Draft to OnHold state (reserves capacity)
     /// </summary>
     public void Hold()
     {
-        var (isValid, errorMessage) = ReservationStateMachine.ValidateTransition(Status, ReservationStatus.OnHold, "Hold");
+        // Validate reservation can be held
+        if (!CanHold(out var canHoldError))
+            throw new InvalidOperationException(canHoldError!);
+
+        var (isValid, transitionError) = ReservationStateMachine.ValidateTransition(Status, ReservationStatus.OnHold, "Hold");
         if (!isValid)
-            throw new InvalidOperationException(errorMessage);
+            throw new InvalidOperationException(transitionError);
 
         if (!_participants.Any())
             throw new InvalidOperationException("رزرو بدون شرکت‌کننده قابل نگهداری نیست");
 
         Status = ReservationStatus.OnHold;
-        ExpiryDate ??= DateTime.UtcNow.AddMinutes(15); // Set expiry if not already set
+        // Set expiry date to 30 minutes from now when Hold is called
+        ExpiryDate = DateTime.UtcNow.AddMinutes(30);
         
         // Publish domain event
         AddDomainEvent(new TourReservationCreatedEvent
@@ -148,20 +232,133 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     }
 
     /// <summary>
-    /// Sets the reservation status to pending confirmation (payment in progress)
+    /// Returns the reservation from OnHold to Draft state for editing changes
+    /// This allows users to modify participants or other details before holding again
+    /// Clears price snapshots and publishes event for capacity release
+    /// </summary>
+    public void ReturnToDraft()
+    {
+        var (isValid, errorMessage) = ReservationStateMachine.ValidateTransition(Status, ReservationStatus.Draft, "ReturnToDraft");
+        if (!isValid)
+            throw new InvalidOperationException(errorMessage);
+
+        // Only allow returning to Draft from OnHold
+        if (Status != ReservationStatus.OnHold)
+            throw new InvalidOperationException($"امکان بازگشت به Draft فقط از وضعیت OnHold وجود ندارد. وضعیت فعلی: {Status}");
+
+        Status = ReservationStatus.Draft;
+        // Clear expiry date in Draft state
+        ExpiryDate = null;
+        
+        // Clear all price snapshots when returning to Draft
+        // Snapshots will be regenerated when Hold() is called again
+        _priceSnapshots.Clear();
+        
+        // Publish domain event for capacity release
+        // The handler will release capacity since Draft doesn't count towards capacity
+        AddDomainEvent(new TourReservationReturnedToDraftEvent
+        {
+            ReservationId = Id,
+            TourId = TourId,
+            TourTitle = Tour?.Title ?? string.Empty,
+            TrackingCode = TrackingCode,
+            ExternalUserId = ExternalUserId,
+            CapacityId = CapacityId,
+            ParticipantCount = _participants.Count,
+            ReturnedAt = DateTime.UtcNow
+        });
+    }
+
+    /// <summary>
+    /// Reactivates an expired reservation back to Draft for editing
+    /// Clears expiry date and price snapshots
+    /// </summary>
+    public void ReactivateToDraft()
+    {
+        var (isValid, errorMessage) = ReservationStateMachine.ValidateTransition(Status, ReservationStatus.Draft, "ReactivateToDraft");
+        if (!isValid)
+            throw new InvalidOperationException(errorMessage);
+
+        if (Status != ReservationStatus.Expired)
+            throw new InvalidOperationException($"تنها رزروهای منقضی شده قابل بازگشت به پیش‌نویس هستند. وضعیت فعلی: {Status}");
+
+        // Transition to Draft
+        Status = ReservationStatus.Draft;
+        // Remove expiry date
+        ExpiryDate = null;
+        // Clear all price snapshots; will be recalculated when holding again
+        _priceSnapshots.Clear();
+    }
+
+    /// <summary>
+    /// Sets the reservation status to paying (payment in progress)
+    /// Note: OnHold status already means waiting for payment and confirmation,
+    /// so this method may not be needed or should be removed if OnHold covers this scenario.
     /// </summary>
     public void SetToPaying()
     {
-        var (isValid, errorMessage) = ReservationStateMachine.ValidateTransition(Status, ReservationStatus.PendingConfirmation, "SetToPendingConfirmation");
-        if (!isValid)
-            throw new InvalidOperationException(errorMessage);
+        // OnHold already represents waiting for payment and confirmation
+        // This method is kept for backward compatibility but does nothing
+        // as the reservation should already be in OnHold state for payment processing
+        if (Status != ReservationStatus.OnHold)
+            throw new InvalidOperationException("رزرو باید در وضعیت نگهداری (OnHold) باشد تا امکان پردازش پرداخت وجود داشته باشد");
 
         if (ExpiryDate.HasValue && DateTime.UtcNow > ExpiryDate.Value)
             throw new InvalidOperationException("رزرو منقضی شده است و امکان پردازش پرداخت وجود ندارد");
         if (!_participants.Any())
             throw new InvalidOperationException("رزرو بدون شرکت‌کننده است و امکان پردازش پرداخت وجود ندارد");
 
-        Status = ReservationStatus.PendingConfirmation;
+        // Status remains OnHold - no state change needed
+    }
+
+    /// <summary>
+    /// Checks if reservation can be finalized (transitioned from Draft to OnHold with snapshots)
+    /// Validates that reservation is in Draft state and not expired
+    /// </summary>
+    /// <param name="errorMessage">Error message if reservation cannot be finalized</param>
+    /// <returns>True if reservation can be finalized, false otherwise</returns>
+    public bool CanFinalize(out string? errorMessage)
+    {
+        errorMessage = null;
+        
+        if (Status != ReservationStatus.Draft)
+        {
+            errorMessage = $"فقط رزروهای در وضعیت Draft قابل نهایی‌سازی هستند. وضعیت فعلی: {Status}";
+            return false;
+        }
+
+        if (IsExpired())
+        {
+            errorMessage = "رزرو منقضی شده است";
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Checks if reservation capacity can be changed
+    /// Validates that reservation is in Draft state and not expired
+    /// </summary>
+    /// <param name="errorMessage">Error message if capacity cannot be changed</param>
+    /// <returns>True if capacity can be changed, false otherwise</returns>
+    public bool CanChangeCapacity(out string? errorMessage)
+    {
+        errorMessage = null;
+        
+        if (Status != ReservationStatus.Draft)
+        {
+            errorMessage = $"تنها در وضعیت Draft امکان تغییر ظرفیت وجود دارد. وضعیت فعلی: {Status}";
+            return false;
+        }
+
+        if (IsExpired())
+        {
+            errorMessage = "رزرو منقضی شده است";
+            return false;
+        }
+
+        return true;
     }
 
     /// <summary>
@@ -201,6 +398,34 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     }
 
     /// <summary>
+    /// Checks if reservation can be cancelled by user
+    /// Validates business rules: not already cancelled, not in OnHold (waiting for payment)
+    /// Note: Tour-level validations (deadline, tour start) should be checked in Application layer
+    /// </summary>
+    /// <param name="errorMessage">Error message if reservation cannot be cancelled</param>
+    /// <returns>True if reservation can be cancelled, false otherwise</returns>
+    public bool CanCancel(out string? errorMessage)
+    {
+        errorMessage = null;
+        
+        // Guard: Already cancelled
+        if (Status == ReservationStatus.Cancelled || Status == ReservationStatus.SystemCancelled)
+        {
+            errorMessage = "این رزرو قبلاً لغو شده است";
+            return false;
+        }
+
+        // Guard: Special handling for OnHold state (waiting for payment) - prevent race with PSP callback
+        if (Status == ReservationStatus.OnHold)
+        {
+            errorMessage = "رزرو در حال پردازش پرداخت است. لطفاً چند دقیقه صبر کنید و مجدداً تلاش کنید";
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
     /// Cancels the reservation by user
     /// </summary>
     public void Cancel(string? reason = null)
@@ -208,9 +433,13 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
         if (Status == ReservationStatus.Cancelled)
             return; // Already cancelled
 
-        var (isValid, errorMessage) = ReservationStateMachine.ValidateTransition(Status, ReservationStatus.Cancelled, "Cancel");
+        // Validate reservation can be cancelled (basic checks)
+        if (!CanCancel(out var canCancelError))
+            throw new InvalidOperationException(canCancelError!);
+
+        var (isValid, transitionError) = ReservationStateMachine.ValidateTransition(Status, ReservationStatus.Cancelled, "Cancel");
         if (!isValid)
-            throw new InvalidOperationException(errorMessage);
+            throw new InvalidOperationException(transitionError);
 
         Status = ReservationStatus.Cancelled;
         CancellationDate = DateTime.UtcNow;
@@ -347,11 +576,12 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
 
     /// <summary>
     /// Extends the expiry date
+    /// Note: Expiry date is only relevant for OnHold status, not for Draft
     /// </summary>
     public void ExtendExpiry(DateTime newExpiryDate)
     {
-        if (Status != ReservationStatus.Draft && Status != ReservationStatus.OnHold)
-            throw new InvalidOperationException("امکان تمدید تاریخ انقضا فقط برای رزروهای در انتظار وجود دارد");
+        if (Status != ReservationStatus.OnHold)
+            throw new InvalidOperationException("امکان تمدید تاریخ انقضا فقط برای رزروهای در وضعیت نگهداری (OnHold) وجود دارد");
         if (newExpiryDate <= DateTime.UtcNow)
             throw new ArgumentException("تاریخ انقضای جدید باید در آینده تعیین شود", nameof(newExpiryDate));
 
@@ -373,9 +603,7 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     {
         if (billId == Guid.Empty)
             throw new ArgumentException("شناسه فاکتور الزامی است", nameof(billId));
-        if (BillId.HasValue)
-            throw new InvalidOperationException("شناسه فاکتور قبلاً برای این رزرو تعریف شده است");
-
+   
         BillId = billId;
     }
 
@@ -404,12 +632,40 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     }
 
     /// <summary>
-    /// Checks if reservation is expired or should be expired
+    /// Checks if reservation is expired.
+    /// Expiry is determined by both Status and ExpiryDate:
+    /// - Status must be in a state that can expire (OnHold, Waitlisted)
+    /// - OnHold means waiting for payment and confirmation, so it can expire
+    /// - ExpiryDate must be set and current time must be past the expiry date
+    /// - Draft status cannot expire (ExpiryDate is null in Draft)
+    /// - Confirmed and terminal states cannot expire
+    /// Note: This method is pure and does NOT mutate state. Use commands/services to change status.
     /// </summary>
     public bool IsExpired()
     {
-        return Status == ReservationStatus.Expired || 
-               (ExpiryDate.HasValue && DateTime.UtcNow > ExpiryDate.Value && ReservationStateMachine.CanBeCancelled(Status));
+        // If already marked as Expired, return true
+        if (Status == ReservationStatus.Expired)
+            return true;
+
+        // Expiry date is only relevant for certain statuses
+        // Statuses that can expire: OnHold, Waitlisted
+        // Note: OnHold means waiting for payment and confirmation, so it can expire
+        var canExpireStatuses = new[]
+        {
+            ReservationStatus.OnHold,
+            ReservationStatus.Waitlisted
+        };
+
+        // If status is not in a state that can expire, it's not expired
+        if (!canExpireStatuses.Contains(Status))
+            return false;
+
+        // If ExpiryDate is not set, it cannot be expired (e.g., Draft state)
+        if (!ExpiryDate.HasValue)
+            return false;
+
+        // Check if current time is past the expiry date
+        return DateTime.UtcNow > ExpiryDate.Value;
     }
 
     /// <summary>
@@ -421,11 +677,12 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     }
 
     /// <summary>
-    /// بررسی اینکه آیا رزرو در انتظار است (OnHold یا PendingConfirmation) و منقضی نشده
+    /// بررسی اینکه آیا رزرو در انتظار است (OnHold) و منقضی نشده
+    /// Note: OnHold means waiting for payment and confirmation
     /// </summary>
     public bool IsPending()
     {
-        return (Status == ReservationStatus.OnHold || Status == ReservationStatus.PendingConfirmation) && !IsExpired();
+        return Status == ReservationStatus.OnHold && !IsExpired();
     }
 
     /// <summary>
@@ -438,10 +695,11 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
 
     /// <summary>
     /// Checks if reservation is being processed for payment
+    /// Note: OnHold status means waiting for payment and confirmation
     /// </summary>
     public bool IsPaying()
     {
-        return Status == ReservationStatus.PendingConfirmation;
+        return Status == ReservationStatus.OnHold;
     }
 
     /// <summary>
@@ -482,8 +740,8 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
     /// </summary>
     public bool HasConflictingReservation()
     {
-        // PendingConfirmation and Confirmed reservations always prevent new reservations
-        if (Status == ReservationStatus.PendingConfirmation || Status == ReservationStatus.Confirmed)
+        // OnHold (waiting for payment/confirmation) and Confirmed reservations always prevent new reservations
+        if (Status == ReservationStatus.OnHold || Status == ReservationStatus.Confirmed)
         {
             return true;
         }
@@ -515,10 +773,10 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
         // OnHold reservations can be reused if not expired
         if (Status == ReservationStatus.OnHold)
         {
-            return IsExpired();
+            return !IsExpired();
         }
 
-        // Confirmed reservations can be reused if not expired
+        // Confirmed reservations cannot be reused
         if (Status == ReservationStatus.Confirmed)
         {
             return false;
@@ -526,6 +784,35 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
 
         // All other states cannot be reused
         return false;
+    }
+
+ 
+
+    /// <summary>
+    /// Checks if guest participants can be added to this reservation
+    /// Guests can only be added in Draft state
+    /// </summary>
+    public bool CanAddGuest(Tour? tour = null)
+    {
+        // Only allow adding participants in Draft state
+        if (Status != ReservationStatus.Draft)
+            return false;
+
+        // If tour is provided, check if guest pricing exists and limits are not exceeded
+        if (tour != null)
+        {
+            var guestPricing = tour.GetActivePricing()
+                .FirstOrDefault(p => p.ParticipantType == ParticipantType.Guest);
+            
+            if (guestPricing == null)
+                return false;
+
+            // Check guest limits per reservation
+            if (!tour.CanAddGuestToReservation(this))
+                return false;
+        }
+
+        return true;
     }
 
     /// <summary>
@@ -677,9 +964,9 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
         if (Status != ReservationStatus.Expired)
             throw new InvalidOperationException($"Cannot renew reservation in {Status} state. Only expired reservations can be renewed.");
 
-        // Change status to OnHold and update expiry date
+        // Change status to OnHold and update expiry date to 30 minutes from now
         Status = ReservationStatus.OnHold;
-        ExpiryDate = DateTime.UtcNow.AddMinutes(15); // Default 15 minutes hold time
+        ExpiryDate = DateTime.UtcNow.AddMinutes(30);
     }
 
     /// <summary>
@@ -764,6 +1051,114 @@ public sealed class TourReservation : FullAggregateRoot<Guid>
 
     public void SetCapacity(Guid newCapacityId)
     {
-      CapacityId = newCapacityId;
+        // Validate reservation allows capacity change
+        if (!CanChangeCapacity(out var errorMessage))
+            throw new InvalidOperationException(errorMessage);
+        
+        CapacityId = newCapacityId;
+    }
+
+    /// <summary>
+    /// بررسی اینکه آیا رزرو در حالت «نگهداری» (OnHold) و منقضی‌نشده است
+    /// </summary>
+    public bool IsHeld()
+    {
+        return Status == ReservationStatus.OnHold && !IsExpired();
+    }
+
+    /// <summary>
+    /// بررسی اینکه آیا رزرو در «صف انتظار» است و منقضی‌نشده
+    /// </summary>
+    public bool IsWaitlisted()
+    {
+        return Status == ReservationStatus.Waitlisted && !IsExpired();
+    }
+
+    /// <summary>
+    /// بررسی «پرداخت/پردازش ناموفق»
+    /// </summary>
+    public bool IsProcessingFailed()
+    {
+        return Status == ReservationStatus.ProcessingFailed;
+    }
+
+    /// <summary>
+    /// بررسی «در حال پردازش کنسلی»
+    /// </summary>
+    public bool IsCancellationInProcess()
+    {
+        return Status == ReservationStatus.CancellationProcessing;
+    }
+
+    /// <summary>
+    /// بررسی «کنسلی نهایی شده»
+    /// </summary>
+    public bool IsCancellationCompleted()
+    {
+        return Status == ReservationStatus.CancellationProcessed;
+    }
+
+    /// <summary>
+    /// بررسی «کنسلی سیستمی» (نه کاربر)
+    /// </summary>
+    public bool IsSystemCancelledStrict()
+    {
+        return Status == ReservationStatus.SystemCancelled;
+    }
+
+    /// <summary>
+    /// بررسی «رد شده»
+    /// </summary>
+    public bool IsRejected()
+    {
+        return Status == ReservationStatus.Rejected;
+    }
+
+    /// <summary>
+    /// بررسی «عدم حضور» (NoShow)
+    /// </summary>
+    public bool IsNoShowStrict()
+    {
+        return Status == ReservationStatus.NoShow;
+    }
+
+    /// <summary>
+    /// آیا منطقاً می‌توان به OnHold رفت (بدون اعمال جانبی)؟
+    /// </summary>
+    public bool CanHoldNow()
+    {
+        return ReservationStateMachine.IsValidTransition(Status, ReservationStatus.OnHold) && _participants.Any();
+    }
+
+    /// <summary>
+    /// آیا منطقاً می‌توان تأیید کرد (بدون اعمال جانبی)؟
+    /// </summary>
+    public bool CanConfirmNow(bool skipExpiryCheck = false)
+    {
+        if (!ReservationStateMachine.IsValidTransition(Status, ReservationStatus.Confirmed))
+            return false;
+        if (!skipExpiryCheck && IsExpired())
+            return false;
+        return _participants.Any();
+    }
+
+    /// <summary>
+    /// آیا منطقاً می‌توان کنسل کرد (بدون اعمال جانبی)؟
+    /// </summary>
+    public bool CanCancelNow()
+    {
+        return ReservationStateMachine.CanBeCancelled(Status);
+    }
+
+    /// <summary>
+    /// آیا منطقاً می‌توان فرآیند پرداخت را آغاز کرد (بدون اعمال جانبی)؟
+    /// </summary>
+    public bool CanInitiatePaymentNow()
+    {
+        if (!ReservationStateMachine.CanInitiatePayment(Status))
+            return false;
+        if (IsExpired())
+            return false;
+        return _participants.Any();
     }
 }

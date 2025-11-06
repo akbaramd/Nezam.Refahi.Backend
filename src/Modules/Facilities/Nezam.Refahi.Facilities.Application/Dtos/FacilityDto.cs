@@ -22,31 +22,6 @@ public record FacilityDto
   public string Code { get; set; } = null!;
 
   /// <summary>
-  /// Facility type (Loan, Grant, Card, WelfareVoucher, Other)
-  /// </summary>
-  public string Type { get; set; } = null!;
-
-  /// <summary>
-  /// Human-readable facility type text
-  /// </summary>
-  public string TypeText { get; set; } = null!;
-
-  /// <summary>
-  /// Current facility status (Draft, Active, Suspended, Closed, Maintenance)
-  /// </summary>
-  public string Status { get; set; } = null!;
-
-  /// <summary>
-  /// Human-readable status text
-  /// </summary>
-  public string StatusText { get; set; } = null!;
-
-  /// <summary>
-  /// Indicates if facility is currently active and accepting applications
-  /// </summary>
-  public bool IsActive { get; set; }
-
-  /// <summary>
   /// Detailed facility description
   /// </summary>
   public string? Description { get; set; }
@@ -60,11 +35,6 @@ public record FacilityDto
   /// Current cycle statistics
   /// </summary>
   public FacilityCycleStatisticsDto? CycleStatistics { get; set; }
-
-  /// <summary>
-  /// Facility metadata and additional properties
-  /// </summary>
-  public Dictionary<string, string> Metadata { get; set; } = new();
 
   /// <summary>
   /// Facility creation timestamp
@@ -84,5 +54,5 @@ public record FacilityDto
   /// <summary>
   /// Indicates if facility is accepting new applications
   /// </summary>
-  public bool IsAcceptingApplications => IsActive && HasActiveCycles;
+  public bool IsAcceptingApplications => HasActiveCycles;
 }

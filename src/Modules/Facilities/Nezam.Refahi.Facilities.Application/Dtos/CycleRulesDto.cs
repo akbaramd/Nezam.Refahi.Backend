@@ -6,32 +6,12 @@
 public record CycleRulesDto
 {
   /// <summary>
-  /// Indicates if facility can be repeated
+  /// Indicates if cycle restricts users who had approved requests in previous cycles of the same facility
   /// </summary>
-  public bool IsRepeatable { get; init; }
-
-  /// <summary>
-  /// Indicates if facility is exclusive
-  /// </summary>
-  public bool IsExclusive { get; init; }
-
-  /// <summary>
-  /// Exclusive set identifier
-  /// </summary>
-  public string? ExclusiveSetId { get; init; }
-
-  /// <summary>
-  /// Maximum active facilities across all cycles
-  /// </summary>
-  public int? MaxActiveAcrossCycles { get; init; }
+  public bool RestrictToPreviousCycles { get; init; }
 
   /// <summary>
   /// Indicates if cycle has dependency rules
   /// </summary>
   public bool HasDependencies { get; init; }
-
-  /// <summary>
-  /// Indicates if cycle has exclusive rules
-  /// </summary>
-  public bool HasExclusiveRules => IsExclusive && !string.IsNullOrWhiteSpace(ExclusiveSetId);
 }

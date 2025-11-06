@@ -21,13 +21,13 @@ public class CreateBillCommandHandler : IRequestHandler<CreateBillCommand, Appli
     private readonly IBillRepository _billRepository;
     private readonly IValidator<CreateBillCommand> _validator;
     private readonly IFinanceUnitOfWork _unitOfWork;
-    private readonly IPublishEndpoint _publishEndpoint;
+    private readonly IBus _publishEndpoint;
 
     public CreateBillCommandHandler(
         IBillRepository billRepository,
         IValidator<CreateBillCommand> validator,
         IFinanceUnitOfWork unitOfWork,
-        IPublishEndpoint publishEndpoint)
+        IBus publishEndpoint)
     {
         _billRepository = billRepository ?? throw new ArgumentNullException(nameof(billRepository));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));

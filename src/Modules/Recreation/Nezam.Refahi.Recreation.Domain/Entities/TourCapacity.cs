@@ -276,6 +276,28 @@ public sealed class TourCapacity : Entity<Guid>
     }
 
     /// <summary>
+    /// Checks if this capacity is fully booked
+    /// </summary>
+    public bool IsFullyBooked()
+    {
+        return RemainingParticipants <= 0;
+    }
+
+    /// <summary>
+    /// Checks if this capacity is nearly full (≥80% utilized)
+    /// </summary>
+    public bool IsNearlyFull()
+    {
+        if (MaxParticipants <= 0)
+            return false;
+        
+        var used = MaxParticipants - RemainingParticipants;
+        var utilizationPercentage = (double)used / MaxParticipants * 100;
+        
+        return utilizationPercentage >= 80 && !IsFullyBooked();
+    }
+
+    /// <summary>
     /// Calculates the capacity state based on current availability
     /// </summary>
     private CapacityState CalculateCapacityState()

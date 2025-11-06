@@ -20,6 +20,10 @@ public sealed class Response : Entity<Guid>
     public DateTimeOffset? CanceledAt { get; private set; }
     public DateTimeOffset? ExpiredAt { get; private set; }
 
+    // Navigation state - tracks current position in survey
+    public Guid? CurrentQuestionId { get; private set; }
+    public int CurrentRepeatIndex { get; private set; } = 1;
+
     // Navigation properties
     private readonly List<QuestionAnswer> _questionAnswers = new();
     public IReadOnlyCollection<QuestionAnswer> QuestionAnswers => _questionAnswers.AsReadOnly();
@@ -52,6 +56,8 @@ public sealed class Response : Entity<Guid>
         AttemptStatus = AttemptStatus.Active;
         Status = ResponseStatus.Answering;
         DemographySnapshot = demographySnapshot;
+        CurrentQuestionId = null;
+        CurrentRepeatIndex = 1;
     }
 
     /// <summary>
@@ -432,4 +438,256 @@ public sealed class Response : Entity<Guid>
     /// Checks if the response is active
     /// </summary>
     public bool IsActive => AttemptStatus == AttemptStatus.Active;
+
+    // ========== Navigation Behaviors ==========
+
+    /// <summary>
+    /// Navigates to a specific question by ID
+    /// If questionId is null, navigates to first question (if null and isFirst=true) or last question (if null and isFirst=false)
+    /// </summary>
+    public void NavigateToQuestion(IReadOnlyList<Question> orderedQuestions, Guid? questionId = null, int? repeatIndex = null, bool isFirst = true)
+    {
+        if (orderedQuestions == null || !orderedQuestions.Any())
+            throw new ArgumentException("Ordered questions list cannot be empty", nameof(orderedQuestions));
+
+        if (!CanBeModified())
+            throw new InvalidOperationException("Cannot navigate in current status. Only responses in 'Answering' or 'Reviewing' status can navigate.");
+
+        Question? targetQuestion = null;
+        int targetRepeatIndex = 1;
+
+        // If questionId is null, go to first or last question
+        if (!questionId.HasValue || questionId.Value == Guid.Empty)
+        {
+            targetQuestion = isFirst ? orderedQuestions.First() : orderedQuestions.Last();
+            targetRepeatIndex = repeatIndex ?? DetermineNextRepeatIndex(targetQuestion);
+        }
+        else
+        {
+            targetQuestion = orderedQuestions.FirstOrDefault(q => q.Id == questionId.Value);
+            if (targetQuestion == null)
+            {
+                // Question not found, default to first or last
+                targetQuestion = isFirst ? orderedQuestions.First() : orderedQuestions.Last();
+                targetRepeatIndex = repeatIndex ?? DetermineNextRepeatIndex(targetQuestion);
+            }
+            else
+            {
+                // Validate and set repeat index
+                targetRepeatIndex = repeatIndex ?? DetermineNextRepeatIndex(targetQuestion);
+                if (!targetQuestion.ValidateRepeatIndex(targetRepeatIndex))
+                {
+                    targetRepeatIndex = 1;
+                }
+            }
+        }
+
+        // Update navigation state
+        CurrentQuestionId = targetQuestion.Id;
+        CurrentRepeatIndex = targetRepeatIndex;
+    }
+
+    /// <summary>
+    /// Navigates to the next question
+    /// If at the last question, tries to add more repeats if possible
+    /// If no more repeats and at last question, stays at current position
+    /// </summary>
+    public bool NavigateToNext(IReadOnlyList<Question> orderedQuestions)
+    {
+        if (orderedQuestions == null || !orderedQuestions.Any())
+            throw new ArgumentException("Ordered questions list cannot be empty", nameof(orderedQuestions));
+
+        if (!CanBeModified())
+            throw new InvalidOperationException("Cannot navigate in current status. Only responses in 'Answering' or 'Reviewing' status can navigate.");
+
+        // Initialize current position if not set
+        if (!CurrentQuestionId.HasValue || CurrentQuestionId.Value == Guid.Empty)
+        {
+            var firstQuestion = orderedQuestions.First();
+            CurrentQuestionId = firstQuestion.Id;
+            CurrentRepeatIndex = DetermineNextRepeatIndex(firstQuestion);
+            return true;
+        }
+
+        var currentQuestion = orderedQuestions.FirstOrDefault(q => q.Id == CurrentQuestionId.Value);
+        if (currentQuestion == null)
+        {
+            // Current question not found, reset to first
+            var firstQuestion = orderedQuestions.First();
+            CurrentQuestionId = firstQuestion.Id;
+            CurrentRepeatIndex = DetermineNextRepeatIndex(firstQuestion);
+            return true;
+        }
+
+        var currentIndex = orderedQuestions.ToList().IndexOf(currentQuestion);
+
+        // Try to add more repeats to current question first
+        if (currentQuestion.IsRepeatable)
+        {
+            var answeredCount = GetAnsweredRepeatCount(currentQuestion.Id);
+            if (currentQuestion.CanAddMoreRepeats(answeredCount))
+            {
+                // Move to next repeat of current question
+                var nextRepeatIndex = DetermineNextRepeatIndex(currentQuestion);
+                if (nextRepeatIndex > CurrentRepeatIndex)
+                {
+                    CurrentRepeatIndex = nextRepeatIndex;
+                    return true;
+                }
+            }
+        }
+
+        // Move to next question
+        if (currentIndex < orderedQuestions.Count - 1)
+        {
+            var nextQuestion = orderedQuestions[currentIndex + 1];
+            CurrentQuestionId = nextQuestion.Id;
+            CurrentRepeatIndex = DetermineNextRepeatIndex(nextQuestion);
+            return true;
+        }
+
+        // At the last question with no more repeats - stay at current position
+        return false;
+    }
+
+    /// <summary>
+    /// Navigates to the previous question
+    /// If at the first repeat of a question, goes to previous question
+    /// If at first question and first repeat, stays at current position
+    /// </summary>
+    public bool NavigateToPrevious(IReadOnlyList<Question> orderedQuestions)
+    {
+        if (orderedQuestions == null || !orderedQuestions.Any())
+            throw new ArgumentException("Ordered questions list cannot be empty", nameof(orderedQuestions));
+
+        if (!CanBeModified())
+            throw new InvalidOperationException("Cannot navigate in current status. Only responses in 'Answering' or 'Reviewing' status can navigate.");
+
+        // Initialize current position if not set
+        if (!CurrentQuestionId.HasValue || CurrentQuestionId.Value == Guid.Empty)
+        {
+            var lastQuestion = orderedQuestions.Last();
+            CurrentQuestionId = lastQuestion.Id;
+            CurrentRepeatIndex = GetMaxAnsweredRepeatIndex(lastQuestion.Id);
+            return true;
+        }
+
+        var currentQuestion = orderedQuestions.FirstOrDefault(q => q.Id == CurrentQuestionId.Value);
+        if (currentQuestion == null)
+        {
+            // Current question not found, reset to last
+            var lastQuestion = orderedQuestions.Last();
+            CurrentQuestionId = lastQuestion.Id;
+            CurrentRepeatIndex = GetMaxAnsweredRepeatIndex(lastQuestion.Id);
+            return true;
+        }
+
+        var currentIndex = orderedQuestions.ToList().IndexOf(currentQuestion);
+
+        // Try to go to previous repeat of current question
+        if (currentQuestion.IsRepeatable && CurrentRepeatIndex > 1)
+        {
+            var previousRepeatIndex = CurrentRepeatIndex - 1;
+            // Check if this repeat index exists or is valid
+            if (currentQuestion.ValidateRepeatIndex(previousRepeatIndex))
+            {
+                CurrentRepeatIndex = previousRepeatIndex;
+                return true;
+            }
+        }
+
+        // Move to previous question
+        if (currentIndex > 0)
+        {
+            var previousQuestion = orderedQuestions[currentIndex - 1];
+            CurrentQuestionId = previousQuestion.Id;
+            CurrentRepeatIndex = GetMaxAnsweredRepeatIndex(previousQuestion.Id);
+            return true;
+        }
+
+        // At the first question and first repeat - stay at current position
+        return false;
+    }
+
+    /// <summary>
+    /// Gets the current question from ordered list
+    /// Returns null if no current question is set
+    /// </summary>
+    public Question? GetCurrentQuestion(IReadOnlyList<Question> orderedQuestions)
+    {
+        if (orderedQuestions == null || !orderedQuestions.Any())
+            return null;
+
+        if (!CurrentQuestionId.HasValue || CurrentQuestionId.Value == Guid.Empty)
+            return null;
+
+        return orderedQuestions.FirstOrDefault(q => q.Id == CurrentQuestionId.Value);
+    }
+
+    /// <summary>
+    /// Resets navigation to first question
+    /// </summary>
+    public void ResetNavigation(IReadOnlyList<Question> orderedQuestions)
+    {
+        if (orderedQuestions == null || !orderedQuestions.Any())
+            throw new ArgumentException("Ordered questions list cannot be empty", nameof(orderedQuestions));
+
+        if (!CanBeModified())
+            throw new InvalidOperationException("Cannot reset navigation in current status.");
+
+        var firstQuestion = orderedQuestions.First();
+        CurrentQuestionId = firstQuestion.Id;
+        CurrentRepeatIndex = DetermineNextRepeatIndex(firstQuestion);
+    }
+
+    /// <summary>
+    /// Determines the next available repeat index for a question
+    /// Returns the first unanswered repeat index, or 1 if question is not repeatable
+    /// </summary>
+    private int DetermineNextRepeatIndex(Question question)
+    {
+        if (!question.IsRepeatable)
+            return 1;
+
+        var answeredIndices = GetAnsweredRepeatIndices(question.Id).ToHashSet();
+        var maxRepeat = question.GetMaxRepeatIndex();
+
+        // Find first unanswered index
+        if (maxRepeat.HasValue)
+        {
+            for (int i = 1; i <= maxRepeat.Value; i++)
+            {
+                if (!answeredIndices.Contains(i))
+                    return i;
+            }
+            // All repeats answered, return the max
+            return maxRepeat.Value;
+        }
+        else
+        {
+            // Unbounded - find first unanswered or next available
+            if (answeredIndices.Any())
+            {
+                var maxAnswered = answeredIndices.Max();
+                // Check if we can add more
+                for (int i = 1; i <= maxAnswered + 1; i++)
+                {
+                    if (!answeredIndices.Contains(i))
+                        return i;
+                }
+                return maxAnswered + 1;
+            }
+            return 1;
+        }
+    }
+
+    /// <summary>
+    /// Gets the maximum answered repeat index for a question
+    /// Returns 1 if no answers exist or question is not repeatable
+    /// </summary>
+    private int GetMaxAnsweredRepeatIndex(Guid questionId)
+    {
+        var answeredIndices = GetAnsweredRepeatIndices(questionId).ToList();
+        return answeredIndices.Any() ? answeredIndices.Max() : 1;
+    }
 }

@@ -53,16 +53,10 @@ public sealed class RemoveGuestFromReservationCommandHandler
             if (reservation is null)
                 return ApplicationResult<RemoveGuestFromReservationResponse>.Failure("رزرو یافت نشد");
 
-            // Ownership
-            if (reservation.ExternalUserId != request.ExternalUserId)
-                return ApplicationResult<RemoveGuestFromReservationResponse>.Failure("دسترسی به این رزرو مجاز نیست");
 
-            // Status policy: allow removal in Draft or Held. Disallow otherwise.
-            if (reservation.Status is not (ReservationStatus.Draft or ReservationStatus.OnHold))
-                return ApplicationResult<RemoveGuestFromReservationResponse>.Failure("حذف مهمان فقط در وضعیت پیش‌نویس یا نگه‌داشته‌شده مجاز است");
-
-            if (reservation.IsExpired())
-                return ApplicationResult<RemoveGuestFromReservationResponse>.Failure("رزرو منقضی شده است");
+            // Validate reservation allows participant removal (domain behavior)
+            if (!reservation.CanRemoveParticipant(out var canRemoveError))
+                return ApplicationResult<RemoveGuestFromReservationResponse>.Failure(canRemoveError!);
 
             // Load tour for pricing recomputation and registration window checks
             var tour = await _tourRepository.FindOneAsync(t => t.Id == reservation.TourId, ct);

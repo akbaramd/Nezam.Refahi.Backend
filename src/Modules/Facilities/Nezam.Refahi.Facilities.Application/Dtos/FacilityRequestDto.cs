@@ -84,4 +84,9 @@ public class FacilityRequestDto
   /// Indicates if request is cancelled
   /// </summary>
   public bool IsCancelled { get; set; }
+
+  /// <summary>
+  /// Indicates if this is the user's latest request for the cycle
+  /// </summary>
+  public bool IsLastRequest { get; set; }
 }

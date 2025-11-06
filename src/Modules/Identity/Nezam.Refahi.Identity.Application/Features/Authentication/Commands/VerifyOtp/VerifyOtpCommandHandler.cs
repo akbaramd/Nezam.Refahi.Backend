@@ -185,9 +185,9 @@ public class VerifyOtpCommandHandler
             // // 4) Clean Up Related Challenges (Optimized for Success Flow)
             // // ========================================================================
             //
-            // // Since user authenticated successfully, clean up all challenges for this phone
-            // // This prevents trash data accumulation and ensures clean state
-            // await _otpChallengeRepository.DeleteChallengesForPhoneAsync(challenge.PhoneNumber, ct);
+            // Since user authenticated successfully, clean up all challenges for this phone
+            // This prevents trash data accumulation and ensures clean state
+            await _otpChallengeRepository.DeleteChallengesForPhoneAsync(challenge.PhoneNumber, ct);
             //
             // // Lightweight expired cleanup - avoid heavy operations during success flow
             // // Only clean expired challenges, consumed ones are already handled above
@@ -196,11 +196,10 @@ public class VerifyOtpCommandHandler
             // ========================================================================
             // 5) Revoke All Existing Tokens (Security Best Practice)
             // ========================================================================
-            
-            // CRITICAL FIX: Revoke tokens without creating tracking conflicts
-            // Revoke all existing refresh tokens for this user
-            user.RevokeAllUserRefreshTokens();
-            
+
+            // Revoke all existing refresh tokens for this user via token service (repository-backed)
+            await _tokenService.RevokeAllUserRefreshTokensAsync(user.Id);
+
             // Clean up any existing access tokens - use repository to avoid tracking conflicts
             var existingAccessTokens = await _userTokenRepository.GetActiveTokensForUserAsync(user.Id, "AccessToken");
             foreach (var token in existingAccessTokens)

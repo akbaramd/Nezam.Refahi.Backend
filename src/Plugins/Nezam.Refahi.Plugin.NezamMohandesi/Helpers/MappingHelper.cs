@@ -11,10 +11,10 @@ public static class MappingHelper
 
         public static readonly Dictionary<string, string> DisplayNames = new()
         {
-            { Structure, "Structure Engineering / سازه" },
-            { Mechanic, "Mechanic Engineering / مکانیک" },
-            { Electricity, "Electricity Engineering / برق" },
-            { Architecture, "Architecture / معماری" }
+            { Structure, "سازه" },
+            { Mechanic, "مکانیک" },
+            { Electricity, "برق" },
+            { Architecture, "معماری" }
         };
     }
 
@@ -27,10 +27,10 @@ public static class MappingHelper
 
         public static readonly Dictionary<string, string> DisplayNames = new()
         {
-            { Design, "Design / طراح" },
-            { Supervision, "Supervision / ناظر" },
-            { Execute, "Execute / اجرا" },
-            { Executor, "Executor / مجری" }
+            { Design, "طراح" },
+            { Supervision, "ناظر" },
+            { Execute, "اجرا" },
+            { Executor, "مجری" }
         };
     }
 
@@ -43,10 +43,10 @@ public static class MappingHelper
 
         public static readonly Dictionary<string, string> DisplayNames = new()
         {
-            { Master, "Master Grade / پایه ارشد" },
-            { Grade1, "Grade 1 / پایه ۱" },
-            { Grade2, "Grade 2 / پایه ۲" },
-            { Grade3, "Grade 3 / پایه ۳" }
+            { Master, "پایه ارشد" },
+            { Grade1, "پایه ۱" },
+            { Grade2, "پایه ۲" },
+            { Grade3, "پایه ۳" }
         };
 
         public static readonly Dictionary<string, int> Hierarchy = new()
@@ -75,11 +75,11 @@ public static class MappingHelper
 
     public static class ClaimTypeTitles
     {
-        public static string ServiceFields = "Service Fields / رشته های مهندسی";
-        public const string ServiceTypes = "Service Types / انواع خدمات";
-        public const string LicenseGrade = "License Grade / پایه پروانه";
-        public const string LicenseStatus = "License Status / وضعیت پروانه";
-        public const string ProfessionalId = "Professional ID / شماره نظام مهندسی";
+        public static string ServiceFields = "رشته های مهندسی";
+        public const string ServiceTypes = "انواع خدمات";
+        public const string LicenseGrade = "پایه پروانه";
+        public const string LicenseStatus = "وضعیت پروانه";
+        public const string ProfessionalId = "شماره نظام مهندسی";
     }
 
     public static class CapabilityKeys
@@ -118,8 +118,8 @@ public static class MappingHelper
         public static readonly Dictionary<string, string> SpecialNames = new()
         {
    
-            { CapabilityKeys.HasLicense, "Licensed Professional / دارای پروانه" },
-            { CapabilityKeys.NoLicense, "Non-Licensed Professional / بدون پروانه" }
+            { CapabilityKeys.HasLicense, "دارای پروانه" },
+            { CapabilityKeys.NoLicense, "بدون پروانه" }
         };
 
         public static string GenerateDisplayName(string field, string serviceType, string grade)
@@ -159,8 +159,8 @@ public static class MappingHelper
     {
         public static readonly Dictionary<string, string> Names = new()
         {
-            { RoleKeys.Member, "Member / مهندس" },
-            { RoleKeys.Employer, "Employer / کارمند" }
+            { RoleKeys.Member, "مهندس" },
+            { RoleKeys.Employer, "کارمند" }
         };
     }
 

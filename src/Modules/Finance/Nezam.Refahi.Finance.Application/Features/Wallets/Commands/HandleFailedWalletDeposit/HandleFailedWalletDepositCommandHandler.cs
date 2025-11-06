@@ -42,8 +42,8 @@ public class HandleFailedWalletDepositCommandHandler : IRequestHandler<HandleFai
             if (!string.IsNullOrWhiteSpace(request.ErrorCode))
                 deposit.AddMetadata("LastErrorCode", request.ErrorCode!);
 
-            // Conservative rollback: if currently Pending, cancel; if Processing, just record failure
-            if (deposit.Status == WalletDepositStatus.Pending)
+            // Conservative rollback: if currently Requested, cancel; if AwaitingBill, just record failure
+            if (deposit.Status == WalletDepositStatus.Requested)
             {
                 deposit.Cancel(request.FailureReason);
             }

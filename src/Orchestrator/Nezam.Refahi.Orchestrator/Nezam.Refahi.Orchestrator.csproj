@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Modules\Finance\Nezam.Refahi.Finance.Contracts\Nezam.Refahi.Finance.Contracts.csproj" />
+    <ProjectReference Include="..\..\Modules\Membership\Nezam.Refahi.Membership.Contracts\Nezam.Refahi.Membership.Contracts.csproj" />
     <ProjectReference Include="..\..\Modules\Recreation\Nezam.Refahi.Recreation.Contracts\Nezam.Refahi.Recreation.Contracts.csproj" />
   </ItemGroup>
 

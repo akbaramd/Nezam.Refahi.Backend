@@ -19,8 +19,12 @@ public class NezamRefahiNezamMohandesiPlugin : BonModule
   {
     var configuration = context.GetRequireService<IConfiguration>();
     
+    // Register DbContext for scoped usage
     context.Services
       .AddDbContext<CedoContext>(opt => opt.UseSqlServer(configuration.GetConnectionString("CedoConnection")));
+    
+    // Register DbContextFactory for creating contexts when needed (e.g., in background services)
+    context.Services.AddDbContextFactory<CedoContext>(opt => opt.UseSqlServer(configuration.GetConnectionString("CedoConnection")));
     
     // Register repositories
 

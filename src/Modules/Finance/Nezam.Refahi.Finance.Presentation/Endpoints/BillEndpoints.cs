@@ -8,6 +8,7 @@ using Nezam.Refahi.Finance.Application.Features.Payments.Queries.GetBillPayments
 using Nezam.Refahi.Finance.Application.Queries.Bills;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
+using Nezam.Refahi.Finance.Presentation.Extensions;
 
 namespace Nezam.Refahi.Finance.Presentation.Endpoints;
 
@@ -45,7 +46,7 @@ public static class BillEndpoints
                 };
 
                 var result = await mediator.Send(query);
-                return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
+                return result.ToResult();
             })
             .WithName("GetMyBills")
             .Produces<ApplicationResult<PaginatedResult<BillDto>>>(200)
@@ -65,7 +66,8 @@ public static class BillEndpoints
           {
             var externalUserId = currentUserService.GetRequiredUserId();
             if (externalUserId == Guid.Empty)
-              return Results.BadRequest(ApplicationResult<DiscountValidationDto>.Failure("externalUserId is required."));
+              return ResultsExtensions.FromApplicationResult(
+                ApplicationResult<DiscountValidationDto>.Failure("شناسه کاربر خارجی الزامی است."));
 
             var query = new ValidateDiscountCodeQuery
             {
@@ -75,7 +77,7 @@ public static class BillEndpoints
             };
 
             var result = await mediator.Send(query);
-            return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
+            return result.ToResult();
           })
           .WithName("ValidateDiscountCodeForUser")
           .Produces<ApplicationResult<DiscountValidationDto>>(200)
@@ -95,21 +97,27 @@ public static class BillEndpoints
         // GET /api/v1/bills/{billId}
         billGroup.MapGet("/{billId:guid}", async (
                 Guid billId,
-                [FromServices] IMediator mediator) =>
+                [FromServices] IMediator mediator,
+                [FromServices] ICurrentUserService currentUser) =>
             {
+                if (!currentUser.IsAuthenticated || !currentUser.UserId.HasValue)
+                  return Results.Unauthorized();
+
                 var result = await mediator.Send(new GetBillDetailsByIdQuery()
                 {
-                  BillId = billId
+                  BillId = billId,
+                  ExternalUserId = currentUser.UserId.Value
                 });
-                return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
+                return result.ToResult();
             })
             .WithName("GetBillDetailsById")
             .Produces<ApplicationResult<BillDetailDto>>(200)
             .Produces(400)
+            .Produces(401)
             .WithOpenApi(op => new(op)
             {
                 Summary = "Get bill details by Id",
-                Description = "Returns BillDetailDto including items, payments, and refunds.",
+                Description = "Returns BillDetailDto including items, payments, and refunds. User can only access their own bills.",
                 Tags = new List<OpenApiTag> { new() { Name = "Bills" } }
             });
 // GET /api/v1/bills/{billId}/payments
@@ -133,7 +141,7 @@ public static class BillEndpoints
             };
 
             var result = await mediator.Send(query);
-            return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
+            return result.ToResult();
           })
           .WithName("GetBillPayments")
           .Produces<ApplicationResult<PaginatedResult<PaymentDto>>>(200)
@@ -153,7 +161,7 @@ public static class BillEndpoints
                 {
                   BillNumber = billNumber,
                 });
-                return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
+                return result.ToResult();
             })
             .WithName("GetBillDetailsByNumber")
             .Produces<ApplicationResult<BillDetailDto>>(200)
@@ -175,7 +183,7 @@ public static class BillEndpoints
                   
                   TrackingCode = trackingCode,
                 });
-                return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
+                return result.ToResult();
             })
             .WithName("GetBillDetailsByTrackingCode")
             .Produces<ApplicationResult<BillDetailDto>>(200)
@@ -195,7 +203,7 @@ public static class BillEndpoints
             {
                 var command = new IssueBillCommand { BillId = billId };
                 var result = await mediator.Send(command);
-                return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
+                return result.ToResult();
             })
             .WithName("IssueBill")
             .Produces<ApplicationResult<IssueBillResponse>>(200)
@@ -220,7 +228,7 @@ public static class BillEndpoints
                 };
 
                 var result = await mediator.Send(command);
-                return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
+                return result.ToResult();
             })
             .WithName("CancelBill")
             .Produces<ApplicationResult<CancelBillResponse>>(200)

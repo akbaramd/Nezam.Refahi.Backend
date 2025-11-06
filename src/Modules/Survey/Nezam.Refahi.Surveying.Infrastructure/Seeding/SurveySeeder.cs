@@ -68,17 +68,11 @@ public class SurveySeeder
     {
         var surveys = new List<Survey>();
 
-        // Survey 1: Employee Satisfaction Survey (رضایت شغلی)
-        var employeeSatisfactionSurvey = CreateEmployeeSatisfactionSurvey();
-        surveys.Add(employeeSatisfactionSurvey);
 
-        // Survey 2: Organization Culture Survey (فرهنگ سازمانی)
-        var organizationCultureSurvey = CreateOrganizationCultureSurvey();
-        surveys.Add(organizationCultureSurvey);
 
-        // Survey 3: Service Quality Survey (کیفیت خدمات)
-        var serviceQualitySurvey = CreateServiceQualitySurvey();
-        surveys.Add(serviceQualitySurvey);
+        // Survey 4: Engineering Organization Educational Needs Survey (شناسایی نیازهای آموزشی)
+        var educationalNeedsSurvey = CreateEducationalNeedsSurvey();
+        surveys.Add(educationalNeedsSurvey);
 
         return Task.FromResult(surveys);
     }
@@ -105,7 +99,7 @@ public class SurveySeeder
 
         // Add questions
         CreateEmployeeSatisfactionQuestions(survey);
-        survey.Activate();
+        survey.Publish();
         return survey;
     }
 
@@ -128,7 +122,7 @@ public class SurveySeeder
 
         // Add questions
         CreateOrganizationCultureQuestions(survey);
-        survey.Activate();
+        survey.Publish();
         return survey;
     }
 
@@ -153,7 +147,7 @@ public class SurveySeeder
 
         // Add questions
         CreateServiceQualityQuestions(survey);
-        survey.Activate();
+        survey.Publish();
         return survey;
     }
 
@@ -240,5 +234,68 @@ public class SurveySeeder
 
         // Question 4: Textual - Service Improvement
         survey.AddQuestion(new QuestionSpecification(QuestionKind.Textual, "برای بهبود کیفیت خدمات چه پیشنهادی دارید؟", 4, false));
+    }
+
+    private Survey CreateEducationalNeedsSurvey()
+    {
+        var survey = new Survey(
+            "شناسایی نیازهای آموزشی اعضای محترم سازمان نظام مهندسی ساختمان استان آذربایجان‌غربی",
+            "به اطلاع اعضای محترم سازمان نظام مهندسی ساختمان استان آذربایجان‌غربی می‌رساند با عنایت به اهمیت به‌روز بودن دانش و مهارت‌های فنی مهندسان و متخصصان ساختمان و با هدف ارتقاء کیفیت ساخت و ساز در سطح استان، سازمان استان در نظر دارد نسبت به شناسایی نیازهای آموزشی اعضای محترم در زمینه دوره‌های بازآموزی و ترویجی اقدام نماید. از تمامی اعضای محترم سازمان دعوت می‌شود که سمینارها یا دوره‌های پیشنهادی خود را به سازمان استان اعلام فرمایند. لازم به ذکر است پس از دریافت کلیه نظرات، کمیته آموزش سازمان نسبت به برگزاری این دوره‌ها به روش مقتضی در ارومیه و دیگر شهرستان‌ها در قالب یک تقویم آموزشی اقدام خواهد نمود.",
+            false,
+            new ParticipationPolicy(
+                maxAttemptsPerMember: 1,
+                allowMultipleSubmissions: false,
+                coolDownSeconds: null
+            )
+        );
+
+        // Add questions
+        CreateEducationalNeedsQuestions(survey);
+        survey.Publish();
+        return survey;
+    }
+
+    private void CreateEducationalNeedsQuestions(Survey survey)
+    {
+        // Question 1: Name (Textual - Required)
+        survey.AddQuestion(new QuestionSpecification(QuestionKind.Textual, "نام", 1, true));
+
+        // Question 2: Last Name (Textual - Required)
+        survey.AddQuestion(new QuestionSpecification(QuestionKind.Textual, "نام خانوادگی", 2, true));
+
+        // Question 3: Field/Discipline (Single Choice - Required)
+        var q3 = survey.AddQuestion(new QuestionSpecification(QuestionKind.ChoiceSingle, "رشته", 3, true));
+        q3.AddOption("عمران", 1);
+        q3.AddOption("معماری", 2);
+        q3.AddOption("تأسیسات مکانیکی", 3);
+        q3.AddOption("تأسیسات برقی", 4);
+        q3.AddOption("نقشه‌برداری", 5);
+        q3.AddOption("شهرسازی", 6);
+        q3.AddOption("سایر", 7);
+
+        // Question 4: City (Single Choice - Required)
+        var q4 = survey.AddQuestion(new QuestionSpecification(QuestionKind.ChoiceSingle, "شهرستان مربوطه", 4, true));
+        q4.AddOption("ارومیه", 1);
+        q4.AddOption("خوی", 2);
+        q4.AddOption("مهاباد", 3);
+        q4.AddOption("میاندوآب", 4);
+        q4.AddOption("بوکان", 5);
+        q4.AddOption("سلماس", 6);
+        q4.AddOption("پیرانشهر", 7);
+        q4.AddOption("نقده", 8);
+        q4.AddOption("شاهین‌دژ", 9);
+        q4.AddOption("تکاب", 10);
+        q4.AddOption("اشنویه", 11);
+        q4.AddOption("ماکو", 12);
+        q4.AddOption("سایر", 13);
+
+        // Question 5: Course/Seminar Title (Textual - Required)
+        survey.AddQuestion(new QuestionSpecification(QuestionKind.Textual, "عنوان دوره یا سمینار پیشنهادی", 5, true));
+
+        // Question 6: Suggested Instructors (Textual - Optional)
+        survey.AddQuestion(new QuestionSpecification(QuestionKind.Textual, "اساتید پیشنهادی (در صورت تمایل)", 6, false));
+
+        // Question 7: Additional Descriptions (Textual - Optional)
+        survey.AddQuestion(new QuestionSpecification(QuestionKind.Textual, "توضیحات تکمیلی (در صورت نیاز)", 7, false));
     }
 }

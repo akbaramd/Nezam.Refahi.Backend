@@ -10,7 +10,7 @@ public class IssueBillCommandMessage
 {
     // Correlation
     public string TrackingCode { get; set; } = string.Empty;
-    public string ReferenceId { get; set; } = string.Empty; // e.g., ReservationId or TrackingCode
+    public Guid ReferenceId { get; set; } = Guid.Empty; // e.g., ReservationId
     public string ReferenceType { get; set; } = string.Empty; // entity name for correlation
 
     // User

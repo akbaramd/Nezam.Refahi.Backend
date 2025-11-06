@@ -26,14 +26,6 @@ public class FacilityConfiguration : IEntityTypeConfiguration<Facility>
             .IsRequired()
             .HasMaxLength(50);
 
-        builder.Property(f => f.Type)
-            .IsRequired()
-            .HasConversion<string>();
-
-        builder.Property(f => f.Status)
-            .IsRequired()
-            .HasConversion<string>();
-
         builder.Property(f => f.Description)
             .HasMaxLength(1000);
 
@@ -47,33 +39,13 @@ public class FacilityConfiguration : IEntityTypeConfiguration<Facility>
         builder.Property(f => f.BankAccountNumber)
             .HasMaxLength(50);
 
-        // Metadata as JSON
-        builder.Property(f => f.Metadata)
-            .HasConversion(
-                v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
-                v => System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new Dictionary<string, string>())
-            .HasColumnType("nvarchar(max)");
-
         // Indexes
         builder.HasIndex(f => f.Code).IsUnique();
         builder.HasIndex(f => f.Name);
-        builder.HasIndex(f => f.Type);
-        builder.HasIndex(f => f.Status);
 
         // Relationships
-        builder.HasMany(f => f.Cycles)
-            .WithOne(c => c.Facility)
-            .HasForeignKey(c => c.FacilityId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasMany(f => f.Features)
-            .WithOne()
-            .HasForeignKey("FacilityId")
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasMany(f => f.CapabilityPolicies)
-            .WithOne()
-            .HasForeignKey("FacilityId")
-            .OnDelete(DeleteBehavior.Cascade);
+        // Note: Cycles are separate Aggregate Roots, but we include navigation property
+        // for querying purposes only (read-only access via EF Core)
+        // The relationship is configured in FacilityCycleConfiguration
     }
 }

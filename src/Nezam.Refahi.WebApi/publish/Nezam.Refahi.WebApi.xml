@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Nezam.Refahi.WebApi</name>
+    </assembly>
+    <members>
+        <member name="T:Nezam.Refahi.WebApi.Endpoints.EndpointExtensions">
+            <summary>
+            Extension methods for mapping all API endpoints
+            </summary>
+        </member>
+        <member name="M:Nezam.Refahi.WebApi.Endpoints.EndpointExtensions.MapApiEndpoints(Microsoft.AspNetCore.Builder.WebApplication)">
+            <summary>
+            Maps all API endpoints for the application
+            </summary>
+            <param name="app">The web application</param>
+            <returns>The web application for chaining</returns>
+        </member>
+        <member name="T:Nezam.Refahi.WebApi.HealthChecks.DatabaseHealthCheck">
+            <summary>
+            Health check for database connectivity
+            </summary>
+        </member>
+        <member name="T:Nezam.Refahi.WebApi.HealthChecks.OutboxHealthCheck">
+            <summary>
+            Health check for outbox message processing
+            </summary>
+        </member>
+        <member name="T:Nezam.Refahi.WebApi.Swagger.AuthorizationOperationFilter">
+            <summary>
+            Operation filter to show authorization icon only for endpoints that require authentication
+            and hide it for anonymous endpoints. Supports both Controller attributes and Minimal API RequireAuthorization().
+            </summary>
+        </member>
+        <member name="M:Nezam.Refahi.WebApi.Swagger.AuthorizationOperationFilter.HasRequireAuthorizationMetadata(Swashbuckle.AspNetCore.SwaggerGen.OperationFilterContext)">
+            <summary>
+            Checks if the endpoint has RequireAuthorization() metadata from Minimal APIs
+            </summary>
+        </member>
+    </members>
+</doc>

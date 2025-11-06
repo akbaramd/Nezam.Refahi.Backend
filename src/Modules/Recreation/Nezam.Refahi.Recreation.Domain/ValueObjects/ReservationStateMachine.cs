@@ -21,25 +21,19 @@ public static class ReservationStateMachine
         },
         [ReservationStatus.OnHold] = new()
         {
-            ReservationStatus.PendingConfirmation,
-            ReservationStatus.Confirmed, // Direct confirmation (e.g., free tours)
+            ReservationStatus.Confirmed, // OnHold means waiting for payment and confirmation, can go directly to Confirmed
+            ReservationStatus.Draft, // Can return to Draft for editing changes
             ReservationStatus.Cancelled,
             ReservationStatus.Expired,
             ReservationStatus.SystemCancelled,
-            ReservationStatus.Waitlisted
-        },
-        [ReservationStatus.PendingConfirmation] = new()
-        {
-            ReservationStatus.Confirmed,
-            ReservationStatus.ProcessingFailed,
-            ReservationStatus.Cancelled,
-            ReservationStatus.SystemCancelled,
-            ReservationStatus.CancellationRequested
+            ReservationStatus.Waitlisted,
+            ReservationStatus.ProcessingFailed // Payment processing can fail
         },
         [ReservationStatus.Confirmed] = new()
         {
-            ReservationStatus.Cancelled,
-            ReservationStatus.SystemCancelled,
+            // Note: Confirmed reservations cannot be directly cancelled by user
+            // They must go through CancellationRequested or CancellationProcessing
+            ReservationStatus.SystemCancelled, // Only system can cancel directly
             ReservationStatus.CancellationProcessing,
             ReservationStatus.CancellationRequested,
             ReservationStatus.AmendmentRequested,
@@ -47,7 +41,7 @@ public static class ReservationStateMachine
         },
         [ReservationStatus.ProcessingFailed] = new()
         {
-            ReservationStatus.PendingConfirmation, // Retry payment
+            ReservationStatus.OnHold, // Retry payment by going back to OnHold
             ReservationStatus.Cancelled,
             ReservationStatus.Expired
         },
@@ -57,6 +51,7 @@ public static class ReservationStateMachine
         },
         [ReservationStatus.Expired] = new()
         {
+            ReservationStatus.Draft,  // Allow reactivation to Draft for editing
             ReservationStatus.OnHold, // Allow reactivation to OnHold state
             ReservationStatus.Cancelled // Allow manual cancellation of expired reservations
         },
@@ -71,7 +66,7 @@ public static class ReservationStateMachine
         {
             ReservationStatus.Cancelled, // Complete cancellation after PSP arbitration
             ReservationStatus.Confirmed, // Revert if cancellation is denied
-            ReservationStatus.PendingConfirmation // Revert if cancellation is denied
+            ReservationStatus.OnHold // Revert if cancellation is denied (back to OnHold for payment)
         },
         [ReservationStatus.AmendmentRequested] = new()
         {
@@ -119,11 +114,11 @@ public static class ReservationStateMachine
 
     /// <summary>
     /// Checks if a state is active (counts towards capacity)
+    /// Note: OnHold means waiting for payment and confirmation
     /// </summary>
     public static bool IsActiveState(ReservationStatus state)
     {
         return state is ReservationStatus.OnHold 
-                    or ReservationStatus.PendingConfirmation 
                     or ReservationStatus.Confirmed
                     or ReservationStatus.Waitlisted;
     }
@@ -138,10 +133,12 @@ public static class ReservationStateMachine
 
     /// <summary>
     /// Checks if a state allows payment
+    /// Note: OnHold means waiting for payment, so from OnHold can go to Confirmed
     /// </summary>
     public static bool CanInitiatePayment(ReservationStatus state)
     {
-        return GetValidNextStates(state).Contains(ReservationStatus.PendingConfirmation);
+        // OnHold can transition to Confirmed (payment successful)
+        return GetValidNextStates(state).Contains(ReservationStatus.Confirmed);
     }
 
     /// <summary>

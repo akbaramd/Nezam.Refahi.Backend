@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Nezam.Refahi.Facilities.Application;
 using Nezam.Refahi.Facilities.Domain.Entities;
@@ -65,7 +66,13 @@ public class FacilitiesSeeder
                 foreach (var cycle in cycles)
                 {
                     await _facilityCycleRepository.AddAsync(cycle);
-                    _logger.LogInformation("Added cycle: {CycleName} for facility {FacilityCode}", cycle.Name, cycle.FacilityId);
+                    
+                    // Explicitly access PriceOptions collection to ensure EF Core tracks them
+                    // This is necessary because EF Core needs to discover the related entities
+                    var priceOptionsCount = cycle.PriceOptions.Count;
+                    _logger.LogInformation(
+                        "Added cycle: {CycleName} for facility {FacilityCode} with {PriceOptionCount} price options", 
+                        cycle.Name, cycle.FacilityId, priceOptionsCount);
                 }
 
                 // Commit transaction
@@ -96,23 +103,11 @@ public class FacilitiesSeeder
         var tejaratFacility = new Facility(
             name: "تسهیلات تجارت",
             code: "TEJARAT-001",
-            type: FacilityType.Loan,
             description: "تسهیلات تجارت برای راه‌اندازی کسب و کار با مبلغ ۱۰۰ میلیون تومان و بازپرداخت ۳۰ ماهه",
             bankName: "بانک تجارت",
             bankCode: "TEJARAT",
             bankAccountNumber: "0987654321"
         );
-
-        // Activate the facility
-        tejaratFacility.Activate();
-
-        // Add metadata
-        tejaratFacility.Metadata["loanTermMonths"] = "30";
-        tejaratFacility.Metadata["interestRate"] = "0.23"; // 23% annual interest
-        tejaratFacility.Metadata["purpose"] = "کسب و کار";
-        tejaratFacility.Metadata["targetGroup"] = "کارآفرینان";
-        tejaratFacility.Metadata["businessPlanRequired"] = "true";
-        tejaratFacility.Metadata["cooldownYears"] = "2"; // 2 years cooldown after receiving loan
 
         facilities.Add(tejaratFacility);
 
@@ -123,88 +118,115 @@ public class FacilitiesSeeder
     {
         var cycles = new List<FacilityCycle>();
         
-        // Persian dates: 1 Aban to 30 Aban (1403) = October 22, 2024 to November 20, 2024
-        // Registration period: 1 month before cycle start
-        var cycle1StartDate = new DateTime(2024, 10, 22); // 1 Aban 1403
-        var cycle1EndDate = new DateTime(2024, 11, 20);   // 30 Aban 1403
-        var cycle1RegistrationStart = cycle1StartDate.AddMonths(-1); // 1 month before
-        var cycle1RegistrationEnd = cycle1StartDate.AddDays(-1); // Day before cycle starts
+        // Use PersianCalendar to calculate dates for year 1404
+        var persianCalendar = new PersianCalendar();
+        const int persianYear = 1404;
+        const int abanMonth = 8;  // آبان
+        const int azarMonth = 9;  // آذر
+        
+        // Calculate dates: 1 Aban 1404 and 30 Aban 1404
+        var cycle1StartDate = persianCalendar.ToDateTime(persianYear, abanMonth, 1, 0, 0, 0, 0); // 1 Aban 1404
+        var cycle1EndDate = persianCalendar.ToDateTime(persianYear, abanMonth, 30, 0, 0, 0, 0);   // 30 Aban 1404
+        
+        // Calculate dates: 1 Azar 1404 and 30 Azar 1404
+        var cycle2StartDate = persianCalendar.ToDateTime(persianYear, azarMonth, 1, 0, 0, 0, 0); // 1 Azar 1404
+        var cycle2EndDate = persianCalendar.ToDateTime(persianYear, azarMonth, 30, 0, 0, 0, 0);   // 30 Azar 1404
+
+        // Common capability IDs - these should match actual capabilities in the system
+        var commonCapabilities = new List<string>
+        {
+            "structure_supervisor_grade1",
+            "architecture_supervisor_grade1",
+            "has_license"
+        };
 
         foreach (var facility in facilities)
         {
-            // Create first cycle for Trade Facilities
+            // Create first cycle: 1 Aban to 30 Aban - Status: Active (در حال ثبت نام)
             var cycle1 = new FacilityCycle(
                 facilityId: facility.Id,
                 name: $"دوره اول {facility.Name}",
                 startDate: cycle1StartDate,
                 endDate: cycle1EndDate,
-                quota: 100, // 100 applications per cycle
-                minAmount: new Money(20_000_000),
-                maxAmount: new Money(100_000_000),
-                defaultAmount: new Money(100_000_000),
+                quota: 100,
+                restrictToPreviousCycles: false,
+                description: $"دوره اول ارائه {facility.Name} - 1 آبان تا 30 آبان 1404",
                 paymentMonths: 30,
-                interestRate: 0.23m, // 23% annual interest
-                cooldownDays: 730, // 2 years = 730 days
-                isRepeatable: true,
-                isExclusive: false,
-                exclusiveSetId: null,
-                maxActiveAcrossCycles: 2,
-                description: $"دوره اول ارائه {facility.Name} - ظرفیت ۱۰۰ درخواست - ثبت نام از {cycle1RegistrationStart:yyyy/MM/dd} تا {cycle1RegistrationEnd:yyyy/MM/dd}"
+                interestRate: 0.23m // 23% annual interest
             );
 
-            // Activate the cycle
+            // Add price options: 1,000,000,000 and 500,000,000
+            cycle1.AddPriceOption(new Money(1_000_000_000), displayOrder: 1, description: "یک میلیارد تومان");
+            cycle1.AddPriceOption(new Money(500_000_000), displayOrder: 2, description: "پانصد میلیون تومان");
+
+            // Add capabilities to the cycle
+            foreach (var capabilityId in commonCapabilities)
+            {
+                try
+                {
+                    cycle1.AddCapability(capabilityId);
+                }
+                catch (InvalidOperationException)
+                {
+                    // Capability already exists, skip
+                    _logger.LogWarning("Capability {CapabilityId} already exists for cycle {CycleName}", capabilityId, cycle1.Name);
+                }
+            }
+
+            // Activate the cycle (Status: Active - در حال ثبت نام)
             cycle1.Activate();
 
             // Add cycle-specific metadata
             cycle1.Metadata["cycleNumber"] = "1";
             cycle1.Metadata["priority"] = "high";
             cycle1.Metadata["announcementDate"] = DateTime.UtcNow.ToString("yyyy-MM-dd");
-            cycle1.Metadata["admissionStrategy"] = "FIFO";
-            cycle1.Metadata["waitlistCapacity"] = "50";
-            cycle1.Metadata["registrationStartDate"] = cycle1RegistrationStart.ToString("yyyy-MM-dd");
-            cycle1.Metadata["registrationEndDate"] = cycle1RegistrationEnd.ToString("yyyy-MM-dd");
-            cycle1.Metadata["availableSlots"] = "100";
-            cycle1.Metadata["registeredCount"] = "0";
+            cycle1.Metadata["statusText"] = "در حال ثبت نام";
 
             cycles.Add(cycle1);
 
-            // Create second cycle for Trade Facilities (same period for both cycles as requested)
+            // Create second cycle: 1 Azar to 30 Azar - Status: Draft (منتظر ثبت نام)
             var cycle2 = new FacilityCycle(
                 facilityId: facility.Id,
                 name: $"دوره دوم {facility.Name}",
-                startDate: cycle1StartDate, // Same period for both cycles
-                endDate: cycle1EndDate,
-                quota: 100, // 100 applications per cycle
-                minAmount: new Money(20_000_000),
-                maxAmount: new Money(100_000_000),
-                defaultAmount: new Money(100_000_000),
+                startDate: cycle2StartDate,
+                endDate: cycle2EndDate,
+                quota: 100,
+                restrictToPreviousCycles: false,
+                description: $"دوره دوم ارائه {facility.Name} - 1 آذر تا 30 آذر 1404",
                 paymentMonths: 30,
-                interestRate: 0.23m, // 23% annual interest
-                cooldownDays: 730, // 2 years = 730 days
-                isRepeatable: true,
-                isExclusive: false,
-                exclusiveSetId: null,
-                maxActiveAcrossCycles: 2,
-                description: $"دوره دوم ارائه {facility.Name} - ظرفیت ۱۰۰ درخواست - ثبت نام از {cycle1RegistrationStart:yyyy/MM/dd} تا {cycle1RegistrationEnd:yyyy/MM/dd}"
+                interestRate: 0.23m // 23% annual interest
             );
 
-            // Activate the cycle
-            cycle2.Activate();
+            // Add price options: 1,000,000,000 and 500,000,000
+            cycle2.AddPriceOption(new Money(1_000_000_000), displayOrder: 1, description: "یک میلیارد تومان");
+            cycle2.AddPriceOption(new Money(500_000_000), displayOrder: 2, description: "پانصد میلیون تومان");
+
+            // Add capabilities to the cycle
+            foreach (var capabilityId in commonCapabilities)
+            {
+                try
+                {
+                    cycle2.AddCapability(capabilityId);
+                }
+                catch (InvalidOperationException)
+                {
+                    // Capability already exists, skip
+                    _logger.LogWarning("Capability {CapabilityId} already exists for cycle {CycleName}", capabilityId, cycle2.Name);
+                }
+            }
+
+            // Keep cycle2 in Draft status (منتظر ثبت نام)
+            // Status is already Draft by default, no need to activate
 
             // Add cycle-specific metadata
             cycle2.Metadata["cycleNumber"] = "2";
             cycle2.Metadata["priority"] = "high";
             cycle2.Metadata["announcementDate"] = DateTime.UtcNow.ToString("yyyy-MM-dd");
-            cycle2.Metadata["admissionStrategy"] = "FIFO";
-            cycle2.Metadata["waitlistCapacity"] = "50";
-            cycle2.Metadata["registrationStartDate"] = cycle1RegistrationStart.ToString("yyyy-MM-dd");
-            cycle2.Metadata["registrationEndDate"] = cycle1RegistrationEnd.ToString("yyyy-MM-dd");
-            cycle2.Metadata["availableSlots"] = "100";
-            cycle2.Metadata["registeredCount"] = "0";
+            cycle2.Metadata["statusText"] = "منتظر ثبت نام";
 
             cycles.Add(cycle2);
 
-            _logger.LogInformation("Created cycles for facility {FacilityCode}: {Cycle1Name} and {Cycle2Name} (Quota: 100 each)", 
+            _logger.LogInformation("Created cycles for facility {FacilityCode}: {Cycle1Name} (Active - 1-30 Aban) and {Cycle2Name} (Draft - 1-30 Azar)", 
                 facility.Code, cycle1.Name, cycle2.Name);
         }
 

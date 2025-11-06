@@ -48,15 +48,10 @@ public sealed class ChangeReservationCapacityCommandHandler
         if (reservation is null)
             return ApplicationResult<ChangeReservationCapacityCommandResult>.Failure("رزرو یافت نشد");
 
-        // Ownership
-        if (reservation.ExternalUserId != request.ExternalUserId)
-            return ApplicationResult<ChangeReservationCapacityCommandResult>.Failure("دسترسی به این رزرو مجاز نیست");
 
-        // Only Draft and not expired
-        if (reservation.Status != ReservationStatus.Draft)
-            return ApplicationResult<ChangeReservationCapacityCommandResult>.Failure("تنها در وضعیت پیش‌نویس امکان تغییر ظرفیت وجود دارد");
-        if (reservation.IsExpired())
-            return ApplicationResult<ChangeReservationCapacityCommandResult>.Failure("رزرو منقضی شده است");
+        // Validate reservation allows capacity change (domain behavior)
+        if (!reservation.CanChangeCapacity(out var canChangeCapacityError))
+            return ApplicationResult<ChangeReservationCapacityCommandResult>.Failure(canChangeCapacityError!);
 
         // Load tour with capacities
         var tour = await _tourRepository.FindOneAsync(t => t.Id == reservation.TourId, ct);

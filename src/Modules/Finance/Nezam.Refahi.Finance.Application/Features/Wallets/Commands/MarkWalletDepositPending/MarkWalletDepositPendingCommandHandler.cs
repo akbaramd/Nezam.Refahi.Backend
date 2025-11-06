@@ -10,18 +10,18 @@ using Nezam.Refahi.Finance.Contracts.IntegrationEvents;
 
 namespace Nezam.Refahi.Finance.Application.Features.Wallets.Commands.MarkWalletDepositPending;
 
-public class MarkWalletDepositPendingCommandHandler : IRequestHandler<MarkWalletDepositPendingCommand, ApplicationResult<Unit>>
+public class MarkWalletDepositAwaitingPaymentCommandHandler : IRequestHandler<MarkWalletDepositAwaitingPaymentCommand, ApplicationResult<Unit>>
 {
     private readonly IWalletDepositRepository _walletDepositRepository;
     private readonly IFinanceUnitOfWork _unitOfWork;
-    private readonly ILogger<MarkWalletDepositPendingCommandHandler> _logger;
-    private readonly IPublishEndpoint _publishEndpoint;
+    private readonly ILogger<MarkWalletDepositAwaitingPaymentCommandHandler> _logger;
+    private readonly IBus _publishEndpoint;
 
-    public MarkWalletDepositPendingCommandHandler(
+    public MarkWalletDepositAwaitingPaymentCommandHandler(
         IWalletDepositRepository walletDepositRepository,
         IFinanceUnitOfWork unitOfWork,
-        IPublishEndpoint publishEndpoint,
-        ILogger<MarkWalletDepositPendingCommandHandler> logger)
+        IBus publishEndpoint,
+        ILogger<MarkWalletDepositAwaitingPaymentCommandHandler> logger)
     {
         _walletDepositRepository = walletDepositRepository ?? throw new ArgumentNullException(nameof(walletDepositRepository));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
@@ -29,7 +29,7 @@ public class MarkWalletDepositPendingCommandHandler : IRequestHandler<MarkWallet
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task<ApplicationResult<Unit>> Handle(MarkWalletDepositPendingCommand request, CancellationToken cancellationToken)
+    public async Task<ApplicationResult<Unit>> Handle(MarkWalletDepositAwaitingPaymentCommand request, CancellationToken cancellationToken)
     {
         var deposit = await _walletDepositRepository.GetByIdAsync(request.WalletDepositId, cancellationToken);
         if (deposit == null)
@@ -41,7 +41,7 @@ public class MarkWalletDepositPendingCommandHandler : IRequestHandler<MarkWallet
         await _unitOfWork.BeginAsync(cancellationToken);
         try
         {
-            deposit.MarkPending();
+            deposit.MarkAwaitingPayment();
             await _walletDepositRepository.UpdateAsync(deposit, cancellationToken: cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _unitOfWork.CommitAsync(cancellationToken);
@@ -50,7 +50,7 @@ public class MarkWalletDepositPendingCommandHandler : IRequestHandler<MarkWallet
         catch (Exception ex)
         {
             await _unitOfWork.RollbackAsync(cancellationToken);
-            _logger.LogError(ex, "Failed to mark wallet deposit {DepositId} as Pending", deposit.Id);
+            _logger.LogError(ex, "Failed to mark wallet deposit {DepositId} as AwaitingPayment", deposit.Id);
             // Publish failure integration event
             var failedEvent = new WalletDepositPendingFailedEventMessage()
             {
@@ -64,7 +64,7 @@ public class MarkWalletDepositPendingCommandHandler : IRequestHandler<MarkWallet
             };
             await _publishEndpoint.Publish(failedEvent, cancellationToken);
 
-            return ApplicationResult<Unit>.Failure(ex, "Failed to mark deposit pending");
+            return ApplicationResult<Unit>.Failure(ex, "Failed to mark deposit awaiting payment");
         }
     }
 }

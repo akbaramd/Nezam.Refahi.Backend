@@ -63,8 +63,8 @@ public sealed class Question : Entity<Guid>
             throw new InvalidOperationException("FixedMCQ4 questions can only have 4 options");
 
         // Validate other choice questions have at least 2 options
-        if ((Kind == QuestionKind.ChoiceSingle || Kind == QuestionKind.ChoiceMulti) && _options.Count >= 10)
-            throw new InvalidOperationException("Choice questions cannot have more than 10 options");
+        if ((Kind == QuestionKind.ChoiceSingle || Kind == QuestionKind.ChoiceMulti) && _options.Count >= 25)
+            throw new InvalidOperationException("Choice questions cannot have more than 25 options");
 
         var option = new QuestionOption(Id, text, order);
         _options.Add(option);

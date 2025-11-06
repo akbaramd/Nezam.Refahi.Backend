@@ -52,8 +52,6 @@ public class GetFacilitiesQueryHandler : IRequestHandler<GetFacilitiesQuery, App
             var spec = new FacilityPaginatedSpec(
                 request.Page,
                 request.PageSize,
-                request.Type,
-                request.Status,
                 request.SearchTerm,
                 request.OnlyActive);
             // Get facilities
@@ -86,48 +84,5 @@ public class GetFacilitiesQueryHandler : IRequestHandler<GetFacilitiesQuery, App
         }
     }
 
-    private static FacilityDto MapToDto(Domain.Entities.Facility facility)
-    {
-        var activeCycles = facility.Cycles.Where(c => c.Status == FacilityCycleStatus.Active).ToList();
-        var totalActiveQuota = activeCycles.Sum(c => c.Quota);
-        var totalUsedQuota = activeCycles.Sum(c => c.UsedQuota);
-        var totalAvailableQuota = totalActiveQuota - totalUsedQuota;
-        var quotaUtilizationPercentage = totalActiveQuota > 0 ? (decimal)totalUsedQuota / totalActiveQuota * 100 : 0;
-
-        return new FacilityDto
-        {
-            Id = facility.Id,
-            Name = facility.Name,
-            Code = facility.Code,
-            Type = facility.Type.ToString(),
-            TypeText = EnumTextMappingService.GetFacilityTypeDescription(facility.Type),
-            Status = facility.Status.ToString(),
-            StatusText = EnumTextMappingService.GetFacilityStatusDescription(facility.Status),
-            IsActive = EnumTextMappingService.IsFacilityActive(facility.Status),
-            Description = facility.Description,
-            BankInfo = new BankInfoDto
-            {
-                BankName = facility.BankName,
-                BankCode = facility.BankCode,
-                BankAccountNumber = facility.BankAccountNumber
-            },
-            CycleStatistics = new FacilityCycleStatisticsDto
-            {
-                ActiveCyclesCount = facility.Cycles.Count(c => c.Status == FacilityCycleStatus.Active),
-                TotalCyclesCount = facility.Cycles.Count,
-                DraftCyclesCount = facility.Cycles.Count(c => c.Status == FacilityCycleStatus.Draft),
-                ClosedCyclesCount = facility.Cycles.Count(c => c.Status == FacilityCycleStatus.Closed),
-                CompletedCyclesCount = facility.Cycles.Count(c => c.Status == FacilityCycleStatus.Completed),
-                CancelledCyclesCount = facility.Cycles.Count(c => c.Status == FacilityCycleStatus.Cancelled),
-                TotalActiveQuota = totalActiveQuota,
-                TotalUsedQuota = totalUsedQuota,
-                TotalAvailableQuota = totalAvailableQuota,
-                QuotaUtilizationPercentage = quotaUtilizationPercentage
-            },
-            Metadata = facility.Metadata,
-            CreatedAt = facility.CreatedAt,
-            LastModifiedAt = facility.LastModifiedAt
-        };
-    }
 }
 

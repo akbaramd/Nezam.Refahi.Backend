@@ -24,7 +24,7 @@ public class GetFacilityDetailsQueryHandler : IRequestHandler<GetFacilityDetails
 {
     private readonly IFacilityRepository _facilityRepository;
     private readonly IFacilityRequestRepository _requestRepository;
-    private readonly IMemberInfoService _memberInfoService;
+    private readonly IMemberService _memberService;
     private readonly IMapper<Domain.Entities.Facility, FacilityDetailsDto> _facilityDetailsMapper;
     private readonly IValidator<GetFacilityDetailsQuery> _validator;
     private readonly ILogger<GetFacilityDetailsQueryHandler> _logger;
@@ -32,14 +32,14 @@ public class GetFacilityDetailsQueryHandler : IRequestHandler<GetFacilityDetails
     public GetFacilityDetailsQueryHandler(
         IFacilityRepository facilityRepository,
         IFacilityRequestRepository requestRepository,
-        IMemberInfoService memberInfoService,
+        IMemberService memberService,
         IValidator<GetFacilityDetailsQuery> validator,
         ILogger<GetFacilityDetailsQueryHandler> logger,
         IMapper<Domain.Entities.Facility, FacilityDetailsDto> facilityDetailsMapper)
     {
         _facilityRepository = facilityRepository;
         _requestRepository = requestRepository;
-        _memberInfoService = memberInfoService;
+        _memberService = memberService;
         _facilityDetailsMapper = facilityDetailsMapper;
         _validator = validator;
         _logger = logger;
@@ -76,11 +76,11 @@ public class GetFacilityDetailsQueryHandler : IRequestHandler<GetFacilityDetails
             }
 
             // Get user member info if NationalNumber provided
-            MemberInfoDto? memberInfo = null;
+            MemberDetailDto? memberDetail = null;
             if (!string.IsNullOrWhiteSpace(request.NationalNumber))
             {
-                memberInfo = await _memberInfoService.GetMemberInfoAsync(new NationalId(request.NationalNumber));
-                if (memberInfo == null)
+                memberDetail = await _memberService.GetMemberDetailByNationalCodeAsync(new NationalId(request.NationalNumber));
+                if (memberDetail == null)
                 {
                     return ApplicationResult<FacilityDetailsDto>.Failure(
                         "اطلاعات عضو یافت نشد");

@@ -11,27 +11,17 @@ public enum SurveyState
     Draft = 0,
 
     /// <summary>
-    /// Survey is scheduled to start at a specific time
+    /// Survey is published and available for participation
     /// </summary>
-    Scheduled = 1,
+    Published = 1,
 
     /// <summary>
-    /// Survey is currently active and accepting responses
+    /// Survey has been completed (all responses collected)
     /// </summary>
-    Active = 2,
-
-    /// <summary>
-    /// Survey is temporarily paused (not accepting new responses but existing ones can continue)
-    /// </summary>
-    Paused = 3,
-
-    /// <summary>
-    /// Survey has ended and is no longer accepting responses
-    /// </summary>
-    Closed = 4,
+    Completed = 2,
 
     /// <summary>
     /// Survey has been archived for historical purposes
     /// </summary>
-    Archived = 5
+    Archived = 3
 }

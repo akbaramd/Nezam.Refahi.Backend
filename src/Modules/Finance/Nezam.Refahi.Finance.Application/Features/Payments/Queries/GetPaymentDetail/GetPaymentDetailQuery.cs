@@ -10,4 +10,9 @@ public sealed partial class GetPaymentDetailQuery : IRequest<ApplicationResult<P
   /// Payment ID (required)
   /// </summary>
   public Guid PaymentId { get; init; }
+
+  /// <summary>
+  /// External User ID to ensure user can only access their own payments
+  /// </summary>
+  public Guid ExternalUserId { get; init; }
 }

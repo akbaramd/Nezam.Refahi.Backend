@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Nezam.Refahi.Identity.Presentation</name>
+    </assembly>
+    <members>
+        <member name="M:Nezam.Refahi.Identity.Presentation.Endpoints.IdentityEndpoints.IsValidScope(System.String)">
+            <summary>
+            Validates if the provided scope is valid
+            </summary>
+        </member>
+    </members>
+</doc>

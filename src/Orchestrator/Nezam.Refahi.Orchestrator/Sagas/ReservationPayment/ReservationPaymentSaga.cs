@@ -93,8 +93,8 @@ public class ReservationPaymentSagaStateMachine : MassTransitStateMachine<Reserv
                 .Publish(context => new IssueBillCommandMessage()
                 {
                     TrackingCode = context.Saga.TrackingCode,
-                    ReferenceId = context.Saga.ReservationId.ToString(),
-                    ReferenceType = "TourReservation",
+                    ReferenceId = context.Saga.ReservationId,
+                    ReferenceType = FinanceMessagingRoutes.ReferenceTypes.TourReservation,
                     ExternalUserId = context.Saga.ExternalUserId,
                     UserFullName = context.Saga.UserFullName,
                     BillTitle = $"فاکتور تور {context.Saga.TourTitle}",

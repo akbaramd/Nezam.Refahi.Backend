@@ -14,16 +14,7 @@ public interface IFacilityRepository : IRepository<Facility, Guid>
     /// </summary>
     Task<Facility?> GetByCodeAsync(string code, CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Gets facilities by type
-    /// </summary>
-    Task<IEnumerable<Facility>> GetByTypeAsync(FacilityType type, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Gets facilities by status
-    /// </summary>
-    Task<IEnumerable<Facility>> GetByStatusAsync(FacilityStatus status, CancellationToken cancellationToken = default);
-
+  
     /// <summary>
     /// Gets active facilities
     /// </summary>
@@ -50,20 +41,11 @@ public interface IFacilityRepository : IRepository<Facility, Guid>
     Task<Facility?> GetWithAllDataAsync(Guid facilityId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets facilities by exclusive set
-    /// </summary>
-    Task<IEnumerable<Facility>> GetByExclusiveSetAsync(string exclusiveSetId, CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Checks if facility code exists
     /// </summary>
     Task<bool> CodeExistsAsync(string code, CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Gets facility statistics
-    /// </summary>
-    Task<Dictionary<FacilityStatus, int>> GetStatusStatisticsAsync(CancellationToken cancellationToken = default);
-
+  
     /// <summary>
     /// Gets facilities with pagination and filtering
     /// </summary>
@@ -87,8 +69,6 @@ public class FacilityQueryParameters
 {
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 10;
-    public string? Type { get; set; }
-    public string? Status { get; set; }
     public string? SearchTerm { get; set; }
     public bool OnlyActive { get; set; } = true;
 }

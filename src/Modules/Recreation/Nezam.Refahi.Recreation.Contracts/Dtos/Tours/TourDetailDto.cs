@@ -15,9 +15,9 @@ public class TourDetailDto : TourDto
     public int? MaxAge { get; set; } = null;
     public int? MaxGuestsPerReservation { get; set; } = null;
 
-    // Member requirements (raw keys)
-    public List<string> RequiredCapabilities { get; set; } = new();
-    public List<string> RequiredFeatures { get; set; } = new();
+    // Member requirements (with names from BasicDefinitions)
+    public List<RequiredCapabilityDto> RequiredCapabilities { get; set; } = new();
+    public List<RequiredFeatureDto> RequiredFeatures { get; set; } = new();
 
     // Rich relations
     public List<CapacityDetailDto> Capacities { get; set; } = new();

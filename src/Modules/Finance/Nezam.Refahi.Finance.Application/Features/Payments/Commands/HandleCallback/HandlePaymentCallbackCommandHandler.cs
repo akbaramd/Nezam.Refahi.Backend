@@ -52,7 +52,7 @@ public class HandlePaymentCallbackCommandHandler : IRequestHandler<HandlePayment
     {
         try
         {
-            _logger.LogInformation("Processing payment callback command");
+            _logger.LogInformation("AwaitingBill payment callback command");
 
             // 1. Fetch callback data from gateway (gateway operation)
             var gatewayResult = await _paymentService.FetchCallbackAsync(cancellationToken);

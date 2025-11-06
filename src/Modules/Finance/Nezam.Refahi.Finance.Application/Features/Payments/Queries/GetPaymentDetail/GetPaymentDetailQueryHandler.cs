@@ -46,12 +46,27 @@ public sealed class GetPaymentDetailQueryHandler
 
     try
     {
-      _logger.LogInformation("Retrieving payment details for PaymentId={PaymentId}", request.PaymentId);
+      _logger.LogInformation("Retrieving payment details for PaymentId={PaymentId}, ExternalUserId={ExternalUserId}", 
+        request.PaymentId, request.ExternalUserId);
 
-      // Fetch entity
+      // Fetch entity with Bill navigation
       var payment = await _paymentRepository.GetByIdAsync(request.PaymentId, cancellationToken);
       if (payment == null)
-        return ApplicationResult<PaymentDetailDto>.Failure("پرداخت مورد نظر یافت نشد.");
+        return ApplicationResult<PaymentDetailDto>.NotFound("پرداخت مورد نظر یافت نشد.");
+
+      // Check ownership: ensure the payment's bill belongs to the requesting user
+      if (payment.Bill == null)
+      {
+        _logger.LogWarning("Payment {PaymentId} has no associated bill", request.PaymentId);
+        return ApplicationResult<PaymentDetailDto>.NotFound("صورت حساب مرتبط با این پرداخت یافت نشد.");
+      }
+
+      if (payment.Bill.ExternalUserId != request.ExternalUserId)
+      {
+        _logger.LogWarning("User {UserId} attempted to access payment {PaymentId} owned by {OwnerId}",
+          request.ExternalUserId, request.PaymentId, payment.Bill.ExternalUserId);
+        return ApplicationResult<PaymentDetailDto>.Forbidden("شما دسترسی به این پرداخت ندارید.");
+      }
 
       // Map to DTO
       var dto = await _mapper.MapAsync(payment, cancellationToken);

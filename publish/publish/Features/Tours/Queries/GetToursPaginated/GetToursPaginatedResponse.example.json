@@ -1,0 +1,154 @@
+{
+  "isSuccess": true,
+  "data": {
+    "items": [
+      {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "title": "تور طبیعت‌گردی شمال",
+        "description": "تور سه‌روزه به مازندران با بازدید از جنگل‌های شمال",
+        "tourStart": "2024-06-15T08:00:00Z",
+        "tourEnd": "2024-06-17T18:00:00Z",
+        
+        // 🆕 Enhanced Capacity Information
+        "maxCapacity": 50,
+        "remainingCapacity": 12,
+        "reservedCapacity": 38,
+        "capacityUtilizationPercentage": 76.0,
+        "isFullyBooked": false,
+        "isNearlyFull": true,
+        
+        "isActive": true,
+        "minAge": 18,
+        "maxAge": 65,
+        
+        "registrationStart": "2024-05-01T00:00:00Z",
+        "registrationEnd": "2024-06-10T23:59:59Z",
+        "isRegistrationOpen": true,
+        
+        // 🆕 Enhanced Capacity Details
+        "capacities": [
+          {
+            "id": "3fa85f64-5717-4562-b3fc-2c963f66afa7",
+            "tourId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "maxParticipants": 25,
+            "remainingParticipants": 5,
+            "allocatedParticipants": 20,
+            "utilizationPercentage": 80.0,
+            "minParticipantsPerReservation": 1,
+            "maxParticipantsPerReservation": 6,
+            
+            "registrationStart": "2024-05-01T00:00:00Z",
+            "registrationEnd": "2024-06-10T23:59:59Z",
+            "isActive": true,
+            "description": "ظرفیت اول - اتوبوس شماره 1",
+            "isRegistrationOpen": true,
+            "isEffectiveFor": true,
+            "isFullyBooked": false,
+            "isNearlyFull": true,
+            
+            // 🆕 UI-Friendly Information
+            "availabilityStatus": "Nearly Full",
+            "availabilityMessage": "تنها 5 جا باقی مانده"
+          },
+          {
+            "id": "3fa85f64-5717-4562-b3fc-2c963f66afa8",
+            "tourId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "maxParticipants": 25,
+            "remainingParticipants": 7,
+            "allocatedParticipants": 18,
+            "utilizationPercentage": 72.0,
+            "minParticipantsPerReservation": 1,
+            "maxParticipantsPerReservation": 6,
+            
+            "registrationStart": "2024-05-01T00:00:00Z",
+            "registrationEnd": "2024-06-10T23:59:59Z",
+            "isActive": true,
+            "description": "ظرفیت دوم - اتوبوس شماره 2",
+            "isRegistrationOpen": true,
+            "isEffectiveFor": true,
+            "isFullyBooked": false,
+            "isNearlyFull": false,
+            
+            "availabilityStatus": "Available",
+            "availabilityMessage": "7 از 25 جا موجود است"
+          }
+        ],
+        
+        "requiredCapabilities": ["driving-license"],
+        "requiredFeatures": ["insurance"],
+        
+        "features": [
+          {
+            "id": "3fa85f64-5717-4562-b3fc-2c963f66afa9",
+            "tourId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            "featureId": "3fa85f64-5717-4562-b3fc-2c963f66afaa",
+            "value": "بیمه مسافرتی",
+            "feature": {
+              "id": "3fa85f64-5717-4562-b3fc-2c963f66afaa",
+              "name": "بیمه مسافرتی",
+              "description": "پوشش بیمه‌ای کامل در طول سفر",
+              "iconClass": "fa-shield",
+              "categoryId": "3fa85f64-5717-4562-b3fc-2c963f66afab",
+              "displayOrder": 1,
+              "isActive": true,
+              "isRequired": true,
+              "defaultValue": null,
+              "validationRules": null
+            }
+          }
+        ],
+        
+        "restrictedTours": [],
+        
+        "pricing": [
+          {
+            "id": "3fa85f64-5717-4562-b3fc-2c963f66afac",
+            "participantType": "Main",
+            "basePrice": 2500000,
+            "discountPercentage": 10,
+            "effectivePrice": 2250000,
+            "validFrom": "2024-05-01T00:00:00Z",
+            "validTo": "2024-06-17T23:59:59Z",
+            "isActive": true
+          },
+          {
+            "id": "3fa85f64-5717-4562-b3fc-2c963f66afad",
+            "participantType": "Guest",
+            "basePrice": 2200000,
+            "discountPercentage": 10,
+            "effectivePrice": 1980000,
+            "validFrom": "2024-05-01T00:00:00Z",
+            "validTo": "2024-06-17T23:59:59Z",
+            "isActive": true
+          }
+        ],
+        
+        "photos": [
+          {
+            "id": "3fa85f64-5717-4562-b3fc-2c963f66afae",
+            "url": "https://example.com/photos/tour1-1.jpg",
+            "caption": "منظره جنگل‌های شمال",
+            "displayOrder": 1
+          }
+        ],
+        
+        "totalParticipants": 38,
+        "mainParticipants": 25,
+        "guestParticipants": 13,
+        
+        // User-specific information (if authenticated)
+        "userReservationStatus": "Held",
+        "userReservationId": "3fa85f64-5717-4562-b3fc-2c963f66afaf",
+        
+        "createdAt": "2024-04-15T10:30:00Z",
+        "updatedAt": "2024-04-20T14:45:00Z",
+        "createdBy": "system",
+        "updatedBy": "admin"
+      }
+    ],
+    "pageNumber": 1,
+    "pageSize": 10,
+    "totalCount": 25
+  },
+  "errors": []
+}

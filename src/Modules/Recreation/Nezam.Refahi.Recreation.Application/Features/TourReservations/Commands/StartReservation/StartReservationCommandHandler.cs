@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Nezam.Refahi.Membership.Contracts.Dtos;
+using Nezam.Refahi.Membership.Contracts.Services;
 using Nezam.Refahi.Recreation.Application.Services;
 using Nezam.Refahi.Recreation.Domain.Entities;
 using Nezam.Refahi.Recreation.Domain.Enums;
 using Nezam.Refahi.Recreation.Domain.Repositories;
+using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
 
@@ -22,21 +24,24 @@ public sealed class StartReservationCommandHandler
 
     private readonly ITourRepository _tourRepository;
     private readonly ITourReservationRepository _reservationRepository;
-    private readonly MemberValidationService _memberValidationService;
+    private readonly IMemberService _memberService;
     private readonly IRecreationUnitOfWork _unitOfWork;
+    private readonly ICurrentUserService _currentUserService;
     private readonly ILogger<StartReservationCommandHandler> _logger;
 
     public StartReservationCommandHandler(
         ITourRepository tourRepository,
         ITourReservationRepository reservationRepository,
-        MemberValidationService memberValidationService,
+        IMemberService memberService,
         IRecreationUnitOfWork unitOfWork,
+        ICurrentUserService currentUserService,
         ILogger<StartReservationCommandHandler> logger)
     {
         _tourRepository = tourRepository ?? throw new ArgumentNullException(nameof(tourRepository));
         _reservationRepository = reservationRepository ?? throw new ArgumentNullException(nameof(reservationRepository));
-        _memberValidationService = memberValidationService ?? throw new ArgumentNullException(nameof(memberValidationService));
+        _memberService = memberService ?? throw new ArgumentNullException(nameof(memberService));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+        _currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -49,6 +54,10 @@ public sealed class StartReservationCommandHandler
         if (string.IsNullOrWhiteSpace(request.UserNationalNumber))
             return ApplicationResult<StartReservationCommandResult>.Failure("کد ملی کاربر الزامی است");
 
+        // Ensure user is authenticated and has a valid user id (ExternalUserId comes from current user service)
+        if (!_currentUserService.IsAuthenticated || !_currentUserService.UserId.HasValue)
+            return ApplicationResult<StartReservationCommandResult>.Failure("کاربر احراز هویت نشده است");
+
         // Load Tour with Capacities tracked
         var tour = await _tourRepository.FindOneAsync(t => t.Id == request.TourId, ct);
         if (tour is null)
@@ -58,29 +67,44 @@ public sealed class StartReservationCommandHandler
         if (!tour.IsRegistrationOpen(DateTime.UtcNow))
             return ApplicationResult<StartReservationCommandResult>.Failure("ثبت‌نام برای این تور باز نیست");
 
-        // Member
+        // Member validation using eligibility check
         var nationalId = new NationalId(request.UserNationalNumber);
-        MemberInfoDto? member = await _memberValidationService.GetMemberInfoAsync(nationalId);
-        if (member is null)
-            return ApplicationResult<StartReservationCommandResult>.Failure("عضو یافت نشد");
-        if (!member.HasActiveMembership)
-            return ApplicationResult<StartReservationCommandResult>.Failure("عضویت فعال برای این عضو موجود نیست");
+        
+        // Get required capabilities, features, and agencies from tour
+        var requiredCapabilities = tour.MemberCapabilities.Select(mc => mc.CapabilityId).Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+        var requiredFeatures = tour.MemberFeatures.Select(mf => mf.FeatureId).Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+        var requiredAgencies = tour.TourAgencies?.Select(ta => ta.AgencyId).ToList();
 
-        // Restriction + access
+        // Validate member eligibility
+        var eligibilityResult = await _memberService.ValidateMemberEligibilityAsync(
+            nationalId,
+            requiredCapabilities.Any() ? requiredCapabilities : null,
+            requiredFeatures.Any() ? requiredFeatures : null,
+            requiredAgencies?.Any() == true ? requiredAgencies : null);
+
+        if (!eligibilityResult.IsEligible)
+        {
+            var errorMessage = eligibilityResult.Errors.Any()
+                ? string.Join("، ", eligibilityResult.Errors)
+                : "عضو شرایط لازم برای شرکت در این تور را ندارد";
+            return ApplicationResult<StartReservationCommandResult>.Failure(errorMessage);
+        }
+
+        var memberDetail = eligibilityResult.MemberDetail;
+        if (memberDetail == null)
+            return ApplicationResult<StartReservationCommandResult>.Failure("اطلاعات عضو یافت نشد");
+
+        // Restriction check
         var restrictedCheck = await ValidateRestrictedToursAsync(tour, nationalId, ct);
         if (!restrictedCheck.IsSuccess)
             return ApplicationResult<StartReservationCommandResult>.Failure(restrictedCheck.Errors);
-
-        var accessCheck = await ValidateMemberAccessAnyOfAsync(tour, member, ct);
-        if (!accessCheck.IsSuccess)
-            return ApplicationResult<StartReservationCommandResult>.Failure(accessCheck.Errors);
 
         // Capacity validation (must belong to tour)
         var capacity = tour.Capacities?.FirstOrDefault(c => c.Id == request.CapacityId);
         if (capacity is null)
             return ApplicationResult<StartReservationCommandResult>.Failure("ظرفیت انتخاب‌شده متعلق به این تور نیست");
 
-        var isVip = IsSpecialMember(member);
+        var isVip = IsSpecialMember(memberDetail);
         if (!capacity.IsVisibleToMember(isVip))
             return ApplicationResult<StartReservationCommandResult>.Failure("دسترسی به این ظرفیت برای شما مجاز نیست");
         if (!capacity.CanAccommodateForMember(DEFAULT_ALLOCATION, isVip))
@@ -109,13 +133,18 @@ public sealed class StartReservationCommandHandler
             var reservation = new TourReservation(
                 tourId: tour.Id,
                 trackingCode: trackingCode,
-                externalUserId: member.Id,
+                externalUserId: _currentUserService.UserId.Value,
                 capacityId: capacity.Id,
-                memberId: member.Id,
+                memberId: memberDetail.Id,
                 expiryDate: null,
                 notes: null);
 
             await _reservationRepository.AddAsync(reservation, cancellationToken:ct);
+            await _unitOfWork.SaveChangesAsync(ct);
+
+            // Add current user as a participant
+            await AddCurrentUserAsParticipantAsync(reservation, tour, memberDetail, nationalId, ct);
+
             await _unitOfWork.SaveChangesAsync(ct);
             await _unitOfWork.CommitAsync(ct);
 
@@ -162,46 +191,82 @@ public sealed class StartReservationCommandHandler
         return ApplicationResult.Success();
     }
 
-    private async Task<ApplicationResult> ValidateMemberAccessAnyOfAsync(Tour tour, MemberInfoDto member, CancellationToken ct)
-    {
-        var reqCaps  = tour.MemberCapabilities.Select(x => x.CapabilityId).Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
-        var reqFeats = tour.MemberFeatures   .Select(x => x.FeatureId)   .Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
-
-        if (!reqCaps.Any() && !reqFeats.Any())
-            return ApplicationResult.Success();
-
-        var errors = new List<string>();
-
-        if (reqCaps.Any())
-        {
-            var hasAny = (member.Capabilities ?? new List<string>()).Intersect(reqCaps, StringComparer.OrdinalIgnoreCase).Any();
-            if (!hasAny)
-            {
-                foreach (var cap in reqCaps)
-                    if (await _memberValidationService.HasCapabilityAsync(member.NationalCode, cap)) { hasAny = true; break; }
-            }
-            if (!hasAny) errors.Add($"عدم احراز حداقل یکی از صلاحیت‌های موردنیاز: {string.Join(", ", reqCaps)}");
-        }
-
-        if (reqFeats.Any())
-        {
-            var hasAny = (member.Features ?? new List<string>()).Intersect(reqFeats, StringComparer.OrdinalIgnoreCase).Any();
-            if (!hasAny)
-            {
-                foreach (var f in reqFeats)
-                    if (await _memberValidationService.HasFeatureAsync(member.NationalCode, f)) { hasAny = true; break; }
-            }
-            if (!hasAny) errors.Add($"عدم احراز حداقل یکی از ویژگی‌های موردنیاز: {string.Join(", ", reqFeats)}");
-        }
-
-        return errors.Count > 0 ? ApplicationResult.Failure(errors) : ApplicationResult.Success();
-    }
-
-    private static bool IsSpecialMember(MemberInfoDto member)
+    private static bool IsSpecialMember(MemberDetailDto member)
     {
         var caps = member.Capabilities ?? Enumerable.Empty<string>();
         var feats = member.Features ?? Enumerable.Empty<string>();
         return caps.Contains("VIP", StringComparer.OrdinalIgnoreCase)
             || feats.Contains("VIP", StringComparer.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Adds the current user as a participant to the reservation
+    /// </summary>
+    private async Task AddCurrentUserAsParticipantAsync(
+        TourReservation reservation,
+        Tour tour,
+        MemberDetailDto memberDetail,
+        NationalId nationalId,
+        CancellationToken ct)
+    {
+        try
+        {
+            // Determine participant type based on active membership
+            var hasActiveMembership = await _memberService.HasActiveMembershipAsync(nationalId);
+            var participantType = hasActiveMembership ? ParticipantType.Member : ParticipantType.Guest;
+
+            // Get pricing for the determined participant type
+            var pricingList = tour.GetActivePricing();
+            var participantPricing = pricingList.FirstOrDefault(p => p.ParticipantType == participantType);
+            
+            if (participantPricing == null)
+            {
+                var participantTypeText = participantType == ParticipantType.Member ? "عضو" : "مهمان";
+                _logger.LogWarning(
+                    "Pricing not found for participant type {ParticipantType} in tour {TourId}",
+                    participantTypeText, tour.Id);
+                throw new InvalidOperationException($"قیمت‌گذاری برای {participantTypeText} یافت نشد");
+            }
+
+            var requiredPrice = participantPricing.GetEffectivePrice(); // Money
+
+            // Extract user information from member detail
+            var firstName = memberDetail.FirstName ?? string.Empty;
+            var lastName = memberDetail.LastName ?? string.Empty;
+            var phoneNumber = memberDetail.PhoneNumber ?? string.Empty;
+            var email = memberDetail.Email;
+            var birthDate = memberDetail.BirthDate ?? DateTime.UtcNow.AddYears(-30); // Default if not available
+
+            // Create Participant for the current user
+            var participant = new Participant(
+                reservationId: reservation.Id,
+                firstName: firstName,
+                lastName: lastName,
+                nationalNumber: nationalId.Value,
+                phoneNumber: phoneNumber,
+                birthDate: birthDate,
+                participantType: participantType,
+                requiredAmount: requiredPrice,
+                email: email,
+                emergencyContactName: null,
+                emergencyContactPhone: null,
+                notes: "کاربر اصلی رزرو");
+
+            // Add participant to reservation
+            reservation.AddParticipant(participant);
+
+            _logger.LogInformation(
+                "Added current user {NationalNumber} as {ParticipantType} participant to reservation {ReservationId}",
+                nationalId.Value,
+                participantType == ParticipantType.Member ? "Member" : "Guest",
+                reservation.Id);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Failed to add current user as participant to reservation {ReservationId}",
+                reservation.Id);
+            throw;
+        }
     }
 }

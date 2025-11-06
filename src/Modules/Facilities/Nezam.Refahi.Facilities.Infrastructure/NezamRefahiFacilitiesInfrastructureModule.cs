@@ -49,17 +49,18 @@ public class NezamRefahiFacilitiesInfrastructureModule : BonWebModule
         // Register repositories
         context.Services.AddScoped<IFacilityRepository, FacilityRepository>();
         context.Services.AddScoped<IFacilityCycleRepository, FacilityCycleRepository>();
-        context.Services.AddScoped<IFacilityCycleDependencyRepository, FacilityCycleDependencyRepository>();
         context.Services.AddScoped<IFacilityRequestRepository, FacilityRequestRepository>();
 
         // Register Unit of Work
         context.Services.AddScoped<IFacilitiesUnitOfWork, FacilitiesUnitOfWork>();
 
+
         // Register Domain Services
-        context.Services.AddScoped<IPolicyManager, PolicyManager>();
-        context.Services.AddScoped<IFacilityProcessManager, FacilityProcessManager>();
-        context.Services.AddScoped<IFeatureCapabilityConflictResolver, FeatureCapabilityConflictResolver>();
         context.Services.AddScoped<IUniqueConstraintManager, Infrastructure.Services.UniqueConstraintManager>();
+        context.Services.AddScoped<Domain.Services.IFacilityCycleEligibilityService, Domain.Services.FacilityCycleEligibilityService>();
+        context.Services.AddScoped<Domain.Services.IFacilityCycleValidationService, Domain.Services.FacilityCycleValidationService>();
+        context.Services.AddScoped<Domain.Services.IFacilityQuotaService, Domain.Services.FacilityQuotaService>();
+        context.Services.AddScoped<Domain.Services.IFacilityDependencyService, Domain.Services.FacilityDependencyService>();
 
         // Register Seeding Hosted Service
         context.Services.AddHostedService<FacilitiesSeedingHostedService>();

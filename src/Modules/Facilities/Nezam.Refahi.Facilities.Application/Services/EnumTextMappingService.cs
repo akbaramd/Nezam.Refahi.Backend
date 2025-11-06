@@ -8,37 +8,7 @@ namespace Nezam.Refahi.Facilities.Application.Services;
 /// </summary>
 public static class EnumTextMappingService
 {
-    /// <summary>
-    /// Maps FacilityType enum to human-readable description
-    /// </summary>
-    public static string GetFacilityTypeDescription(FacilityType type)
-    {
-        return type switch
-        {
-            FacilityType.Loan => "وام",
-            FacilityType.Grant => "کمک‌هزینه",
-            FacilityType.Card => "کارت",
-            FacilityType.WelfareVoucher => "بن رفاهی",
-            FacilityType.Other => "سایر",
-            _ => "نامشخص"
-        };
-    }
 
-    /// <summary>
-    /// Maps FacilityStatus enum to human-readable description
-    /// </summary>
-    public static string GetFacilityStatusDescription(FacilityStatus status)
-    {
-        return status switch
-        {
-            FacilityStatus.Draft => "پیش‌نویس",
-            FacilityStatus.Active => "فعال",
-            FacilityStatus.Suspended => "تعلیق شده",
-            FacilityStatus.Closed => "بسته شده",
-            FacilityStatus.Maintenance => "در حال تعمیر",
-            _ => "نامشخص"
-        };
-    }
 
     /// <summary>
     /// Maps FacilityCycleStatus enum to human-readable description
@@ -50,6 +20,7 @@ public static class EnumTextMappingService
             FacilityCycleStatus.Draft => "پیش‌نویس",
             FacilityCycleStatus.Active => "فعال",
             FacilityCycleStatus.Closed => "بسته شده",
+            FacilityCycleStatus.UnderReview => "تحت بررسی",
             FacilityCycleStatus.Completed => "تکمیل شده",
             FacilityCycleStatus.Cancelled => "لغو شده",
             _ => "نامشخص"
@@ -99,13 +70,6 @@ public static class EnumTextMappingService
         };
     }
 
-    /// <summary>
-    /// Determines if a facility status indicates the facility is active
-    /// </summary>
-    public static bool IsFacilityActive(FacilityStatus status)
-    {
-        return status == FacilityStatus.Active;
-    }
 
     /// <summary>
     /// Determines if a cycle status indicates the cycle is active

@@ -1,0 +1,153 @@
+---
+globs: **/**.Domain/**/*.cs
+alwaysApply: false
+---
+# 🧭 Domain-Driven Design Rulebook (Strict)
+
+⚠️ **Anything outside these rules must be reviewed and approved.**
+⚠️ **Domain modeling is strict and collaborative—no unilateral changes.**
+⚠️ **All domain behaviors must reflect the Ubiquitous Language.**
+
+---
+
+## 📌 Core Principles
+- **Ubiquitous Language** — names mirror domain language (avoid tech jargon in the model).
+- **Bounded Context Isolation** — no direct references to internal models of other contexts.
+- **Behavior First** — design verbs & invariants before data/persistence.
+- **Invariants Inside** — enforce invariants inside the Aggregate Root (AR).
+- **Immutability Preference** — value objects are immutable and self-validating.
+- **Transactional Boundary** — one transaction updates one AR instance.
+- **Persistence Agnostic** — domain model has no ORM/DB dependencies.
+- **CQRS** — commands mutate ARs; queries use read models/projections.
+- **Domain Events** — record & publish meaningful changes via outbox.
+- **Idempotency** — commands/handlers/events must be idempotent.
+- **Optimistic Concurrency** — version ARs and check on save.
+
+---
+
+## ❓ Entity vs Value Object Decision
+**Questions**
+1. `HasIdentityOverTime?` — stable identity independent of attributes?
+2. `LifecycleIndependent?` — independent lifecycle?
+3. `MustBeMutableInsideAggregate?` — internal state changes required?
+4. `EqualityByIdentityOrByValues?` — identity vs values?
+5. `CanBeSharedAcrossAggregatesSafely?`
+6. `ReplaceNotUpdateSemantics?` — replacement clearer than mutation?
+
+**Rules**
+- If `HasIdentityOverTime` or `LifecycleIndependent` → **Entity**.
+- If equality-by-values + `ReplaceNotUpdateSemantics` + no internal mutation → **Value Object**.
+- If requires external reference tracking → **Entity**.
+- If sharing is unsafe → make it **VO inside Aggregate** (no shared mutable objects).
+
+**Anti-patterns**
+- Value Object with public setters.
+- Entities without domain behavior (anemic model).
+
+---
+
+## 🏛 Aggregate Root Rules
+- The AR is the **only entry point** for state changes.
+- **All invariants** enforced synchronously inside AR methods.
+- ARs must **not** directly manipulate other ARs; use IDs + coordination.
+- Keep AR size **small** (fits one transaction, low contention).
+- Expose **domain verbs**, not setters (`order.Pay()`, not `order.Status = ...`).
+
+**Factories**
+- Complex creation via **domain factories** (`OrderFactory.CreateFromQuote()`).
+- Factories set valid initial state and may emit creation events.
+
+---
+
+## 🧩 Entity Behavior Requirements
+- Entities express **rich domain behavior**; not just data carriers.
+- All meaningful state changes go through **domain-named methods**.
+- Validation of domain rules occurs **inside** Entities/ARs.
+- Emit Domain Events at the point of change.
+
+---
+
+## ⚙️ Value Objects (VO)
+- **Immutable**, self-validating constructors.
+- **Equality by value** (override equality/hash).
+- Use to make method signatures expressive (`Money`, `Percent`, `DateRange`, `Email`).
+
+---
+
+## 🔗 Cross-Aggregate Coordination
+- **Hard Rule**: **No direct Entity↔Entity** across Aggregates.
+- Use **Domain Services** for domain **policies** spanning multiple ARs.
+- Use **Sagas/Process Managers** (application layer) for long-running workflows.
+- Cross-aggregate **invariants are forbidden**; use **eventual consistency** + compensation.
+- Communicate via **Domain Events** (in-context) and **Integration Events** (cross-context).
+
+---
+
+## 🗂 Repository Rules
+- **Never** create repositories for internal Entities; only **Aggregate Roots**.
+- Interfaces live in **Domain**; implementations in **Infrastructure**.
+- Repository loads/saves **whole AR** and enforces transaction boundary.
+- Complex reads belong to **Read Models/Query stack** (not Domain Repos).
+- Must support **Optimistic Concurrency** (aggregate version).
+
+---
+
+## ⚡ Domain Events
+- Immutable, named via Ubiquitous Language (e.g., `InvoicePaid`).
+- Emitted by the AR and stored/published transactionally (**Outbox Pattern**).
+- Consumers are **idempotent** and **retry-safe**.
+- Convert to **Integration Events** for cross-context messaging.
+
+---
+
+## 📦 Services
+- **Domain Service** — stateless domain policy or algorithm across multiple ARs/VOs. No I/O.
+- **Application Service** — orchestrates use cases & transactions; may call domain services and repositories; **no domain logic** here.
+
+---
+
+## 🧭 CQRS & Read Models
+- Command model mutates ARs; read model is eventually consistent.
+- Read models are **denormalized** and optimized for queries.
+- Project read-side updates using domain/integration events.
+
+---
+
+## ✅ Testing Guidance
+- **Given/When/Then** tests at AR level; assert invariants and emitted events.
+- VO tests check immutability and constructor validation.
+- Repository tests validate concurrency and transaction boundaries.
+- Avoid testing ORM/tables in Domain tests.
+
+---
+
+## 🔍 Enforcement Heuristics (for AI/Agent)
+- Prefer generating methods like `Order.Pay(...)`, `Cart.AddItem(...)` over direct property sets.
+- When a feature touches **multiple ARs**, suggest a **Domain Service** or **Saga**.
+- On creation complexity, propose a **Factory**.
+- When encountering cross-context calls, suggest **Integration Event** + **ACL** (Anti-Corruption Layer).
+- For queries that join many tables, propose a **Read Model** projection.
+
+---
+
+## 🧱 Suggested Folder Layout
+```
+/Domain
+  /[Context]
+    /Aggregates
+    /Entities
+    /ValueObjects
+    /Events
+    /Services
+    /Policies
+    /Repositories
+    /Factories
+/Application
+  /UseCases
+  /Handlers
+  /Sagas
+/Infrastructure
+  /Persistence
+  /Messaging
+  /Adapters
+```

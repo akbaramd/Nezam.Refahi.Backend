@@ -4,9 +4,9 @@ using System.Collections.Generic;
 namespace Nezam.Refahi.Contracts.Finance.v1.Messages;
 
 /// <summary>
-/// Command message to mark a wallet deposit as Pending after bill creation.
+/// Command message to mark a wallet deposit as AwaitingPayment after bill creation.
 /// </summary>
-public class MarkWalletDepositPendingCommandMessage
+public class MarkWalletDepositAwaitingPaymentCommandMessage
 {
     public Guid WalletDepositId { get; set; }
     public string TrackingCode { get; set; } = string.Empty;

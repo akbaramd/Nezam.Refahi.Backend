@@ -301,6 +301,9 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<decimal?>("AppliedDiscountPercentage")
+                        .HasColumnType("decimal(5,2)");
+
                     b.Property<string>("DiscountCode")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -315,6 +318,12 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
                     b.Property<string>("PricingRules")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("RequiredCapabilityIds")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RequiredFeatureIds")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("ReservationId")
                         .HasColumnType("uniqueidentifier");
 
@@ -324,6 +333,24 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
                     b.Property<string>("TenantId")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid?>("TourPricingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("WasDefaultPricing")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("WasEarlyBird")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("WasLastMinute")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.HasKey("Id");
 
@@ -335,6 +362,10 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
 
                     b.HasIndex("SnapshotDate")
                         .HasDatabaseName("IX_ReservationPriceSnapshots_SnapshotDate");
+
+                    b.HasIndex("TourPricingId")
+                        .HasDatabaseName("IX_ReservationPriceSnapshots_TourPricingId")
+                        .HasFilter("[TourPricingId] IS NOT NULL");
 
                     b.HasIndex("TenantId", "ReservationId")
                         .HasDatabaseName("IX_ReservationPriceSnapshots_TenantReservation");
@@ -383,10 +414,11 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
 
-                    b.Property<int>("Difficulty")
+                    b.Property<string>("Difficulty")
+                        .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValue("Easy");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -421,8 +453,12 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasDefaultValue("Draft");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -792,6 +828,11 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
 
+                    b.Property<bool>("IsDefault")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
                     b.Property<bool>("IsEarlyBird")
                         .HasColumnType("bit");
 
@@ -830,7 +871,55 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
 
                     b.HasIndex("TourId", "ParticipantType");
 
+                    b.HasIndex("TourId", "ParticipantType", "IsDefault");
+
                     b.ToTable("TourPricing", "recreation");
+                });
+
+            modelBuilder.Entity("Nezam.Refahi.Recreation.Domain.Entities.TourPricingCapability", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CapabilityId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("TourPricingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CapabilityId");
+
+                    b.HasIndex("TourPricingId", "CapabilityId")
+                        .IsUnique();
+
+                    b.ToTable("TourPricingCapability", "recreation");
+                });
+
+            modelBuilder.Entity("Nezam.Refahi.Recreation.Domain.Entities.TourPricingFeature", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("FeatureId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("TourPricingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FeatureId");
+
+                    b.HasIndex("TourPricingId", "FeatureId")
+                        .IsUnique();
+
+                    b.ToTable("TourPricingFeature", "recreation");
                 });
 
             modelBuilder.Entity("Nezam.Refahi.Recreation.Domain.Entities.TourReservation", b =>
@@ -1267,6 +1356,28 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
                     b.Navigation("Tour");
                 });
 
+            modelBuilder.Entity("Nezam.Refahi.Recreation.Domain.Entities.TourPricingCapability", b =>
+                {
+                    b.HasOne("Nezam.Refahi.Recreation.Domain.Entities.TourPricing", "TourPricing")
+                        .WithMany("Capabilities")
+                        .HasForeignKey("TourPricingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TourPricing");
+                });
+
+            modelBuilder.Entity("Nezam.Refahi.Recreation.Domain.Entities.TourPricingFeature", b =>
+                {
+                    b.HasOne("Nezam.Refahi.Recreation.Domain.Entities.TourPricing", "TourPricing")
+                        .WithMany("Features")
+                        .HasForeignKey("TourPricingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TourPricing");
+                });
+
             modelBuilder.Entity("Nezam.Refahi.Recreation.Domain.Entities.TourReservation", b =>
                 {
                     b.HasOne("Nezam.Refahi.Recreation.Domain.Entities.TourCapacity", "Capacity")
@@ -1375,6 +1486,13 @@ namespace Nezam.Refahi.Recreation.Infrastructure.Migrations
                     b.Navigation("TourFeatures");
 
                     b.Navigation("TourRestrictedTours");
+                });
+
+            modelBuilder.Entity("Nezam.Refahi.Recreation.Domain.Entities.TourPricing", b =>
+                {
+                    b.Navigation("Capabilities");
+
+                    b.Navigation("Features");
                 });
 
             modelBuilder.Entity("Nezam.Refahi.Recreation.Domain.Entities.TourReservation", b =>

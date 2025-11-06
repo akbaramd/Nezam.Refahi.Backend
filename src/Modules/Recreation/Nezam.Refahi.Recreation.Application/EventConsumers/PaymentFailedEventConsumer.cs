@@ -1,4 +1,5 @@
 using MediatR;
+using MassTransit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Nezam.Refahi.Finance.Contracts.IntegrationEvents;
@@ -12,7 +13,7 @@ namespace Nezam.Refahi.Recreation.Application.EventConsumers;
 /// Handles PaymentFailedIntegrationEvent to handle payment failures for tour reservations
 /// When a payment fails, we may need to update reservation status or take other actions
 /// </summary>
-public class PaymentFailedEventConsumer : INotificationHandler<PaymentFailedIntegrationEvent>
+public class PaymentFailedEventConsumer : IConsumer<PaymentFailedIntegrationEvent>
 {
     private readonly ITourReservationRepository _reservationRepository;
     private readonly IRecreationUnitOfWork _unitOfWork;
@@ -31,8 +32,10 @@ public class PaymentFailedEventConsumer : INotificationHandler<PaymentFailedInte
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
     }
 
-    public async Task Handle(PaymentFailedIntegrationEvent notification, CancellationToken cancellationToken)
+    public async Task Consume(ConsumeContext<PaymentFailedIntegrationEvent> context)
     {
+        var notification = context.Message;
+        var cancellationToken = context.CancellationToken;
         try
         {
             _logger.LogInformation("پردازش رویداد پرداخت ناموفق برای پرداخت {PaymentId}، شناسه رزرو: {ReferenceId}", 
@@ -56,10 +59,11 @@ public class PaymentFailedEventConsumer : INotificationHandler<PaymentFailedInte
                 return;
             }
 
-            // Check if reservation is in Paying status
-            if (reservation.Status != Nezam.Refahi.Recreation.Domain.Enums.ReservationStatus.PendingConfirmation)
+            // Check if reservation is in OnHold status (waiting for payment)
+            // Note: OnHold means waiting for payment and confirmation
+            if (reservation.Status != Nezam.Refahi.Recreation.Domain.Enums.ReservationStatus.OnHold)
             {
-                _logger.LogInformation("رزرو {ReservationId} در وضعیت Paying نیست. وضعیت فعلی: {Status}. هیچ اقدامی لازم نیست.", 
+                _logger.LogInformation("رزرو {ReservationId} در وضعیت OnHold نیست. وضعیت فعلی: {Status}. هیچ اقدامی لازم نیست.", 
                     reservation.Id, reservation.Status);
                 return;
             }

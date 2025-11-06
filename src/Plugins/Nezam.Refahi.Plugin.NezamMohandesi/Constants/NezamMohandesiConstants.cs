@@ -8,7 +8,7 @@ public static class NezamMohandesiConstants
     public static class PluginInfo
     {
         public const string Name = "NezamMohandesi";
-        public const string DisplayName = "Organization of Engineering System";
+        public const string DisplayName = "سازمان نظام مهندسی";
         public const int SeedPriority = 100;
     }
     #endregion
@@ -31,10 +31,10 @@ public static class NezamMohandesiConstants
     /// </summary>
     public static class ServiceFieldsFeatures
     {
-        public static readonly Features Structure = new("structure", "Structure Engineering / سازه", FeatureTypes.ServiceField);
-        public static readonly Features Mechanic = new("mechanic", "Mechanic Engineering / مکانیک", FeatureTypes.ServiceField);
-        public static readonly Features Electricity = new("electricity", "Electricity Engineering / برق", FeatureTypes.ServiceField);
-        public static readonly Features Architecture = new("architecture", "Architecture / معماری", FeatureTypes.ServiceField);
+        public static readonly Features Structure = new("structure", "سازه", FeatureTypes.ServiceField);
+        public static readonly Features Mechanic = new("mechanic", "مکانیک", FeatureTypes.ServiceField);
+        public static readonly Features Electricity = new("electricity", "برق", FeatureTypes.ServiceField);
+        public static readonly Features Architecture = new("architecture", "معماری", FeatureTypes.ServiceField);
 
         public static IEnumerable<Features> All => new[]
         {
@@ -47,10 +47,10 @@ public static class NezamMohandesiConstants
     /// </summary>
     public static class ServiceTypesFeatures
     {
-        public static readonly Features Design = new("designer", "Design / طراح", FeatureTypes.ServiceType);
-        public static readonly Features Supervision = new("supervisor", "Supervision / ناظر", FeatureTypes.ServiceType);
-        public static readonly Features Execute = new("execute", "Execute / اجرا", FeatureTypes.ServiceType);
-        public static readonly Features Executor = new("executor", "Executor / مجری", FeatureTypes.ServiceType);
+        public static readonly Features Design = new("designer", "طراح", FeatureTypes.ServiceType);
+        public static readonly Features Supervision = new("supervisor", "ناظر", FeatureTypes.ServiceType);
+        public static readonly Features Execute = new("execute", "اجرا", FeatureTypes.ServiceType);
+        public static readonly Features Executor = new("executor", "مجری", FeatureTypes.ServiceType);
 
         public static IEnumerable<Features> All => new[]
         {
@@ -63,8 +63,8 @@ public static class NezamMohandesiConstants
     /// </summary>
     public static class LicenseStatusFeatures
     {
-        public static readonly Features HasLicense = new("has_license", "Licensed Professional / دارای پروانه", FeatureTypes.LicenseStatus);
-        public static readonly Features NoLicense = new("no_license", "Non-Licensed Professional / بدون پروانه", FeatureTypes.LicenseStatus);
+        public static readonly Features HasLicense = new("has_license", "دارای پروانه", FeatureTypes.LicenseStatus);
+        public static readonly Features NoLicense = new("no_license", "بدون پروانه", FeatureTypes.LicenseStatus);
 
         public static IEnumerable<Features> All => new[]
         {
@@ -77,10 +77,10 @@ public static class NezamMohandesiConstants
     /// </summary>
     public static class GradesFeatures
     {
-        public static readonly Features Master = new("master", "Master Grade / پایه ارشد", FeatureTypes.Grade);
-        public static readonly Features Grade1 = new("grade1", "Grade 1 / پایه ۱", FeatureTypes.Grade);
-        public static readonly Features Grade2 = new("grade2", "Grade 2 / پایه ۲", FeatureTypes.Grade);
-        public static readonly Features Grade3 = new("grade3", "Grade 3 / پایه ۳", FeatureTypes.Grade);
+        public static readonly Features Master = new("master", "پایه ارشد", FeatureTypes.Grade);
+        public static readonly Features Grade1 = new("grade1", "پایه ۱", FeatureTypes.Grade);
+        public static readonly Features Grade2 = new("grade2", "پایه ۲", FeatureTypes.Grade);
+        public static readonly Features Grade3 = new("grade3", "پایه ۳", FeatureTypes.Grade);
 
         public static IEnumerable<Features> All => new[]
         {
@@ -129,8 +129,8 @@ public static class NezamMohandesiConstants
             // License Status Capabilities
             var hasLicense = new Capability(
                 "has_license",
-                "Licensed Professional / دارای پروانه",
-                "Capability for professionals with valid licenses",
+                "دارای پروانه",
+                "قابلیت برای متخصصان دارای پروانه معتبر",
                 DateTime.UtcNow,
                 null);
             hasLicense.AddFeature(new Features(LicenseStatusFeatures.HasLicense.Id, LicenseStatusFeatures.HasLicense.Title, LicenseStatusFeatures.HasLicense.Type));
@@ -138,8 +138,8 @@ public static class NezamMohandesiConstants
 
             var noLicense = new Capability(
                 "no_license",
-                "Non-Licensed Professional / بدون پروانه",
-                "Capability for professionals without licenses",
+                "بدون پروانه",
+                "قابلیت برای متخصصان بدون پروانه",
                 DateTime.UtcNow,
                 null);
             noLicense.AddFeature(new Features(LicenseStatusFeatures.NoLicense.Id, LicenseStatusFeatures.NoLicense.Title, LicenseStatusFeatures.NoLicense.Type));
@@ -154,7 +154,7 @@ public static class NezamMohandesiConstants
                     {
                         var capabilityKey = $"{serviceField.Id}_{serviceType.Id}_{grade.Id}";
                         var capabilityName = $"{serviceField.Title} - {serviceType.Title} - {grade.Title}";
-                        var capabilityDescription = $"Capability for {serviceField.Title} {serviceType.Title} at {grade.Title} level";
+                        var capabilityDescription = $"قابلیت برای {serviceField.Title} {serviceType.Title} در سطح {grade.Title}";
 
                         var capability = new Capability(
                             capabilityKey,

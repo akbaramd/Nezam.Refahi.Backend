@@ -1,4 +1,5 @@
 using MediatR;
+using MassTransit;
 using Microsoft.Extensions.Logging;
 using Nezam.Refahi.Contracts.Finance.v1.Messages;
 using Nezam.Refahi.Finance.Contracts.IntegrationEvents;
@@ -10,7 +11,7 @@ namespace Nezam.Refahi.Recreation.Application.EventConsumers;
 /// <summary>
 /// Consumer for handling bill creation events from Finance module
 /// </summary>
-public class BillCreatedForReservationConsumer : INotificationHandler<BillCreatedEventMessage>
+public class BillCreatedForReservationConsumer : IConsumer<BillCreatedEventMessage>
 {
     private readonly ITourReservationRepository _reservationRepository;
     private readonly IRecreationUnitOfWork _unitOfWork;
@@ -26,8 +27,10 @@ public class BillCreatedForReservationConsumer : INotificationHandler<BillCreate
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task Handle(BillCreatedEventMessage notification, CancellationToken cancellationToken)
+    public async Task Consume(ConsumeContext<BillCreatedEventMessage> context)
     {
+        var notification = context.Message;
+        var cancellationToken = context.CancellationToken;
         _logger.LogInformation("AwaitingBill bill created event for reference {ReferenceType}:{ReferenceId}, bill {BillId}", 
             notification.ReferenceType, notification.ReferenceId, notification.BillId);
 

@@ -2,9 +2,11 @@ using System.Reflection;
 using Bonyan.Modularity;
 using Bonyan.Modularity.Abstractions;
 using FluentValidation;
+using MCA.SharedKernel.Application.Mappers.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Nezam.Refahi.BasicDefinitions.Contracts;
 using Nezam.Refahi.Membership.Application.HostedServices;
+using Nezam.Refahi.Membership.Application.Mappers;
 using Nezam.Refahi.Membership.Application.Services;
 using Nezam.Refahi.Membership.Contracts;
 using Nezam.Refahi.Membership.Contracts.Services;
@@ -33,11 +35,11 @@ public class NezamRefahiMembershipApplicationModule : BonModule
 
     context.Services.AddValidatorsFromAssembly(typeof(NezamRefahiMembershipApplicationModule).Assembly);
 
+    // Register mappers
+    context.Services.AddMappers(c => c.AddAssembly(typeof(NezamRefahiMembershipApplicationModule).Assembly));
+
     // Register Membership service for inter-context communication
     context.Services.AddScoped<IMemberService, MemberService>();
-
-    // Register MemberInfo service for inter-context communication
-    context.Services.AddScoped<IMemberInfoService, MemberInfoService>();
 
     // Register User-Member mapping service
     context.Services.AddScoped<IUserMemberMappingService, UserMemberMappingService>();

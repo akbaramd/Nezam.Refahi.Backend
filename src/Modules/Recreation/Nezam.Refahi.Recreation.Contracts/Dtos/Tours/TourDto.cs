@@ -44,7 +44,4 @@ public class TourDto
     public List<PricingDetailDto> Pricing { get; set; } = new();
 
     // Current user quick flags (set at query layer)
-    public bool CanUserReserve { get; set; } = false;
-    public Guid? UserReservationId { get; set; } = null;
-    public string? UserReservationStatus { get; set; } = string.Empty;
 }

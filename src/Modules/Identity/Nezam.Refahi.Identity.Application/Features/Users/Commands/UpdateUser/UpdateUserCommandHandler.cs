@@ -14,12 +14,12 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Appli
 {
     private readonly IUserRepository _userRepository;
     private readonly IIdentityUnitOfWork _unitOfWork;
-    private readonly IPublishEndpoint _publishEndpoint;
+    private readonly IBus _publishEndpoint;
 
     public UpdateUserCommandHandler(
         IUserRepository userRepository, 
         IIdentityUnitOfWork unitOfWork,
-        IPublishEndpoint publishEndpoint)
+        IBus publishEndpoint)
     {
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;

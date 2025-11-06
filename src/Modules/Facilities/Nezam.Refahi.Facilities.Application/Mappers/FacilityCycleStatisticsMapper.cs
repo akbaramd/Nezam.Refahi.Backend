@@ -13,8 +13,9 @@ public sealed class FacilityCycleStatisticsMapper : IMapper<Facility, FacilityCy
     {
         var activeCycles = source.Cycles.Where(c => c.Status == FacilityCycleStatus.Active).ToList();
         var totalActiveQuota = activeCycles.Sum(c => c.Quota);
-        var totalUsedQuota = activeCycles.Sum(c => c.UsedQuota);
-        var totalAvailableQuota = totalActiveQuota - totalUsedQuota;
+        // Calculate UsedQuota from actual requests count (all requests, not just from UsedQuota field)
+        var totalUsedQuota = activeCycles.Sum(c => c.Requests.Count);
+        var totalAvailableQuota = Math.Max(0, totalActiveQuota - totalUsedQuota);
         var quotaUtilizationPercentage = totalActiveQuota > 0 ? (decimal)totalUsedQuota / totalActiveQuota * 100 : 0;
 
         var dto = new FacilityCycleStatisticsDto
@@ -23,6 +24,7 @@ public sealed class FacilityCycleStatisticsMapper : IMapper<Facility, FacilityCy
             TotalCyclesCount = source.Cycles.Count,
             DraftCyclesCount = source.Cycles.Count(c => c.Status == FacilityCycleStatus.Draft),
             ClosedCyclesCount = source.Cycles.Count(c => c.Status == FacilityCycleStatus.Closed),
+            UnderReviewCyclesCount = source.Cycles.Count(c => c.Status == FacilityCycleStatus.UnderReview),
             CompletedCyclesCount = source.Cycles.Count(c => c.Status == FacilityCycleStatus.Completed),
             CancelledCyclesCount = source.Cycles.Count(c => c.Status == FacilityCycleStatus.Cancelled),
             TotalActiveQuota = totalActiveQuota,
@@ -38,14 +40,16 @@ public sealed class FacilityCycleStatisticsMapper : IMapper<Facility, FacilityCy
     {
         var activeCycles = source.Cycles.Where(c => c.Status == FacilityCycleStatus.Active).ToList();
         var totalActiveQuota = activeCycles.Sum(c => c.Quota);
-        var totalUsedQuota = activeCycles.Sum(c => c.UsedQuota);
-        var totalAvailableQuota = totalActiveQuota - totalUsedQuota;
+        // Calculate UsedQuota from actual requests count (all requests, not just from UsedQuota field)
+        var totalUsedQuota = activeCycles.Sum(c => c.Requests.Count);
+        var totalAvailableQuota = Math.Max(0, totalActiveQuota - totalUsedQuota);
         var quotaUtilizationPercentage = totalActiveQuota > 0 ? (decimal)totalUsedQuota / totalActiveQuota * 100 : 0;
 
         destination.ActiveCyclesCount = source.Cycles.Count(c => c.Status == FacilityCycleStatus.Active);
         destination.TotalCyclesCount = source.Cycles.Count;
         destination.DraftCyclesCount = source.Cycles.Count(c => c.Status == FacilityCycleStatus.Draft);
         destination.ClosedCyclesCount = source.Cycles.Count(c => c.Status == FacilityCycleStatus.Closed);
+        destination.UnderReviewCyclesCount = source.Cycles.Count(c => c.Status == FacilityCycleStatus.UnderReview);
         destination.CompletedCyclesCount = source.Cycles.Count(c => c.Status == FacilityCycleStatus.Completed);
         destination.CancelledCyclesCount = source.Cycles.Count(c => c.Status == FacilityCycleStatus.Cancelled);
         destination.TotalActiveQuota = totalActiveQuota;

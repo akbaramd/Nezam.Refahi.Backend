@@ -6,19 +6,9 @@
 public record DetailedFinancialTermsDto
 {
   /// <summary>
-  /// Minimum amount in Rials
+  /// List of available price options for this cycle
   /// </summary>
-  public decimal? MinAmountRials { get; init; }
-
-  /// <summary>
-  /// Maximum amount in Rials
-  /// </summary>
-  public decimal? MaxAmountRials { get; init; }
-
-  /// <summary>
-  /// Default amount in Rials
-  /// </summary>
-  public decimal? DefaultAmountRials { get; init; }
+  public List<FacilityCyclePriceOptionDto> PriceOptions { get; init; } = new();
 
   /// <summary>
   /// Currency code
@@ -28,7 +18,7 @@ public record DetailedFinancialTermsDto
   /// <summary>
   /// Payment duration in months
   /// </summary>
-  public int PaymentMonths { get; init; }
+  public int? PaymentMonths { get; init; }
 
   /// <summary>
   /// Annual interest rate (as decimal, e.g., 0.18 for 18%)
@@ -41,29 +31,9 @@ public record DetailedFinancialTermsDto
   public decimal? InterestRatePercentage { get; init; }
 
   /// <summary>
-  /// Cooldown period in days after receiving facility
-  /// </summary>
-  public int CooldownDays { get; init; }
-
-  /// <summary>
   /// Indicates if financial terms are available
   /// </summary>
-  public bool HasFinancialTerms => MinAmountRials.HasValue || MaxAmountRials.HasValue || DefaultAmountRials.HasValue;
-
-  /// <summary>
-  /// Formatted minimum amount for display
-  /// </summary>
-  public string? FormattedMinAmount { get; init; }
-
-  /// <summary>
-  /// Formatted maximum amount for display
-  /// </summary>
-  public string? FormattedMaxAmount { get; init; }
-
-  /// <summary>
-  /// Formatted default amount for display
-  /// </summary>
-  public string? FormattedDefaultAmount { get; init; }
+  public bool HasFinancialTerms => PriceOptions.Any() || PaymentMonths.HasValue || InterestRate.HasValue;
 
   /// <summary>
   /// Formatted interest rate for display

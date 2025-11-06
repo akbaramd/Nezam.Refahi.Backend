@@ -1,0 +1,597 @@
+---
+globs: **/Repositories/**,**/*Reposit*.cs
+alwaysApply: false
+---
+# Repository Implementation Rulebook
+
+⚠️ **هر چیزی خارج از این قوانین باید بررسی و به تصویب برسد.**  
+⚠️ **پیاده‌سازی Repository باید سخت‌گیرانه و با استفاده از متدهای کلاس پایه انجام شود.**  
+⚠️ **از تکرار منطق و استفاده مستقیم از DbContext/DbSet خودداری شود.**
+
+---
+
+## 📌 اصول پایه Repository
+
+### 1. استفاده از کلاس پایه `EfRepository<TDbContext, T, TKey>`
+- **MUST**: همه Repositoryها باید از `EfRepository<TDbContext, T, TKey>` ارث‌بری کنند.
+- **MUST**: Interface Repository باید از `IRepository<T, TKey>` ارث‌بری کند.
+- **MUST**: از متدهای کلاس پایه استفاده شود؛ تکرار منطق ممنوع است.
+
+### 2. متدهای کلاس پایه (غیرقابل تخطی)
+کلاس پایه `EfRepository` متدهای زیر را ارائه می‌دهد:
+
+#### متدهای Write (از `IRepository<T, TKey>`):
+- `Task AddAsync(T entity, bool save = false, CancellationToken cancellationToken = default)`
+- `Task UpdateAsync(T entity, bool save = false, CancellationToken cancellationToken = default)`
+- `Task DeleteAsync(T entity, bool save = false, CancellationToken cancellationToken = default)`
+- `Task AddRangeAsync(IEnumerable<T> entities, bool save = false, CancellationToken cancellationToken = default)`
+- `Task UpdateRangeAsync(IEnumerable<T> entities, bool save = false, CancellationToken cancellationToken = default)`
+- `Task DeleteRangeAsync(IEnumerable<T> entities, bool save = false, CancellationToken cancellationToken = default)`
+- `Task<int> BulkDeleteAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)`
+- `Task SaveAsync(CancellationToken cancellationToken = default)`
+
+#### متدهای Read (از `ReadOnlyEfRepository` که از `IReadOnlyRepository<T, TKey>` ارث‌بری می‌کند):
+
+**متدهای پایه:**
+- `Task<T> GetByIdAsync(TKey id, CancellationToken cancellationToken = default)` - پیدا کردن با ID (استثنا می‌اندازد اگر پیدا نشود) ⚠️ برای nullable از `FindOneAsync` استفاده کنید
+- `Task<T?> FindOneAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)` - پیدا کردن یک Entity با شرط
+- `Task<T?> FindOneAsync(ISpecification<T> specification, CancellationToken cancellationToken = default)` - پیدا کردن یک Entity با Specification
+- `Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)` - پیدا کردن چند Entity با شرط
+- `Task<IEnumerable<T>> FindAsync(ISpecification<T> specification, CancellationToken cancellationToken = default)` - پیدا کردن چند Entity با Specification
+- `Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, bool asNoTracking, CancellationToken cancellationToken = default)` - پیدا کردن با کنترل Tracking
+- `Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)` - بررسی وجود با شرط
+- `Task<bool> ExistsAsync(ISpecification<T> specification, CancellationToken cancellationToken = default)` - بررسی وجود با Specification
+- `Task<int> CountAsync(CancellationToken cancellationToken = default)` - شمارش همه
+- `Task<int> CountAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)` - شمارش با شرط
+- `Task<int> CountAsync(ISpecification<T> specification, CancellationToken cancellationToken = default)` - شمارش با Specification
+
+**متدهای Pagination:**
+- `Task<PaginatedResult<T>> GetPaginatedAsync(IPaginatedSpecification<T> specification, CancellationToken cancellationToken = default)` - صفحه‌بندی با Specification
+- `Task<PaginatedResult<T>> GetPaginatedAsync(IPaginatedSortableSpecification<T> specification, CancellationToken cancellationToken = default)` - صفحه‌بندی با مرتب‌سازی
+- `Task<IEnumerable<T>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)` - صفحه‌بندی ساده
+- `Task<IEnumerable<T>> GetPagedAsync(int pageNumber, int pageSize, ISpecification<T> specification, CancellationToken cancellationToken = default)` - صفحه‌بندی با Specification
+
+**متدهای Projection (انتخاب فیلدهای خاص):**
+- `Task<TResult?> FindOneAsync<TResult>(Expression<Func<T, bool>> predicate, Expression<Func<T, TResult>> selector, CancellationToken cancellationToken = default)` - پیدا کردن یک Entity و انتخاب فیلدها
+- `Task<IEnumerable<TResult>> FindAsync<TResult>(Expression<Func<T, bool>> predicate, Expression<Func<T, TResult>> selector, CancellationToken cancellationToken = default)` - پیدا کردن چند Entity و انتخاب فیلدها
+- `Task<IEnumerable<TResult>> GetAllAsync<TResult>(Expression<Func<T, TResult>> selector, CancellationToken cancellationToken = default)` - گرفتن همه با انتخاب فیلدها
+
+**متدهای کمکی:**
+- `Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, bool asNoTracking, CancellationToken cancellationToken = default)` - پیدا کردن با کنترل Tracking
+
+**متدهای محافظت‌شده (Protected):**
+- `protected virtual IQueryable<T> PrepareQuery(IQueryable<T> query)` - آماده‌سازی Query با Include و AsNoTracking
+- `protected IQueryable<T> ApplySpecification(ISpecification<T>? specification)` - اعمال Specification روی Query
+
+### 3. قوانین سخت (غیرقابل تخطی)
+
+#### ❌ ممنوع:
+- **DO NOT** تعریف مجدد `AddAsync`, `UpdateAsync`, `DeleteAsync` در Repository یا Interface
+- **DO NOT** استفاده مستقیم از `_context.DbSet.AddAsync()` به‌جای `base.AddAsync()`
+- **DO NOT** استفاده مستقیم از `_dbSet.ToListAsync()` به‌جای `FindAsync()` یا `PrepareQuery()`
+- **DO NOT** استفاده مستقیم از `_dbSet.AnyAsync()` به‌جای `ExistsAsync()` یا `AnyAsync()` از کلاس پایه
+- **DO NOT** دسترسی مستقیم به `_context` برای عملیات CRUD
+
+#### ✅ باید:
+- **MUST** از `FindAsync()` برای جستجوی چندین Entity استفاده شود
+- **MUST** از `ExistsAsync()` برای بررسی وجود Entity استفاده شود
+- **MUST** از `PrepareQuery()` برای Includeهای پیش‌فرض استفاده شود
+- **MUST** از `DeleteRangeAsync()` برای حذف چندین Entity استفاده شود
+- **MUST** از `BulkDeleteAsync()` برای حذف بهینه‌تر با ExecuteDelete استفاده شود
+
+---
+
+## 🏗️ ساختار استاندارد Repository
+
+### Template پایه:
+
+```csharp
+using Microsoft.EntityFrameworkCore;
+using MCA.SharedKernel.Infrastructure.Repositories;
+using Nezam.Refahi.[Module].Domain.Entities;
+using Nezam.Refahi.[Module].Domain.Repositories;
+using Nezam.Refahi.[Module].Infrastructure.Persistence;
+
+namespace Nezam.Refahi.[Module].Infrastructure.Persistence.Repositories;
+
+/// <summary>
+/// EF Core implementation of I[Entity]Repository
+/// </summary>
+public class [Entity]Repository : EfRepository<[DbContext], [Entity], Guid>, I[Entity]Repository
+{
+    public [Entity]Repository([DbContext] context) : base(context)
+    {
+    }
+
+    protected override IQueryable<[Entity]> PrepareQuery(IQueryable<[Entity]> query)
+    {
+        // Include related entities here
+        return query
+            .Include(e => e.RelatedEntity)
+            .Include(e => e.Collection);
+    }
+
+    // Custom query methods using base class methods
+    public async Task<List<[Entity]>> GetByXAsync(Guid x, CancellationToken cancellationToken = default)
+    {
+        return (await FindAsync(e => e.X == x, cancellationToken: cancellationToken)).ToList();
+    }
+
+    public async Task<bool> HasXAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await ExistsAsync(e => e.Id == id && e.X != null, cancellationToken: cancellationToken);
+    }
+
+    // AddAsync, UpdateAsync, DeleteAsync are provided by the base EfRepository class
+}
+```
+
+---
+
+## 📝 الگوهای پیاده‌سازی
+
+### 1. جستجوی چندین Entity (Find Pattern)
+
+#### ❌ ضدالگو:
+```csharp
+public async Task<List<Entity>> GetByXAsync(Guid x, CancellationToken cancellationToken = default)
+{
+    return await PrepareQuery(_dbSet)
+        .Where(e => e.X == x)
+        .OrderBy(e => e.CreatedAt)
+        .ToListAsync(cancellationToken);
+}
+```
+
+#### ✅ الگوی صحیح:
+```csharp
+public async Task<List<Entity>> GetByXAsync(Guid x, CancellationToken cancellationToken = default)
+{
+    return (await FindAsync(e => e.X == x, cancellationToken: cancellationToken))
+        .OrderBy(e => e.CreatedAt)
+        .ToList();
+}
+```
+
+**نکته**: اگر نیاز به مرتب‌سازی دارید، از `FindAsync()` استفاده کنید و سپس در حافظه مرتب کنید، یا از `PrepareQuery()` با `OrderBy().ToListAsync()` استفاده کنید.
+
+### 2. پیدا کردن یک Entity (FindOne Pattern)
+
+#### ❌ ضدالگو:
+```csharp
+public async Task<Entity?> GetByXAsync(string x, CancellationToken cancellationToken = default)
+{
+    return await PrepareQuery(_dbSet)
+        .FirstOrDefaultAsync(e => e.X == x, cancellationToken);
+}
+```
+
+#### ✅ الگوی صحیح (با Predicate):
+```csharp
+public async Task<Entity?> GetByXAsync(string x, CancellationToken cancellationToken = default)
+{
+    return await FindOneAsync(e => e.X == x, cancellationToken: cancellationToken);
+}
+```
+
+#### ✅ الگوی صحیح (با Specification):
+```csharp
+public async Task<Entity?> GetByXAsync(string x, CancellationToken cancellationToken = default)
+{
+    var spec = new EntityByXSpecification(x);
+    return await FindOneAsync(spec, cancellationToken: cancellationToken);
+}
+```
+
+### 3. بررسی وجود Entity (Exists Pattern)
+
+#### ❌ ضدالگو:
+```csharp
+public async Task<bool> HasXAsync(Guid id, CancellationToken cancellationToken = default)
+{
+    return await PrepareQuery(_dbSet)
+        .AnyAsync(e => e.Id == id && e.X != null, cancellationToken);
+}
+```
+
+#### ✅ الگوی صحیح (با Predicate):
+```csharp
+public async Task<bool> HasXAsync(Guid id, CancellationToken cancellationToken = default)
+{
+    return await ExistsAsync(e => e.Id == id && e.X != null, cancellationToken: cancellationToken);
+}
+```
+
+#### ✅ الگوی صحیح (با Specification):
+```csharp
+public async Task<bool> HasXAsync(Guid id, CancellationToken cancellationToken = default)
+{
+    var spec = new EntityHasXSpecification(id);
+    return await ExistsAsync(spec, cancellationToken: cancellationToken);
+}
+```
+
+### 4. گرفتن Entity با ID (GetById Pattern)
+
+#### ⚠️ نکته مهم:
+`GetByIdAsync` استثنا می‌اندازد اگر Entity پیدا نشود. برای مقدار nullable از `FindOneAsync` استفاده کنید.
+
+#### ❌ ضدالگو:
+```csharp
+public async Task<Entity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+{
+    try
+    {
+        return await GetByIdAsync(id, cancellationToken);
+    }
+    catch
+    {
+        return null;
+    }
+}
+```
+
+#### ✅ الگوی صحیح (اگر Entity باید وجود داشته باشد):
+```csharp
+public async Task<Entity> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+{
+    return await GetByIdAsync(id, cancellationToken);
+}
+```
+
+#### ✅ الگوی صحیح (اگر Entity ممکن است وجود نداشته باشد):
+```csharp
+public async Task<Entity?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default)
+{
+    return await FindOneAsync(e => e.Id == id, cancellationToken: cancellationToken);
+}
+```
+
+### 5. شمارش Entityها (Count Pattern)
+
+#### ❌ ضدالگو:
+```csharp
+public async Task<int> CountByXAsync(Guid x, CancellationToken cancellationToken = default)
+{
+    return await PrepareQuery(_dbSet)
+        .Where(e => e.X == x)
+        .CountAsync(cancellationToken);
+}
+```
+
+#### ✅ الگوی صحیح (با Predicate):
+```csharp
+public async Task<int> CountByXAsync(Guid x, CancellationToken cancellationToken = default)
+{
+    return await CountAsync(e => e.X == x, cancellationToken: cancellationToken);
+}
+```
+
+#### ✅ الگوی صحیح (با Specification):
+```csharp
+public async Task<int> CountByXAsync(Guid x, CancellationToken cancellationToken = default)
+{
+    var spec = new EntityByXSpecification(x);
+    return await CountAsync(spec, cancellationToken: cancellationToken);
+}
+```
+
+### 6. حذف چندین Entity (DeleteRange Pattern)
+
+#### ❌ ضدالگو:
+```csharp
+public async Task DeleteByXAsync(Guid x, CancellationToken cancellationToken = default)
+{
+    var entities = await PrepareQuery(_dbSet)
+        .Where(e => e.X == x)
+        .ToListAsync(cancellationToken);
+
+    foreach (var entity in entities)
+    {
+        _context.Set<Entity>().Remove(entity);
+    }
+    await _context.SaveChangesAsync(cancellationToken);
+}
+```
+
+#### ✅ الگوی صحیح:
+```csharp
+public async Task DeleteByXAsync(Guid x, CancellationToken cancellationToken = default)
+{
+    var entities = (await FindAsync(e => e.X == x, cancellationToken: cancellationToken)).ToList();
+
+    if (entities.Any())
+    {
+        await DeleteRangeAsync(entities, cancellationToken: cancellationToken);
+    }
+}
+```
+
+### 7. حذف بهینه (BulkDelete Pattern)
+
+#### ✅ الگوی صحیح برای حذف حجمی:
+```csharp
+public async Task<int> DeleteExpiredAsync(DateTime cutoffDate, CancellationToken cancellationToken = default)
+{
+    return await BulkDeleteAsync(
+        e => e.ExpiresAt < cutoffDate, 
+        cancellationToken: cancellationToken);
+}
+```
+
+### 8. استفاده از Specifications
+
+#### ✅ الگوی صحیح با Specification:
+```csharp
+public async Task<IEnumerable<Entity>> GetBySpecificationAsync(
+    ISpecification<Entity> specification, 
+    CancellationToken cancellationToken = default)
+{
+    var query = PrepareQuery(_dbSet);
+    query = specification.Apply(query);
+    return await query.ToListAsync(cancellationToken);
+}
+```
+
+#### ✅ الگوی صحیح با Paginated Specification (استفاده از متد پایه):
+```csharp
+public async Task<PaginatedResult<Entity>> GetPaginatedAsync(
+    IPaginatedSpecification<Entity> spec,
+    CancellationToken cancellationToken = default)
+{
+    return await GetPaginatedAsync(spec, cancellationToken: cancellationToken);
+}
+```
+
+#### ✅ الگوی صحیح با Sortable Paginated Specification:
+```csharp
+public async Task<PaginatedResult<Entity>> GetPaginatedAsync(
+    IPaginatedSortableSpecification<Entity> spec,
+    CancellationToken cancellationToken = default)
+{
+    return await GetPaginatedAsync(spec, cancellationToken: cancellationToken);
+}
+```
+
+#### ✅ الگوی صحیح با Specification ساده:
+```csharp
+public async Task<IEnumerable<Entity>> GetBySpecificationAsync(
+    ISpecification<Entity> specification, 
+    CancellationToken cancellationToken = default)
+{
+    return await FindAsync(specification, cancellationToken: cancellationToken);
+}
+```
+
+### 9. استفاده از Projection (انتخاب فیلدهای خاص)
+
+#### ✅ الگوی صحیح برای انتخاب فیلدهای خاص:
+```csharp
+public async Task<IEnumerable<EntityDto>> GetEntityDtosAsync(
+    CancellationToken cancellationToken = default)
+{
+    return await GetAllAsync(
+        e => new EntityDto 
+        { 
+            Id = e.Id, 
+            Name = e.Name 
+        }, 
+        cancellationToken: cancellationToken);
+}
+```
+
+#### ✅ الگوی صحیح برای پیدا کردن با Projection:
+```csharp
+public async Task<EntityDto?> GetEntityDtoAsync(
+    Guid id, 
+    CancellationToken cancellationToken = default)
+{
+    return await FindOneAsync(
+        e => e.Id == id,
+        e => new EntityDto 
+        { 
+            Id = e.Id, 
+            Name = e.Name 
+        }, 
+        cancellationToken: cancellationToken);
+}
+```
+
+---
+
+## 🔍 استفاده از PrepareQuery
+
+### قوانین:
+- **MUST**: `PrepareQuery()` برای Includeهای پیش‌فرض استفاده شود
+- **MUST**: `PrepareQuery()` در متدهای Query سفارشی استفاده شود
+- **SHOULD**: Includeهای ضروری فقط در `PrepareQuery()` تعریف شوند
+- **SHOULD**: از Eager Loading غیرضروری اجتناب شود
+
+### مثال:
+```csharp
+protected override IQueryable<Entity> PrepareQuery(IQueryable<Entity> query)
+{
+    return query
+        .Include(e => e.RelatedEntity)
+        .Include(e => e.Collection)
+            .ThenInclude(c => c.NestedEntity);
+}
+```
+
+---
+
+## 🎯 مثال کامل Repository
+
+```csharp
+using Microsoft.EntityFrameworkCore;
+using MCA.SharedKernel.Infrastructure.Repositories;
+using Nezam.Refahi.Facilities.Domain.Entities;
+using Nezam.Refahi.Facilities.Domain.Repositories;
+using Nezam.Refahi.Facilities.Infrastructure.Persistence;
+
+namespace Nezam.Refahi.Facilities.Infrastructure.Persistence.Repositories;
+
+/// <summary>
+/// EF Core implementation of IFacilityCycleDependencyRepository
+/// </summary>
+public class FacilityCycleDependencyRepository : EfRepository<FacilitiesDbContext, FacilityCycleDependency, Guid>, IFacilityCycleDependencyRepository
+{
+    public FacilityCycleDependencyRepository(FacilitiesDbContext context) : base(context)
+    {
+    }
+
+    protected override IQueryable<FacilityCycleDependency> PrepareQuery(IQueryable<FacilityCycleDependency> query)
+    {
+        return query
+            .Include(d => d.FacilityCycle)
+                .ThenInclude(c => c.Facility);
+    }
+
+    public async Task<List<FacilityCycleDependency>> GetByCycleIdAsync(Guid cycleId, CancellationToken cancellationToken = default)
+    {
+        return (await FindAsync(d => d.CycleId == cycleId, cancellationToken: cancellationToken)).ToList();
+    }
+
+    public async Task<List<FacilityCycleDependency>> GetByRequiredFacilityIdAsync(Guid requiredFacilityId, CancellationToken cancellationToken = default)
+    {
+        return (await FindAsync(d => d.RequiredFacilityId == requiredFacilityId, cancellationToken: cancellationToken)).ToList();
+    }
+
+    public async Task<bool> HasDependencyAsync(Guid cycleId, Guid requiredFacilityId, CancellationToken cancellationToken = default)
+    {
+        return await ExistsAsync(d => d.CycleId == cycleId && d.RequiredFacilityId == requiredFacilityId, cancellationToken: cancellationToken);
+    }
+
+    public async Task<List<FacilityCycleDependency>> GetByCycleIdsAsync(List<Guid> cycleIds, CancellationToken cancellationToken = default)
+    {
+        return (await FindAsync(d => cycleIds.Contains(d.CycleId), cancellationToken: cancellationToken)).ToList();
+    }
+
+    // AddAsync, UpdateAsync, DeleteAsync are provided by the base EfRepository class
+
+    public async Task DeleteByCycleIdAsync(Guid cycleId, CancellationToken cancellationToken = default)
+    {
+        var dependencies = (await FindAsync(d => d.CycleId == cycleId, cancellationToken: cancellationToken)).ToList();
+
+        if (dependencies.Any())
+        {
+            await DeleteRangeAsync(dependencies, cancellationToken: cancellationToken);
+        }
+    }
+
+    public async Task<bool> HasCircularDependencyAsync(Guid cycleId, Guid requiredFacilityId, CancellationToken cancellationToken = default)
+    {
+        return await ExistsAsync(d => d.CycleId == cycleId && d.RequiredFacilityId == requiredFacilityId, cancellationToken: cancellationToken);
+    }
+}
+```
+
+---
+
+## ✅ چک‌لیست قبل از پیاده‌سازی Repository
+
+### قبل از نوشتن Repository:
+1. ✅ آیا Repository از `EfRepository<TDbContext, T, TKey>` ارث‌بری می‌کند؟
+2. ✅ آیا Interface از `IRepository<T, TKey>` ارث‌بری می‌کند؟
+3. ✅ آیا `PrepareQuery()` برای Includeهای پیش‌فرض تعریف شده است？
+4. ✅ آیا از `FindAsync()` یا `FindOneAsync()` به‌جای `Where().ToListAsync()` استفاده شده است؟
+5. ✅ آیا از `ExistsAsync()` به‌جای `AnyAsync()` مستقیم استفاده شده است؟
+6. ✅ آیا از `GetByIdAsync()` فقط برای مواردی که Entity باید وجود داشته باشد استفاده شده است؟
+7. ✅ آیا از `FindOneAsync()` برای موارد nullable استفاده شده است؟
+8. ✅ آیا از `CountAsync()` به‌جای `_dbSet.CountAsync()` مستقیم استفاده شده است؟
+9. ✅ آیا از `DeleteRangeAsync()` برای حذف چندین Entity استفاده شده است؟
+10. ✅ آیا از `BulkDeleteAsync()` برای حذف حجمی استفاده شده است؟
+11. ✅ آیا از `GetPaginatedAsync()` برای صفحه‌بندی با Specification استفاده شده است؟
+12. ✅ آیا متدهای `AddAsync`, `UpdateAsync`, `DeleteAsync` تعریف نشده‌اند؟
+13. ✅ آیا از دسترسی مستقیم به `_context` برای CRUD اجتناب شده است؟
+14. ✅ آیا از Specifications برای Queryهای پیچیده استفاده شده است؟
+
+---
+
+## 🚫 ضدالگوها (ممنوع)
+
+### ❌ ضدالگو 1: تعریف مجدد متدهای پایه
+```csharp
+// ❌ ممنوع
+public async Task AddAsync(Entity entity, CancellationToken cancellationToken = default)
+{
+    await _context.Entities.AddAsync(entity, cancellationToken);
+}
+```
+
+### ❌ ضدالگو 2: استفاده مستقیم از DbSet
+```csharp
+// ❌ ممنوع
+public async Task<List<Entity>> GetByXAsync(Guid x, CancellationToken cancellationToken = default)
+{
+    return await _dbSet
+        .Where(e => e.X == x)
+        .ToListAsync(cancellationToken);
+}
+```
+
+### ❌ ضدالگو 3: استفاده مستقیم از Context
+```csharp
+// ❌ ممنوع
+public async Task DeleteAsync(Entity entity, CancellationToken cancellationToken = default)
+{
+    _context.Entities.Remove(entity);
+    await _context.SaveChangesAsync(cancellationToken);
+}
+```
+
+### ❌ ضدالگو 4: عدم استفاده از PrepareQuery
+```csharp
+// ❌ ممنوع
+public async Task<Entity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+{
+    return await _dbSet
+        .Include(e => e.Related)
+        .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+}
+```
+
+---
+
+## 📚 مراجع و الگوهای اضافی
+
+### استفاده از Specifications:
+- **MUST**: برای Queryهای پیچیده از `ISpecification<T>` استفاده شود
+- **MUST**: برای Pagination از `IPaginatedSpecification<T>` استفاده شود
+- **SHOULD**: Specifications در لایه Application تعریف شوند
+
+### مدیریت Context:
+- **MUST**: Repository نباید `SaveChangesAsync()` را مستقیماً فراخوانی کند (مگر در `save = true`)
+- **MUST**: مدیریت تراکنش از طریق Unit of Work انجام شود
+- **SHOULD**: از Tracking بهینه استفاده شود (پیش‌فرض فعال است)
+
+---
+
+## 🔄 Migration Path
+
+### اگر Repository موجودی دارید که قوانین را رعایت نمی‌کند:
+
+1. **حذف متدهای تکراری**: `AddAsync`, `UpdateAsync`, `DeleteAsync` را حذف کنید
+2. **تبدیل Queryها**: `Where().ToListAsync()` را به `FindAsync()` تبدیل کنید
+3. **تبدیل Exists**: `AnyAsync()` مستقیم را به `ExistsAsync()` تبدیل کنید
+4. **بهینه‌سازی Delete**: حذف چندتایی را به `DeleteRangeAsync()` تبدیل کنید
+
+---
+
+## ✅ خلاصه قوانین کلیدی
+
+1. **همیشه از کلاس پایه استفاده کنید** - تکرار منطق ممنوع
+2. **از `FindAsync()` یا `FindOneAsync()` برای Query** - نه `Where().ToListAsync()` یا `FirstOrDefaultAsync()` مستقیم
+3. **از `ExistsAsync()` برای بررسی وجود** - نه `AnyAsync()` مستقیم
+4. **از `GetByIdAsync()` فقط برای مواردی که Entity باید وجود داشته باشد** - برای nullable از `FindOneAsync()` استفاده کنید
+5. **از `CountAsync()` برای شمارش** - نه `CountAsync()` مستقیم روی `_dbSet`
+6. **از `DeleteRangeAsync()` برای حذف چندتایی** - نه حلقه و Remove
+7. **از `BulkDeleteAsync()` برای حذف حجمی** - نه Load و Delete
+8. **از `PrepareQuery()` برای Include** - نه Include مستقیم در Query
+9. **از `GetPaginatedAsync()` برای صفحه‌بندی** - نه Skip/Take دستی
+10. **از Specifications برای Query پیچیده** - نه Queryهای طولانی در Repository
+11. **از Projection methods برای انتخاب فیلدها** - برای بهینه‌سازی Query
+
+---
+
+⚠️ **هر انحراف از این قوانین باید توجیه و مستند شود.**

@@ -55,7 +55,7 @@ public class WalletDepositRepository : EfRepository<FinanceDbContext, WalletDepo
     public async Task<IEnumerable<WalletDeposit>> GetPendingDepositsAsync(Guid walletId, CancellationToken cancellationToken = default)
     {
         return await PrepareQuery(_dbSet)
-            .Where(x => x.WalletId == walletId && x.Status == WalletDepositStatus.Pending)
+            .Where(x => x.WalletId == walletId && x.Status == WalletDepositStatus.Requested)
             .OrderBy(x => x.RequestedAt)
             .ToListAsync(cancellationToken);
     }

@@ -21,12 +21,7 @@ public record GetFacilitiesQuery : IRequest<ApplicationResult<GetFacilitiesResul
     /// <summary>
     /// Filter by facility type
     /// </summary>
-    public string? Type { get; init; }
 
-    /// <summary>
-    /// Filter by facility status
-    /// </summary>
-    public string? Status { get; init; }
 
     /// <summary>
     /// Search term for name or description

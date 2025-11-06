@@ -4,29 +4,41 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Nezam.Refahi.Recreation.Contracts.Dtos;
 using Nezam.Refahi.Recreation.Domain.Entities;
+using Nezam.Refahi.Recreation.Domain.Enums;
 using Nezam.Refahi.Recreation.Domain.Repositories;
+using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
+using Nezam.Refahi.Recreation.Application.Specifications;
 
 namespace Nezam.Refahi.Recreation.Application.Features.Tours.Queries.GetToursPaginated;
 
 public sealed class GetToursPaginatedQueryHandler
-    : IRequestHandler<GetToursPaginatedQuery, ApplicationResult<PaginatedResult<TourDto>>>
+    : IRequestHandler<GetToursPaginatedQuery, ApplicationResult<PaginatedResult<TourWithUserReservationDto>>>
 {
     private readonly ITourRepository _tourRepository;
-    private readonly IMapper<Tour, TourDto> _tourMapper;
+    private readonly IMapper<Tour, TourWithUserReservationDto> _tourWithUserMapper;
+    private readonly IMapper<TourReservation, ReservationSummaryDto> _reservationSummaryMapper;
+    private readonly ITourReservationRepository _reservationRepository;
+    private readonly ICurrentUserService _currentUser;
     private readonly ILogger<GetToursPaginatedQueryHandler> _logger;
 
     public GetToursPaginatedQueryHandler(
         ITourRepository tourRepository,
-        IMapper<Tour, TourDto> tourMapper,
+        IMapper<Tour, TourWithUserReservationDto> tourWithUserMapper,
+        IMapper<TourReservation, ReservationSummaryDto> reservationSummaryMapper,
+        ITourReservationRepository reservationRepository,
+        ICurrentUserService currentUser,
         ILogger<GetToursPaginatedQueryHandler> logger)
     {
         _tourRepository = tourRepository ?? throw new ArgumentNullException(nameof(tourRepository));
-        _tourMapper = tourMapper ?? throw new ArgumentNullException(nameof(tourMapper));
+        _tourWithUserMapper = tourWithUserMapper ?? throw new ArgumentNullException(nameof(tourWithUserMapper));
+        _reservationSummaryMapper = reservationSummaryMapper ?? throw new ArgumentNullException(nameof(reservationSummaryMapper));
+        _reservationRepository = reservationRepository ?? throw new ArgumentNullException(nameof(reservationRepository));
+        _currentUser = currentUser ?? throw new ArgumentNullException(nameof(currentUser));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task<ApplicationResult<PaginatedResult<TourDto>>> Handle(
+    public async Task<ApplicationResult<PaginatedResult<TourWithUserReservationDto>>> Handle(
         GetToursPaginatedQuery request,
         CancellationToken cancellationToken)
     {
@@ -35,45 +47,52 @@ public sealed class GetToursPaginatedQueryHandler
             _logger.LogInformation("GetToursPaginated: page={Page} size={Size} active={Active} search='{Search}'",
                 request.PageNumber, request.PageSize, request.IsActive, request.Search);
 
-            // Load (current repo shape returns IEnumerable; ensure materialization once)
-            var all = await _tourRepository.FindAsync(_ => true, cancellationToken).ConfigureAwait(false);
+            // Specification-based pagination via repository
+            var pageData = await _tourRepository.GetPaginatedAsync(
+                new GetToursPaginatedForUserSpec(request.PageNumber, request.PageSize, request.IsActive, request.Search),
+                cancellationToken);
+            var tours = pageData.Items.ToList();
 
-            // Filter
-            var query = all.AsEnumerable();
+            // Map base items
+            var items = (await Task.WhenAll(tours.Select(t => _tourWithUserMapper.MapAsync(t, cancellationToken)))).ToList();
 
-            if (request.IsActive.HasValue)
-                query = query.Where(t => t.IsActive == request.IsActive.Value);
-
-            if (!string.IsNullOrWhiteSpace(request.Search))
+            // Enrich with user's reservation summaries (explicit ExternalUserId preferred)
+            var userId = request.ExternalUserId ?? (_currentUser.IsAuthenticated ? _currentUser.UserId : null);
+            if (userId.HasValue)
             {
-                var term = request.Search.Trim();
-                query = query.Where(t =>
-                    (!string.IsNullOrEmpty(t.Title) && t.Title.Contains(term, StringComparison.OrdinalIgnoreCase)) ||
-                    (!string.IsNullOrEmpty(t.Description) && t.Description.Contains(term, StringComparison.OrdinalIgnoreCase)));
+                var tourIds = tours.Select(t => t.Id).Distinct().ToList();
+                var reservations = await _reservationRepository.GetByTourIdsAndExternalUserIdAsync(
+                    tourIds, userId.Value, cancellationToken);
+
+                // Select the most recent non-terminal reservation per tour
+                var byTour = reservations
+                    .GroupBy(r => r.TourId)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g
+                            .Where(r => r.Status != ReservationStatus.Cancelled && r.Status != ReservationStatus.SystemCancelled && r.Status != ReservationStatus.Rejected)
+                            .OrderByDescending(r => r.ReservationDate)
+                            .FirstOrDefault() ?? g.OrderByDescending(r => r.ReservationDate).First());
+
+                // Apply summaries
+                foreach (var dto in items)
+                {
+                    if (byTour.TryGetValue(dto.Id, out var res))
+                    {
+                        dto.Reservation = await _reservationSummaryMapper.MapAsync(res, cancellationToken);
+                    }
+                }
             }
 
-            // Total
-            var totalCount = query.Count();
-
-            // Order + Page
-            var tours = query
-                .OrderByDescending(t => t.CreatedAt) // deterministic, index-friendly in DB-backed impl
-                .Skip((request.PageNumber - 1) * request.PageSize)
-                .Take(request.PageSize)
-                .ToList();
-
-            // Map using IMapper
-            var items = await Task.WhenAll(tours.Select(t => _tourMapper.MapAsync(t, cancellationToken)));
-
-            var page = new PaginatedResult<TourDto>
+            var page = new PaginatedResult<TourWithUserReservationDto>
             {
-                Items = items.ToList(),
-                TotalCount = totalCount,
-                PageNumber = request.PageNumber,
-                PageSize = request.PageSize
+                Items = items,
+                TotalCount = pageData.TotalCount,
+                PageNumber = pageData.PageNumber,
+                PageSize = pageData.PageSize
             };
 
-            return ApplicationResult<PaginatedResult<TourDto>>.Success(page);
+            return ApplicationResult<PaginatedResult<TourWithUserReservationDto>>.Success(page);
         }
         catch (OperationCanceledException)
         {
@@ -83,7 +102,7 @@ public sealed class GetToursPaginatedQueryHandler
         catch (Exception ex)
         {
             _logger.LogError(ex, "GetToursPaginated failed");
-            return ApplicationResult<PaginatedResult<TourDto>>.Failure(ex, "خطا در دریافت لیست تورها");
+            return ApplicationResult<PaginatedResult<TourWithUserReservationDto>>.Failure(ex, "خطا در دریافت لیست تورها");
         }
     }
 }

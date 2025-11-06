@@ -9,60 +9,29 @@ public static class TourStateMachine
 {
     /// <summary>
     /// Defines valid state transitions
+    /// Simplified: Draft -> Published -> InProgress -> Completed
+    /// Tours can also be cancelled from Published or InProgress states.
+    /// Registration status is determined by dates, not by enum state.
     /// </summary>
     private static readonly Dictionary<TourStatus, HashSet<TourStatus>> ValidTransitions = new()
     {
         [TourStatus.Draft] = new()
         {
-            TourStatus.Scheduled,
-            TourStatus.Cancelled
+            TourStatus.Published
         },
-        [TourStatus.Scheduled] = new()
-        {
-            TourStatus.RegistrationOpen,
-            TourStatus.Cancelled,
-            TourStatus.Postponed,
-            TourStatus.Suspended
-        },
-        [TourStatus.RegistrationOpen] = new()
-        {
-            TourStatus.RegistrationClosed,
-            TourStatus.Cancelled,
-            TourStatus.Postponed,
-            TourStatus.Suspended
-        },
-        [TourStatus.RegistrationClosed] = new()
+        [TourStatus.Published] = new()
         {
             TourStatus.InProgress,
-            TourStatus.Cancelled,
-            TourStatus.Postponed,
-            TourStatus.Suspended
+            TourStatus.Cancelled
         },
         [TourStatus.InProgress] = new()
         {
             TourStatus.Completed,
-            TourStatus.Cancelled,
-            TourStatus.Postponed
-        },
-        [TourStatus.Completed] = new()
-        {
-            TourStatus.Archived
-        },
-        [TourStatus.Postponed] = new()
-        {
-            TourStatus.Scheduled,
-            TourStatus.RegistrationOpen,
-            TourStatus.Cancelled
-        },
-        [TourStatus.Suspended] = new()
-        {
-            TourStatus.Scheduled,
-            TourStatus.RegistrationOpen,
             TourStatus.Cancelled
         },
         // Terminal states (no transitions allowed)
-        [TourStatus.Cancelled] = new(),
-        [TourStatus.Archived] = new()
+        [TourStatus.Completed] = new(),
+        [TourStatus.Cancelled] = new()
     };
 
     /// <summary>
@@ -92,62 +61,20 @@ public static class TourStateMachine
     }
 
     /// <summary>
-    /// Checks if a state allows registration
-    /// </summary>
-    public static bool AllowsRegistration(TourStatus state)
-    {
-        return state == TourStatus.RegistrationOpen;
-    }
-
-    /// <summary>
     /// Checks if a state is active (tour is operational)
+    /// Registration status is determined by dates, not by enum state.
     /// </summary>
     public static bool IsActiveState(TourStatus state)
     {
-        return state is TourStatus.Scheduled 
-                    or TourStatus.RegistrationOpen 
-                    or TourStatus.RegistrationClosed 
-                    or TourStatus.InProgress;
+        return state is TourStatus.Published or TourStatus.InProgress;
     }
 
     /// <summary>
-    /// Checks if a state allows postponement
+    /// Checks if a state is terminal (no further transitions allowed)
     /// </summary>
-    public static bool CanBePostponed(TourStatus state)
+    public static bool IsTerminalStateExplicit(TourStatus state)
     {
-        return GetValidNextStates(state).Contains(TourStatus.Postponed);
-    }
-
-    /// <summary>
-    /// Checks if a state allows suspension
-    /// </summary>
-    public static bool CanBeSuspended(TourStatus state)
-    {
-        return GetValidNextStates(state).Contains(TourStatus.Suspended);
-    }
-
-    /// <summary>
-    /// Checks if a state allows cancellation
-    /// </summary>
-    public static bool CanBeCancelled(TourStatus state)
-    {
-        return GetValidNextStates(state).Contains(TourStatus.Cancelled);
-    }
-
-    /// <summary>
-    /// Checks if a state can be archived
-    /// </summary>
-    public static bool CanBeArchived(TourStatus state)
-    {
-        return GetValidNextStates(state).Contains(TourStatus.Archived);
-    }
-
-    /// <summary>
-    /// Checks if a state allows rescheduling from postponed
-    /// </summary>
-    public static bool CanBeRescheduled(TourStatus state)
-    {
-        return state == TourStatus.Postponed;
+        return state is TourStatus.Completed or TourStatus.Cancelled;
     }
 
     /// <summary>

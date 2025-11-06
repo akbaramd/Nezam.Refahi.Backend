@@ -127,72 +127,23 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("AccessLevel")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<Guid>("AgencyId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("AssignedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("AssignedBy")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
 
                     b.Property<Guid>("MemberId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("OfficeCode")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("OfficeTitle")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTime?>("ValidFrom")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("ValidTo")
-                        .HasColumnType("datetime2");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("AccessLevel")
-                        .HasDatabaseName("IX_MemberAgencies_AccessLevel");
 
                     b.HasIndex("AgencyId")
                         .HasDatabaseName("IX_MemberAgencies_AgencyId");
-
-                    b.HasIndex("AssignedAt")
-                        .HasDatabaseName("IX_MemberAgencies_AssignedAt");
-
-                    b.HasIndex("IsActive")
-                        .HasDatabaseName("IX_MemberAgencies_IsActive");
 
                     b.HasIndex("MemberId")
                         .HasDatabaseName("IX_MemberAgencies_MemberId");
 
                     b.HasIndex("MemberId", "AgencyId")
                         .IsUnique()
-                        .HasDatabaseName("IX_MemberAgencies_Member_Office_Active")
-                        .HasFilter("[IsActive] = 1");
-
-                    b.HasIndex("ValidFrom", "ValidTo")
-                        .HasDatabaseName("IX_MemberAgencies_ValidityPeriod");
+                        .HasDatabaseName("IX_MemberAgencies_MemberId_AgencyId");
 
                     b.ToTable("MemberAgencies", "membership");
                 });
@@ -202,61 +153,25 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("AssignedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("AssignedBy")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<string>("CapabilityKey")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("CapabilityTitle")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<Guid>("MemberId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<DateTime?>("ValidFrom")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("ValidTo")
-                        .HasColumnType("datetime2");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("AssignedAt")
-                        .HasDatabaseName("IX_MemberCapabilities_AssignedAt");
-
                     b.HasIndex("CapabilityKey")
-                        .HasDatabaseName("IX_MemberCapabilities_CapabilityCapabilityKey");
-
-                    b.HasIndex("IsActive")
-                        .HasDatabaseName("IX_MemberCapabilities_IsActive");
+                        .HasDatabaseName("IX_MemberCapabilities_CapabilityKey");
 
                     b.HasIndex("MemberId")
                         .HasDatabaseName("IX_MemberCapabilities_MemberId");
 
                     b.HasIndex("MemberId", "CapabilityKey")
                         .IsUnique()
-                        .HasDatabaseName("IX_MemberCapabilities_Member_Capability_Active")
-                        .HasFilter("[IsActive] = 1");
-
-                    b.HasIndex("ValidFrom", "ValidTo")
-                        .HasDatabaseName("IX_MemberCapabilities_ValidityPeriod");
+                        .HasDatabaseName("IX_MemberCapabilities_MemberId_CapabilityKey");
 
                     b.ToTable("MemberCapabilities", "membership");
                 });
@@ -264,66 +179,23 @@ namespace Nezam.Refahi.Membership.Infrastructure.Migrations
             modelBuilder.Entity("Nezam.Refahi.Membership.Domain.Entities.MemberFeature", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("AssignedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("AssignedBy")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("FeatureKey")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("FeatureTitle")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
                     b.Property<Guid>("MemberId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<DateTime?>("ValidFrom")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("ValidTo")
-                        .HasColumnType("datetime2");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("AssignedAt")
-                        .HasDatabaseName("IX_MemberFeatures_AssignedAt");
-
-                    b.HasIndex("AssignedBy")
-                        .HasDatabaseName("IX_MemberFeatures_AssignedBy");
 
                     b.HasIndex("FeatureKey")
                         .HasDatabaseName("IX_MemberFeatures_FeatureKey");
 
-                    b.HasIndex("IsActive")
-                        .HasDatabaseName("IX_MemberFeatures_IsActive");
-
                     b.HasIndex("MemberId")
                         .HasDatabaseName("IX_MemberFeatures_MemberId");
-
-                    b.HasIndex("ValidFrom")
-                        .HasDatabaseName("IX_MemberFeatures_ValidFrom");
-
-                    b.HasIndex("ValidTo")
-                        .HasDatabaseName("IX_MemberFeatures_ValidTo");
 
                     b.HasIndex("MemberId", "FeatureKey")
                         .IsUnique()

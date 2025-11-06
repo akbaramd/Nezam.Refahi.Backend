@@ -4,7 +4,7 @@ namespace Nezam.Refahi.Contracts.Finance.v1.Messages;
 
 /// <summary>
 /// Published by orchestrator once the bill is created for the wallet deposit.
-/// Indicates the deposit is Pending (awaiting payment).
+/// Indicates the deposit is Requested (awaiting payment).
 /// </summary>
 public class WalletDepositMarkedPendingMessage : INotification
 {

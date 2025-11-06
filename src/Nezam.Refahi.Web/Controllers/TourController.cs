@@ -474,15 +474,10 @@ public class TourController : Controller
         return status switch
         {
             TourStatus.Draft => "پیش‌نویس",
-            TourStatus.Scheduled => "برنامه‌ریزی شده",
-            TourStatus.RegistrationOpen => "ثبت‌نام باز",
-            TourStatus.RegistrationClosed => "ثبت‌نام بسته",
+            TourStatus.Published => "برنامه‌ریزی شده",
             TourStatus.InProgress => "در حال اجرا",
             TourStatus.Completed => "تکمیل شده",
             TourStatus.Cancelled => "لغو شده",
-            TourStatus.Postponed => "به تعویق افتاده",
-            TourStatus.Suspended => "معلق",
-            TourStatus.Archived => "آرشیو شده",
             _ => "نامشخص"
         };
     }
@@ -492,15 +487,10 @@ public class TourController : Controller
         return status switch
         {
             TourStatus.Draft => "secondary",
-            TourStatus.Scheduled => "info",
-            TourStatus.RegistrationOpen => "success",
-            TourStatus.RegistrationClosed => "warning",
+            TourStatus.Published => "info",
             TourStatus.InProgress => "primary",
             TourStatus.Completed => "success",
             TourStatus.Cancelled => "danger",
-            TourStatus.Postponed => "warning",
-            TourStatus.Suspended => "danger",
-            TourStatus.Archived => "secondary",
             _ => "secondary"
         };
     }

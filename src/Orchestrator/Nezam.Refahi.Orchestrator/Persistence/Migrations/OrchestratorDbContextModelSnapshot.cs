@@ -18,7 +18,7 @@ namespace Nezam.Refahi.Orchestrator.Persistence.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("orchestrator")
-                .HasAnnotation("ProductVersion", "8.0.8")
+                .HasAnnotation("ProductVersion", "8.0.18")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -292,11 +292,17 @@ namespace Nezam.Refahi.Orchestrator.Persistence.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("AmountRials")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(18)
+                        .HasColumnType("decimal(18,0)");
 
                     b.Property<DateTime?>("BillCreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("BillCreationRetryCount")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("BillCreationTimeoutTokenId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("BillId")
                         .HasColumnType("uniqueidentifier");
@@ -304,6 +310,9 @@ namespace Nezam.Refahi.Orchestrator.Persistence.Migrations
                     b.Property<string>("BillNumber")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -325,9 +334,8 @@ namespace Nezam.Refahi.Orchestrator.Persistence.Migrations
                     b.Property<Guid>("ExternalUserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("ReferenceType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<Guid?>("PaymentTimeoutTokenId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("TrackingCode")
                         .IsRequired()

@@ -116,40 +116,39 @@ public sealed class Member : FullAggregateRoot<Guid>
     /// <summary>
     /// Assigns a capability to the member
     /// </summary>
-    public void AssignCapability(string capabilityKey, string capabilityTitle, DateTime? validFrom = null, DateTime? validTo = null,
-        string? assignedBy = null, string? notes = null)
+    public void AssignCapability(string capabilityKey)
     {
         if (string.IsNullOrWhiteSpace(capabilityKey))
             throw new ArgumentException("Capability Key cannot be empty", nameof(capabilityKey));
 
-        // Check if capability is already assigned and active
-        if (_capabilities.Any(c => c.CapabilityKey == capabilityKey && c.IsValid()))
+        // Check if capability is already assigned
+        if (_capabilities.Any(c => c.CapabilityKey == capabilityKey))
             return;
 
-        _capabilities.Add(new MemberCapability(Id, capabilityKey, capabilityTitle, validFrom, validTo, assignedBy, notes));
+        _capabilities.Add(new MemberCapability(Id, capabilityKey));
     }
 
     /// <summary>
-    /// Removes a capability from the member by deactivating it
+    /// Removes a capability from the member
     /// </summary>
     public void RemoveCapability(string capabilityKey)
     {
         if (string.IsNullOrWhiteSpace(capabilityKey))
             return;
 
-        var activeCapabilities = _capabilities.Where(c => c.CapabilityKey == capabilityKey && c.IsActive).ToList();
-        foreach (var capability in activeCapabilities)
+        var capabilitiesToRemove = _capabilities.Where(c => c.CapabilityKey == capabilityKey).ToList();
+        foreach (var capability in capabilitiesToRemove)
         {
-            capability.Deactivate();
+            _capabilities.Remove(capability);
         }
     }
 
     /// <summary>
-    /// Gets all valid (active and within validity period) capabilities for the member
+    /// Gets all capabilities for the member
     /// </summary>
     public IEnumerable<MemberCapability> GetValidCapabilities()
     {
-        return _capabilities.Where(c => c.IsValid()).ToList();
+        return _capabilities.ToList();
     }
 
     /// <summary>
@@ -157,11 +156,8 @@ public sealed class Member : FullAggregateRoot<Guid>
     /// </summary>
     public bool HasCapability(string capabilityKey)
     {
-        return _capabilities.Any(c => c.CapabilityKey == capabilityKey && c.IsValid());
+        return _capabilities.Any(c => c.CapabilityKey == capabilityKey);
     }
-
-
-
 
     /// <summary>
     /// Checks if member has a specific capability key
@@ -170,47 +166,45 @@ public sealed class Member : FullAggregateRoot<Guid>
     /// </summary>
     public bool HasCapabilityKey(string capabilityKey)
     {
-        return GetValidCapabilities()
-            .Any(mc => mc.CapabilityKey == capabilityKey);
+        return _capabilities.Any(mc => mc.CapabilityKey == capabilityKey);
     }
 
     /// <summary>
     /// Assigns a feature to the member
     /// </summary>
-    public void AssignFeature(string featureKey, string featureTitle, DateTime? validFrom = null, DateTime? validTo = null,
-        string? assignedBy = null, string? notes = null)
+    public void AssignFeature(string featureKey)
     {
         if (string.IsNullOrWhiteSpace(featureKey))
             throw new ArgumentException("Feature Key cannot be empty", nameof(featureKey));
 
-        // Check if feature is already assigned and active
-        if (_features.Any(f => f.FeatureKey == featureKey && f.IsValid()))
+        // Check if feature is already assigned
+        if (_features.Any(f => f.FeatureKey == featureKey))
             return;
 
-        _features.Add(new MemberFeature(Id, featureKey, featureTitle, validFrom, validTo, assignedBy, notes));
+        _features.Add(new MemberFeature(Id, featureKey));
     }
 
     /// <summary>
-    /// Removes a feature from the member by deactivating it
+    /// Removes a feature from the member
     /// </summary>
     public void RemoveFeature(string featureKey)
     {
         if (string.IsNullOrWhiteSpace(featureKey))
             return;
 
-        var activeFeatures = _features.Where(f => f.FeatureKey == featureKey && f.IsActive).ToList();
-        foreach (var feature in activeFeatures)
+        var featuresToRemove = _features.Where(f => f.FeatureKey == featureKey).ToList();
+        foreach (var feature in featuresToRemove)
         {
-            feature.Deactivate();
+            _features.Remove(feature);
         }
     }
 
     /// <summary>
-    /// Gets all valid (active and within validity period) features for the member
+    /// Gets all features for the member
     /// </summary>
     public IEnumerable<MemberFeature> GetValidFeatures()
     {
-        return _features.Where(f => f.IsValid()).ToList();
+        return _features.ToList();
     }
 
     /// <summary>
@@ -218,7 +212,7 @@ public sealed class Member : FullAggregateRoot<Guid>
     /// </summary>
     public bool HasFeature(string featureKey)
     {
-        return _features.Any(f => f.FeatureKey == featureKey && f.IsValid());
+        return _features.Any(f => f.FeatureKey == featureKey);
     }
 
     /// <summary>
@@ -227,74 +221,45 @@ public sealed class Member : FullAggregateRoot<Guid>
     /// </summary>
     public bool HasFeatureKey(string featureKey)
     {
-        return GetValidFeatures()
-            .Any(mf => mf.FeatureKey == featureKey);
-    }
-
-    /// <summary>
-    /// Gets features that are expiring soon
-    /// </summary>
-    public IEnumerable<MemberFeature> GetExpiringFeatures(TimeSpan timeThreshold)
-    {
-        var cutoffTime = DateTimeOffset.UtcNow.Add(timeThreshold);
-        return _features.Where(f =>
-            f.IsActive &&
-            f.ValidTo.HasValue &&
-            f.ValidTo.Value <= cutoffTime &&
-            !f.IsExpired()).ToList();
-    }
-
-    /// <summary>
-    /// Gets capabilities that are expiring soon
-    /// </summary>
-    public IEnumerable<MemberCapability> GetExpiringCapabilities(TimeSpan timeThreshold)
-    {
-        var cutoffTime = DateTimeOffset.UtcNow.Add(timeThreshold);
-        return _capabilities.Where(c =>
-            c.IsActive &&
-            c.ValidTo.HasValue &&
-            c.ValidTo.Value <= cutoffTime &&
-            !c.IsExpired()).ToList();
+        return _features.Any(mf => mf.FeatureKey == featureKey);
     }
 
     /// <summary>
     /// Assigns access to a representative office
     /// </summary>
-    public void AssignOfficeAccess(Guid AgencyId, string officeCode, string officeTitle,
-        DateTime? validFrom = null, DateTime? validTo = null,
-        string? assignedBy = null, string? notes = null, string? accessLevel = null)
+    public void AssignOfficeAccess(Guid AgencyId)
     {
         if (AgencyId == Guid.Empty)
             throw new ArgumentException("Representative Office ID cannot be empty", nameof(AgencyId));
 
-        // Check if office access is already assigned and active
-        if (_agencies.Any(a => a.AgencyId == AgencyId && a.IsValid()))
+        // Check if office access is already assigned
+        if (_agencies.Any(a => a.AgencyId == AgencyId))
             return;
 
-        _agencies.Add(new MemberAgency(Id, AgencyId, officeCode, officeTitle, validFrom, validTo, assignedBy, notes, accessLevel));
+        _agencies.Add(new MemberAgency(Id, AgencyId));
     }
 
     /// <summary>
-    /// Removes access to a representative office by deactivating it
+    /// Removes access to a representative office
     /// </summary>
     public void RemoveOfficeAccess(Guid AgencyId)
     {
         if (AgencyId == Guid.Empty)
             return;
 
-        var activeAgencies = _agencies.Where(a => a.AgencyId == AgencyId && a.IsActive).ToList();
-        foreach (var agency in activeAgencies)
+        var agenciesToRemove = _agencies.Where(a => a.AgencyId == AgencyId).ToList();
+        foreach (var agency in agenciesToRemove)
         {
-            agency.Deactivate();
+            _agencies.Remove(agency);
         }
     }
 
     /// <summary>
-    /// Gets all valid (active and within validity period) office accesses for the member
+    /// Gets all office accesses for the member
     /// </summary>
     public IEnumerable<MemberAgency> GetValidOfficeAccesses()
     {
-        return _agencies.Where(a => a.IsValid()).ToList();
+        return _agencies.ToList();
     }
 
     /// <summary>
@@ -302,20 +267,7 @@ public sealed class Member : FullAggregateRoot<Guid>
     /// </summary>
     public bool HasOfficeAccess(Guid AgencyId)
     {
-        return _agencies.Any(a => a.AgencyId == AgencyId && a.IsValid());
-    }
-
-    /// <summary>
-    /// Gets office accesses that are expiring soon
-    /// </summary>
-    public IEnumerable<MemberAgency> GetExpiringOfficeAccesses(TimeSpan timeThreshold)
-    {
-        var cutoffTime = DateTimeOffset.UtcNow.Add(timeThreshold);
-        return _agencies.Where(a =>
-            a.IsActive &&
-            a.ValidTo.HasValue &&
-            a.ValidTo.Value <= cutoffTime &&
-            !a.IsExpired()).ToList();
+        return _agencies.Any(a => a.AgencyId == AgencyId);
     }
 
     /// <summary>
@@ -323,29 +275,7 @@ public sealed class Member : FullAggregateRoot<Guid>
     /// </summary>
     public IEnumerable<Guid> GetAccessibleOfficeIds()
     {
-        return GetValidOfficeAccesses().Select(a => a.AgencyId);
-    }
-
-    /// <summary>
-    /// Checks if member has full access to a specific representative office
-    /// </summary>
-    public bool HasFullOfficeAccess(Guid AgencyId)
-    {
-        return _agencies.Any(a => 
-            a.AgencyId == AgencyId && 
-            a.IsValid() && 
-            a.HasFullAccess());
-    }
-
-    /// <summary>
-    /// Checks if member has read-only access to a specific representative office
-    /// </summary>
-    public bool HasReadOnlyOfficeAccess(Guid AgencyId)
-    {
-        return _agencies.Any(a => 
-            a.AgencyId == AgencyId && 
-            a.IsValid() && 
-            a.HasReadOnlyAccess());
+        return _agencies.Select(a => a.AgencyId);
     }
 
     /// <summary>

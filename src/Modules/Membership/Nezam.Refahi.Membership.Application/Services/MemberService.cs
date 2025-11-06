@@ -1,14 +1,14 @@
-using Microsoft.Extensions.Logging;
+ using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using Nezam.Refahi.BasicDefinitions.Contracts.Services;
-using Nezam.Refahi.Membership.Application.Dtos;
-using Nezam.Refahi.Membership.Application.Services;
+using Nezam.Refahi.Membership.Application.Mappers;
 using Nezam.Refahi.Membership.Contracts.Dtos;
 using Nezam.Refahi.Membership.Contracts.Services;
 using Nezam.Refahi.Membership.Domain.Entities;
 using Nezam.Refahi.Membership.Domain.Repositories;
 using Nezam.Refahi.Membership.Domain.ValueObjects;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
+using MCA.SharedKernel.Application.Contracts;
 
 namespace Nezam.Refahi.Membership.Application.Services;
 
@@ -26,6 +26,7 @@ public class MemberService : IMemberService
     private readonly IExternalMemberStorage _externalEngineerService;
     private readonly IMembershipUnitOfWork _unitOfWork;
     private readonly IBasicDefinitionsCacheService _cacheService;
+    private readonly IMapper<Member, MemberDetailDto> _memberDetailMapper;
     private readonly ILogger<MemberService> _logger;
 
     public MemberService(
@@ -37,7 +38,8 @@ public class MemberService : IMemberService
         IRoleRepository roleRepository,
         IMemberCapabilityRepository memberCapabilityRepository,
         IMemberFeatureRepository memberFeatureRepository,
-        IBasicDefinitionsCacheService cacheService)
+        IBasicDefinitionsCacheService cacheService,
+        IMapper<Member, MemberDetailDto> memberDetailMapper)
     {
         _memberRepository = memberRepository ?? throw new ArgumentNullException(nameof(memberRepository));
         _externalEngineerService = externalEngineerService ?? throw new ArgumentNullException(nameof(externalEngineerService));
@@ -48,6 +50,7 @@ public class MemberService : IMemberService
         _memberCapabilityRepository = memberCapabilityRepository ?? throw new ArgumentNullException(nameof(memberCapabilityRepository));
         _memberFeatureRepository = memberFeatureRepository ?? throw new ArgumentNullException(nameof(memberFeatureRepository));
         _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
+        _memberDetailMapper = memberDetailMapper ?? throw new ArgumentNullException(nameof(memberDetailMapper));
     }
 
     public async Task<MemberDto?> GetMemberByNationalCodeAsync(NationalId nationalCode)
@@ -150,6 +153,39 @@ public class MemberService : IMemberService
         }
     }
 
+    public async Task<MemberDetailDto?> GetMemberDetailByNationalCodeAsync(NationalId nationalCode)
+    {
+        if (string.IsNullOrWhiteSpace(nationalCode))
+        {
+            _logger.LogWarning("National code is null or empty");
+            return null;
+        }
+
+        try
+        {
+            _logger.LogDebug("Getting member detail by national code: {NationalCode}", nationalCode);
+
+            // Get member from repository
+            var member = await _memberRepository.FindOneAsync(x => x.NationalCode.Value == nationalCode.Value);
+            if (member == null)
+            {
+                _logger.LogDebug("Member not found for national code: {NationalCode}", nationalCode);
+                return null;
+            }
+
+            // Use mapper to convert to detail DTO
+            var memberDetailDto = await _memberDetailMapper.MapAsync(member);
+            
+            _logger.LogDebug("Successfully retrieved member detail for {NationalCode}", nationalCode);
+            return memberDetailDto;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting member detail by national code: {NationalCode}", nationalCode);
+            return null;
+        }
+    }
+
     public async Task<IEnumerable<MemberDto>> GetMembersByNationalCodesAsync(IEnumerable<NationalId> nationalCodes)
     {
         if (nationalCodes == null || !nationalCodes.Any())
@@ -165,139 +201,29 @@ public class MemberService : IMemberService
             var memberDtos = new List<MemberDto>();
             var nationalCodeList = nationalCodes.ToList();
 
-            // Get existing members from local repository
-            var existingMembers = await _memberRepository.GetByNationalCodesAsync(nationalCodeList);
-            var existingNationalCodes = existingMembers.Select(m => m.NationalCode.Value).ToHashSet();
-
-            // Add existing members to result
-            foreach (var member in existingMembers)
+            // Process each national code - sync with external storage first
+            foreach (var nationalCode in nationalCodeList)
             {
-                var memberDto = new MemberDto
+                try
                 {
-                    Id = member.Id,
-                    NationalCode = member.NationalCode?.Value ?? string.Empty,
-                    MembershipNumber = member.MembershipNumber,
-                    FirstName = member.FullName.FirstName,
-                    LastName = member.FullName.LastName,
-                    Email = member.Email,
-                    PhoneNumber = member.PhoneNumber?.Value,
-                    IsActive = true,
-                    IsSpecial = member.IsSpecial,
-                    CreatedAt = member.CreatedAt,
-                    ModifiedAt = member.LastModifiedAt
-                };
-                memberDtos.Add(memberDto);
-            }
-
-            // Find missing members and fetch from external storage
-            var missingNationalCodes = nationalCodeList.Where(nc => !existingNationalCodes.Contains(nc.Value)).ToList();
-            
-            if (missingNationalCodes.Any())
-            {
-                _logger.LogDebug("Found {Count} missing members, fetching from external storage", missingNationalCodes.Count);
-                
-                foreach (var nationalCode in missingNationalCodes)
+                    // Use the same sync logic as GetMemberByNationalCodeAsync
+                    var memberDto = await GetMemberByNationalCodeAsync(nationalCode);
+                    if (memberDto != null)
+                    {
+                        memberDtos.Add(memberDto);
+                    }
+                    else
+                    {
+                        _logger.LogDebug("Member not found for national code: {NationalCode}", nationalCode.Value);
+                    }
+                }
+                catch (Exception ex)
                 {
-                    try
-                    {
-                        var externalMember = await _externalEngineerService.GetMemberByNationalCodeAsync(nationalCode.Value);
-                        if (externalMember != null)
-                        {
-                            _logger.LogDebug("Found member in external storage, saving to local repository: {NationalCode}", nationalCode.Value);
-                            
-                            // Create new member entity from external data
-                            var newMember = new Member(
-                                Guid.NewGuid(), // externalUserId - temporary, will be updated when user is created
-                                externalMember.MembershipCode ?? string.Empty, // membershipNumber
-                                nationalCode, // nationalCode
-                                new FullName(externalMember.FirstName, externalMember.LastName), // fullName
-                                new Email(externalMember.Email), // email
-                                externalMember.PhoneNumber != null ? new PhoneNumber(externalMember.PhoneNumber) : new PhoneNumber(string.Empty), // phoneNumber
-                                externalMember.Birthdate // birthDate
-                            );
-
-                            // Save member to local repository
-                            await _memberRepository.AddAsync(newMember);
-                            await _unitOfWork.SaveChangesAsync();
-
-                            // Get and save capabilities from external member data
-                            var processedFeatureKeys = new HashSet<string>();
-                            
-                            foreach (var externalCapability in externalMember.Capabilities)
-                            {
-                                var memberCapability = new MemberCapability(
-                                    newMember.Id,
-                                    externalCapability.Capability.Key, // Use capability key directly
-                                    externalCapability.Capability.Name ?? externalCapability.Capability.Key, // Use as title
-                                    externalCapability.ValidFrom,
-                                    externalCapability.ValidTo ?? DateTime.UtcNow.AddYears(1), // Default to 1 year if not specified
-                                    externalCapability.AssignedBy,
-                                    externalCapability.Notes
-                                );
-                                await _memberCapabilityRepository.AddAsync(memberCapability);
-
-                                // Save individual features from this capability
-                                foreach (var claim in externalCapability.Claims)
-                                {
-                                    var featureKey = claim.Value;
-                                    
-                                    // Skip if feature key is null or empty
-                                    if (string.IsNullOrWhiteSpace(featureKey))
-                                    {
-                                        _logger.LogWarning("Skipping feature with empty key for new member {MemberId}", newMember.Id);
-                                        continue;
-                                    }
-                                    
-                                    // Skip if we've already processed this feature key
-                                    if (processedFeatureKeys.Contains(featureKey))
-                                    {
-                                        _logger.LogDebug("Skipping duplicate feature {FeatureKey} for new member {MemberId}", featureKey, newMember.Id);
-                                        continue;
-                                    }
-                                    
-                                    processedFeatureKeys.Add(featureKey);
-                                    
-                                    var memberFeature = new MemberFeature(
-                                        newMember.Id,
-                                        featureKey, // Use claim value as feature key
-                                        claim.ClaimTypeTitle ?? featureKey, // Use claim type title as feature title
-                                        claim.ValidFrom ?? externalCapability.ValidFrom,
-                                        claim.ValidTo ?? externalCapability.ValidTo ?? DateTime.UtcNow.AddYears(1),
-                                        claim.AssignedBy ?? externalCapability.AssignedBy,
-                                        claim.Notes ?? externalCapability.Notes
-                                    );
-                                    await _memberFeatureRepository.AddAsync(memberFeature);
-                                }
-                            }
-
-                            await _unitOfWork.SaveChangesAsync();
-
-                            // Add to result
-                            var newMemberDto = new MemberDto
-                            {
-                                Id = newMember.Id,
-                                NationalCode = newMember.NationalCode?.Value ?? string.Empty,
-                                MembershipNumber = newMember.MembershipNumber,
-                                FirstName = newMember.FullName.FirstName,
-                                LastName = newMember.FullName.LastName,
-                                Email = newMember.Email,
-                                PhoneNumber = newMember.PhoneNumber?.Value,
-                                IsActive = true,
-                                IsSpecial = newMember.IsSpecial,
-                                CreatedAt = newMember.CreatedAt,
-                                ModifiedAt = newMember.LastModifiedAt
-                            };
-                            memberDtos.Add(newMemberDto);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "Failed to fetch member {NationalCode} from external storage", nationalCode.Value);
-                    }
+                    _logger.LogWarning(ex, "Failed to sync member {NationalCode} from external storage", nationalCode.Value);
                 }
             }
 
-            _logger.LogDebug("Successfully retrieved {Count} members", memberDtos.Count);
+            _logger.LogDebug("Successfully retrieved {Count} members out of {TotalCount} requested", memberDtos.Count, nationalCodeList.Count);
             return memberDtos;
         }
         catch (Exception ex)
@@ -540,43 +466,6 @@ public class MemberService : IMemberService
         }
     }
 
-    public async Task<BasicMemberInfoDto?> GetBasicMemberInfoAsync(NationalId nationalCode)
-    {
-        if (string.IsNullOrWhiteSpace(nationalCode))
-        {
-            _logger.LogWarning("National code is null or empty");
-            return null;
-        }
-
-        try
-        {
-            _logger.LogDebug("Getting basic member info for: {NationalCode}", nationalCode);
-
-            var member = await _memberRepository.FindOneAsync(x => x.NationalCode.Value == nationalCode.Value);
-            if (member == null)
-            {
-                _logger.LogDebug("Member not found for national code: {NationalCode}", nationalCode);
-                return null;
-            }
-
-            var basicInfo = new BasicMemberInfoDto
-            {
-                Id = member.Id,
-                NationalCode = member.NationalCode?.Value ?? string.Empty,
-                MembershipNumber = member.MembershipNumber,
-                FullName = member.FullName.ToString(),
-                IsActive = true
-            };
-
-            _logger.LogDebug("Successfully retrieved basic info for {NationalCode}", nationalCode);
-            return basicInfo;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting basic member info for: {NationalCode}", nationalCode);
-            return null;
-        }
-    }
 
     public async Task<IEnumerable<string>> GetMemberCapabilitiesAsync(NationalId nationalCode)
     {
@@ -809,6 +698,376 @@ public class MemberService : IMemberService
         }
     }
 
+    public async Task<bool> HasAnyAgencyAsync(NationalId nationalCode, IEnumerable<Guid> agencyIds)
+    {
+        try
+        {
+            if (agencyIds == null || !agencyIds.Any())
+            {
+                return true; // No agency requirement
+            }
+
+            _logger.LogDebug("Checking agencies for member {NationalCode}", nationalCode.Value);
+
+            var memberDetail = await GetMemberDetailByNationalCodeAsync(nationalCode);
+            if (memberDetail == null)
+            {
+                _logger.LogWarning("Member not found for national code {NationalCode}", nationalCode.Value);
+                return false;
+            }
+
+            var memberAgencyIds = memberDetail.AgencyIds ?? new List<Guid>();
+            var requiredAgencyIds = agencyIds.ToHashSet();
+
+            var hasAnyAgency = memberAgencyIds.Any(agencyId => requiredAgencyIds.Contains(agencyId));
+
+            _logger.LogDebug("Member {NationalCode} {HasAgency} any of the required agencies",
+                nationalCode.Value, hasAnyAgency ? "has" : "does not have");
+
+            return hasAnyAgency;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error checking agencies for member {NationalCode}", nationalCode.Value);
+            return false;
+        }
+    }
+
+    public async Task<MemberEligibilityResult> ValidateMemberEligibilityAsync(
+        NationalId nationalCode,
+        IEnumerable<string>? requiredCapabilities = null,
+        IEnumerable<string>? requiredFeatures = null,
+        IEnumerable<Guid>? requiredAgencies = null)
+    {
+        try
+        {
+            _logger.LogDebug("Validating eligibility for member {NationalCode}", nationalCode.Value);
+
+            // Get member detail with all required information
+            var memberDetail = await GetMemberDetailByNationalCodeAsync(nationalCode);
+            if (memberDetail == null)
+            {
+                return MemberEligibilityResult.MemberNotFound(nationalCode.Value);
+            }
+
+            // Check active membership
+            var hasActiveMembership = await HasActiveMembershipAsync(nationalCode);
+            if (!hasActiveMembership)
+            {
+                return MemberEligibilityResult.NotEligible(
+                    nationalCode.Value,
+                    hasActiveMembership: false,
+                    errors: new List<string> { "عضویت فعال برای این کد ملی یافت نشد" },
+                    memberDetail: memberDetail);
+            }
+
+            var missingCapabilities = new List<string>();
+            var missingFeatures = new List<string>();
+            var missingAgencies = new List<Guid>();
+            var errors = new List<string>();
+
+            var requiredCaps = requiredCapabilities?.ToList() ?? new List<string>();
+            var requiredFeats = requiredFeatures?.ToList() ?? new List<string>();
+            var hasSpecificRequirements = requiredCaps.Any() || requiredFeats.Any();
+
+            // Validate capabilities and features: member must have AT LEAST ONE of the required capabilities OR features
+            bool hasAnyRequiredCapability = false;
+            bool hasAnyRequiredFeature = false;
+            var foundCapabilities = new List<string>();
+            var foundFeatures = new List<string>();
+
+            // Check if member has at least one of the required capabilities
+            if (requiredCaps.Any())
+            {
+                var memberCaps = memberDetail.Capabilities ?? new List<string>();
+                var memberCapsSet = memberCaps.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                foreach (var requiredCap in requiredCaps)
+                {
+                    // Check if member has capability directly or via service
+                    var hasCapability = memberCapsSet.Contains(requiredCap) ||
+                                       await HasCapabilityAsync(nationalCode, requiredCap);
+                    
+                    if (hasCapability)
+                    {
+                        hasAnyRequiredCapability = true;
+                        foundCapabilities.Add(requiredCap);
+                    }
+                    else
+                    {
+                        missingCapabilities.Add(requiredCap);
+                    }
+                }
+            }
+            else
+            {
+                // No capabilities required, so this check passes
+                hasAnyRequiredCapability = true;
+            }
+
+            // Check if member has at least one of the required features
+            if (requiredFeats.Any())
+            {
+                var memberFeats = memberDetail.Features ?? new List<string>();
+                var memberFeatsSet = memberFeats.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                foreach (var requiredFeat in requiredFeats)
+                {
+                    // Check if member has feature directly or via service
+                    var hasFeature = memberFeatsSet.Contains(requiredFeat) ||
+                                    await HasFeatureAsync(nationalCode, requiredFeat);
+                    
+                    if (hasFeature)
+                    {
+                        hasAnyRequiredFeature = true;
+                        foundFeatures.Add(requiredFeat);
+                    }
+                    else
+                    {
+                        missingFeatures.Add(requiredFeat);
+                    }
+                }
+            }
+            else
+            {
+                // No features required, so this check passes
+                hasAnyRequiredFeature = true;
+            }
+
+            // Member must have at least ONE capability OR ONE feature (OR logic)
+            var meetsCapabilityOrFeatureRequirement = hasAnyRequiredCapability || hasAnyRequiredFeature;
+
+            if (!meetsCapabilityOrFeatureRequirement && hasSpecificRequirements)
+            {
+                // Member doesn't have any of the required capabilities or features
+                var capabilityNames = new List<string>();
+                foreach (var cap in requiredCaps)
+                {
+                    var displayName = await GetCapabilityDisplayNameAsync(cap);
+                    capabilityNames.Add(displayName);
+                }
+
+                var featureNames = new List<string>();
+                foreach (var feat in requiredFeats)
+                {
+                    var displayName = await GetFeatureDisplayNameAsync(feat);
+                    featureNames.Add(displayName);
+                }
+
+                var allRequiredNames = capabilityNames.Concat(featureNames).ToList();
+                var requiredText = string.Join(" یا ", allRequiredNames);
+                errors.Add($"عضو باید حداقل یکی از موارد زیر را داشته باشد: {requiredText}");
+            }
+
+            // If no specific capabilities or features required, check if user is VIP
+            if (!hasSpecificRequirements)
+            {
+                var isVip = await IsVipAsync(nationalCode);
+                if (!isVip)
+                {
+                    errors.Add("برای شرکت در این تور باید عضو ویژه (VIP) باشید");
+                    meetsCapabilityOrFeatureRequirement = false;
+                }
+            }
+
+            // Validate required agencies separately (member must have at least one of the required agencies)
+            bool meetsAgencyRequirement = true;
+            var requiredAgenciesList = requiredAgencies?.ToList() ?? new List<Guid>();
+            if (requiredAgenciesList.Any())
+            {
+                var hasAnyAgency = await HasAnyAgencyAsync(nationalCode, requiredAgenciesList);
+                if (!hasAnyAgency)
+                {
+                    meetsAgencyRequirement = false;
+                    missingAgencies.AddRange(requiredAgenciesList);
+                    
+                    // Get agency display names
+                    var agencyNames = new List<string>();
+                    foreach (var agencyId in requiredAgenciesList)
+                    {
+                        var agencyName = await GetAgencyDisplayNameAsync(agencyId);
+                        agencyNames.Add(agencyName);
+                    }
+                    
+                    var agencyNamesText = string.Join(" یا ", agencyNames);
+                    errors.Add($"عضو باید با حداقل یکی از آژانس‌های زیر مرتبط باشد: {agencyNamesText}");
+                }
+            }
+
+            // Member is eligible if:
+            // 1. Has at least one required capability OR feature (OR logic)
+            // 2. Meets agency requirement (if agencies are required)
+            var isEligible = meetsCapabilityOrFeatureRequirement && meetsAgencyRequirement;
+
+            if (isEligible)
+            {
+                _logger.LogInformation(
+                    "Member {NationalCode} is eligible. Found capabilities: {FoundCaps}, Found features: {FoundFeats}",
+                    nationalCode.Value,
+                    string.Join(", ", foundCapabilities),
+                    string.Join(", ", foundFeatures));
+                return MemberEligibilityResult.Eligible(nationalCode.Value, memberDetail);
+            }
+
+            _logger.LogWarning(
+                "Member {NationalCode} is not eligible. MeetsCapabilityOrFeature: {MeetsCapOrFeat}, MeetsAgency: {MeetsAgency}. Missing: Capabilities={Capabilities}, Features={Features}, Agencies={Agencies}",
+                nationalCode.Value,
+                meetsCapabilityOrFeatureRequirement,
+                meetsAgencyRequirement,
+                string.Join(", ", missingCapabilities),
+                string.Join(", ", missingFeatures),
+                string.Join(", ", missingAgencies));
+
+            return MemberEligibilityResult.NotEligible(
+                nationalCode.Value,
+                hasActiveMembership: true,
+                missingCapabilities: missingCapabilities,
+                missingFeatures: missingFeatures,
+                missingAgencies: missingAgencies,
+                errors: errors,
+                memberDetail: memberDetail);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error validating eligibility for member {NationalCode}", nationalCode.Value);
+            return MemberEligibilityResult.NotEligible(
+                nationalCode.Value,
+                hasActiveMembership: false,
+                errors: new List<string> { "خطا در بررسی صلاحیت‌های عضویت. لطفاً مجدداً تلاش کنید" });
+        }
+    }
+
+    public async Task<Dictionary<string, MemberEligibilityResult>> ValidateMembersEligibilityAsync(
+        IEnumerable<NationalId> nationalCodes,
+        IEnumerable<string>? requiredCapabilities = null,
+        IEnumerable<string>? requiredFeatures = null,
+        IEnumerable<Guid>? requiredAgencies = null)
+    {
+        try
+        {
+            var nationalCodesList = nationalCodes?.ToList() ?? new List<NationalId>();
+            if (!nationalCodesList.Any())
+            {
+                return new Dictionary<string, MemberEligibilityResult>();
+            }
+
+            _logger.LogDebug("Validating eligibility for {Count} members", nationalCodesList.Count);
+
+            var results = new Dictionary<string, MemberEligibilityResult>();
+
+            // Validate each member in parallel for better performance
+            var validationTasks = nationalCodesList.Select(async nationalCode =>
+            {
+                var result = await ValidateMemberEligibilityAsync(
+                    nationalCode,
+                    requiredCapabilities,
+                    requiredFeatures,
+                    requiredAgencies);
+                return (nationalCode.Value, result);
+            });
+
+            var validationResults = await Task.WhenAll(validationTasks);
+
+            foreach (var (nationalCode, result) in validationResults)
+            {
+                results[nationalCode] = result;
+            }
+
+            var eligibleCount = results.Values.Count(r => r.IsEligible);
+            _logger.LogInformation("Eligibility validation completed. Eligible: {EligibleCount}/{TotalCount}",
+                eligibleCount, nationalCodesList.Count);
+
+            return results;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error validating eligibility for multiple members");
+            throw;
+        }
+    }
+
+    public async Task<bool> IsVipAsync(NationalId nationalCode)
+    {
+        try
+        {
+            _logger.LogDebug("Checking if member {NationalCode} is VIP", nationalCode.Value);
+
+            var memberDetail = await GetMemberDetailByNationalCodeAsync(nationalCode);
+            if (memberDetail == null)
+            {
+                _logger.LogWarning("Member not found for national code {NationalCode}", nationalCode.Value);
+                return false;
+            }
+
+            var caps = memberDetail.Capabilities ?? new List<string>();
+            var feats = memberDetail.Features ?? new List<string>();
+
+            var isVip = caps.Contains("VIP", StringComparer.OrdinalIgnoreCase) ||
+                        feats.Contains("VIP", StringComparer.OrdinalIgnoreCase) ||
+                        await HasCapabilityAsync(nationalCode, "VIP") ||
+                        await HasFeatureAsync(nationalCode, "VIP");
+
+            _logger.LogDebug("Member {NationalCode} is {VipStatus}", nationalCode.Value, isVip ? "VIP" : "not VIP");
+            return isVip;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error checking VIP status for member {NationalCode}", nationalCode.Value);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Gets display name for capability from cache
+    /// </summary>
+    private async Task<string> GetCapabilityDisplayNameAsync(string capabilityId)
+    {
+        try
+        {
+            var capability = await _cacheService.GetCapabilityAsync(capabilityId);
+            return capability?.Name ?? capabilityId;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Error getting capability display name for {CapabilityId}", capabilityId);
+            return capabilityId;
+        }
+    }
+
+    /// <summary>
+    /// Gets display name for feature from cache
+    /// </summary>
+    private async Task<string> GetFeatureDisplayNameAsync(string featureId)
+    {
+        try
+        {
+            var feature = await _cacheService.GetFeatureAsync(featureId);
+            return feature?.Title ?? featureId;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Error getting feature display name for {FeatureId}", featureId);
+            return featureId;
+        }
+    }
+
+    /// <summary>
+    /// Gets display name for agency from cache
+    /// </summary>
+    private async Task<string> GetAgencyDisplayNameAsync(Guid agencyId)
+    {
+        try
+        {
+            var agency = await _cacheService.GetAgencyAsync(agencyId);
+            return agency?.Name ?? agencyId.ToString();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Error getting agency display name for {AgencyId}", agencyId);
+            return agencyId.ToString();
+        }
+    }
+
     /// <summary>
     /// Syncs existing member data with external storage data
     /// </summary>
@@ -899,6 +1158,7 @@ public class MemberService : IMemberService
 
     /// <summary>
     /// Syncs member capabilities and features with external storage data
+    /// Only syncs capability and feature IDs - adds missing ones, removes ones not in external data
     /// </summary>
     private async Task SyncMemberCapabilitiesAndFeaturesAsync(
         Domain.Entities.Member member, 
@@ -909,53 +1169,44 @@ public class MemberService : IMemberService
             _logger.LogDebug("Syncing capabilities and features for member {MemberId}", member.Id);
 
             // Get existing capabilities and features
-            var existingCapabilities = await _memberCapabilityRepository.GetByMemberIdAsync(member.Id);
-            var existingFeatures = await _memberFeatureRepository.GetByMemberIdAsync(member.Id);
+            var existingCapabilities = (await _memberCapabilityRepository.GetByMemberIdAsync(member.Id)).ToList();
+            var existingFeatures = (await _memberFeatureRepository.GetByMemberIdAsync(member.Id)).ToList();
 
-            // Create sets for comparison
-            var existingCapabilityKeys = existingCapabilities.Select(c => c.CapabilityKey).ToHashSet();
-            var existingFeatureKeys = existingFeatures.Select(f => f.FeatureKey).ToHashSet();
+            // Create sets for quick lookup
+            var existingCapabilityKeys = existingCapabilities.Select(c => c.CapabilityKey).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var existingFeatureKeys = existingFeatures.Select(f => f.FeatureKey).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-            // Track features that have been processed in this sync to avoid duplicates
-            var processedFeatureKeys = new HashSet<string>();
+            // Collect all external capability and feature keys
+            var externalCapabilityKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var allExternalFeatureKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var processedFeatureKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            // Process external capabilities
-            var externalCapabilityKeys = new HashSet<string>();
+            // Step 1: Process external capabilities - Add if missing
             foreach (var externalCapability in externalMember.Capabilities)
             {
                 var capabilityKey = externalCapability.Capability.Key;
+                
+                // Skip if capability key is null or empty
+                if (string.IsNullOrWhiteSpace(capabilityKey))
+                {
+                    _logger.LogWarning("Skipping capability with empty key for member {MemberId}", member.Id);
+                    continue;
+                }
+
                 externalCapabilityKeys.Add(capabilityKey);
 
+                // Only add if it doesn't exist
                 if (!existingCapabilityKeys.Contains(capabilityKey))
                 {
-                    // Add new capability
                     var memberCapability = new MemberCapability(
                         member.Id,
-                        capabilityKey,
-                        externalCapability.Capability.Name ?? capabilityKey,
-                        externalCapability.ValidFrom,
-                        externalCapability.ValidTo ?? DateTime.UtcNow.AddYears(1),
-                        externalCapability.AssignedBy,
-                        externalCapability.Notes
+                        capabilityKey
                     );
                     await _memberCapabilityRepository.AddAsync(memberCapability);
                     _logger.LogDebug("Added new capability {CapabilityKey} for member {MemberId}", capabilityKey, member.Id);
                 }
-                else
-                {
-                    // Update existing capability
-                    var existingCapability = existingCapabilities.First(c => c.CapabilityKey == capabilityKey);
-                    existingCapability.UpdateValidityPeriod(
-                        externalCapability.ValidFrom,
-                        externalCapability.ValidTo ?? DateTime.UtcNow.AddYears(1)
-                    );
-                    existingCapability.UpdateAssignedBy(externalCapability.AssignedBy);
-                    existingCapability.UpdateNotes(externalCapability.Notes);
-                    await _memberCapabilityRepository.UpdateAsync(existingCapability);
-                    _logger.LogDebug("Updated existing capability {CapabilityKey} for member {MemberId}", capabilityKey, member.Id);
-                }
 
-                // Process features for this capability
+                // Step 2: Process features for this capability - Add if missing
                 foreach (var claim in externalCapability.Claims)
                 {
                     var featureKey = claim.Value;
@@ -967,7 +1218,7 @@ public class MemberService : IMemberService
                         continue;
                     }
 
-                    // Skip if we've already processed this feature key in this sync
+                    // Track processed features to avoid duplicates
                     if (processedFeatureKeys.Contains(featureKey))
                     {
                         _logger.LogDebug("Skipping duplicate feature {FeatureKey} for member {MemberId}", featureKey, member.Id);
@@ -975,70 +1226,54 @@ public class MemberService : IMemberService
                     }
 
                     processedFeatureKeys.Add(featureKey);
+                    allExternalFeatureKeys.Add(featureKey);
 
+                    // Only add if it doesn't exist
                     if (!existingFeatureKeys.Contains(featureKey))
                     {
-                        // Add new feature
                         var memberFeature = new MemberFeature(
                             member.Id,
-                            featureKey,
-                            claim.ClaimTypeTitle ?? featureKey,
-                            claim.ValidFrom ?? externalCapability.ValidFrom,
-                            claim.ValidTo ?? externalCapability.ValidTo ?? DateTime.UtcNow.AddYears(1),
-                            claim.AssignedBy ?? externalCapability.AssignedBy,
-                            claim.Notes ?? externalCapability.Notes
+                            featureKey
                         );
                         await _memberFeatureRepository.AddAsync(memberFeature);
                         _logger.LogDebug("Added new feature {FeatureKey} for member {MemberId}", featureKey, member.Id);
                     }
-                    else
-                    {
-                        // Update existing feature
-                        var existingFeature = existingFeatures.First(f => f.FeatureKey == featureKey);
-                        existingFeature.UpdateValidityPeriod(
-                            claim.ValidFrom ?? externalCapability.ValidFrom,
-                            claim.ValidTo ?? externalCapability.ValidTo ?? DateTime.UtcNow.AddYears(1)
-                        );
-                        existingFeature.UpdateAssignmentMetadata(
-                            claim.AssignedBy ?? externalCapability.AssignedBy,
-                            claim.Notes ?? externalCapability.Notes
-                        );
-                        await _memberFeatureRepository.UpdateAsync(existingFeature);
-                        _logger.LogDebug("Updated existing feature {FeatureKey} for member {MemberId}", featureKey, member.Id);
-                    }
                 }
             }
 
-            // Remove features that are no longer in external data
-            var allExternalFeatureKeys = externalMember.Capabilities
-                .SelectMany(capability => capability.Claims)
-                .Select(claim => claim.Value)
-                .ToHashSet();
-
+            // Step 3: Remove features that are no longer in external data
             var featuresToRemove = existingFeatures
                 .Where(f => !allExternalFeatureKeys.Contains(f.FeatureKey))
                 .ToList();
 
             foreach (var featureToRemove in featuresToRemove)
             {
-                featureToRemove.Deactivate();
-                await _memberFeatureRepository.UpdateAsync(featureToRemove);
-                _logger.LogDebug("Deactivated feature {FeatureKey} for member {MemberId}", featureToRemove.FeatureKey, member.Id);
+                await _memberFeatureRepository.DeleteAsync(featureToRemove);
+                _logger.LogDebug("Removed feature {FeatureKey} for member {MemberId} (no longer in external data)", 
+                    featureToRemove.FeatureKey, member.Id);
             }
 
-            // Remove capabilities that are no longer in external data
+            // Step 4: Remove capabilities that are no longer in external data
             var capabilitiesToRemove = existingCapabilities
                 .Where(c => !externalCapabilityKeys.Contains(c.CapabilityKey))
                 .ToList();
 
             foreach (var capabilityToRemove in capabilitiesToRemove)
             {
-                capabilityToRemove.Deactivate();
-                await _memberCapabilityRepository.UpdateAsync(capabilityToRemove);
-                _logger.LogDebug("Deactivated capability {CapabilityKey} for member {MemberId}", capabilityToRemove.CapabilityKey, member.Id);
+                await _memberCapabilityRepository.DeleteAsync(capabilityToRemove);
+                _logger.LogDebug("Removed capability {CapabilityKey} for member {MemberId} (no longer in external data)", 
+                    capabilityToRemove.CapabilityKey, member.Id);
             }
 
-            _logger.LogDebug("Successfully synced capabilities and features for member {MemberId}", member.Id);
+            _logger.LogInformation(
+                "Successfully synced capabilities and features for member {MemberId}. " +
+                "Capabilities: {CapAdded} added, {CapRemoved} removed. " +
+                "Features: {FeatAdded} added, {FeatRemoved} removed.",
+                member.Id,
+                externalCapabilityKeys.Count - existingCapabilityKeys.Count,
+                capabilitiesToRemove.Count,
+                allExternalFeatureKeys.Count - existingFeatureKeys.Count,
+                featuresToRemove.Count);
         }
         catch (Exception ex)
         {

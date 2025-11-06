@@ -72,7 +72,7 @@ public sealed class WalletDeposit : FullAggregateRoot<Guid>
         TrackingCode = GenerateTrackingCode();
         ExternalUserId = externalUserId;
         Amount = amount;
-        Status = WalletDepositStatus.Pending;
+        Status = WalletDepositStatus.Requested;
         Description = description?.Trim();
         ExternalReference = externalReference?.Trim();
         RequestedAt = DateTime.UtcNow;
@@ -89,23 +89,23 @@ public sealed class WalletDeposit : FullAggregateRoot<Guid>
     }
 
     /// <summary>
-    /// Moves deposit to Processing while orchestrator prepares the bill
+    /// Moves deposit to AwaitingBill while orchestrator prepares the bill
     /// </summary>
     public void StartProcessing()
     {
-        if (Status != WalletDepositStatus.Pending)
+        if (Status != WalletDepositStatus.Requested)
             throw new InvalidOperationException("Can only start processing from pending state");
-        Status = WalletDepositStatus.Processing;
+        Status = WalletDepositStatus.AwaitingBill;
     }
 
     /// <summary>
-    /// Marks deposit as Pending (waiting for payment) once bill is created
+    /// Marks deposit as AwaitingPayment once the bill is created
     /// </summary>
-    public void MarkPending()
+    public void MarkAwaitingPayment()
     {
-        if (Status != WalletDepositStatus.Processing)
-            throw new InvalidOperationException("Can only mark pending from processing state");
-        Status = WalletDepositStatus.Pending;
+        if (Status != WalletDepositStatus.AwaitingBill)
+            throw new InvalidOperationException("Can only move to awaiting payment from awaiting bill state");
+        Status = WalletDepositStatus.AwaitingPayment;
     }
 
     /// <summary>
@@ -131,8 +131,8 @@ public sealed class WalletDeposit : FullAggregateRoot<Guid>
     /// </remarks>
     public void Complete()
     {
-        if (Status != WalletDepositStatus.Pending)
-            throw new InvalidOperationException("Can only complete pending deposits");
+        if (Status != WalletDepositStatus.AwaitingPayment)
+            throw new InvalidOperationException("Can only complete deposits that are awaiting payment");
 
         Status = WalletDepositStatus.Completed;
         CompletedAt = DateTime.UtcNow;
@@ -170,8 +170,8 @@ public sealed class WalletDeposit : FullAggregateRoot<Guid>
     /// </remarks>
     public void Cancel(string? reason = null)
     {
-        if (Status != WalletDepositStatus.Pending)
-            throw new InvalidOperationException("Can only cancel pending deposits");
+        if (Status != WalletDepositStatus.AwaitingPayment)
+            throw new InvalidOperationException("Can only cancel deposits that are awaiting payment");
 
         Status = WalletDepositStatus.Cancelled;
         CompletedAt = DateTime.UtcNow;

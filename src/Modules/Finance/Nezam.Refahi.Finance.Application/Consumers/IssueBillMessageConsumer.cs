@@ -13,12 +13,12 @@ namespace Nezam.Refahi.Finance.Application.Consumers;
 public class IssueBillMessageConsumer : IConsumer<IssueBillCommandMessage>
 {
     private readonly IMediator _mediator;
-    private readonly IPublishEndpoint _publishEndpoint;
+    private readonly IBus _publishEndpoint;
     private readonly ILogger<IssueBillMessageConsumer> _logger;
 
     public IssueBillMessageConsumer(
         IMediator mediator,
-        IPublishEndpoint publishEndpoint,
+        IBus publishEndpoint,
         ILogger<IssueBillMessageConsumer> logger)
     {
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
@@ -31,7 +31,7 @@ public class IssueBillMessageConsumer : IConsumer<IssueBillCommandMessage>
         var notification = context.Message;
         var cancellationToken = context.CancellationToken;
         _logger.LogInformation(
-            "Processing CreateBillIntegrationEvent for ReferenceType: {ReferenceType}, ReferenceId: {ReferenceId}, TrackingCode: {TrackingCode}",
+            "AwaitingBill CreateBillIntegrationEvent for ReferenceType: {ReferenceType}, ReferenceId: {ReferenceId}, TrackingCode: {TrackingCode}",
             notification.ReferenceType, notification.ReferenceId, notification.TrackingCode);
 
         // Map integration event to CreateBillCommand
@@ -41,7 +41,7 @@ public class IssueBillMessageConsumer : IConsumer<IssueBillCommandMessage>
                 ? $"فاکتور رزرو {notification.TrackingCode}"
                 : notification.BillTitle,
             ReferenceTrackingCode = notification.TrackingCode,
-            ReferenceId = notification.ReferenceId,
+            ReferenceId = notification.ReferenceId.ToString(),
             BillType = notification.ReferenceType, // internal classification; using entity name
             ExternalUserId = notification.ExternalUserId,
             UserFullName = notification.UserFullName,

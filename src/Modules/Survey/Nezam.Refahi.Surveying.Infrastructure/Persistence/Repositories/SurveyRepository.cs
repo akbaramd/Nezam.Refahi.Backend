@@ -28,7 +28,7 @@ public class SurveyRepository : EfRepository<SurveyDbContext, Survey, Guid>, ISu
     {
         var now = DateTimeOffset.UtcNow;
         return await PrepareQuery(_dbSet)
-            .Where(s => s.State == SurveyState.Active &&
+            .Where(s => s.State == SurveyState.Published &&
                        (!s.StartAt.HasValue || s.StartAt.Value <= now) &&
                        (!s.EndAt.HasValue || s.EndAt.Value >= now))
             .OrderByDescending(s => s.CreatedAt)
@@ -91,7 +91,7 @@ public class SurveyRepository : EfRepository<SurveyDbContext, Survey, Guid>, ISu
     {
         var now = DateTimeOffset.UtcNow;
         return await PrepareQuery(_dbSet)
-            .Where(s => s.State == SurveyState.Scheduled &&
+            .Where(s => s.State == SurveyState.Published &&
                        s.StartAt.HasValue &&
                        s.StartAt.Value <= now)
             .ToListAsync(cancellationToken);
@@ -101,7 +101,7 @@ public class SurveyRepository : EfRepository<SurveyDbContext, Survey, Guid>, ISu
     {
         var now = DateTimeOffset.UtcNow;
         return await PrepareQuery(_dbSet)
-            .Where(s => s.State == SurveyState.Active &&
+            .Where(s => s.State == SurveyState.Published &&
                        s.EndAt.HasValue &&
                        s.EndAt.Value < now)
             .ToListAsync(cancellationToken);
@@ -182,15 +182,15 @@ public class SurveyRepository : EfRepository<SurveyDbContext, Survey, Guid>, ISu
             var now = DateTimeOffset.UtcNow;
             if (isAcceptingResponses.Value)
             {
-                // Survey is accepting responses if it's active and within time window
-                query = query.Where(s => s.State == SurveyState.Active &&
+                // Survey is accepting responses if it's published and within time window
+                query = query.Where(s => s.State == SurveyState.Published &&
                                        (!s.StartAt.HasValue || s.StartAt.Value <= now) &&
                                        (!s.EndAt.HasValue || s.EndAt.Value >= now));
             }
             else
             {
-                // Survey is not accepting responses if it's not active or outside time window
-                query = query.Where(s => s.State != SurveyState.Active ||
+                // Survey is not accepting responses if it's not published or outside time window
+                query = query.Where(s => s.State != SurveyState.Published ||
                                        (s.StartAt.HasValue && s.StartAt.Value > now) ||
                                        (s.EndAt.HasValue && s.EndAt.Value < now));
             }
@@ -254,6 +254,22 @@ public class SurveyRepository : EfRepository<SurveyDbContext, Survey, Guid>, ISu
         // Get total count
         var totalCount = await query.CountAsync(cancellationToken);
 
+        // Apply includes based on parameters
+        if (includeQuestions)
+        {
+            query = query.Include(s => s.Questions)
+                        .ThenInclude(q => q.Options);
+        }
+        
+        if (includeResponses)
+        {
+            query = query.Include(s => s.Responses)
+                        .ThenInclude(r => r.QuestionAnswers)
+                            .ThenInclude(qa => qa.SelectedOptions)
+                        .Include(s => s.Responses)
+                        .ThenInclude(r => r.Participant);
+        }
+
         // Apply pagination
         var surveys = await query
             .Skip((pageNumber - 1) * pageSize)
@@ -301,15 +317,15 @@ public class SurveyRepository : EfRepository<SurveyDbContext, Survey, Guid>, ISu
             var now = DateTimeOffset.UtcNow;
             if (isAcceptingResponses.Value)
             {
-                // Survey is accepting responses if it's active and within time window
-                query = query.Where(s => s.State == SurveyState.Active &&
+                // Survey is accepting responses if it's published and within time window
+                query = query.Where(s => s.State == SurveyState.Published &&
                                        (!s.StartAt.HasValue || s.StartAt.Value <= now) &&
                                        (!s.EndAt.HasValue || s.EndAt.Value >= now));
             }
             else
             {
-                // Survey is not accepting responses if it's not active or outside time window
-                query = query.Where(s => s.State != SurveyState.Active ||
+                // Survey is not accepting responses if it's not published or outside time window
+                query = query.Where(s => s.State != SurveyState.Published ||
                                        (s.StartAt.HasValue && s.StartAt.Value > now) ||
                                        (s.EndAt.HasValue && s.EndAt.Value < now));
             }
@@ -374,12 +390,12 @@ public class SurveyRepository : EfRepository<SurveyDbContext, Survey, Guid>, ISu
     public async Task<(int ActiveCount, int ScheduledCount, int ClosedCount, int ArchivedCount)> GetSurveyStatisticsAsync(
         CancellationToken cancellationToken = default)
     {
-        var activeCount = await _dbSet.CountAsync(s => s.State == SurveyState.Active, cancellationToken);
-        var scheduledCount = await _dbSet.CountAsync(s => s.State == SurveyState.Scheduled, cancellationToken);
-        var closedCount = await _dbSet.CountAsync(s => s.State == SurveyState.Closed, cancellationToken);
+        var publishedCount = await _dbSet.CountAsync(s => s.State == SurveyState.Published, cancellationToken);
+        var completedCount = await _dbSet.CountAsync(s => s.State == SurveyState.Completed, cancellationToken);
         var archivedCount = await _dbSet.CountAsync(s => s.State == SurveyState.Archived, cancellationToken);
+        var draftCount = await _dbSet.CountAsync(s => s.State == SurveyState.Draft, cancellationToken);
 
-        return (activeCount, scheduledCount, closedCount, archivedCount);
+        return (publishedCount, draftCount, completedCount, archivedCount);
     }
 
     public async Task<IEnumerable<Survey>> GetSurveysWithQuestionsAsync(

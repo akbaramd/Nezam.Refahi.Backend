@@ -10,7 +10,7 @@ public class FailWalletDepositCommandMessage
     public Guid WalletDepositId { get; set; }
     public string TrackingCode { get; set; } = string.Empty;
 
-    public string FailureStage { get; set; } = string.Empty; // e.g., Pending, Completion
+    public string FailureStage { get; set; } = string.Empty; // e.g., Requested, Completion
     public string FailureReason { get; set; } = string.Empty;
     public string? ErrorCode { get; set; }
 

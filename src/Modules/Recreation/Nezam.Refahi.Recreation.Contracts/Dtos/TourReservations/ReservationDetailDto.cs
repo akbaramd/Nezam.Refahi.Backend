@@ -3,16 +3,9 @@
 /// <summary>
 /// Compact reservation row for list screens. No heavy relations.
 /// </summary>
-public class ReservationDto
+public class ReservationDto : ReservationSummaryDto
 {
-  // Identity
-  public Guid Id { get; set; } = Guid.Empty;
-  public Guid TourId { get; set; } = Guid.Empty;
-  public string TrackingCode { get; set; } = string.Empty;
-
-  // Status + dates
-  public string Status { get; set; } = string.Empty;
-  public DateTime ReservationDate { get; set; } = DateTime.MinValue;
+  // Status + dates (extended)
   public DateTime? ExpiryDate { get; set; } = null;
   public DateTime? ConfirmationDate { get; set; } = null;
 
@@ -93,6 +86,25 @@ public sealed class CapacitySummaryDto
   public DateTime RegistrationEnd { get; set; } = DateTime.MinValue;
   public bool IsActive { get; set; } = false;
   public string CapacityState { get; set; } = string.Empty;
+  
+  /// <summary>
+  /// Indicates whether registration is currently open for this capacity.
+  /// True when: IsActive && currentDate >= RegistrationStart && currentDate <= RegistrationEnd
+  /// </summary>
+  public bool IsRegistrationOpen { get; set; } = false;
+  
+  /// <summary>
+  /// Indicates whether this capacity is completely full (RemainingParticipants <= 0).
+  /// Use this to prevent booking attempts when no spots are available.
+  /// </summary>
+  public bool IsFullyBooked { get; set; } = false;
+  
+  /// <summary>
+  /// Indicates whether this capacity is nearly full (≥80% utilized but not fully booked).
+  /// Use this to show urgency indicators to encourage faster booking.
+  /// </summary>
+  public bool IsNearlyFull { get; set; } = false; // ≥80% utilized
+  
   public string? Description { get; set; } = string.Empty;
 }
 

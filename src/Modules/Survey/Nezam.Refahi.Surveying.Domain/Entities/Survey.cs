@@ -76,8 +76,8 @@ public sealed class Survey : FullAggregateRoot<Guid>
         if (IsStructureFrozen)
             throw new InvalidOperationException("Cannot modify survey structure when frozen");
 
-        if (State != SurveyState.Draft && State != SurveyState.Scheduled)
-            throw new InvalidOperationException("Can only add questions to draft or scheduled surveys");
+        if (State != SurveyState.Draft)
+            throw new InvalidOperationException("Can only add questions to draft surveys");
 
         if (specification == null)
             throw new ArgumentNullException(nameof(specification));
@@ -101,6 +101,13 @@ public sealed class Survey : FullAggregateRoot<Guid>
         var attemptNumber = GetNextAttemptNumber(participant);
         var response = new Response(Id, participant, attemptNumber, demographySnapshot);
         _responses.Add(response);
+        
+        // Initialize navigation to first question
+        var orderedQuestions = GetOrderedQuestionsList();
+        if (orderedQuestions.Any())
+        {
+            response.NavigateToQuestion(orderedQuestions, questionId: null, repeatIndex: null, isFirst: true);
+        }
         
         return response;
     }
@@ -174,8 +181,8 @@ public sealed class Survey : FullAggregateRoot<Guid>
     private void EnforceInvariants()
     {
         // Enforce all business rules here
-        if (State == SurveyState.Active && !_questions.Any())
-            throw new InvalidOperationException("Active survey must have questions");
+        if (State == SurveyState.Published && !_questions.Any())
+            throw new InvalidOperationException("Published survey must have questions");
 
         // Validate all questions have required options for choice questions
         foreach (var question in _questions)
@@ -226,56 +233,37 @@ public sealed class Survey : FullAggregateRoot<Guid>
     }
 
     /// <summary>
-    /// Activates the survey with time validation
+    /// Publishes the survey, making it available for participation
     /// </summary>
-    public void Activate()
+    public void Publish()
     {
-        if (State != SurveyState.Draft && State != SurveyState.Scheduled)
-            throw new InvalidOperationException("Can only activate draft or scheduled surveys");
+        if (State != SurveyState.Draft)
+            throw new InvalidOperationException("Can only publish draft surveys");
 
         var now = DateTimeOffset.UtcNow;
 
-        // Validate timing constraints
+        // Validate timing constraints if set
         if (StartAt.HasValue && now < StartAt.Value)
-            throw new InvalidOperationException($"Survey cannot be activated before start time: {StartAt.Value}");
+            throw new InvalidOperationException($"Survey cannot be published before start time: {StartAt.Value}");
 
         if (EndAt.HasValue && now >= EndAt.Value)
-            throw new InvalidOperationException($"Survey cannot be activated after end time: {EndAt.Value}");
+            throw new InvalidOperationException($"Survey cannot be published after end time: {EndAt.Value}");
 
-        // Enforce invariants before activation
+        // Enforce invariants before publishing
         EnforceInvariants();
 
-        State = SurveyState.Active;
+        State = SurveyState.Published;
     }
 
     /// <summary>
-    /// Schedules the survey to start at a specific time
+    /// Completes the survey (no longer accepting new responses)
     /// </summary>
-    public void Schedule(DateTime startAt, DateTime? endAt = null)
+    public void Complete()
     {
-        if (State != SurveyState.Draft)
-            throw new InvalidOperationException("Can only schedule draft surveys");
+        if (State != SurveyState.Published)
+            throw new InvalidOperationException("Can only complete published surveys");
 
-        if (startAt <= DateTime.UtcNow)
-            throw new ArgumentException("Start time must be in the future", nameof(startAt));
-
-        if (endAt.HasValue && startAt > endAt.Value)
-            throw new ArgumentException("Start time cannot be after end time");
-
-        StartAt = startAt;
-        EndAt = endAt;
-        State = SurveyState.Scheduled;
-    }
-
-    /// <summary>
-    /// Closes the survey
-    /// </summary>
-    public void Close()
-    {
-        if (State != SurveyState.Active)
-            throw new InvalidOperationException("Can only close active surveys");
-
-        State = SurveyState.Closed;
+        State = SurveyState.Completed;
     }
 
     /// <summary>
@@ -283,8 +271,8 @@ public sealed class Survey : FullAggregateRoot<Guid>
     /// </summary>
     public void Archive()
     {
-        if (State != SurveyState.Closed)
-            throw new InvalidOperationException("Can only archive closed surveys");
+        if (State != SurveyState.Completed)
+            throw new InvalidOperationException("Can only archive completed surveys");
 
         State = SurveyState.Archived;
     }
@@ -294,10 +282,10 @@ public sealed class Survey : FullAggregateRoot<Guid>
     /// </summary>
     public bool IsAcceptingResponses()
     {
-        if (State != SurveyState.Active)
+        if (State != SurveyState.Published)
             return false;
 
-        var now = DateTime.UtcNow;
+        var now = DateTimeOffset.UtcNow;
 
         if (StartAt.HasValue && now < StartAt.Value)
             return false;
@@ -390,6 +378,93 @@ public sealed class Survey : FullAggregateRoot<Guid>
     public IEnumerable<Question> GetOrderedQuestions()
     {
         return _questions.OrderBy(q => q.Order);
+    }
+
+    /// <summary>
+    /// Gets questions as ordered list (for navigation)
+    /// </summary>
+    public IReadOnlyList<Question> GetOrderedQuestionsList()
+    {
+        return _questions.OrderBy(q => q.Order).ToList().AsReadOnly();
+    }
+
+    // ========== Navigation Behaviors (using Response) ==========
+
+    /// <summary>
+    /// Navigates response to a specific question by ID
+    /// If questionId is null, navigates to first question (if isFirst=true) or last question (if isFirst=false)
+    /// </summary>
+    public void NavigateResponseToQuestion(Guid responseId, Guid? questionId = null, int? repeatIndex = null, bool isFirst = true)
+    {
+        var response = _responses.FirstOrDefault(r => r.Id == responseId);
+        if (response == null)
+            throw new ArgumentException("Response not found", nameof(responseId));
+
+        if (response.SurveyId != Id)
+            throw new ArgumentException("Response does not belong to this survey", nameof(responseId));
+
+        var orderedQuestions = GetOrderedQuestionsList();
+        response.NavigateToQuestion(orderedQuestions, questionId, repeatIndex, isFirst);
+    }
+
+    /// <summary>
+    /// Navigates response to the next question
+    /// </summary>
+    public bool NavigateResponseToNext(Guid responseId)
+    {
+        var response = _responses.FirstOrDefault(r => r.Id == responseId);
+        if (response == null)
+            throw new ArgumentException("Response not found", nameof(responseId));
+
+        if (response.SurveyId != Id)
+            throw new ArgumentException("Response does not belong to this survey", nameof(responseId));
+
+        var orderedQuestions = GetOrderedQuestionsList();
+        return response.NavigateToNext(orderedQuestions);
+    }
+
+    /// <summary>
+    /// Navigates response to the previous question
+    /// </summary>
+    public bool NavigateResponseToPrevious(Guid responseId)
+    {
+        var response = _responses.FirstOrDefault(r => r.Id == responseId);
+        if (response == null)
+            throw new ArgumentException("Response not found", nameof(responseId));
+
+        if (response.SurveyId != Id)
+            throw new ArgumentException("Response does not belong to this survey", nameof(responseId));
+
+        var orderedQuestions = GetOrderedQuestionsList();
+        return response.NavigateToPrevious(orderedQuestions);
+    }
+
+    /// <summary>
+    /// Gets the current question for a response
+    /// </summary>
+    public Question? GetCurrentQuestionForResponse(Guid responseId)
+    {
+        var response = _responses.FirstOrDefault(r => r.Id == responseId);
+        if (response == null)
+            return null;
+
+        if (response.SurveyId != Id)
+            return null;
+
+        var orderedQuestions = GetOrderedQuestionsList();
+        return response.GetCurrentQuestion(orderedQuestions);
+    }
+
+    /// <summary>
+    /// Gets the current navigation state for a response (question ID and repeat index)
+    /// </summary>
+    public (Guid? QuestionId, int RepeatIndex) GetCurrentNavigationState(Guid responseId)
+    {
+        var response = _responses.FirstOrDefault(r => r.Id == responseId);
+        if (response == null)
+            return (null, 1);
+
+        return (response.CurrentQuestionId, response.CurrentRepeatIndex);
     }
 
     /// <summary>
@@ -487,8 +562,8 @@ public sealed class Survey : FullAggregateRoot<Guid>
         if (IsStructureFrozen)
             throw new InvalidOperationException("Survey structure is already frozen");
 
-        if (State != SurveyState.Draft && State != SurveyState.Scheduled)
-            throw new InvalidOperationException("Can only freeze draft or scheduled surveys");
+        if (State != SurveyState.Draft)
+            throw new InvalidOperationException("Can only freeze draft surveys");
 
         IsStructureFrozen = true;
         StructureVersion++;

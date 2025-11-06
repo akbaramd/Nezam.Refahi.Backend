@@ -1,0 +1,14 @@
+{
+  "ReservationCleanup": {
+    "CleanupIntervalMinutes": 5,
+    "GracePeriodMinutes": 2,
+    "ErrorRetryIntervalMinutes": 1,
+    "IdempotencyRetentionDays": 7,
+    "BatchSize": 100
+  },
+  "Logging": {
+    "LogLevel": {
+      "Nezam.Refahi.Recreation.Application.Services.ReservationCleanupService": "Information"
+    }
+  }
+}

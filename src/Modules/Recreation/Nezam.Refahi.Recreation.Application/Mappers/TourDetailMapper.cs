@@ -1,4 +1,6 @@
 using MCA.SharedKernel.Application.Contracts;
+using Nezam.Refahi.BasicDefinitions.Contracts.Services;
+using Nezam.Refahi.BasicDefinitions.Domain.Entities;
 using Nezam.Refahi.Recreation.Contracts.Dtos;
 using Nezam.Refahi.Recreation.Domain.Entities;
 using Nezam.Refahi.Recreation.Domain.Enums;
@@ -14,6 +16,7 @@ public class TourDetailMapper : IMapper<Tour, TourDetailDto>
     private readonly IMapper<TourAgency, AgencyDetailDto> _agencyMapper;
     private readonly IMapper<TourRestrictedTour, RestrictedTourSummaryDto> _restrictedTourMapper;
     private readonly IMapper<TourPricing, PricingDetailDto> _pricingMapper;
+    private readonly IBasicDefinitionsCacheService _basicDefinitionsCacheService;
 
     public TourDetailMapper(
         IMapper<Tour, TourDto> tourMapper,
@@ -22,15 +25,17 @@ public class TourDetailMapper : IMapper<Tour, TourDetailDto>
         IMapper<TourPhoto, PhotoDetailDto> photoMapper,
         IMapper<TourAgency, AgencyDetailDto> agencyMapper,
         IMapper<TourRestrictedTour, RestrictedTourSummaryDto> restrictedTourMapper,
-        IMapper<TourPricing, PricingDetailDto> pricingMapper)
+        IMapper<TourPricing, PricingDetailDto> pricingMapper,
+        IBasicDefinitionsCacheService basicDefinitionsCacheService)
     {
-        _tourMapper = tourMapper;
-        _capacityMapper = capacityMapper;
-        _featureMapper = featureMapper;
-        _photoMapper = photoMapper;
-        _agencyMapper = agencyMapper;
-        _restrictedTourMapper = restrictedTourMapper;
-        _pricingMapper = pricingMapper;
+        _tourMapper = tourMapper ?? throw new ArgumentNullException(nameof(tourMapper));
+        _capacityMapper = capacityMapper ?? throw new ArgumentNullException(nameof(capacityMapper));
+        _featureMapper = featureMapper ?? throw new ArgumentNullException(nameof(featureMapper));
+        _photoMapper = photoMapper ?? throw new ArgumentNullException(nameof(photoMapper));
+        _agencyMapper = agencyMapper ?? throw new ArgumentNullException(nameof(agencyMapper));
+        _restrictedTourMapper = restrictedTourMapper ?? throw new ArgumentNullException(nameof(restrictedTourMapper));
+        _pricingMapper = pricingMapper ?? throw new ArgumentNullException(nameof(pricingMapper));
+        _basicDefinitionsCacheService = basicDefinitionsCacheService ?? throw new ArgumentNullException(nameof(basicDefinitionsCacheService));
     }
 
     public async Task<TourDetailDto> MapAsync(Tour source, CancellationToken cancellationToken = default)
@@ -64,18 +69,50 @@ public class TourDetailMapper : IMapper<Tour, TourDetailDto>
         var restrictedTours = source.TourRestrictedTours ?? Enumerable.Empty<TourRestrictedTour>();
         var restrictedDtos = await Task.WhenAll(restrictedTours.Select(r => _restrictedTourMapper.MapAsync(r, cancellationToken)));
 
-        // Requirements
-        var reqCaps = (source.MemberCapabilities ?? Enumerable.Empty<TourMemberCapability>())
+        // Requirements - fetch names from BasicDefinitions cache
+        var capabilityIds = (source.MemberCapabilities ?? Enumerable.Empty<TourMemberCapability>())
             .Select(mc => mc.CapabilityId)
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
 
-        var reqFeats = (source.MemberFeatures ?? Enumerable.Empty<TourMemberFeature>())
+        var featureIds = (source.MemberFeatures ?? Enumerable.Empty<TourMemberFeature>())
             .Select(mf => mf.FeatureId)
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
+
+        // Fetch capability and feature names from cache in parallel
+        var reqCaps = new List<RequiredCapabilityDto>();
+        var reqFeats = new List<RequiredFeatureDto>();
+
+        if (capabilityIds.Any())
+        {
+            var capabilityTasks = capabilityIds.Select(async capId =>
+            {
+                var capability = await _basicDefinitionsCacheService.GetCapabilityAsync(capId);
+                return new RequiredCapabilityDto
+                {
+                    CapabilityId = capId,
+                    Name = capability?.Name ?? string.Empty
+                };
+            });
+            reqCaps = (await Task.WhenAll(capabilityTasks)).ToList();
+        }
+
+        if (featureIds.Any())
+        {
+            var featureTasks = featureIds.Select(async featId =>
+            {
+                var feature = await _basicDefinitionsCacheService.GetFeatureAsync(featId);
+                return new RequiredFeatureDto
+                {
+                    FeatureId = featId,
+                    Name = feature?.Title ?? string.Empty
+                };
+            });
+            reqFeats = (await Task.WhenAll(featureTasks)).ToList();
+        }
 
         // Pricing
         var pricing = source.Pricing ?? Enumerable.Empty<TourPricing>();
@@ -126,9 +163,6 @@ public class TourDetailMapper : IMapper<Tour, TourDetailDto>
             HighestPriceRials = high,
             HasDiscount = hasDiscount,
             Pricing = pricingDtos.ToList(),
-            CanUserReserve = baseDto.CanUserReserve,
-            UserReservationId = baseDto.UserReservationId,
-            UserReservationStatus = baseDto.UserReservationStatus,
 
             // Detailed-only properties
             Description = source.Description,

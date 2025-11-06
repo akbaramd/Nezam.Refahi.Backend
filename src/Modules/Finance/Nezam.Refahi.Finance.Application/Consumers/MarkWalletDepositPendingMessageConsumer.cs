@@ -7,29 +7,29 @@ using Nezam.Refahi.Finance.Application.Commands.Wallets;
 namespace Nezam.Refahi.Finance.Application.Consumers;
 
 /// <summary>
-/// Sets WalletDeposit status to Pending when orchestrator signals bill creation.
+/// Sets WalletDeposit status to AwaitingPayment when orchestrator signals bill creation.
 /// </summary>
-public class MarkWalletDepositPendingMessageConsumer : IConsumer<MarkWalletDepositPendingCommandMessage>
+public class MarkWalletDepositAwaitingPaymentMessageConsumer : IConsumer<MarkWalletDepositAwaitingPaymentCommandMessage>
 {
     private readonly IMediator _mediator;
-    private readonly ILogger<MarkWalletDepositPendingMessageConsumer> _logger;
+    private readonly ILogger<MarkWalletDepositAwaitingPaymentMessageConsumer> _logger;
 
-    public MarkWalletDepositPendingMessageConsumer(
+    public MarkWalletDepositAwaitingPaymentMessageConsumer(
         IMediator mediator,
-        ILogger<MarkWalletDepositPendingMessageConsumer> logger)
+        ILogger<MarkWalletDepositAwaitingPaymentMessageConsumer> logger)
     {
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task Consume(ConsumeContext<MarkWalletDepositPendingCommandMessage> context)
+    public async Task Consume(ConsumeContext<MarkWalletDepositAwaitingPaymentCommandMessage> context)
     {
         var notification = context.Message;
         var cancellationToken = context.CancellationToken;
 
-        _logger.LogInformation("Wallet deposit ready to mark pending: DepositId {DepositId}, Bill {BillNumber}", notification.WalletDepositId, notification.BillNumber);
+        _logger.LogInformation("Wallet deposit ready to mark awaiting payment: DepositId {DepositId}, Bill {BillNumber}", notification.WalletDepositId, notification.BillNumber);
 
-        var cmd = new MarkWalletDepositPendingCommand { WalletDepositId = notification.WalletDepositId };
+        var cmd = new MarkWalletDepositAwaitingPaymentCommand { WalletDepositId = notification.WalletDepositId };
         await _mediator.Send(cmd, cancellationToken);
     }
 }

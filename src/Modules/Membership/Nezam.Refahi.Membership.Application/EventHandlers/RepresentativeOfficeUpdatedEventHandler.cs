@@ -41,17 +41,12 @@ public class AgencyUpdatedEventHandler : INotificationHandler<AgencyUpdatedEvent
                 return;
             }
 
-            // Update cached office information in all related MemberAgency entities
-            foreach (var memberAgency in memberAgencies)
-            {
-                memberAgency.UpdateOfficeInformation(notification.Code, notification.Name);
-            }
-
-            // Save changes
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            _logger.LogInformation("Successfully updated {Count} MemberAgency entities for office {OfficeId}", 
-                memberAgencies.Count(), notification.OfficeId);
+            // No action needed - MemberAgency entities only store IDs
+            // Office information is fetched from BasicDefinitions cache when needed
+            _logger.LogInformation("AgencyUpdatedEvent received for office {OfficeId}. " +
+                "MemberAgency entities only store IDs, no update needed. " +
+                "Found {Count} related MemberAgency entities.", 
+                notification.OfficeId, memberAgencies.Count());
         }
         catch (Exception ex)
         {

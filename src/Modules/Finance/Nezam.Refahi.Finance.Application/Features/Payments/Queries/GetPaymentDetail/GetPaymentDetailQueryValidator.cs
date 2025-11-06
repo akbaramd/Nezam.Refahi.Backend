@@ -14,5 +14,11 @@ public sealed class GetPaymentDetailQueryValidator : AbstractValidator<GetPaymen
       .WithMessage("شناسه پرداخت الزامی است.")
       .NotEqual(Guid.Empty)
       .WithMessage("شناسه پرداخت معتبر نیست.");
+
+    RuleFor(x => x.ExternalUserId)
+      .NotEmpty()
+      .WithMessage("شناسه کاربر خارجی الزامی است.")
+      .NotEqual(Guid.Empty)
+      .WithMessage("شناسه کاربر خارجی معتبر نیست.");
   }
 }

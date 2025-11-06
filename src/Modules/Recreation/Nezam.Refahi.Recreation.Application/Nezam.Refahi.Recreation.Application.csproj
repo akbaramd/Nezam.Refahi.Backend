@@ -23,6 +23,8 @@
     <ProjectReference Include="..\..\Settings\Nezam.Refahi.Settings.Contracts\Nezam.Refahi.Settings.Contracts.csproj" />
     <ProjectReference Include="..\Nezam.Refahi.Recreation.Contracts\Nezam.Refahi.Recreation.Contracts.csproj" />
     <ProjectReference Include="..\Nezam.Refahi.Recreation.Domain\Nezam.Refahi.Recreation.Domain.csproj" />
+    <ProjectReference Include="..\..\BasicDefinitions\Nezam.Refahi.BasicDefinitions.Contracts\Nezam.Refahi.BasicDefinitions.Contracts.csproj" />
+    <ProjectReference Include="..\..\BasicDefinitions\Nezam.Refahi.BasicDefinitions.Domain\Nezam.Refahi.BasicDefinitions.Domain.csproj" />
     <Folder Include="Dtos\" />
   </ItemGroup>
 </Project>

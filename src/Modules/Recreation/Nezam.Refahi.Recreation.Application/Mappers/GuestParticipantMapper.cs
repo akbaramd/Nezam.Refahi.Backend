@@ -15,7 +15,6 @@ public class GuestParticipantMapper : IMapper<Participant, GuestParticipantDto>
             NationalNumber = source.NationalNumber,
             PhoneNumber = source.PhoneNumber,
             Email = source.Email,
-            ParticipantType = source.ParticipantType.ToString(),
             BirthDate = source.BirthDate,
             EmergencyContactName = source.EmergencyContactName,
             EmergencyContactPhone = source.EmergencyContactPhone,

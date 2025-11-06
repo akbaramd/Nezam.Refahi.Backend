@@ -45,6 +45,15 @@ public class ResponseConfiguration : IEntityTypeConfiguration<Response>
         builder.Property(r => r.ExpiredAt)
             .HasColumnType("datetimeoffset");
 
+        // Navigation state properties
+        builder.Property(r => r.CurrentQuestionId)
+            .HasColumnName("CurrentQuestionId");
+
+        builder.Property(r => r.CurrentRepeatIndex)
+            .HasColumnName("CurrentRepeatIndex")
+            .IsRequired()
+            .HasDefaultValue(1);
+
         // Value objects as owned entities
         builder.OwnsOne(r => r.Participant, p =>
         {

@@ -138,7 +138,7 @@ public class CreateWalletDepositCommandHandler : IRequestHandler<CreateWalletDep
                 };
                 await _publishEndpoint.Publish(depositRequestedEvent, cancellationToken);
 
-                // Return response with deposit info; bill to be created asynchronously
+                // Return response with deposit شinfo; bill to be created asynchronously
                 var response = new CreateWalletDepositResponse
                 {
                     DepositId = walletDeposit.Id,
@@ -149,7 +149,7 @@ public class CreateWalletDepositCommandHandler : IRequestHandler<CreateWalletDep
                     AmountRials = request.AmountRials,
                     DepositStatus = walletDeposit.Status.ToString(),
                     DepositStatusText = GetWalletDepositStatusText(walletDeposit.Status),
-                    BillStatus = "Pending",
+                    BillStatus = "Requested",
                     BillStatusText = GetBillStatusText(Domain.Enums.BillStatus.Draft),
                     RequestedAt = walletDeposit.RequestedAt,
                     BillIssueDate = null,
@@ -187,7 +187,9 @@ public class CreateWalletDepositCommandHandler : IRequestHandler<CreateWalletDep
     {
         return status switch
         {
-            WalletDepositStatus.Pending => "در انتظار",
+            WalletDepositStatus.Requested => "ثبت شده",
+            WalletDepositStatus.AwaitingBill => "در انتظار صدور صورت‌حساب",
+            WalletDepositStatus.AwaitingPayment => "در انتظار پرداخت",
             WalletDepositStatus.Completed => "تکمیل شده",
             WalletDepositStatus.Failed => "ناموفق",
             WalletDepositStatus.Cancelled => "لغو شده",

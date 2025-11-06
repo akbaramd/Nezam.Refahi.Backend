@@ -14,11 +14,6 @@ public interface IMemberFeatureRepository : IRepository<MemberFeature, Guid>
     Task<IEnumerable<MemberFeature>> GetByMemberIdAsync(Guid memberId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets all valid (active and within validity period) features for a specific member
-    /// </summary>
-    Task<IEnumerable<MemberFeature>> GetValidFeaturesByMemberIdAsync(Guid memberId, CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Gets all features by feature key across all members
     /// </summary>
     Task<IEnumerable<MemberFeature>> GetByFeatureKeyAsync(string featureKey, CancellationToken cancellationToken = default);
@@ -39,22 +34,12 @@ public interface IMemberFeatureRepository : IRepository<MemberFeature, Guid>
     Task<bool> HasFeatureAsync(Guid memberId, string featureKey, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets expiring features for a specific member
+    /// Gets feature keys that a member has access to
     /// </summary>
-    Task<IEnumerable<MemberFeature>> GetExpiringFeaturesByMemberIdAsync(Guid memberId, TimeSpan timeThreshold, CancellationToken cancellationToken = default);
+    Task<IEnumerable<string>> GetFeatureKeysByMemberIdAsync(Guid memberId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets all expiring features across all members
+    /// Removes all feature assignments for a member
     /// </summary>
-    Task<IEnumerable<MemberFeature>> GetExpiringFeaturesAsync(TimeSpan timeThreshold, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Gets features assigned by a specific user
-    /// </summary>
-    Task<IEnumerable<MemberFeature>> GetByAssignedByAsync(string assignedBy, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Gets features within a specific date range
-    /// </summary>
-    Task<IEnumerable<MemberFeature>> GetByDateRangeAsync(DateTime? fromDate, DateTime? toDate, CancellationToken cancellationToken = default);
+    Task RemoveAllMemberFeaturesAsync(Guid memberId, CancellationToken cancellationToken = default);
 }

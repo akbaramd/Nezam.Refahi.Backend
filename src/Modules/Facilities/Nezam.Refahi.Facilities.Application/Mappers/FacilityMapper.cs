@@ -16,8 +16,9 @@ public sealed class FacilityMapper : IMapper<Facility, FacilityDto>
     {
         var activeCycles = source.Cycles.Where(c => c.Status == FacilityCycleStatus.Active).ToList();
         var totalActiveQuota = activeCycles.Sum(c => c.Quota);
-        var totalUsedQuota = activeCycles.Sum(c => c.UsedQuota);
-        var totalAvailableQuota = totalActiveQuota - totalUsedQuota;
+        // Calculate UsedQuota from actual requests count (all requests, not just from UsedQuota field)
+        var totalUsedQuota = activeCycles.Sum(c => c.Requests.Count);
+        var totalAvailableQuota = Math.Max(0, totalActiveQuota - totalUsedQuota);
         var quotaUtilizationPercentage = totalActiveQuota > 0 ? (decimal)totalUsedQuota / totalActiveQuota * 100 : 0;
 
         var dto = new FacilityDto
@@ -25,11 +26,6 @@ public sealed class FacilityMapper : IMapper<Facility, FacilityDto>
             Id = source.Id,
             Name = source.Name,
             Code = source.Code,
-            Type = source.Type.ToString(),
-            TypeText = EnumTextMappingService.GetFacilityTypeDescription(source.Type),
-            Status = source.Status.ToString(),
-            StatusText = EnumTextMappingService.GetFacilityStatusDescription(source.Status),
-            IsActive = EnumTextMappingService.IsFacilityActive(source.Status),
             Description = source.Description,
             BankInfo = new BankInfoDto
             {
@@ -38,7 +34,6 @@ public sealed class FacilityMapper : IMapper<Facility, FacilityDto>
                 BankAccountNumber = source.BankAccountNumber
             },
             CycleStatistics = await _facilityCycleStatisticsMapper.MapAsync(source, cancellationToken).ConfigureAwait(false),
-            Metadata = source.Metadata,
             CreatedAt = source.CreatedAt,
             LastModifiedAt = source.LastModifiedAt
         };
@@ -51,11 +46,6 @@ public sealed class FacilityMapper : IMapper<Facility, FacilityDto>
         destination.Id = source.Id;
         destination.Name = source.Name;
         destination.Code = source.Code;
-        destination.Type = source.Type.ToString();
-        destination.TypeText = EnumTextMappingService.GetFacilityTypeDescription(source.Type);
-        destination.Status = source.Status.ToString();
-        destination.StatusText = EnumTextMappingService.GetFacilityStatusDescription(source.Status);
-        destination.IsActive = EnumTextMappingService.IsFacilityActive(source.Status);
         destination.Description = source.Description;
         destination.BankInfo = new BankInfoDto
         {
@@ -64,7 +54,6 @@ public sealed class FacilityMapper : IMapper<Facility, FacilityDto>
             BankAccountNumber = source.BankAccountNumber
         };
         destination.CycleStatistics = await _facilityCycleStatisticsMapper.MapAsync(source, cancellationToken);
-        destination.Metadata = source.Metadata;
         destination.CreatedAt = source.CreatedAt;
         destination.LastModifiedAt = source.LastModifiedAt;
 

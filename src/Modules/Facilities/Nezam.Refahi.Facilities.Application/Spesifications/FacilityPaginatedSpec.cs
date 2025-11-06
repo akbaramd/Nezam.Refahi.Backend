@@ -8,23 +8,20 @@ namespace Nezam.Refahi.Facilities.Application.Spesifications;
 /// </summary>
  public sealed class FacilityPaginatedSpec : IPaginatedSpecification<Facility>
 {
-    public FacilityPaginatedSpec(int pageNumber, int pageSize, string? type, string? status, string? searchTerm, bool onlyActive)
+    public FacilityPaginatedSpec(int pageNumber, int pageSize, string? searchTerm, bool onlyActive)
     {
         if (pageNumber <= 0) throw new ArgumentOutOfRangeException(nameof(pageNumber));
         if (pageSize <= 0) throw new ArgumentOutOfRangeException(nameof(pageSize));
 
         PageNumber = pageNumber;
         PageSize = pageSize;
-        Type = string.IsNullOrWhiteSpace(type) ? null : type.Trim();
-        Status = string.IsNullOrWhiteSpace(status) ? null : status.Trim();
         SearchTerm = string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm.Trim();
         OnlyActive = onlyActive;
     }
 
     public int PageNumber { get; set; }
     public int PageSize { get; set; }
-    public string? Type { get; set; }
-    public string? Status { get; set; }
+
     public string? SearchTerm { get; set; }
     public bool OnlyActive { get; set; }
 
@@ -35,23 +32,11 @@ namespace Nezam.Refahi.Facilities.Application.Spesifications;
     // OnlyActive → وضعیت Active
     if (OnlyActive)
     {
-      q = q.Where(f => f.Status == Nezam.Refahi.Facilities.Domain.Enums.FacilityStatus.Active);
+      q = q.Where(f => f.Cycles.Any(c => c.Status == Nezam.Refahi.Facilities.Domain.Enums.FacilityCycleStatus.Active));
     }
 
     // Type filter (case-insensitive parse)
-    if (!string.IsNullOrWhiteSpace(Type) &&
-        Enum.TryParse<Nezam.Refahi.Facilities.Domain.Enums.FacilityType>(Type, true, out var typeEnum))
-    {
-      q = q.Where(f => f.Type == typeEnum);
-    }
-
-    // Status filter (case-insensitive parse)
-    if (!string.IsNullOrWhiteSpace(Status) &&
-        Enum.TryParse<Nezam.Refahi.Facilities.Domain.Enums.FacilityStatus>(Status, true, out var statusEnum))
-    {
-      q = q.Where(f => f.Status == statusEnum);
-    }
-
+  
     // SearchTerm across key textual fields
     if (!string.IsNullOrWhiteSpace(SearchTerm))
     {

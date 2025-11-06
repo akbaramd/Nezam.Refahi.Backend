@@ -33,14 +33,14 @@ public class CreatePaymentCommandHandler : IRequestHandler<CreatePaymentCommand,
     private readonly IValidator<CreatePaymentCommand> _validator;
     private readonly IFinanceUnitOfWork _unitOfWork;
     private readonly IMediator _mediator;
-    private readonly IPublishEndpoint _publishEndpoint;
+    private readonly IBus _publishEndpoint;
 
     public CreatePaymentCommandHandler(
         IBillRepository billRepository,
         IValidator<CreatePaymentCommand> validator,
         IFinanceUnitOfWork unitOfWork,
         IMediator mediator,
-        IPublishEndpoint publishEndpoint)
+        IBus publishEndpoint)
     {
         _billRepository = billRepository ?? throw new ArgumentNullException(nameof(billRepository));
         _validator = validator ?? throw new ArgumentNullException(nameof(validator));

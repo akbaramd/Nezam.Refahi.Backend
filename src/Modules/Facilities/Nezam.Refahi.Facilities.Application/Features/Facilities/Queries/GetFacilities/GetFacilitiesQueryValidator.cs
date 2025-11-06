@@ -22,15 +22,7 @@ public class GetFacilitiesQueryValidator : AbstractValidator<GetFacilitiesQuery>
             .LessThanOrEqualTo(100)
             .WithMessage("اندازه صفحه نمی‌تواند از ۱۰۰ بیشتر باشد");
 
-        RuleFor(x => x.Type)
-            .MaximumLength(50)
-            .WithMessage("نوع تسهیلات نمی‌تواند از ۵۰ کاراکتر بیشتر باشد")
-            .When(x => !string.IsNullOrEmpty(x.Type));
-
-        RuleFor(x => x.Status)
-            .MaximumLength(50)
-            .WithMessage("وضعیت تسهیلات نمی‌تواند از ۵۰ کاراکتر بیشتر باشد")
-            .When(x => !string.IsNullOrEmpty(x.Status));
+      
 
         RuleFor(x => x.SearchTerm)
             .MaximumLength(200)

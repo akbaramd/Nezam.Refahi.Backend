@@ -26,6 +26,11 @@ public record FacilityCycleStatisticsDto
   public int ClosedCyclesCount { get; set; }
 
   /// <summary>
+  /// Number of cycles under review
+  /// </summary>
+  public int UnderReviewCyclesCount { get; set; }
+
+  /// <summary>
   /// Number of completed cycles
   /// </summary>
   public int CompletedCyclesCount { get; set; }

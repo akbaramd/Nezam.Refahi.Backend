@@ -1,8 +1,8 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Nezam.Refahi.Identity.Contracts.IntegrationEvents;
-using Nezam.Refahi.Membership.Application.Dtos;
 using Nezam.Refahi.Membership.Application.Services;
+using Nezam.Refahi.Membership.Contracts.Services;
 using Nezam.Refahi.Membership.Domain.Entities;
 using Nezam.Refahi.Membership.Domain.Repositories;
 using Nezam.Refahi.Membership.Domain.ValueObjects;

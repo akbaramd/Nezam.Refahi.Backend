@@ -20,14 +20,14 @@ public class FailPaymentCommandHandler : IRequestHandler<FailPaymentCommand, App
     private readonly IPaymentRepository _paymentRepository;
     private readonly IValidator<FailPaymentCommand> _validator;
     private readonly IFinanceUnitOfWork _unitOfWork;
-    private readonly IPublishEndpoint _publishEndpoint;
+    private readonly IBus _publishEndpoint;
 
     public FailPaymentCommandHandler(
         IBillRepository billRepository,
         IPaymentRepository paymentRepository,
         IValidator<FailPaymentCommand> validator,
         IFinanceUnitOfWork unitOfWork,
-        IPublishEndpoint publishEndpoint)
+        IBus publishEndpoint)
     {
         _billRepository = billRepository ?? throw new ArgumentNullException(nameof(billRepository));
         _paymentRepository = paymentRepository ?? throw new ArgumentNullException(nameof(paymentRepository));

@@ -73,8 +73,8 @@ public class ReservationCleanupService : BackgroundService
             var allExpiredReservations = await reservationRepository.GetExpiredReservationsAsync(cutoffTime, cancellationToken);
             
             // Separate reservations by status for different processing
+            // Note: OnHold means waiting for payment and confirmation, so all OnHold are included here
             var heldReservations = allExpiredReservations.Where(r => r.Status == ReservationStatus.OnHold).ToList();
-            var payingReservations = allExpiredReservations.Where(r => r.Status == ReservationStatus.PendingConfirmation).ToList();
 
             if (!allExpiredReservations.Any())
             {
@@ -102,20 +102,8 @@ public class ReservationCleanupService : BackgroundService
                 }
             }
 
-            // Process Paying reservations with extended grace period
-            foreach (var reservation in payingReservations)
-            {
-                try
-                {
-                    await ProcessPayingExpiredReservation(reservation, capacityRepository, cancellationToken);
-                    processedCount++;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "خطا در پردازش رزرو پرداخت منقضی شده {ReservationId}", reservation.Id);
-                    errorCount++;
-                }
-            }
+            // Note: All OnHold reservations (including those waiting for payment) are processed above
+            // No separate processing needed as OnHold means waiting for payment and confirmation
 
             if (processedCount > 0 || errorCount > 0)
             {
@@ -169,44 +157,6 @@ public class ReservationCleanupService : BackgroundService
         }
     }
 
-    /// <summary>
-    /// پردازش رزروهای منقضی شده در وضعیت Paying
-    /// </summary>
-    private async Task ProcessPayingExpiredReservation(
-        TourReservation reservation, 
-        ITourCapacityRepository capacityRepository,
-        CancellationToken cancellationToken)
-    {
-        _logger.LogDebug("پردازش رزرو منقضی شده {ReservationId} در وضعیت Paying", reservation.Id);
-
-        // Check if this Paying reservation has been expired for too long
-        var totalGracePeriodMinutes = _settings.GracePeriodMinutes + _settings.PaymentCallbackGracePeriodMinutes;
-        var expiryThreshold = DateTime.UtcNow.AddMinutes(-totalGracePeriodMinutes);
-        
-        if (reservation.ExpiryDate.HasValue && reservation.ExpiryDate.Value <= expiryThreshold)
-        {
-            // Mark as payment failed and release capacity
-            reservation.MarkPaymentFailed($"پرداخت منقضی شد - هیچ callback در مدت {totalGracePeriodMinutes} دقیقه دریافت نشد");
-            
-            if (reservation.CapacityId.HasValue)
-            {
-                var capacity = await capacityRepository.GetByIdAsync(reservation.CapacityId.Value, cancellationToken);
-                if (capacity != null)
-                {
-                    var participantCount = reservation.GetParticipantCount();
-                    capacity.ReleaseParticipants(participantCount);
-                    
-                    _logger.LogInformation("تعداد {Count} شرکت‌کننده از ظرفیت {CapacityId} آزاد شد (رزرو Paying منقضی شده - {TotalGracePeriod}+ دقیقه)", 
-                        participantCount, capacity.Id, totalGracePeriodMinutes);
-                }
-            }
-        }
-        else
-        {
-            _logger.LogWarning("رزرو منقضی شده {ReservationId} در وضعیت Paying - ظرفیت هنوز آزاد نشده (در مدت {TotalGracePeriod} دقیقه)", 
-                reservation.Id, totalGracePeriodMinutes);
-        }
-    }
 
     private async Task CleanupOldApiIdempotencyRecords(CancellationToken cancellationToken)
     {

@@ -11,14 +11,14 @@ namespace Nezam.Refahi.Plugin.NezamMohandesi.Seeding;
 public class NezamMohandesiBasicDefinitionsSeedContributor : IBasicDefinitionsSeedContributor
 {
     private readonly ILogger<NezamMohandesiBasicDefinitionsSeedContributor> _logger;
-    private readonly CedoContext _cedoContext;
+    private readonly IDbContextFactory<CedoContext> _cedoContextFactory;
 
     public NezamMohandesiBasicDefinitionsSeedContributor(
         ILogger<NezamMohandesiBasicDefinitionsSeedContributor> logger,
-        CedoContext cedoContext)
+        IDbContextFactory<CedoContext> cedoContextFactory)
     {
         _logger = logger;
-        _cedoContext = cedoContext;
+        _cedoContextFactory = cedoContextFactory;
     }
 
     public Task<List<Features>> SeedFeaturesAsync(CancellationToken cancellationToken = default)
@@ -47,8 +47,11 @@ public class NezamMohandesiBasicDefinitionsSeedContributor : IBasicDefinitionsSe
     {
         _logger.LogInformation("Seeding representative offices for {PluginName}", NezamMohandesiConstants.PluginInfo.Name);
 
+        // Create a new context scope for this operation to avoid disposal issues
+        await using var cedoContext = await _cedoContextFactory.CreateDbContextAsync(cancellationToken);
+        
         // Get cities from Cedo database
-        var cities = await _cedoContext.Cities
+        var cities = await cedoContext.Cities
             .Include(c => c.Province)
             .Where(c => c.SyncCode.HasValue && !c.IsSatellite) // Only cities with sync codes and not satellite cities
             .OrderBy(c => c.Province.Name)

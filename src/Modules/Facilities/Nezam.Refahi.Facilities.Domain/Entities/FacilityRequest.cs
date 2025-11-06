@@ -14,9 +14,10 @@ public sealed class FacilityRequest : FullAggregateRoot<Guid>
     public Guid FacilityId { get; private set; }
     public Guid FacilityCycleId { get; private set; }
     public Guid MemberId { get; private set; } // Changed from ExternalUserId to MemberId
+    public Guid SelectedPriceOptionId { get; private set; } // ID of selected price option from cycle
     public string? UserFullName { get; private set; }
     public string? UserNationalId { get; private set; }
-    public Money RequestedAmount { get; private set; } = null!;
+    public Money RequestedAmount { get; private set; } = null!; // Amount derived from selected price option
     public Money? ApprovedAmount { get; private set; }
     public FacilityRequestStatus Status { get; private set; }
     public string? RequestNumber { get; private set; }
@@ -83,6 +84,7 @@ public sealed class FacilityRequest : FullAggregateRoot<Guid>
         Guid facilityId,
         Guid facilityCycleId,
         Guid memberId,
+        Guid selectedPriceOptionId,
         Money requestedAmount,
         string? userFullName = null,
         string? userNationalId = null,
@@ -96,6 +98,8 @@ public sealed class FacilityRequest : FullAggregateRoot<Guid>
             throw new ArgumentException("Facility cycle ID cannot be empty", nameof(facilityCycleId));
         if (memberId == Guid.Empty)
             throw new ArgumentException("Member ID cannot be empty", nameof(memberId));
+        if (selectedPriceOptionId == Guid.Empty)
+            throw new ArgumentException("Selected price option ID cannot be empty", nameof(selectedPriceOptionId));
         if (requestedAmount == null)
             throw new ArgumentNullException(nameof(requestedAmount));
         if (requestedAmount.AmountRials <= 0)
@@ -104,6 +108,7 @@ public sealed class FacilityRequest : FullAggregateRoot<Guid>
         FacilityId = facilityId;
         FacilityCycleId = facilityCycleId;
         MemberId = memberId;
+        SelectedPriceOptionId = selectedPriceOptionId;
         RequestedAmount = requestedAmount;
         UserFullName = userFullName?.Trim();
         UserNationalId = userNationalId?.Trim();
@@ -231,6 +236,36 @@ public sealed class FacilityRequest : FullAggregateRoot<Guid>
     }
 
     /// <summary>
+    /// تنظیم درخواست به حالت نیاز به حضور
+    /// </summary>
+    /// <remarks>
+    /// <para>توضیح رفتار:</para>
+    /// این رفتار درخواست را به حالت نیاز به حضور تغییر می‌دهد.
+    /// کاربر باید حضوری مراجعه کند.
+    ///
+    /// <para>کاربرد در دنیای واقعی:</para>
+    /// زمانی که مسئول بررسی تشخیص می‌دهد که کاربر باید حضوری مراجعه کند،
+    /// این رفتار برای ثبت این وضعیت استفاده می‌شود.
+    ///
+    /// <para>قوانین:</para>
+    /// - فقط درخواست‌های UnderReview قابل تنظیم به این حالت هستند.
+    /// - وضعیت به RequiresPresence تغییر می‌یابد.
+    /// </remarks>
+    public void SetRequiresPresence(string? notes = null)
+    {
+        if (Status != FacilityRequestStatus.UnderReview)
+            throw new InvalidOperationException("Can only set requires presence for requests under review");
+
+        var previousStatus = Status;
+        Status = FacilityRequestStatus.RequiresPresence;
+
+        if (!string.IsNullOrWhiteSpace(notes))
+        {
+            Metadata["RequiresPresenceNotes"] = notes;
+        }
+    }
+
+    /// <summary>
     /// لغو درخواست توسط متقاضی
     /// </summary>
     /// <remarks>
@@ -256,8 +291,8 @@ public sealed class FacilityRequest : FullAggregateRoot<Guid>
     /// </remarks>
     public void Cancel(string? reason = null)
     {
-        if (Status != FacilityRequestStatus.PendingApproval && Status != FacilityRequestStatus.UnderReview)
-            throw new InvalidOperationException("Can only cancel pending approval or under review applications");
+        if (!CanBeCancelled())
+            throw new InvalidOperationException("Cannot cancel request in current status");
 
         var previousStatus = Status;
         Status = FacilityRequestStatus.Cancelled;
@@ -337,10 +372,26 @@ public sealed class FacilityRequest : FullAggregateRoot<Guid>
     /// <summary>
     /// بررسی اینکه آیا درخواست قابل لغو است
     /// </summary>
+    /// <remarks>
+    /// درخواست قابل لغو است اگر:
+    /// - قبل از تایید باشد (Status != Approved)
+    /// - قبلاً لغو، رد، تکمیل یا پرداخت نشده باشد
+    /// - وضعیت‌های قابل لغو: RequestSent, PendingApproval, PendingDocuments, Waitlisted, ReturnedForAmendment, UnderReview, RequiresPresence
+    /// </remarks>
     public bool CanBeCancelled()
     {
-        return Status == FacilityRequestStatus.PendingApproval ||
-               Status == FacilityRequestStatus.UnderReview;
+        // درخواست‌های قابل لغو: همه وضعیت‌های قبل از تایید
+        return Status != FacilityRequestStatus.Approved &&
+               Status != FacilityRequestStatus.Rejected &&
+               Status != FacilityRequestStatus.Cancelled &&
+               Status != FacilityRequestStatus.Completed &&
+               Status != FacilityRequestStatus.Disbursed &&
+               Status != FacilityRequestStatus.BankCancelled &&
+               Status != FacilityRequestStatus.QueuedForDispatch &&
+               Status != FacilityRequestStatus.SentToBank &&
+               Status != FacilityRequestStatus.BankScheduled &&
+               Status != FacilityRequestStatus.ProcessedByBank &&
+               Status != FacilityRequestStatus.Expired;
     }
 
     /// <summary>
@@ -355,6 +406,14 @@ public sealed class FacilityRequest : FullAggregateRoot<Guid>
     /// بررسی اینکه آیا درخواست قابل رد است
     /// </summary>
     public bool CanBeRejected()
+    {
+        return Status == FacilityRequestStatus.UnderReview;
+    }
+
+    /// <summary>
+    /// بررسی اینکه آیا درخواست قابل تنظیم به نیاز به حضور است
+    /// </summary>
+    public bool CanRequirePresence()
     {
         return Status == FacilityRequestStatus.UnderReview;
     }

@@ -169,6 +169,16 @@ namespace Nezam.Refahi.Surveys.Infrastructure.Migrations
                     b.Property<DateTimeOffset?>("CanceledAt")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<Guid?>("CurrentQuestionId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("CurrentQuestionId");
+
+                    b.Property<int>("CurrentRepeatIndex")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1)
+                        .HasColumnName("CurrentRepeatIndex");
+
                     b.Property<DateTimeOffset?>("ExpiredAt")
                         .HasColumnType("datetimeoffset");
 

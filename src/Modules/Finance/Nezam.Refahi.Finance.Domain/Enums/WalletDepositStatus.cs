@@ -9,32 +9,34 @@ namespace Nezam.Refahi.Finance.Domain.Enums;
 public enum WalletDepositStatus
 {
     /// <summary>
-    /// Deposit request is pending payment
+    /// DEPRECATED: ambiguous. Prefer Requested/AwaitingBill/AwaitingPayment.
     /// </summary>
-    Pending = 1,
+    Requested = 1,
 
     /// <summary>
-    /// Deposit is processing payment
+    /// DEPRECATED: ambiguous. Prefer AwaitingPayment/AwaitingCredit.
     /// </summary>
-    Processing = 2,
-
+    AwaitingBill = 2,
+    AwaitingPayment = 3,
     /// <summary>
     /// Deposit is completed successfully
     /// </summary>
-    Completed = 3,
+    Completed = 4,
 
     /// <summary>
     /// Deposit failed
     /// </summary>
-    Failed = 4,
+    Failed = 5,
 
     /// <summary>
     /// Deposit is cancelled
     /// </summary>
-    Cancelled = 5,
+    Cancelled = 6,
 
     /// <summary>
     /// Deposit is expired
     /// </summary>
-    Expired = 6
+    Expired = 7,
+
+
 }

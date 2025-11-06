@@ -62,12 +62,20 @@ public class CancelFacilityRequestCommandHandler : IRequestHandler<CancelFacilit
                         "درخواست تسهیلات مورد نظر یافت نشد");
                 }
 
-                // Check if request can be cancelled
+                // بررسی اینکه کاربر فقط می‌تواند درخواست خودش را لغو کند
+                if (facilityRequest.MemberId != request.CancelledByUserId)
+                {
+                    await _unitOfWork.RollbackAsync(cancellationToken);
+                    return ApplicationResult<CancelFacilityRequestResult>.Failure(
+                        "شما فقط می‌توانید درخواست خودتان را لغو کنید");
+                }
+
+                // Check if request can be cancelled (قبل از تایید)
                 if (!facilityRequest.CanBeCancelled())
                 {
                     await _unitOfWork.RollbackAsync(cancellationToken);
                     return ApplicationResult<CancelFacilityRequestResult>.Failure(
-                        $"درخواست در وضعیت فعلی ({facilityRequest.Status}) قابل لغو نیست");
+                        $"درخواست در وضعیت فعلی ({facilityRequest.Status}) قابل لغو نیست. فقط درخواست‌های قبل از تایید قابل لغو هستند");
                 }
 
                 // Cancel the request using domain method

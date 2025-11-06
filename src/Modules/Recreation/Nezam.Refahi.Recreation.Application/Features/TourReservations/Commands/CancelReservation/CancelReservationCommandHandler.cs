@@ -1,6 +1,6 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Nezam.Refahi.Recreation.Application.Services;
+using Nezam.Refahi.Membership.Contracts.Services;
 using Nezam.Refahi.Recreation.Contracts.IntegrationEvents;
 using Nezam.Refahi.Recreation.Domain.Entities;
 using Nezam.Refahi.Recreation.Domain.Enums;
@@ -10,6 +10,7 @@ using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
 using MassTransit;
+using Nezam.Refahi.Recreation.Application.Services;
 
 namespace Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.CancelReservation;
 
@@ -22,24 +23,24 @@ public class CancelReservationCommandHandler : IRequestHandler<CancelReservation
     private readonly ITourRepository _tourRepository;
     private readonly IRecreationUnitOfWork _unitOfWork;
     private readonly ICurrentUserService _currentUserService;
-    private readonly MemberValidationService _memberValidationService;
+    private readonly IMemberService _memberService;
     private readonly ILogger<CancelReservationCommandHandler> _logger;
-    private readonly IPublishEndpoint _publishEndpoint;
+    private readonly IBus _publishEndpoint;
 
     public CancelReservationCommandHandler(
         ITourReservationRepository reservationRepository,
         ITourRepository tourRepository,
         IRecreationUnitOfWork unitOfWork,
         ICurrentUserService currentUserService,
-        MemberValidationService memberValidationService,
+        IMemberService memberService,
         ILogger<CancelReservationCommandHandler> logger,
-        IPublishEndpoint publishEndpoint)
+        IBus publishEndpoint)
     {
         _reservationRepository = reservationRepository;
         _tourRepository = tourRepository;
         _unitOfWork = unitOfWork;
         _currentUserService = currentUserService;
-        _memberValidationService = memberValidationService;
+        _memberService = memberService ?? throw new ArgumentNullException(nameof(memberService));
         _logger = logger;
         _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
     }
@@ -161,7 +162,7 @@ public class CancelReservationCommandHandler : IRequestHandler<CancelReservation
                 TourTitle = tour.Title,
                 ReservationDate = reservation.ReservationDate,
                 CancelledAt = cancellationDate,
-                ExternalUserId = memberId ?? Guid.Empty,
+                ExternalUserId = _currentUserService.UserId ?? Guid.Empty,
                 UserFullName = string.Empty, // Would need to get from member service
                 UserNationalCode = string.Empty, // Would need to get from member service
                 CancellationReason = request.Reason ?? string.Empty,
@@ -274,8 +275,13 @@ public class CancelReservationCommandHandler : IRequestHandler<CancelReservation
         {
             try
             {
-                var member = await _memberValidationService.GetMemberInfoAsync(_currentUserService.UserNationalNumber ?? string.Empty);
-                return member?.Id;
+                var nationalNumber = _currentUserService.UserNationalNumber;
+                if (!string.IsNullOrWhiteSpace(nationalNumber))
+                {
+                    var nationalId = new NationalId(nationalNumber);
+                    var member = await _memberService.GetMemberByNationalCodeAsync(nationalId);
+                    return member?.Id;
+                }
             }
             catch (Exception ex)
             {
@@ -312,18 +318,9 @@ public class CancelReservationCommandHandler : IRequestHandler<CancelReservation
             return (false, "مهلت لغو رزرو (24 ساعت قبل از شروع تور) گذشته است");
         }
         
-        // Guard 3: Special handling for Paying state - prevent race with PSP callback
-        if (reservation.Status == ReservationStatus.PendingConfirmation)
-        {
-            return (false, "رزرو در حال پردازش پرداخت است. لطفاً چند دقیقه صبر کنید و مجدداً تلاش کنید");
-        }
-        
-        // Guard 4: Already cancelled states
-        if (reservation.Status == ReservationStatus.Cancelled || 
-            reservation.Status == ReservationStatus.SystemCancelled )
-        {
-            return (false, "این رزرو قبلاً لغو شده است");
-        }
+        // Guard 3 & 4: Basic cancellation checks (domain behavior)
+        if (!reservation.CanCancel(out var canCancelError))
+            return (false, canCancelError!);
         
         return (true, string.Empty);
     }

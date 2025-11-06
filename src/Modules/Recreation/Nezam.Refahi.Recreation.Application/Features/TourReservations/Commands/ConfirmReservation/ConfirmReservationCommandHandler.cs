@@ -5,9 +5,9 @@ using Nezam.Refahi.Recreation.Domain.Repositories;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
-using Nezam.Refahi.Recreation.Application.Services;
 using Nezam.Refahi.Shared.Application;
 using MassTransit;
+using Nezam.Refahi.Recreation.Application.Services;
 
 namespace Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.ConfirmReservation;
 
@@ -19,22 +19,19 @@ public class ConfirmReservationCommandHandler : IRequestHandler<ConfirmReservati
     private readonly ITourReservationRepository _reservationRepository;
     private readonly IRecreationUnitOfWork _unitOfWork;
     private readonly ICurrentUserService _currentUserService;
-    private readonly MemberValidationService _memberValidationService;
     private readonly ILogger<ConfirmReservationCommandHandler> _logger;
-    private readonly IPublishEndpoint _publishEndpoint;
+    private readonly IBus _publishEndpoint;
 
     public ConfirmReservationCommandHandler(
         ITourReservationRepository reservationRepository,
         IRecreationUnitOfWork unitOfWork,
         ICurrentUserService currentUserService,
-        MemberValidationService memberValidationService,
         ILogger<ConfirmReservationCommandHandler> logger,
-        IPublishEndpoint publishEndpoint)
+        IBus publishEndpoint)
     {
         _reservationRepository = reservationRepository;
         _unitOfWork = unitOfWork;
         _currentUserService = currentUserService;
-        _memberValidationService = memberValidationService;
         _logger = logger;
         _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
     }
@@ -68,15 +65,15 @@ public class ConfirmReservationCommandHandler : IRequestHandler<ConfirmReservati
             // Confirm the reservation
             try
             {
-                // For payment-confirmed reservations, we should allow confirmation even if expired
+                // For OnHold reservations (waiting for payment), we should allow confirmation even if expired
                 // because the payment was initiated before expiry
-                if (reservation.Status == Nezam.Refahi.Recreation.Domain.Enums.ReservationStatus.PendingConfirmation)
+                if (reservation.Status == Nezam.Refahi.Recreation.Domain.Enums.ReservationStatus.OnHold)
                 {
                     // Special handling for payment-confirmed reservations
                     // Skip expiry check since payment was initiated before expiry
                     reservation.Confirm(totalAmount, skipExpiryCheck: true);
                     
-                    _logger.LogInformation("Confirmed expired reservation {ReservationId} due to successful payment in PendingConfirmation state",  
+                    _logger.LogInformation("Confirmed expired reservation {ReservationId} due to successful payment in OnHold state",  
                         reservation.Id);
                 }
                 else

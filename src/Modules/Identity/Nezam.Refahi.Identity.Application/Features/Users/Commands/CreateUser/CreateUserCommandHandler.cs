@@ -18,7 +18,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Appli
     private readonly IUserRepository _userRepository;
     private readonly IRoleRepository _roleRepository;
     private readonly IIdentityUnitOfWork _unitOfWork;
-    private readonly IPublishEndpoint _publishEndpoint;
+    private readonly IBus _publishEndpoint;
     private readonly IIdempotencyService _idempotencyService;
     private readonly ILogger<CreateUserCommandHandler> _logger;
 
@@ -26,7 +26,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Appli
         IUserRepository userRepository, 
         IRoleRepository roleRepository, 
         IIdentityUnitOfWork unitOfWork,
-        IPublishEndpoint publishEndpoint,
+        IBus publishEndpoint,
         IIdempotencyService idempotencyService,
         ILogger<CreateUserCommandHandler> logger)
     {

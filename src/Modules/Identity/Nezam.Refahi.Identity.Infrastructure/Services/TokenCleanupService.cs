@@ -55,14 +55,15 @@ public class TokenCleanupService : BackgroundService
         try
         {
             var cleanedCount = await tokenService.CleanupExpiredTokensAsync();
+            var prunedCount = await tokenService.PruneActiveTokensAsync();
             
-            if (cleanedCount > 0)
+            if (cleanedCount > 0 || prunedCount > 0)
             {
-                _logger.LogInformation("Token cleanup completed: {CleanedCount} tokens removed", cleanedCount);
+                _logger.LogInformation("Token maintenance completed: {CleanedCount} cleaned, {PrunedCount} pruned", cleanedCount, prunedCount);
             }
             else
             {
-                _logger.LogDebug("Token cleanup completed: no tokens to clean");
+                _logger.LogDebug("Token maintenance completed: nothing to clean or prune");
             }
         }
         catch (Exception ex)

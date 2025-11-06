@@ -20,14 +20,14 @@ public class CompleteRefundCommandHandler : IRequestHandler<CompleteRefundComman
     private readonly IRefundRepository _refundRepository;
     private readonly IValidator<CompleteRefundCommand> _validator;
     private readonly IFinanceUnitOfWork _unitOfWork;
-    private readonly IPublishEndpoint _publishEndpoint;
+    private readonly IBus _publishEndpoint;
 
     public CompleteRefundCommandHandler(
         IBillRepository billRepository,
         IRefundRepository refundRepository,
         IValidator<CompleteRefundCommand> validator,
         IFinanceUnitOfWork unitOfWork,
-        IPublishEndpoint publishEndpoint)
+        IBus publishEndpoint)
     {
         _billRepository = billRepository ?? throw new ArgumentNullException(nameof(billRepository));
         _refundRepository = refundRepository ?? throw new ArgumentNullException(nameof(refundRepository));

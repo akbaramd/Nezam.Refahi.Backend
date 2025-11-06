@@ -8,7 +8,7 @@ public class WalletDepositCompletionFailedMessage : INotification
     public DateTime OccurredOn { get; set; } = DateTime.UtcNow;
     public string EventVersion { get; set; } = "1.0";
 
-    public Guid WalletDepositId { get; set; }
+    public required Guid WalletDepositId { get; set; } = Guid.Empty;
     public string TrackingCode { get; set; } = string.Empty;
 
 

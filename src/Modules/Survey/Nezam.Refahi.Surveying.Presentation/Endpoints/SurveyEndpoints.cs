@@ -392,31 +392,6 @@ public static class SurveyEndpoints
             .Produces<ApplicationResult<QuestionAnswerDetailsDto>>()
             .Produces(400);
 
-        // ───────────────────── Get Next Question (Authenticated) ─────────────────────
-        surveyGroup.MapGet("/{surveyId:guid}/responses/{responseId:guid}/questions/next", async (
-                Guid surveyId,
-                Guid responseId,
-                [FromServices] IMediator mediator,
-                [FromServices] ICurrentUserService currentUserService,
-                [FromQuery] Guid? currentQuestionId = null,
-                [FromQuery] bool includeUserAnswer = true) =>
-            {
-                var query = new GetNextQuestionQuery
-                {
-                    SurveyId = surveyId,
-                    ResponseId = responseId,
-                    CurrentQuestionId = currentQuestionId,
-                    UserNationalNumber = currentUserService.UserNationalNumber,
-                    IncludeUserAnswer = includeUserAnswer
-                };
-                var result = await mediator.Send(query);
-                return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
-            })
-            .WithName("GetNextQuestion")
-            .RequireAuthorization()
-            .Produces<ApplicationResult<NextQuestionResponseDto>>()
-            .Produces(400);
-
         // ───────────────────── Start Survey Response (Authenticated) ─────────────────────
         surveyGroup.MapPost("/{surveyId:guid}/responses", async (
                 Guid surveyId,

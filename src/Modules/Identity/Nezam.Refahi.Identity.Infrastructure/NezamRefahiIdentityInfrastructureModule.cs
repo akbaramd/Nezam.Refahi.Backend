@@ -67,7 +67,8 @@ public class NezamRefahiIdentityInfrastructureModule : BonModule
     // ========================================================================
     
     // Token cleanup background service
-    // TokenCleanupService moved to Hangfire jobs - runs at 4:30 AM daily
+    // If Hangfire is not configured, register hosted service to ensure maintenance runs
+    context.Services.AddHostedService<TokenCleanupService>();
     
      context.Services.AddDbContext<IdentityDbContext>(options =>
      {
@@ -117,6 +118,7 @@ public class NezamRefahiIdentityInfrastructureModule : BonModule
         // Register user seeding hosted service
         context.Services.AddHostedService<UserSeedingHostedService>();
         context.Services.AddHostedService<IdentitySeedingService>();
+    context.Services.AddHostedService<OtpMaintenanceHostedService>();
         
     return base.OnConfigureAsync(context);
   }

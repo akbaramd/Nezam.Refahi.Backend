@@ -61,21 +61,6 @@ public interface IFacilityCycleRepository : IRepository<FacilityCycle,Guid>
     Task<List<Guid>> GetMemberActiveFacilitiesAsync(Guid memberId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Add new facility cycle
-    /// </summary>
-    Task AddAsync(FacilityCycle cycle, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Update facility cycle
-    /// </summary>
-    Task UpdateAsync(FacilityCycle cycle, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Delete facility cycle
-    /// </summary>
-    Task DeleteAsync(FacilityCycle cycle, CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Check if cycle name is unique within facility
     /// </summary>
     Task<bool> IsNameUniqueAsync(Guid facilityId, string cycleName, Guid? excludeCycleId = null, CancellationToken cancellationToken = default);

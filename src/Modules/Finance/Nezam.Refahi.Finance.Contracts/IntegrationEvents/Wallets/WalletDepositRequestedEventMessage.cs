@@ -8,7 +8,7 @@ namespace Nezam.Refahi.Contracts.Finance.v1.Messages;
 /// </summary>
 public class WalletDepositRequestedEventMessage : INotification
 {
-    public Guid WalletDepositId { get; set; } = Guid.Empty;
+    public required Guid WalletDepositId { get; set; } = Guid.Empty;
     public string TrackingCode { get; set; } = string.Empty;
     public DateTime OccurredOn { get; set; } = DateTime.UtcNow;
     public string EventVersion { get; set; } = "1.0";

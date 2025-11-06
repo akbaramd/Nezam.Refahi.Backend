@@ -14,12 +14,12 @@ public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Appli
 {
     private readonly IUserRepository _userRepository;
     private readonly IIdentityUnitOfWork _unitOfWork;
-    private readonly IPublishEndpoint _publishEndpoint;
+    private readonly IBus _publishEndpoint;
 
     public DeleteUserCommandHandler(
         IUserRepository userRepository, 
         IIdentityUnitOfWork unitOfWork,
-        IPublishEndpoint publishEndpoint)
+        IBus publishEndpoint)
     {
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;

@@ -24,8 +24,7 @@ public class GetFacilityCyclesWithUserQueryHandler : IRequestHandler<GetFacility
     private readonly IFacilityRepository _facilityRepository;
     private readonly IFacilityCycleRepository _cycleRepository;
     private readonly IFacilityRequestRepository _requestRepository;
-    private readonly IMemberInfoService _memberInfoService;
-    private readonly FacilityEligibilityDomainService _eligibilityService;
+    private readonly IMemberService _memberService;
     private readonly IMapper<Domain.Entities.FacilityCycle, FacilityCycleWithUserDto> _cycleMapper;
     private readonly IMapper<Domain.Entities.FacilityRequest, FacilityRequestDto> _requestMapper;
     private readonly IValidator<GetFacilityCyclesWithUserQuery> _validator;
@@ -35,8 +34,7 @@ public class GetFacilityCyclesWithUserQueryHandler : IRequestHandler<GetFacility
         IFacilityRepository facilityRepository,
         IFacilityCycleRepository cycleRepository,
         IFacilityRequestRepository requestRepository,
-        IMemberInfoService memberInfoService,
-        FacilityEligibilityDomainService eligibilityService,
+        IMemberService memberService,
         IValidator<GetFacilityCyclesWithUserQuery> validator,
         ILogger<GetFacilityCyclesWithUserQueryHandler> logger,
         IMapper<Domain.Entities.FacilityCycle, FacilityCycleWithUserDto> cycleMapper,
@@ -45,8 +43,7 @@ public class GetFacilityCyclesWithUserQueryHandler : IRequestHandler<GetFacility
         _facilityRepository = facilityRepository;
         _cycleRepository = cycleRepository;
         _requestRepository = requestRepository;
-        _memberInfoService = memberInfoService;
-        _eligibilityService = eligibilityService;
+        _memberService = memberService;
         _validator = validator;
         _logger = logger;
         _cycleMapper = cycleMapper;
@@ -78,11 +75,11 @@ public class GetFacilityCyclesWithUserQueryHandler : IRequestHandler<GetFacility
             }
 
             // Get user member info if NationalNumber provided
-            MemberInfoDto? memberInfo = null;
+            MemberDetailDto? memberDetail = null;
             if (!string.IsNullOrWhiteSpace(request.NationalNumber))
             {
-                memberInfo = await _memberInfoService.GetMemberInfoAsync(new NationalId(request.NationalNumber));
-                if (memberInfo == null)
+                memberDetail = await _memberService.GetMemberDetailByNationalCodeAsync(new NationalId(request.NationalNumber));
+                if (memberDetail == null)
                 {
                     return ApplicationResult<GetFacilityCyclesWithUserQueryResponse>.Failure(
                         "اطلاعات عضو یافت نشد");
@@ -99,11 +96,11 @@ public class GetFacilityCyclesWithUserQueryHandler : IRequestHandler<GetFacility
                 request.OnlyActive);
 
             // If OnlyWithUserRequests: fetch user cycleIds and rebuild spec to filter
-            if (request.OnlyWithUserRequests && memberInfo != null)
+            if (request.OnlyWithUserRequests && memberDetail != null)
             {
                 // prefetch all cycle ids for facility (unpaged) to intersect user requests
                 var allCycleIds = (await _cycleRepository.GetByFacilityIdAsync(request.FacilityId, cancellationToken)).Select(c => c.Id).ToList();
-                var userRequestCycleIds = await _requestRepository.GetCyclesWithUserRequestsAsync(memberInfo.Id, allCycleIds, cancellationToken);
+                var userRequestCycleIds = await _requestRepository.GetCyclesWithUserRequestsAsync(memberDetail.Id, allCycleIds, cancellationToken);
                 spec = new FacilityCyclePaginatedSpec(
                     request.FacilityId,
                     request.Page,
@@ -128,9 +125,9 @@ public class GetFacilityCyclesWithUserQueryHandler : IRequestHandler<GetFacility
             foreach (var cycle in paginatedCycles)
             {
                 var dto = await _cycleMapper.MapAsync(cycle, cancellationToken);
-                if (memberInfo != null)
+                if (memberDetail != null)
                 {
-                    var lastRequest = await _requestRepository.GetUserLastRequestForCycleAsync(memberInfo.Id, cycle.Id, cancellationToken);
+                    var lastRequest = await _requestRepository.GetUserLastRequestForCycleAsync(memberDetail.Id, cycle.Id, cancellationToken);
                     if (lastRequest != null)
                     {
                         var lastDto = await _requestMapper.MapAsync(lastRequest, cancellationToken);

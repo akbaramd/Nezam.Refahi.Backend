@@ -64,8 +64,8 @@ public static class SurveyMappers
             TimeRemaining = GetTimeRemaining(survey.EndAt),
             TimeRemainingText = GetTimeRemainingText(survey.EndAt),
             IsExpired = IsExpired(survey),
-            IsScheduled = survey.State == SurveyState.Scheduled,
-            IsActive = survey.State == SurveyState.Active,
+            IsScheduled = survey.State == SurveyState.Published && survey.StartAt.HasValue && survey.StartAt.Value > DateTimeOffset.UtcNow,
+            IsActive = survey.State == SurveyState.Published && survey.IsAcceptingResponses(),
             UserCompletionPercentage = CalculateCompletionPercentage(userResponse, survey),
             UserAnsweredQuestions = GetUserAnsweredQuestions(userResponse),
             UserHasCompletedSurvey = userResponse?.SubmittedAt.HasValue ?? false
@@ -241,9 +241,8 @@ public static class SurveyMappers
         return state switch
         {
             SurveyState.Draft => "پیش‌نویس",
-            SurveyState.Scheduled => "زمان‌بندی شده",
-            SurveyState.Active => "فعال",
-            SurveyState.Closed => "بسته",
+            SurveyState.Published => "فعال",
+            SurveyState.Completed => "بسته شده",
             SurveyState.Archived => "آرشیو شده",
             _ => "نامشخص"
         };
@@ -512,8 +511,8 @@ public static class SurveyMappers
             TimeElapsed = survey.StartAt.HasValue ? DateTimeOffset.UtcNow - survey.StartAt.Value : null,
             TimeElapsedText = null, // TODO: Format time elapsed when needed
             IsExpired = IsExpired(survey),
-            IsScheduled = survey.State == SurveyState.Scheduled,
-            IsActive = survey.State == SurveyState.Active,
+            IsScheduled = survey.State == SurveyState.Published && survey.StartAt.HasValue && survey.StartAt.Value > DateTimeOffset.UtcNow,
+            IsActive = survey.State == SurveyState.Published && survey.IsAcceptingResponses(),
             NextStateChangeAt = null, // TODO: Calculate next state change when needed
             NextStateChangeText = string.Empty
         };
@@ -521,17 +520,20 @@ public static class SurveyMappers
 
     private static SurveyStatusDto GetSurveyStatus(Survey survey)
     {
+        var isScheduled = survey.State == SurveyState.Published && survey.StartAt.HasValue && survey.StartAt.Value > DateTimeOffset.UtcNow;
+        var isActive = survey.State == SurveyState.Published && survey.IsAcceptingResponses();
+        
         return new SurveyStatusDto
         {
             IsDraft = survey.State == SurveyState.Draft,
-            IsScheduled = survey.State == SurveyState.Scheduled,
-            IsActive = survey.State == SurveyState.Active,
-            IsClosed = survey.State == SurveyState.Closed,
+            IsScheduled = isScheduled,
+            IsActive = isActive,
+            IsClosed = survey.State == SurveyState.Completed,
             IsArchived = survey.State == SurveyState.Archived,
             CanBeEdited = survey.State == SurveyState.Draft,
-            CanBeActivated = survey.State == SurveyState.Scheduled,
-            CanBeClosed = survey.State == SurveyState.Active,
-            CanBeArchived = survey.State == SurveyState.Closed,
+            CanBeActivated = survey.State == SurveyState.Draft,
+            CanBeClosed = survey.State == SurveyState.Published,
+            CanBeArchived = survey.State == SurveyState.Completed,
             AvailableActions = GetAvailableActions(survey),
             StatusMessage = GetStatusMessage(survey)
         };
@@ -547,14 +549,13 @@ public static class SurveyMappers
                 actions.Add("ویرایش");
                 actions.Add("فعال‌سازی");
                 break;
-            case SurveyState.Scheduled:
-                actions.Add("فعال‌سازی");
-                actions.Add("ویرایش");
+            case SurveyState.Published:
+                if (survey.IsAcceptingResponses())
+                {
+                    actions.Add("بستن");
+                }
                 break;
-            case SurveyState.Active:
-                actions.Add("بستن");
-                break;
-            case SurveyState.Closed:
+            case SurveyState.Completed:
                 actions.Add("آرشیو");
                 break;
         }
@@ -567,9 +568,10 @@ public static class SurveyMappers
         return survey.State switch
         {
             SurveyState.Draft => "نظرسنجی در حالت پیش‌نویس است",
-            SurveyState.Scheduled => "نظرسنجی زمان‌بندی شده است",
-            SurveyState.Active => "نظرسنجی فعال است",
-            SurveyState.Closed => "نظرسنجی بسته شده است",
+            SurveyState.Published => survey.IsAcceptingResponses() 
+                ? "نظرسنجی فعال است و در حال پذیرش پاسخ" 
+                : "نظرسنجی منتشر شده است",
+            SurveyState.Completed => "نظرسنجی بسته شده است",
             SurveyState.Archived => "نظرسنجی آرشیو شده است",
             _ => "وضعیت نامشخص"
         };

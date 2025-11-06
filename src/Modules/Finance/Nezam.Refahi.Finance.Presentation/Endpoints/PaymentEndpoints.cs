@@ -1,3 +1,4 @@
+using MCA.SharedKernel.Domain.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,10 +10,13 @@ using Nezam.Refahi.Finance.Application.Commands.Bills;
 using Nezam.Refahi.Finance.Application.Commands.Payments;
 using Nezam.Refahi.Finance.Application.DTOs;
 using Nezam.Refahi.Finance.Application.Features.Payments.Queries.GetPaymentDetail;
+using Nezam.Refahi.Finance.Application.Features.Payments.Queries.GetPaymentsPaginated;
 using Nezam.Refahi.Finance.Application.Queries.Bills;
 using Nezam.Refahi.Finance.Application.Services;
+using Nezam.Refahi.Finance.Domain.Enums;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
+using Nezam.Refahi.Finance.Presentation.Extensions;
 
 namespace Nezam.Refahi.Finance.Presentation.Endpoints;
 
@@ -20,30 +24,115 @@ public static class PaymentEndpoints
 {
   public static WebApplication MapPaymentEndpoints(this WebApplication app)
   {
+    // ───────────────────── Me · Payments (user-specific) ─────────────────────
+    var meGroup = app.MapGroup("/api/me/finance/payments")
+      .WithTags("Payments")
+      .RequireAuthorization();
+
+    // Me: Get Paginated Payments for Current User
+    meGroup.MapGet("/paginated", async (
+        [FromQuery] int pageNumber,
+        [FromQuery] int pageSize,
+        [FromQuery] string? status,
+        [FromQuery] string? search,
+        [FromQuery] DateTime? fromDate,
+        [FromQuery] DateTime? toDate,
+        [FromServices] IMediator mediator,
+        [FromServices] ICurrentUserService currentUser,
+        CancellationToken ct) =>
+      {
+        if (!currentUser.IsAuthenticated || !currentUser.UserId.HasValue)
+          return Results.Unauthorized();
+
+        PaymentStatus? paymentStatus = null;
+        if (!string.IsNullOrWhiteSpace(status) &&
+            Enum.TryParse<PaymentStatus>(status, true, out var parsedStatus))
+        {
+          paymentStatus = parsedStatus;
+        }
+
+        var query = new GetPaymentsPaginatedQuery
+        {
+          PageNumber = pageNumber <= 0 ? 1 : pageNumber,
+          PageSize = pageSize <= 0 ? 10 : pageSize,
+          Status = paymentStatus,
+          Search = search,
+          FromDate = fromDate,
+          ToDate = toDate,
+          ExternalUserId = currentUser.UserId.Value
+        };
+
+        var result = await mediator.Send(query, ct);
+        return result.ToResult();
+      })
+      .WithName("Me_GetPaymentsPaginated")
+      .Produces<ApplicationResult<PaginatedResult<PaymentDto>>>(200)
+      .Produces(400)
+      .Produces(401);
+
+    // Me: Create Payment
+    meGroup.MapPost("", async (
+        [FromBody] CreatePaymentCommand command,
+        [FromServices] IMediator mediator,
+        [FromServices] ICurrentUserService currentUserService) =>
+      {
+        if (!currentUserService.IsAuthenticated || !currentUserService.UserId.HasValue)
+          return Results.Unauthorized();
+
+        var commandWithUser = command with { ExternalUserId = currentUserService.UserId.Value };
+        var result = await mediator.Send(commandWithUser);
+
+        return result.ToResult();
+      })
+      .WithName("Me_CreatePayment")
+      .Produces<ApplicationResult<CreatePaymentResponse>>()
+      .Produces(400)
+      .Produces(401);
+
+    // Me: Pay with Wallet
+    meGroup.MapPost("/wallet", async (
+        [FromBody] PayWithWalletCommand command,
+        [FromServices] IMediator mediator,
+        [FromServices] ICurrentUserService currentUserService) =>
+      {
+        if (!currentUserService.IsAuthenticated || !currentUserService.UserId.HasValue)
+          return Results.Unauthorized();
+
+        var result = await mediator.Send(command);
+        return result.ToResult();
+      })
+      .WithName("Me_PayWithWallet")
+      .Produces<ApplicationResult<PayWithWalletResponse>>()
+      .Produces(400)
+      .Produces(401);
+
+    // Me: Get Payment Details (user's own payment)
+    meGroup.MapGet("/{paymentId:guid}", async (
+        [FromRoute] Guid paymentId,
+        [FromServices] IMediator mediator,
+        [FromServices] ICurrentUserService currentUser,
+        CancellationToken ct) =>
+      {
+        if (!currentUser.IsAuthenticated || !currentUser.UserId.HasValue)
+          return Results.Unauthorized();
+
+        var query = new GetPaymentDetailQuery 
+        { 
+          PaymentId = paymentId,
+          ExternalUserId = currentUser.UserId.Value
+        };
+        var result = await mediator.Send(query, ct);
+        return result.ToResult();
+      })
+      .WithName("Me_GetPaymentDetail")
+      .Produces<ApplicationResult<PaymentDetailDto>>(200)
+      .Produces(400)
+      .Produces(401);
+
+    // ───────────────────── Global Payment Endpoints ─────────────────────
     var group = app.MapGroup("/api/v1/payments")
       .WithTags("Payments");
 
-    // ───────────────────── Get Payment Details ─────────────────────
-    group.MapGet("/{paymentId:guid}", async (
-        [FromRoute] Guid paymentId,
-        [FromServices] IMediator mediator) =>
-      {
-        var query = new GetPaymentDetailQuery { PaymentId = paymentId };
-
-        var result = await mediator.Send(query);
-        return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
-      })
-      .RequireAuthorization()
-      .WithName("GetPaymentDetail")
-      .Produces<ApplicationResult<PaymentDetailDto>>(200)
-      .Produces(400)
-      .WithOpenApi(op => new(op)
-      {
-        Summary = "Get payment details by ID",
-        Description =
-          "Returns detailed information about a specific payment (PaymentDetailDto) including status, amount, method, and metadata.",
-        Tags = new List<OpenApiTag> { new() { Name = "Payments" } }
-      });
     // ───────────────────── Payment Callback (GET + POST, Anonymous) ─────────────────────
     group.MapMethods("/callback", new[] { "GET", "POST" }, async (
         [FromServices] IMediator mediator,
@@ -137,7 +226,7 @@ public static class PaymentEndpoints
       .AllowAnonymous()
       .WithName("PaymentFailed");
 
-    // ───────────────────── Get Supported Gateways ─────────────────────
+    // Global: Get Supported Gateways
     group.MapGet("/gateways", async (
         [FromServices] IPaymentService paymentService) =>
       {
@@ -148,53 +237,6 @@ public static class PaymentEndpoints
       .WithName("GetSupportedPaymentGateways")
       .Produces<IEnumerable<PaymentGatewayInfo>>();
 
-    // ───────────────────── Create Payment ─────────────────────
-    group.MapPost("", async (
-        [FromBody] CreatePaymentCommand command,
-        [FromServices] IMediator mediator,
-        [FromServices] ICurrentUserService currentUserService) =>
-      {
-        if (!currentUserService.IsAuthenticated || !currentUserService.UserId.HasValue)
-        {
-          return Results.Unauthorized();
-        }
-
-        // Set the external user ID from the current user service
-        var commandWithUser = command with { ExternalUserId = currentUserService.UserId.Value };
-        var result = await mediator.Send(commandWithUser);
-
-        if (result.IsSuccess)
-        {
-          return Results.Ok(result);
-        }
-
-        return Results.BadRequest(result);
-      })
-      .RequireAuthorization()
-      .WithName("CreatePayment")
-      .Produces<ApplicationResult<CreatePaymentResponse>>()
-      .Produces(400)
-      .Produces(401);
-
-    // ───────────────────── Pay with Wallet ─────────────────────
-    group.MapPost("/wallet", async (
-        [FromBody] PayWithWalletCommand command,
-        [FromServices] IMediator mediator) =>
-      {
-        var result = await mediator.Send(command);
-
-        if (result.IsSuccess)
-        {
-          return Results.Ok(result);
-        }
-
-        return Results.BadRequest(result);
-      })
-      .RequireAuthorization()
-      .WithName("PayWithWallet")
-      .Produces<ApplicationResult<PayWithWalletResponse>>()
-      .Produces(400);
-
     // ═══════════════════════ BILL MANAGEMENT ENDPOINTS ═══════════════════════
     if (app.Environment.IsDevelopment())
     {
@@ -203,13 +245,7 @@ public static class PaymentEndpoints
           [FromServices] IMediator mediator) =>
         {
           var result = await mediator.Send(command);
-
-          if (result.IsSuccess)
-          {
-            return Results.Ok(result);
-          }
-
-          return Results.BadRequest(result);
+          return result.ToResult();
         })
         .AllowAnonymous()
         .WithName("CompletePayment")

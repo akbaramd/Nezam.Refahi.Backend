@@ -1,9 +1,11 @@
 using MCA.SharedKernel.Application.Contracts;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using Nezam.Refahi.Recreation.Contracts.Dtos;
+using Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.ExpireReservation;
 using Nezam.Refahi.Recreation.Application.Services;
+using Nezam.Refahi.Recreation.Contracts.Dtos;
 using Nezam.Refahi.Recreation.Domain.Entities;
+using Nezam.Refahi.Recreation.Domain.Enums;
 using Nezam.Refahi.Recreation.Domain.Repositories;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
@@ -12,6 +14,7 @@ namespace Nezam.Refahi.Recreation.Application.Features.TourReservations.Queries.
 
 /// <summary>
 /// Returns a fully populated ReservationDetailDto using IMapper.
+/// Automatically updates reservation status to Expired if expired during read.
 /// </summary>
 public sealed class GetReservationDetailQueryHandler
     : IRequestHandler<GetReservationDetailQuery, ApplicationResult<ReservationDetailDto>>
@@ -20,8 +23,8 @@ public sealed class GetReservationDetailQueryHandler
     private readonly ITourRepository _tourRepository;
     private readonly ITourCapacityRepository _capacityRepository;
     private readonly ICurrentUserService _currentUser;
-    private readonly MemberValidationService _memberValidation;
     private readonly IMapper<TourReservation, ReservationDetailDto> _reservationDetailMapper;
+    private readonly IMediator _mediator;
     private readonly ILogger<GetReservationDetailQueryHandler> _logger;
 
     public GetReservationDetailQueryHandler(
@@ -29,16 +32,16 @@ public sealed class GetReservationDetailQueryHandler
         ITourRepository tourRepository,
         ITourCapacityRepository capacityRepository,
         ICurrentUserService currentUser,
-        MemberValidationService memberValidation,
         IMapper<TourReservation, ReservationDetailDto> reservationDetailMapper,
+        IMediator mediator,
         ILogger<GetReservationDetailQueryHandler> logger)
     {
         _reservationRepository = reservationRepository;
         _tourRepository = tourRepository;
         _capacityRepository = capacityRepository;
         _currentUser = currentUser;
-        _memberValidation = memberValidation;
         _reservationDetailMapper = reservationDetailMapper;
+        _mediator = mediator;
         _logger = logger;
     }
 
@@ -66,7 +69,44 @@ public sealed class GetReservationDetailQueryHandler
                 return ApplicationResult<ReservationDetailDto>.Failure("شما به این رزرو دسترسی ندارید");
             }
 
-            // 3) Load related aggregates needed for detail view
+            // 3) Check if reservation is expired and expire it using command if needed
+            var previousStatus = reservation.Status;
+            
+            // Check if reservation should be expired (but not already expired)
+            if (previousStatus != ReservationStatus.Expired && reservation.IsExpired())
+            {
+                _logger.LogInformation("Reservation expired detected during read. Expiring reservation. ReservationId={ReservationId}, PreviousStatus={PreviousStatus}",
+                    request.ReservationId, previousStatus);
+                
+                // Use ExpireReservationCommand to properly expire reservation and cancel associated bills
+                var expireCommand = new ExpireReservationCommand(
+                    reservationId: reservation.Id,
+                    reason: "رزرو منقضی شد");
+                
+                var expireResult = await _mediator.Send(expireCommand, ct);
+                
+                if (expireResult.IsSuccess)
+                {
+                    _logger.LogInformation("Reservation expired successfully. ReservationId={ReservationId}, BillCancelled={BillCancelled}",
+                        request.ReservationId, expireResult.Data?.BillCancelled ?? false);
+                    
+                    // Reload reservation to get updated status
+                    reservation = await _reservationRepository.GetByIdAsync(request.ReservationId, ct);
+                    if (reservation == null)
+                    {
+                        _logger.LogWarning("Reservation not found after expiration. ReservationId={ReservationId}", request.ReservationId);
+                        return ApplicationResult<ReservationDetailDto>.Failure("رزرو بعد از انقضا یافت نشد");
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to expire reservation. ReservationId={ReservationId}, Error={Error}",
+                        request.ReservationId, expireResult.Message ?? "Unknown error");
+                    // Continue with current status - don't fail the query
+                }
+            }
+
+            // 4) Load related aggregates needed for detail view
             //    Tour is always required for brief info
             var tour = await _tourRepository.GetByIdAsync(reservation.TourId, ct);
             if (tour is null)
@@ -76,7 +116,7 @@ public sealed class GetReservationDetailQueryHandler
                 return ApplicationResult<ReservationDetailDto>.Failure("اطلاعات تور یافت نشد");
             }
 
-            // 4) Map via IMapper
+            // 5) Map via IMapper
             var dto = await _reservationDetailMapper.MapAsync(reservation, ct);
 
             _logger.LogInformation("Reservation detail built. ReservationId={ReservationId}", request.ReservationId);

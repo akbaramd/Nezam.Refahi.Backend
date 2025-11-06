@@ -371,12 +371,13 @@ public sealed class Tour : FullAggregateRoot<Guid>
     }
 
     /// <summary>
-    /// تعداد کل شرکت‌کنندگان در رزروهای در انتظار (OnHold + PendingConfirmation)
+    /// تعداد کل شرکت‌کنندگان در رزروهای در انتظار (OnHold)
+    /// Note: OnHold means waiting for payment and confirmation
     /// </summary>
     public int GetPendingReservationCount()
     {
         return _reservations
-            .Where(r => r.Status == ReservationStatus.OnHold || r.Status == ReservationStatus.PendingConfirmation)
+            .Where(r => r.Status == ReservationStatus.OnHold)
             .Where(r => !r.IsExpired()) // حذف رزروهای منقضی شده
             .Sum(r => r.GetParticipantCount());
     }
@@ -916,31 +917,16 @@ public sealed class Tour : FullAggregateRoot<Guid>
     }
 
     /// <summary>
-    /// Schedules the tour (moves from Draft to Scheduled)
+    /// Publishes the tour (moves from Draft to Published)
+    /// Registration status is determined by registration dates.
     /// </summary>
-    public void Schedule()
+    public void Publish()
     {
-        ChangeStatus(TourStatus.Scheduled, "Tour scheduled for publication");
+        ChangeStatus(TourStatus.Published, "Tour published");
     }
 
     /// <summary>
-    /// Opens registration for the tour
-    /// </summary>
-    public void OpenRegistration()
-    {
-        ChangeStatus(TourStatus.RegistrationOpen, "Registration opened");
-    }
-
-    /// <summary>
-    /// Closes registration for the tour
-    /// </summary>
-    public void CloseRegistration()
-    {
-        ChangeStatus(TourStatus.RegistrationClosed, "Registration closed");
-    }
-
-    /// <summary>
-    /// Starts the tour
+    /// Starts the tour (moves from Published to InProgress)
     /// </summary>
     public void StartTour()
     {
@@ -948,7 +934,7 @@ public sealed class Tour : FullAggregateRoot<Guid>
     }
 
     /// <summary>
-    /// Completes the tour
+    /// Marks the tour as completed (moves from InProgress to Completed)
     /// </summary>
     public void CompleteTour()
     {
@@ -956,49 +942,11 @@ public sealed class Tour : FullAggregateRoot<Guid>
     }
 
     /// <summary>
-    /// Cancels the tour
+    /// Cancels the tour (can be called from Published or InProgress state)
     /// </summary>
     public void CancelTour(string? reason = null)
     {
         ChangeStatus(TourStatus.Cancelled, reason ?? "Tour cancelled");
-    }
-
-    /// <summary>
-    /// Postpones the tour
-    /// </summary>
-    public void PostponeTour(string? reason = null)
-    {
-        ChangeStatus(TourStatus.Postponed, reason ?? "Tour postponed");
-    }
-
-    /// <summary>
-    /// Suspends the tour
-    /// </summary>
-    public void SuspendTour(string? reason = null)
-    {
-        ChangeStatus(TourStatus.Suspended, reason ?? "Tour suspended");
-    }
-
-    /// <summary>
-    /// Archives the tour
-    /// </summary>
-    public void ArchiveTour()
-    {
-        ChangeStatus(TourStatus.Archived, "Tour archived");
-    }
-
-    /// <summary>
-    /// Reschedules a postponed tour
-    /// </summary>
-    public void RescheduleTour(DateTime newTourStart, DateTime newTourEnd)
-    {
-        if (Status != TourStatus.Postponed)
-            throw new InvalidOperationException("Can only reschedule postponed tours");
-
-        ValidateTourDates(newTourStart, newTourEnd);
-        TourStart = newTourStart;
-        TourEnd = newTourEnd;
-        ChangeStatus(TourStatus.Scheduled, "Tour rescheduled");
     }
 
     /// <summary>
@@ -1039,13 +987,52 @@ public sealed class Tour : FullAggregateRoot<Guid>
     }
 
     /// <summary>
-    /// Checks if registration is currently open for any capacity
+    /// Checks if registration is currently open for any capacity.
+    /// Registration status is determined by dates, not by tour status enum.
     /// </summary>
     public bool IsRegistrationOpen(DateTime currentDate)
     {
-        return Status == TourStatus.RegistrationOpen && 
+        return Status == TourStatus.Published && 
                IsActive && 
                _capacities.Any(c => c.IsRegistrationOpen(currentDate));
+    }
+
+    /// <summary>
+    /// Checks if the tour is fully booked (only considering public capacities, excluding special capacities)
+    /// </summary>
+    public bool IsFullyBooked()
+    {
+        var activePublicCapacities = _capacities
+            .Where(c => c.IsActive && !c.IsSpecial)
+            .ToList();
+        
+        if (!activePublicCapacities.Any())
+            return true;
+        
+        return activePublicCapacities.Sum(c => c.PublicRemainingParticipants) <= 0;
+    }
+
+    /// <summary>
+    /// Checks if the tour is nearly full (≥80% utilization) based on public capacities
+    /// </summary>
+    public bool IsNearlyFull()
+    {
+        var activePublicCapacities = _capacities
+            .Where(c => c.IsActive && !c.IsSpecial)
+            .ToList();
+        
+        if (!activePublicCapacities.Any())
+            return false;
+        
+        var totalMax = activePublicCapacities.Sum(c => c.PublicMaxParticipants);
+        if (totalMax <= 0)
+            return false;
+        
+        var totalRemaining = activePublicCapacities.Sum(c => c.PublicRemainingParticipants);
+        var totalUsed = totalMax - totalRemaining;
+        var utilizationPercentage = (double)totalUsed / totalMax * 100;
+        
+        return utilizationPercentage >= 80 && !IsFullyBooked();
     }
 
 

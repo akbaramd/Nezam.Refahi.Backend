@@ -134,9 +134,11 @@ public class CleanupExpiredReservationsCommandHandler : IRequestHandler<CleanupE
                                 }
                             }
                         }
-                        else if (reservation.Status == ReservationStatus.PendingConfirmation)
+                        else if (reservation.Status == ReservationStatus.OnHold)
                         {
-                            response.Errors.Add($"رزرو منقضی شده {reservation.Id} در وضعیت Paying است - ظرفیت آزاد نشد تا از overbooking جلوگیری شود");
+                            // Note: OnHold means waiting for payment and confirmation
+                            // If expired while in OnHold, capacity is not released to prevent overbooking
+                            response.Errors.Add($"رزرو منقضی شده {reservation.Id} در وضعیت OnHold است - ظرفیت آزاد نشد تا از overbooking جلوگیری شود");
                         }
                     }
                     else

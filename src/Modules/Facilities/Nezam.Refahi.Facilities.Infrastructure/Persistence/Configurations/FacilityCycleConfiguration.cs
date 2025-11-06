@@ -38,79 +38,24 @@ public class FacilityCycleConfiguration : IEntityTypeConfiguration<FacilityCycle
         builder.Property(c => c.Description)
             .HasMaxLength(1000);
 
-        builder.Property(c => c.AdmissionStrategy)
+        builder.Property(c => c.RestrictToPreviousCycles)
             .IsRequired()
-            .HasMaxLength(50)
-            .HasDefaultValue("FIFO");
+            .HasDefaultValue(false);
 
-        builder.Property(c => c.WaitlistCapacity);
-
-        builder.Property(c => c.Quota)
-            .IsRequired();
-
-        builder.Property(c => c.UsedQuota)
-            .IsRequired()
-            .HasDefaultValue(0);
-
-        // Amount limits for this cycle
-        builder.OwnsOne(c => c.MinAmount, money =>
-        {
-            money.Property(m => m.AmountRials)
-                .HasColumnName("MinAmountRials")
-                .HasPrecision(18, 2);
-            money.Property(m => m.Currency)
-                .HasColumnName("MinCurrency")
-                .HasMaxLength(3)
-                .HasDefaultValue("IRR");
-        });
-
-        builder.OwnsOne(c => c.MaxAmount, money =>
-        {
-            money.Property(m => m.AmountRials)
-                .HasColumnName("MaxAmountRials")
-                .HasPrecision(18, 2);
-            money.Property(m => m.Currency)
-                .HasColumnName("MaxCurrency")
-                .HasMaxLength(3)
-                .HasDefaultValue("IRR");
-        });
-
-        builder.OwnsOne(c => c.DefaultAmount, money =>
-        {
-            money.Property(m => m.AmountRials)
-                .HasColumnName("DefaultAmountRials")
-                .HasPrecision(18, 2);
-            money.Property(m => m.Currency)
-                .HasColumnName("DefaultCurrency")
-                .HasMaxLength(3)
-                .HasDefaultValue("IRR");
-        });
-
-        // Payment terms
-        builder.Property(c => c.PaymentMonths)
-            .IsRequired()
-            .HasDefaultValue(12);
+        builder.Property(c => c.ApprovalMessage)
+            .HasMaxLength(2000);
 
         builder.Property(c => c.InterestRate)
             .HasPrecision(5, 4);
 
-        // Cooldown and rules
-        builder.Property(c => c.CooldownDays)
-            .IsRequired()
-            .HasDefaultValue(0);
+        builder.Property(c => c.PaymentMonths);
 
-        builder.Property(c => c.IsRepeatable)
-            .IsRequired()
-            .HasDefaultValue(true);
+        builder.Property(c => c.Quota)
+            .IsRequired();
 
-        builder.Property(c => c.IsExclusive)
-            .IsRequired()
-            .HasDefaultValue(false);
-
-        builder.Property(c => c.ExclusiveSetId)
-            .HasMaxLength(100);
-
-        builder.Property(c => c.MaxActiveAcrossCycles);
+        // UsedQuota is now a computed property from Requests.Count
+        // We ignore it in EF Core configuration since it's calculated, not stored
+        builder.Ignore(c => c.UsedQuota);
 
         // Collections
         builder.Property(c => c.Metadata)
@@ -127,19 +72,39 @@ public class FacilityCycleConfiguration : IEntityTypeConfiguration<FacilityCycle
         builder.HasIndex(c => new { c.FacilityId, c.StartDate, c.EndDate });
 
         // Relationships
+        // Note: Facility and FacilityCycle are separate Aggregate Roots
+        // Navigation property is included for querying purposes only (read-only access)
         builder.HasOne(c => c.Facility)
             .WithMany(f => f.Cycles)
             .HasForeignKey(c => c.FacilityId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasMany(c => c.Applications)
-            .WithOne(a => a.FacilityCycle)
-            .HasForeignKey(a => a.FacilityCycleId)
-            .OnDelete(DeleteBehavior.Cascade);
+        // Note: FacilityRequest and FacilityCycle are separate Aggregate Roots
+        // Navigation property is included for querying purposes only (read-only access)
+        // The relationship is configured in FacilityRequestConfiguration
+        builder.HasMany(c => c.Requests)
+            .WithOne(r => r.FacilityCycle)
+            .HasForeignKey(r => r.FacilityCycleId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasMany(c => c.Dependencies)
             .WithOne(d => d.FacilityCycle)
             .HasForeignKey(d => d.CycleId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(c => c.PriceOptions)
+            .WithOne(po => po.FacilityCycle)
+            .HasForeignKey(po => po.FacilityCycleId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(c => c.Features)
+            .WithOne(f => f.FacilityCycle)
+            .HasForeignKey(f => f.FacilityCycleId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(c => c.Capabilities)
+            .WithOne(cap => cap.FacilityCycle)
+            .HasForeignKey(cap => cap.FacilityCycleId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

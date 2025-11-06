@@ -2,137 +2,128 @@ using MCA.SharedKernel.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Nezam.Refahi.Membership.Domain.Entities;
 using Nezam.Refahi.Membership.Domain.Repositories;
+using Nezam.Refahi.Membership.Infrastructure.Persistence;
 
 namespace Nezam.Refahi.Membership.Infrastructure.Persistence.Repositories;
 
 /// <summary>
-/// Implementation of member role repository interface using EF Core
+/// EF Core implementation of IMemberRoleRepository
 /// </summary>
 public class MemberRoleRepository : EfRepository<MembershipDbContext, MemberRole, Guid>, IMemberRoleRepository
 {
-    public MemberRoleRepository(MembershipDbContext dbContext) : base(dbContext)
+    public MemberRoleRepository(MembershipDbContext context) : base(context)
     {
+    }
+
+    protected override IQueryable<MemberRole> PrepareQuery(IQueryable<MemberRole> query)
+    {
+        return query
+            .Include(mr => mr.Member)
+            .Include(mr => mr.Role);
     }
 
     public async Task<IEnumerable<MemberRole>> GetByMemberIdAsync(Guid memberId, CancellationToken cancellationToken = default)
     {
-        return await this.PrepareQuery(this._dbSet)
-            .Where(mr => mr.MemberId == memberId)
-            .Include(mr => mr.Role)
+        return (await FindAsync(mr => mr.MemberId == memberId, cancellationToken: cancellationToken))
             .OrderBy(mr => mr.AssignedAt)
-            .ToListAsync(cancellationToken);
+            .ToList();
     }
 
     public async Task<IEnumerable<MemberRole>> GetValidRolesByMemberIdAsync(Guid memberId, CancellationToken cancellationToken = default)
     {
-        return await this.PrepareQuery(this._dbSet)
-            .Where(mr => mr.MemberId == memberId && mr.IsActive)
-            .Include(mr => mr.Role)
+        var memberRoles = (await FindAsync(mr => mr.MemberId == memberId && mr.IsActive, cancellationToken: cancellationToken))
+            .Where(mr => mr.IsValid())
             .OrderBy(mr => mr.AssignedAt)
-            .ToListAsync(cancellationToken);
+            .ToList();
+
+        return memberRoles;
     }
 
     public async Task<IEnumerable<MemberRole>> GetByRoleIdAsync(Guid roleId, CancellationToken cancellationToken = default)
     {
-        return await this.PrepareQuery(this._dbSet)
-            .Where(mr => mr.RoleId == roleId)
-            .Include(mr => mr.Member)
+        return (await FindAsync(mr => mr.RoleId == roleId, cancellationToken: cancellationToken))
             .OrderBy(mr => mr.AssignedAt)
-            .ToListAsync(cancellationToken);
+            .ToList();
     }
 
     public async Task<IEnumerable<MemberRole>> GetValidMembersByRoleIdAsync(Guid roleId, CancellationToken cancellationToken = default)
     {
-        return await this.PrepareQuery(this._dbSet)
-            .Where(mr => mr.RoleId == roleId && mr.IsActive)
-            .Include(mr => mr.Member)
+        var memberRoles = (await FindAsync(mr => mr.RoleId == roleId && mr.IsActive, cancellationToken: cancellationToken))
+            .Where(mr => mr.IsValid())
             .OrderBy(mr => mr.AssignedAt)
-            .ToListAsync(cancellationToken);
+            .ToList();
+
+        return memberRoles;
     }
 
     public async Task<MemberRole?> GetMemberRoleAsync(Guid memberId, Guid roleId, CancellationToken cancellationToken = default)
     {
-        return await this.PrepareQuery(this._dbSet)
-            .Include(mr => mr.Role)
-            .Include(mr => mr.Member)
-            .FirstOrDefaultAsync(mr => mr.MemberId == memberId && mr.RoleId == roleId, cancellationToken:cancellationToken);
+        return await FindOneAsync(mr => mr.MemberId == memberId && mr.RoleId == roleId, cancellationToken: cancellationToken);
     }
 
     public async Task<IEnumerable<MemberRole>> GetExpiringRolesByMemberIdAsync(Guid memberId, DateTimeOffset cutoffDate, CancellationToken cancellationToken = default)
     {
-        return await this.PrepareQuery(this._dbSet)
-            .Where(mr => mr.MemberId == memberId && 
-                        mr.IsActive && 
-                        mr.ValidTo.HasValue && 
-                        mr.ValidTo <= cutoffDate)
-            .Include(mr => mr.Role)
+        var now = DateTimeOffset.UtcNow;
+        return (await FindAsync(mr => mr.MemberId == memberId && 
+                                     mr.IsActive && 
+                                     mr.ValidTo.HasValue && 
+                                     mr.ValidTo.Value <= cutoffDate &&
+                                     mr.ValidTo.Value > now, 
+                                     cancellationToken: cancellationToken))
             .OrderBy(mr => mr.ValidTo)
-            .ToListAsync(cancellationToken);
+            .ToList();
     }
 
     public async Task<IEnumerable<MemberRole>> GetExpiringRolesAsync(DateTimeOffset cutoffDate, CancellationToken cancellationToken = default)
     {
-        return await this.PrepareQuery(this._dbSet)
-            .Where(mr => mr.IsActive && 
-                        mr.ValidTo.HasValue && 
-                        mr.ValidTo <= cutoffDate)
-            .Include(mr => mr.Role)
-            .Include(mr => mr.Member)
+        var now = DateTimeOffset.UtcNow;
+        return (await FindAsync(mr => mr.IsActive && 
+                                     mr.ValidTo.HasValue && 
+                                     mr.ValidTo.Value <= cutoffDate &&
+                                     mr.ValidTo.Value > now, 
+                                     cancellationToken: cancellationToken))
             .OrderBy(mr => mr.ValidTo)
-            .ToListAsync(cancellationToken);
+            .ToList();
     }
 
     public async Task<bool> MemberHasRoleAsync(Guid memberId, Guid roleId, CancellationToken cancellationToken = default)
     {
-        return await this.PrepareQuery(this._dbSet)
-            .AnyAsync(mr => mr.MemberId == memberId && 
-                           mr.RoleId == roleId && 
-                           mr.IsActive, cancellationToken:cancellationToken);
+        var memberRole = await FindOneAsync(mr => mr.MemberId == memberId && mr.RoleId == roleId, cancellationToken: cancellationToken);
+        return memberRole != null && memberRole.IsActive && memberRole.IsValid();
     }
 
     public async Task<(int ActiveAssignments, int ExpiredAssignments, int TotalAssignments)> GetRoleAssignmentStatsAsync(Guid roleId, CancellationToken cancellationToken = default)
     {
-        var query = this.PrepareQuery(this._dbSet).Where(mr => mr.RoleId == roleId);
-        
-        var totalAssignments = await query.CountAsync(cancellationToken);
-        var activeAssignments = await query.CountAsync(mr => mr.IsActive, cancellationToken:cancellationToken);
-        var expiredAssignments = await query.CountAsync(mr => mr.ValidTo.HasValue && mr.ValidTo < DateTimeOffset.UtcNow, cancellationToken:cancellationToken);
+        var allAssignments = (await FindAsync(mr => mr.RoleId == roleId, cancellationToken: cancellationToken)).ToList();
+        var totalAssignments = allAssignments.Count;
+        var activeAssignments = allAssignments.Count(mr => mr.IsActive && mr.IsValid());
+        var now = DateTimeOffset.UtcNow;
+        var expiredAssignments = allAssignments.Count(mr => mr.ValidTo.HasValue && mr.ValidTo.Value < now);
 
         return (activeAssignments, expiredAssignments, totalAssignments);
     }
 
     public async Task DeactivateAllMemberRolesAsync(Guid memberId, CancellationToken cancellationToken = default)
     {
-        var memberRoles = await this.PrepareQuery(this._dbSet)
-            .Where(mr => mr.MemberId == memberId && mr.IsActive)
-            .ToListAsync(cancellationToken);
+        var memberRoles = (await FindAsync(mr => mr.MemberId == memberId && mr.IsActive, cancellationToken: cancellationToken)).ToList();
 
         foreach (var memberRole in memberRoles)
         {
             memberRole.Deactivate();
         }
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await SaveAsync(cancellationToken);
     }
 
     public async Task DeactivateAllRoleAssignmentsAsync(Guid roleId, CancellationToken cancellationToken = default)
     {
-        var roleAssignments = await this.PrepareQuery(this._dbSet)
-            .Where(mr => mr.RoleId == roleId && mr.IsActive)
-            .ToListAsync(cancellationToken);
+        var roleAssignments = (await FindAsync(mr => mr.RoleId == roleId && mr.IsActive, cancellationToken: cancellationToken)).ToList();
 
         foreach (var assignment in roleAssignments)
         {
             assignment.Deactivate();
         }
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
-    }
-
-    protected override IQueryable<MemberRole> PrepareQuery(IQueryable<MemberRole> query)
-    {
-        query = query.Include(x => x.Member)
-            .Include(x => x.Role);
-        return base.PrepareQuery(query);
+        await SaveAsync(cancellationToken);
     }
 }

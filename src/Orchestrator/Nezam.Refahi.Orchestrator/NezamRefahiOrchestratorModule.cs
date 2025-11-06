@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Nezam.Refahi.Orchestrator.Persistence;
 using MassTransit.EntityFrameworkCoreIntegration;
 using Microsoft.Extensions.DependencyInjection;
+using Nezam.Refahi.Contracts.Finance.v1.Messages;
 using Nezam.Refahi.Orchestrator.Sagas.ReservationPayment;
 using Nezam.Refahi.Orchestrator.Sagas.WalletDeposit;
 
@@ -76,22 +77,25 @@ public class NezamRefahiOrchestratorModule : BonModule
                 o.UseBusOutbox();
             });
 
-            // Ensure all receive endpoints use EF Outbox (consumer outbox)
-            x.AddConfigureEndpointsCallback((context, name, cfg) =>
-            {
-                cfg.UseEntityFrameworkOutbox<OrchestratorDbContext>(context);
-            });
+            // Outbox برای انتشار مطمئن پیام‌ها (اختیاری اما توصیه‌شده)
 
             // Use RabbitMQ transport (adjust host as needed)
-            x.UsingRabbitMq((context, cfg) =>
+            x.UsingRabbitMq((ctx, cfg) =>
             {
-              var configuration = context.GetRequiredService<IConfiguration>();
+
+              var configuration = ctx.GetRequiredService<IConfiguration>();
               cfg.Host("localhost", h =>
               {
                 h.Username("guest");
                 h.Password("guest");
               });
-              cfg.ConfigureEndpoints(context);
+
+            
+
+              context.Services.ExecutePreConfiguredActions(new Tuple<IBusRegistrationContext,IRabbitMqBusFactoryConfigurator>(ctx,cfg));
+              
+              cfg.ConfigureEndpoints(ctx);
+             
             });
         });
 

@@ -779,3 +779,15 @@ D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\bin\Debug\
 D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\bin\Debug\net8.0\Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Shared.Domain.pdb
 D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\bin\Debug\net8.0\Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Shared.Infrastructure.pdb
 D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\bin\Debug\net8.0\Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Shared.Infrastructure.staticwebassets.endpoints.json
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\bin\Debug\net8.0\publish\web.config
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\bin\Debug\net8.0\publish\appsettings.Development.json
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\bin\Debug\net8.0\publish\appsettings.json
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\bin\Debug\net8.0\publish\Features\Tours\Queries\GetToursPaginated\GetToursPaginatedResponse.example.json
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\bin\Debug\net8.0\publish\Nezam.Refahi.WebApi.deps.json
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\bin\Debug\net8.0\publish\Nezam.Refahi.WebApi.runtimeconfig.json
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\bin\Debug\net8.0\publish\Nezam.Refahi.WebApi.staticwebassets.endpoints.json
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\bin\Debug\net8.0\publish\Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Plugin.NezamMohandesi.deps.json
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\bin\Debug\net8.0\publish\Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Plugin.NezamMohandesi.runtimeconfig.json
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\bin\Debug\net8.0\publish\Plugins\Nezam.Refahi.Plugin.NezamMohandesi\Nezam.Refahi.Shared.Infrastructure.staticwebassets.endpoints.json
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\bin\Debug\net8.0\publish\Plugins\Nezam.Refahi.Plugin.NezamMohandesi\plugin.json
+D:\Projects\Nezam.Refahi\Nezam.Refahi.Backend\src\Nezam.Refahi.WebApi\bin\Debug\net8.0\publish\Services\ReservationCleanupConfiguration.json

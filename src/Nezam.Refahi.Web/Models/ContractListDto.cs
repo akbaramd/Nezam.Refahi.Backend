@@ -22,7 +22,7 @@ public class ContractListDto
     
     /// <summary>
     /// Current status of the contract
-    /// 0 = Draft, 1 = Pending, 2 = In Progress, 3 = Completed, 4 = Cancelled
+    /// 0 = Draft, 1 = Requested, 2 = In Progress, 3 = Completed, 4 = Cancelled
     /// </summary>
     public int Status { get; set; }
     
@@ -56,7 +56,7 @@ public class ContractListDto
             return Status switch
             {
                 0 => "Draft",
-                1 => "Pending",
+                1 => "Requested",
                 2 => "In Progress",
                 3 => "Completed",
                 4 => "Cancelled",

@@ -31,6 +31,6 @@ public enum PaymentMethod
   /// <summary>
   /// انتقال بانکی (دستی یا از حساب سازمانی)
   /// </summary>
-  BankTransfer = 5,
+  BankTransfer = 6,
   Free = 5,
 }

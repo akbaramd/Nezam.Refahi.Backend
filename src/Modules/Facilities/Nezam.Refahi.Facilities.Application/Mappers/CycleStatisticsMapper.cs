@@ -21,14 +21,14 @@ public sealed class CycleStatisticsMapper : IMapper<FacilityCycle, CycleStatisti
     {
         var now = DateTime.UtcNow;
         
-        // Calculate quota statistics
+        // Calculate quota statistics from actual requests count (all requests, not just from UsedQuota field)
         var totalQuota = source.Quota;
-        var usedQuota = source.UsedQuota;
+        var usedQuota = source.Requests.Count;
         var availableQuota = Math.Max(0, totalQuota - usedQuota);
         var utilizationPercentage = totalQuota > 0 ? (decimal)usedQuota / totalQuota * 100 : 0;
 
         // Calculate request statistics
-        var applications = source.Applications.ToList();
+        var applications = source.Requests.ToList();
         var pendingRequests = applications.Count(a => a.Status == FacilityRequestStatus.PendingApproval);
         var approvedRequests = applications.Count(a => a.Status == FacilityRequestStatus.Approved);
         var rejectedRequests = applications.Count(a => a.Status == FacilityRequestStatus.Rejected);
@@ -86,14 +86,14 @@ public sealed class CycleStatisticsMapper : IMapper<FacilityCycle, CycleStatisti
     {
         var now = DateTime.UtcNow;
         
-        // Calculate quota statistics
+        // Calculate quota statistics from actual requests count (all requests, not just from UsedQuota field)
         var totalQuota = source.Quota;
-        var usedQuota = source.UsedQuota;
+        var usedQuota = source.Requests.Count;
         var availableQuota = Math.Max(0, totalQuota - usedQuota);
         var utilizationPercentage = totalQuota > 0 ? (decimal)usedQuota / totalQuota * 100 : 0;
 
         // Calculate request statistics
-        var applications = source.Applications.ToList();
+        var applications = source.Requests.ToList();
         var pendingRequests = applications.Count(a => a.Status == FacilityRequestStatus.PendingApproval);
         var approvedRequests = applications.Count(a => a.Status == FacilityRequestStatus.Approved);
         var rejectedRequests = applications.Count(a => a.Status == FacilityRequestStatus.Rejected);

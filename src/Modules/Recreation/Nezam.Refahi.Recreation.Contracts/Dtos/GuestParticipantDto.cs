@@ -10,7 +10,6 @@ public class GuestParticipantDto
     public string NationalNumber { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
     public string? Email { get; set; } = string.Empty;
-    public string ParticipantType { get; set; } = string.Empty;
     public DateTime BirthDate { get; set; } = DateTime.MinValue;
     public string? EmergencyContactName { get; set; } = string.Empty;
     public string? EmergencyContactPhone { get; set; } = string.Empty;

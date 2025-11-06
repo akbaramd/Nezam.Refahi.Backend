@@ -8,6 +8,7 @@ public class TourCapacityMapper : IMapper<TourCapacity, CapacityDetailDto>
 {
     public Task<CapacityDetailDto> MapAsync(TourCapacity source, CancellationToken cancellationToken = default)
     {
+        var now = DateTime.UtcNow;
         var dto = new CapacityDetailDto
         {
             Id = source.Id,
@@ -21,6 +22,9 @@ public class TourCapacityMapper : IMapper<TourCapacity, CapacityDetailDto>
             IsActive = source.IsActive,
             IsSpecial = source.IsSpecial,
             CapacityState = source.CapacityState.ToString(),
+            IsRegistrationOpen = source.IsRegistrationOpen(now),
+            IsFullyBooked = source.IsFullyBooked(),
+            IsNearlyFull = source.IsNearlyFull(),
             Description = source.Description
         };
 
@@ -29,6 +33,7 @@ public class TourCapacityMapper : IMapper<TourCapacity, CapacityDetailDto>
 
     public Task MapAsync(TourCapacity source, CapacityDetailDto destination, CancellationToken cancellationToken = default)
     {
+        var now = DateTime.UtcNow;
         destination.Id = source.Id;
         destination.RegistrationStart = source.RegistrationStart;
         destination.RegistrationEnd = source.RegistrationEnd;
@@ -40,6 +45,9 @@ public class TourCapacityMapper : IMapper<TourCapacity, CapacityDetailDto>
         destination.IsActive = source.IsActive;
         destination.IsSpecial = source.IsSpecial;
         destination.CapacityState = source.CapacityState.ToString();
+        destination.IsRegistrationOpen = source.IsRegistrationOpen(now);
+        destination.IsFullyBooked = source.IsFullyBooked();
+        destination.IsNearlyFull = source.IsNearlyFull();
         destination.Description = source.Description;
         return Task.CompletedTask;
     }

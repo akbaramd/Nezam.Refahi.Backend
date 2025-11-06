@@ -34,15 +34,18 @@ public class TourMapper : IMapper<Tour, TourDto>
 
         DateTime? regStart = activeCaps.Count > 0 ? activeCaps.Min(c => c.RegistrationStart) : null;
         DateTime? regEnd = activeCaps.Count > 0 ? activeCaps.Max(c => c.RegistrationEnd) : null;
-        bool isOpen = activeCaps.Any(c => c.IsRegistrationOpen(now));
 
+        // Use domain behaviors for capacity calculations
+        var full = source.IsFullyBooked();
+        var near = source.IsNearlyFull();
+        
+        // Calculate capacity metrics for display
         var publicCaps = activeCaps.Where(c => !c.IsSpecial).ToList();
         var maxCap = publicCaps.Sum(c => c.PublicMaxParticipants);
         var remCap = publicCaps.Sum(c => c.PublicRemainingParticipants);
         var used = Math.Max(0, maxCap - remCap);
         var util = maxCap > 0 ? (double)used / maxCap * 100d : 0d;
-        var full = maxCap > 0 && remCap <= 0;
-        var near = util >= 80d && !full;
+
 
         // Agencies → summaries
         var agencies = source.TourAgencies ?? Enumerable.Empty<TourAgency>();
@@ -81,10 +84,10 @@ public class TourMapper : IMapper<Tour, TourDto>
             TourEnd = source.TourEnd,
             IsActive = source.IsActive,
             Status = source.Status.ToString(),
-            CapacityState = ComputeOverallCapacityState(activeCaps).ToString(),
+            CapacityState = source.GetOverallCapacityState().ToString(),
             RegistrationStart = regStart,
             RegistrationEnd = regEnd,
-            IsRegistrationOpen = isOpen,
+            IsRegistrationOpen = source.IsRegistrationOpen(now),
             MaxCapacity = maxCap,
             RemainingCapacity = remCap,
             ReservedCapacity = used,
@@ -98,9 +101,6 @@ public class TourMapper : IMapper<Tour, TourDto>
             HighestPriceRials = high,
             HasDiscount = hasDiscount,
             Pricing = pricingDtos.ToList(),
-            CanUserReserve = false,
-            UserReservationId = null,
-            UserReservationStatus = null
         };
     }
 
@@ -110,10 +110,4 @@ public class TourMapper : IMapper<Tour, TourDto>
         throw new NotImplementedException("Update mapping not implemented. Use MapAsync(Tour) instead.");
     }
 
-    private static CapacityState ComputeOverallCapacityState(IEnumerable<TourCapacity> activeCaps)
-    {
-        if (activeCaps == null || !activeCaps.Any()) return CapacityState.HasSpare;
-        if (activeCaps.Any(c => c.CapacityState == CapacityState.HasSpare)) return CapacityState.HasSpare;
-        return activeCaps.Any(c => c.CapacityState == CapacityState.Tight) ? CapacityState.Tight : CapacityState.Full;
-    }
 }

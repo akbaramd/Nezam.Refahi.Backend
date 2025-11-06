@@ -25,14 +25,4 @@ public record FacilityDetailsDto : FacilityDto
   /// Facility cycles
   /// </summary>
   public List<FacilityCycleWithUserDto> Cycles { get; init; } = new();
-
-  /// <summary>
-  /// Facility features
-  /// </summary>
-  public List<FacilityFeatureDto> Features { get; init; } = new();
-
-  /// <summary>
-  /// Capability policies
-  /// </summary>
-  public List<FacilityCapabilityPolicyDto> CapabilityPolicies { get; init; } = new();
 }

@@ -19,7 +19,7 @@ public class BillCreatedEventMessage : INotification
 
     // Reference details
     public string TrackingCode { get; set; } = string.Empty;
-    public Guid ReferenceId { get; set; } = Guid.Empty;
+    public required Guid ReferenceId { get; set; } = Guid.Empty;
     public string ReferenceType { get; set; } = string.Empty;
 
     // Payment details

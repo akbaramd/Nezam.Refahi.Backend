@@ -17,13 +17,13 @@ public class CompleteWalletDepositCommandHandler : IRequestHandler<CompleteWalle
     private readonly IFinanceUnitOfWork _unitOfWork;
     private readonly IMediator _mediator;
     private readonly ILogger<CompleteWalletDepositCommandHandler> _logger;
-    private readonly IPublishEndpoint _publishEndpoint;
+    private readonly IBus _publishEndpoint;
 
     public CompleteWalletDepositCommandHandler(
         IWalletDepositRepository walletDepositRepository,
         IFinanceUnitOfWork unitOfWork,
         IMediator mediator,
-        IPublishEndpoint publishEndpoint,
+        IBus publishEndpoint,
         ILogger<CompleteWalletDepositCommandHandler> logger)
     {
         _walletDepositRepository = walletDepositRepository ?? throw new ArgumentNullException(nameof(walletDepositRepository));
@@ -43,7 +43,7 @@ public class CompleteWalletDepositCommandHandler : IRequestHandler<CompleteWalle
         }
 
         // Mark completed if still pending
-        if (deposit.Status == WalletDepositStatus.Pending)
+        if (deposit.Status == WalletDepositStatus.AwaitingPayment)
         {
             await _unitOfWork.BeginAsync(cancellationToken);
             try
@@ -99,6 +99,29 @@ public class CompleteWalletDepositCommandHandler : IRequestHandler<CompleteWalle
         {
             return ApplicationResult<Unit>.Failure(result.Errors, result.Message ?? "Wallet charge failed");
         }
+
+        // Publish completion event for orchestrator saga finalization
+        var completedEvent = new WalletDepositCompletedEventMessage
+        {
+            WalletDepositId = deposit.Id,
+            TrackingCode = request.TrackingCode,
+            ExternalUserId = request.ExternalUserId,
+            UserFullName = deposit.Metadata.TryGetValue("UserFullName", out var name) ? name : string.Empty,
+            AmountRials = deposit.Amount.AmountRials,
+            Currency = deposit.Amount.Currency,
+            BillId = request.BillId,
+            BillNumber = request.BillNumber,
+            PaymentId = request.PaymentId,
+            CompletedAt = request.PaidAt,
+            Metadata = new Dictionary<string, string>
+            {
+                ["DepositId"] = deposit.Id.ToString(),
+                ["TrackingCode"] = request.TrackingCode,
+                ["BillId"] = request.BillId.ToString(),
+                ["BillNumber"] = request.BillNumber
+            }
+        };
+        await _publishEndpoint.Publish(completedEvent, cancellationToken);
 
         return ApplicationResult<Unit>.Success(Unit.Value);
     }

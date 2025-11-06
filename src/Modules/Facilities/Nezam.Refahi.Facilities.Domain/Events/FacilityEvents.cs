@@ -12,151 +12,18 @@ public sealed class FacilityCreatedEvent : DomainEvent
     public Guid FacilityId { get; }
     public string Name { get; }
     public string Code { get; }
-    public FacilityType Type { get; }
-    public Money? DefaultAmount { get; }
     public DateTime CreatedAt { get; }
 
     public FacilityCreatedEvent(
         Guid facilityId,
         string name,
         string code,
-        FacilityType type,
-        Money? defaultAmount,
         DateTime createdAt)
     {
         FacilityId = facilityId;
         Name = name;
         Code = code;
-        Type = type;
-        DefaultAmount = defaultAmount;
         CreatedAt = createdAt;
-    }
-}
-
-/// <summary>
-/// رویداد تغییر وضعیت تسهیلات
-/// </summary>
-public sealed class FacilityStatusChangedEvent : DomainEvent
-{
-    public Guid FacilityId { get; }
-    public string Name { get; }
-    public string Code { get; }
-    public FacilityStatus PreviousStatus { get; }
-    public FacilityStatus NewStatus { get; }
-    public string Reason { get; }
-
-    public FacilityStatusChangedEvent(
-        Guid facilityId,
-        string name,
-        string code,
-        FacilityStatus previousStatus,
-        FacilityStatus newStatus,
-        string reason)
-    {
-        FacilityId = facilityId;
-        Name = name;
-        Code = code;
-        PreviousStatus = previousStatus;
-        NewStatus = newStatus;
-        Reason = reason;
-    }
-}
-
-/// <summary>
-/// رویداد اضافه کردن ویژگی به تسهیلات
-/// </summary>
-public sealed class FacilityFeatureAddedEvent : DomainEvent
-{
-    public Guid FacilityId { get; }
-    public string Name { get; }
-    public string Code { get; }
-    public string FeatureId { get; }
-    public FacilityFeatureRequirementType RequirementType { get; }
-    public string? Notes { get; }
-
-    public FacilityFeatureAddedEvent(
-        Guid facilityId,
-        string name,
-        string code,
-        string featureId,
-        FacilityFeatureRequirementType requirementType,
-        string? notes)
-    {
-        FacilityId = facilityId;
-        Name = name;
-        Code = code;
-        FeatureId = featureId;
-        RequirementType = requirementType;
-        Notes = notes;
-    }
-}
-
-/// <summary>
-/// رویداد حذف ویژگی از تسهیلات
-/// </summary>
-public sealed class FacilityFeatureRemovedEvent : DomainEvent
-{
-    public Guid FacilityId { get; }
-    public string Name { get; }
-    public string Code { get; }
-    public string FeatureId { get; }
-
-    public FacilityFeatureRemovedEvent(
-        Guid facilityId,
-        string name,
-        string code,
-        string featureId)
-    {
-        FacilityId = facilityId;
-        Name = name;
-        Code = code;
-        FeatureId = featureId;
-    }
-}
-
-/// <summary>
-/// رویداد اضافه کردن سیاست قابلیت به تسهیلات
-/// </summary>
-public sealed class FacilityCapabilityPolicyAddedEvent : DomainEvent
-{
-    public Guid FacilityId { get; }
-    public string Name { get; }
-    public string Code { get; }
-    public string CapabilityId { get; }
-
-    public FacilityCapabilityPolicyAddedEvent(
-        Guid facilityId,
-        string name,
-        string code,
-        string capabilityId)
-    {
-        FacilityId = facilityId;
-        Name = name;
-        Code = code;
-        CapabilityId = capabilityId;
-    }
-}
-
-/// <summary>
-/// رویداد حذف سیاست قابلیت از تسهیلات
-/// </summary>
-public sealed class FacilityCapabilityPolicyRemovedEvent : DomainEvent
-{
-    public Guid FacilityId { get; }
-    public string Name { get; }
-    public string Code { get; }
-    public string CapabilityId { get; }
-
-    public FacilityCapabilityPolicyRemovedEvent(
-        Guid facilityId,
-        string name,
-        string code,
-        string capabilityId)
-    {
-        FacilityId = facilityId;
-        Name = name;
-        Code = code;
-        CapabilityId = capabilityId;
     }
 }
 

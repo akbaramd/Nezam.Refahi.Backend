@@ -25,8 +25,12 @@ public sealed class FacilityCycleWithUserMapper : IMapper<FacilityCycle, Facilit
         var hasStarted = now >= source.StartDate;
         var hasEnded = now >= source.EndDate;
         var isActive = source.Status == FacilityCycleStatus.Active && hasStarted && !hasEnded;
-        var isAcceptingApplications = isActive && source.UsedQuota < source.Quota;
-        var quotaUtilizationPercentage = source.Quota > 0 ? (decimal)source.UsedQuota / source.Quota * 100 : 0;
+        
+        // Calculate UsedQuota from actual requests count (all requests, not just approved)
+        var usedQuota = source.Requests.Count;
+        var availableQuota = Math.Max(0, source.Quota - usedQuota);
+        var isAcceptingApplications = isActive && usedQuota < source.Quota;
+        var quotaUtilizationPercentage = source.Quota > 0 ? (decimal)usedQuota / source.Quota * 100 : 0;
 
         var dto = new FacilityCycleWithUserDto
         {
@@ -41,31 +45,40 @@ public sealed class FacilityCycleWithUserMapper : IMapper<FacilityCycle, Facilit
             IsActive = isActive,
             IsAcceptingApplications = isAcceptingApplications,
             Quota = source.Quota,
-            UsedQuota = source.UsedQuota,
-            AvailableQuota = source.Quota - source.UsedQuota,
+            UsedQuota = usedQuota,
+            AvailableQuota = availableQuota,
             QuotaUtilizationPercentage = quotaUtilizationPercentage,
             Status = source.Status.ToString(),
             StatusText = EnumTextMappingService.GetFacilityCycleStatusDescription(source.Status),
             Description = source.Description,
+            ApprovalMessage = source.ApprovalMessage,
             FinancialTerms = new FinancialTermsDto
             {
-                MinAmountRials = source.MinAmount?.AmountRials,
-                MaxAmountRials = source.MaxAmount?.AmountRials,
-                DefaultAmountRials = source.DefaultAmount?.AmountRials,
-                Currency = source.MinAmount?.Currency ?? source.MaxAmount?.Currency ?? source.DefaultAmount?.Currency ?? "IRR",
+                PriceOptions = source.PriceOptions
+                    .Where(po => po.IsActive)
+                    .OrderBy(po => po.DisplayOrder)
+                    .Select(po => new FacilityCyclePriceOptionDto
+                    {
+                        Id = po.Id,
+                        AmountRials = po.Amount.AmountRials,
+                        Currency = po.Amount.Currency,
+                        DisplayOrder = po.DisplayOrder,
+                        Description = po.Description,
+                        IsActive = po.IsActive
+                    })
+                    .ToList(),
+                Currency = source.PriceOptions.FirstOrDefault()?.Amount.Currency ?? "IRR",
                 PaymentMonths = source.PaymentMonths,
                 InterestRate = source.InterestRate,
-                InterestRatePercentage = source.InterestRate.HasValue ? source.InterestRate.Value * 100 : null,
-                CooldownDays = source.CooldownDays
+                InterestRatePercentage = source.InterestRate.HasValue ? source.InterestRate.Value * 100 : null
             },
             Rules = new CycleRulesDto
             {
-                IsRepeatable = source.IsRepeatable,
-                IsExclusive = source.IsExclusive,
-                ExclusiveSetId = source.ExclusiveSetId,
-                MaxActiveAcrossCycles = source.MaxActiveAcrossCycles,
+                RestrictToPreviousCycles = source.RestrictToPreviousCycles,
                 HasDependencies = source.Dependencies.Any()
             },
+            RequiredFeatureIds = source.Features.Select(f => f.FeatureId).ToList(),
+            RequiredCapabilityIds = source.Capabilities.Select(c => c.CapabilityId).ToList(),
             // User context intentionally omitted in mapper (kept null)
             UserEligibility = null,
             LastRequest = null,

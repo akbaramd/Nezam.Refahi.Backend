@@ -16,43 +16,55 @@ public sealed class FacilityCycle : FullAggregateRoot<Guid>
     public DateTime StartDate { get; private set; }
     public DateTime EndDate { get; private set; }
     public int Quota { get; private set; }
-    public int UsedQuota { get; private set; }
+    
+    /// <summary>
+    /// تعداد سهمیه استفاده شده - محاسبه شده از تعداد واقعی درخواست‌ها
+    /// این property به صورت computed از Requests.Count محاسبه می‌شود
+    /// </summary>
+    public int UsedQuota => Requests.Count;
+    
     public FacilityCycleStatus Status { get; private set; }
     public string? Description { get; private set; }
     
-    // Amount limits for this cycle
-    public Money? MinAmount { get; private set; }
-    public Money? MaxAmount { get; private set; }
-    public Money? DefaultAmount { get; private set; }
+    // محدودیت به دوره‌های قبلی همین وام
+    // اگر true باشد، کاربرانی که در دوره‌های قبلی همین وام ثبت‌نام کرده‌اند
+    // و درخواستشان تایید شده، دیگر نمی‌توانند درخواست بفرستند
+    public bool RestrictToPreviousCycles { get; private set; }
     
-    // Payment terms for this cycle
-    public int PaymentMonths { get; private set; }
+    // پیام تایید که بعد از تایید درخواست به کاربر نمایش داده می‌شود
+    public string? ApprovalMessage { get; private set; }
+    
+    // درصد سود سالانه
     public decimal? InterestRate { get; private set; }
     
-    // Cooldown period after receiving this facility
-    public int CooldownDays { get; private set; }
-    
-    // Dependency rules
-    public bool IsRepeatable { get; private set; }
-    public bool IsExclusive { get; private set; }
-    public string? ExclusiveSetId { get; private set; }
-    public int? MaxActiveAcrossCycles { get; private set; }
+    // تعداد ماه‌های بازپرداخت
+    public int? PaymentMonths { get; private set; }
     
     // Required previous facilities (dependencies)
+    // هر دوره می‌تواند به یک وام دیگر وابسته باشد
     private readonly List<FacilityCycleDependency> _dependencies = new();
     public IReadOnlyCollection<FacilityCycleDependency> Dependencies => _dependencies.AsReadOnly();
     
-    // Admission strategy
-    public string AdmissionStrategy { get; private set; } = "FIFO"; // FIFO, Score, Lottery
-    public int? WaitlistCapacity { get; private set; }
+    // لیست قیمت دوره - کاربر از این لیست انتخاب می‌کند
+    private readonly List<FacilityCyclePriceOption> _priceOptions = new();
+    public IReadOnlyCollection<FacilityCyclePriceOption> PriceOptions => _priceOptions.AsReadOnly();
+    
+    // ویژگی‌های مورد نیاز دوره - فقط ID
+    private readonly List<FacilityCycleFeature> _features = new();
+    public IReadOnlyCollection<FacilityCycleFeature> Features => _features.AsReadOnly();
+    
+    // قابلیت‌های مورد نیاز دوره - فقط ID
+    private readonly List<FacilityCycleCapability> _capabilities = new();
+    public IReadOnlyCollection<FacilityCycleCapability> Capabilities => _capabilities.AsReadOnly();
     
     public Dictionary<string, string> Metadata { get; private set; } = new();
 
     // Navigation properties
     public Facility Facility { get; private set; } = null!;
 
-    private readonly List<FacilityRequest> _applications = new();
-    public IReadOnlyCollection<FacilityRequest> Applications => _applications.AsReadOnly();
+    // Navigation property for EF Core querying (read-only)
+    // Note: This is for querying purposes only; FacilityCycle and FacilityRequest are separate aggregates
+    public ICollection<FacilityRequest> Requests { get; private set; } = new List<FacilityRequest>();
 
     // Private constructor for EF Core
     private FacilityCycle() : base() { }
@@ -88,17 +100,11 @@ public sealed class FacilityCycle : FullAggregateRoot<Guid>
         DateTime startDate,
         DateTime endDate,
         int quota,
-        Money? minAmount = null,
-        Money? maxAmount = null,
-        Money? defaultAmount = null,
-        int paymentMonths = 12,
-        decimal? interestRate = null,
-        int cooldownDays = 0,
-        bool isRepeatable = true,
-        bool isExclusive = false,
-        string? exclusiveSetId = null,
-        int? maxActiveAcrossCycles = null,
+        bool restrictToPreviousCycles = false,
         string? description = null,
+        string? approvalMessage = null,
+        decimal? interestRate = null,
+        int? paymentMonths = null,
         Dictionary<string, string>? metadata = null)
         : base(Guid.NewGuid())
     {
@@ -110,35 +116,22 @@ public sealed class FacilityCycle : FullAggregateRoot<Guid>
             throw new ArgumentException("Start date must be before end date", nameof(startDate));
         if (quota <= 0)
             throw new ArgumentException("Quota must be positive", nameof(quota));
-        if (paymentMonths <= 0)
+        if (interestRate.HasValue && (interestRate.Value < 0 || interestRate.Value > 1))
+            throw new ArgumentException("Interest rate must be between 0 and 1", nameof(interestRate));
+        if (paymentMonths.HasValue && paymentMonths.Value <= 0)
             throw new ArgumentException("Payment months must be positive", nameof(paymentMonths));
-        if (cooldownDays < 0)
-            throw new ArgumentException("Cooldown days cannot be negative", nameof(cooldownDays));
 
         FacilityId = facilityId;
         Name = name.Trim();
         StartDate = startDate;
         EndDate = endDate;
         Quota = quota;
-        UsedQuota = 0;
         Status = FacilityCycleStatus.Draft;
         Description = description?.Trim();
-        
-        // Amount limits
-        MinAmount = minAmount;
-        MaxAmount = maxAmount;
-        DefaultAmount = defaultAmount;
-        
-        // Payment terms
-        PaymentMonths = paymentMonths;
+        RestrictToPreviousCycles = restrictToPreviousCycles;
+        ApprovalMessage = approvalMessage?.Trim();
         InterestRate = interestRate;
-        
-        // Cooldown and rules
-        CooldownDays = cooldownDays;
-        IsRepeatable = isRepeatable;
-        IsExclusive = isExclusive;
-        ExclusiveSetId = exclusiveSetId?.Trim();
-        MaxActiveAcrossCycles = maxActiveAcrossCycles;
+        PaymentMonths = paymentMonths;
         
         Metadata = metadata ?? new Dictionary<string, string>();
     }
@@ -173,27 +166,149 @@ public sealed class FacilityCycle : FullAggregateRoot<Guid>
     }
 
     /// <summary>
-    /// بررسی اینکه آیا عضو واجد شرایط دریافت این تسهیلات است
+    /// اضافه کردن گزینه قیمت به لیست قیمت دوره
     /// </summary>
-    public bool IsMemberEligible(Guid memberId, IEnumerable<Guid> completedFacilities, IEnumerable<Guid> activeFacilities)
+    public void AddPriceOption(Money amount, int displayOrder = 0, string? description = null)
     {
-        // بررسی وابستگی‌ها
+        if (amount == null)
+            throw new ArgumentNullException(nameof(amount));
+        if (amount.AmountRials <= 0)
+            throw new ArgumentException("Amount must be positive", nameof(amount));
+
+        var priceOption = new FacilityCyclePriceOption(Id, amount, displayOrder, description);
+        _priceOptions.Add(priceOption);
+    }
+
+    /// <summary>
+    /// حذف گزینه قیمت از لیست
+    /// </summary>
+    public void RemovePriceOption(Guid priceOptionId)
+    {
+        var priceOption = _priceOptions.FirstOrDefault(po => po.Id == priceOptionId);
+        if (priceOption == null)
+            throw new InvalidOperationException("Price option not found");
+
+        _priceOptions.Remove(priceOption);
+    }
+
+    /// <summary>
+    /// به‌روزرسانی پیام تایید
+    /// </summary>
+    public void UpdateApprovalMessage(string? message)
+    {
+        ApprovalMessage = message?.Trim();
+    }
+
+    /// <summary>
+    /// به‌روزرسانی محدودیت به دوره‌های قبلی
+    /// </summary>
+    public void UpdateRestrictToPreviousCycles(bool restrict)
+    {
+        RestrictToPreviousCycles = restrict;
+    }
+
+    /// <summary>
+    /// به‌روزرسانی درصد سود
+    /// </summary>
+    public void UpdateInterestRate(decimal? interestRate)
+    {
+        if (interestRate.HasValue && (interestRate.Value < 0 || interestRate.Value > 1))
+            throw new ArgumentException("Interest rate must be between 0 and 1", nameof(interestRate));
+
+        InterestRate = interestRate;
+    }
+
+    /// <summary>
+    /// به‌روزرسانی تعداد ماه‌های بازپرداخت
+    /// </summary>
+    public void UpdatePaymentMonths(int? paymentMonths)
+    {
+        if (paymentMonths.HasValue && paymentMonths.Value <= 0)
+            throw new ArgumentException("Payment months must be positive", nameof(paymentMonths));
+
+        PaymentMonths = paymentMonths;
+    }
+
+    /// <summary>
+    /// اضافه کردن ویژگی به دوره
+    /// </summary>
+    public void AddFeature(string featureId)
+    {
+        if (string.IsNullOrWhiteSpace(featureId))
+            throw new ArgumentException("Feature ID cannot be empty", nameof(featureId));
+
+        if (_features.Any(f => f.FeatureId == featureId))
+            throw new InvalidOperationException("Feature already exists for this cycle");
+
+        var cycleFeature = new FacilityCycleFeature(Id, featureId);
+        _features.Add(cycleFeature);
+    }
+
+    /// <summary>
+    /// حذف ویژگی از دوره
+    /// </summary>
+    public void RemoveFeature(string featureId)
+    {
+        if (string.IsNullOrWhiteSpace(featureId))
+            throw new ArgumentException("Feature ID cannot be empty", nameof(featureId));
+
+        var feature = _features.FirstOrDefault(f => f.FeatureId == featureId);
+        if (feature == null)
+            throw new InvalidOperationException("Feature not found for this cycle");
+
+        _features.Remove(feature);
+    }
+
+    /// <summary>
+    /// اضافه کردن قابلیت به دوره
+    /// </summary>
+    public void AddCapability(string capabilityId)
+    {
+        if (string.IsNullOrWhiteSpace(capabilityId))
+            throw new ArgumentException("Capability ID cannot be empty", nameof(capabilityId));
+
+        if (_capabilities.Any(c => c.CapabilityId == capabilityId))
+            throw new InvalidOperationException("Capability already exists for this cycle");
+
+        var cycleCapability = new FacilityCycleCapability(Id, capabilityId);
+        _capabilities.Add(cycleCapability);
+    }
+
+    /// <summary>
+    /// حذف قابلیت از دوره
+    /// </summary>
+    public void RemoveCapability(string capabilityId)
+    {
+        if (string.IsNullOrWhiteSpace(capabilityId))
+            throw new ArgumentException("Capability ID cannot be empty", nameof(capabilityId));
+
+        var capability = _capabilities.FirstOrDefault(c => c.CapabilityId == capabilityId);
+        if (capability == null)
+            throw new InvalidOperationException("Capability not found for this cycle");
+
+        _capabilities.Remove(capability);
+    }
+
+    /// <summary>
+    /// بررسی ساده واجد شرایط بودن بر اساس وابستگی‌ها
+    /// برای بررسی کامل از Domain Service استفاده کنید: IFacilityCycleEligibilityService
+    /// </summary>
+    /// <remarks>
+    /// این متد فقط بررسی وابستگی‌ها را انجام می‌دهد
+    /// برای بررسی کامل (Features, Capabilities, Status, Quota) از Domain Service استفاده کنید
+    /// </remarks>
+    public bool HasSatisfiedDependencies(IEnumerable<Guid> completedFacilities)
+    {
+        if (completedFacilities == null)
+            throw new ArgumentNullException(nameof(completedFacilities));
+
+        var completedSet = completedFacilities.ToHashSet();
+        
         foreach (var dependency in _dependencies)
         {
-            if (dependency.MustBeCompleted && !completedFacilities.Contains(dependency.RequiredFacilityId))
+            if (dependency.MustBeCompleted && !completedSet.Contains(dependency.RequiredFacilityId))
                 return false;
         }
-
-        // بررسی انحصاری بودن
-        if (IsExclusive && !string.IsNullOrEmpty(ExclusiveSetId))
-        {
-            // اگر عضو در حال حاضر تسهیلات دیگری از همین مجموعه دارد، مجاز نیست
-            // این منطق باید در Application layer پیاده‌سازی شود
-        }
-
-        // بررسی تکرارپذیری
-        if (!IsRepeatable && activeFacilities.Contains(FacilityId))
-            return false;
 
         return true;
     }
@@ -268,6 +383,48 @@ public sealed class FacilityCycle : FullAggregateRoot<Guid>
     }
 
     /// <summary>
+    /// تنظیم دوره به حالت تحت بررسی
+    /// </summary>
+    /// <remarks>
+    /// <para>توضیح رفتار:</para>
+    /// این رفتار دوره را به حالت تحت بررسی تغییر می‌دهد و یک Domain Event منتشر می‌کند
+    /// که باعث می‌شود همه درخواست‌های PendingApproval به UnderReview تغییر کنند.
+    ///
+    /// <para>کاربرد در دنیای واقعی:</para>
+    /// زمانی که دوره آماده شروع بررسی درخواست‌ها است، این رفتار برای
+    /// تغییر وضعیت دوره و درخواست‌ها استفاده می‌شود.
+    ///
+    /// <para>قوانین:</para>
+    /// - فقط دوره‌های Active یا Closed قابل تغییر به UnderReview هستند.
+    /// - وضعیت به UnderReview تغییر می‌یابد.
+    /// - یک Domain Event منتشر می‌شود برای تغییر وضعیت درخواست‌ها.
+    ///
+    /// <para>بایدها و نبایدها:</para>
+    /// - باید: فقط از حالت Active یا Closed قابل تغییر باشد.
+    /// - باید: Domain Event منتشر شود.
+    /// - نباید: دوره‌های غیر فعال یا بسته تحت بررسی شوند.
+    /// </remarks>
+    public void SetUnderReview()
+    {
+        if (Status != FacilityCycleStatus.Active && Status != FacilityCycleStatus.Closed)
+            throw new InvalidOperationException("Can only set under review for active or closed cycles");
+
+        var previousStatus = Status;
+        Status = FacilityCycleStatus.UnderReview;
+
+        
+
+        // انتشار Domain Event برای تغییر وضعیت همه درخواست‌های PendingApproval به UnderReview
+        AddDomainEvent(new FacilityCycleStatusChangedEvent(
+            Id,
+            FacilityId,
+            Name,
+            previousStatus,
+            Status,
+            "Cycle set to under review - all PendingApproval requests will be changed to UnderReview"));
+    }
+
+    /// <summary>
     /// تکمیل دوره
     /// </summary>
     /// <remarks>
@@ -280,20 +437,20 @@ public sealed class FacilityCycle : FullAggregateRoot<Guid>
     /// این رفتار برای تکمیل دوره استفاده می‌شود.
     ///
     /// <para>قوانین:</para>
-    /// - فقط دوره‌های بسته قابل تکمیل هستند.
+    /// - فقط دوره‌های بسته یا UnderReview قابل تکمیل هستند.
     /// - وضعیت به Completed تغییر می‌یابد.
     /// - زمان تکمیل ثبت می‌شود.
     ///
     /// <para>بایدها و نبایدها:</para>
-    /// - باید: فقط از حالت Closed قابل تغییر باشد.
+    /// - باید: فقط از حالت Closed یا UnderReview قابل تغییر باشد.
     /// - باید: زمان تکمیل دقیق ثبت شود.
     /// - نباید: دوره‌های غیر بسته تکمیل شوند.
     /// - نباید: بدون نهایی شدن فرآیندها تکمیل شود.
     /// </remarks>
     public void Complete()
     {
-        if (Status != FacilityCycleStatus.Closed)
-            throw new InvalidOperationException("Can only complete closed cycles");
+        if (Status != FacilityCycleStatus.Closed && Status != FacilityCycleStatus.UnderReview)
+            throw new InvalidOperationException("Can only complete closed or under review cycles");
 
         var previousStatus = Status;
         Status = FacilityCycleStatus.Completed;
@@ -337,33 +494,9 @@ public sealed class FacilityCycle : FullAggregateRoot<Guid>
     }
 
     /// <summary>
-    /// اضافه کردن درخواست به دوره
+    /// بررسی اینکه آیا سهمیه پر است
+    /// Note: UsedQuota is now computed from Requests.Count automatically
     /// </summary>
-    public void AddApplication(FacilityRequest application)
-    {
-        if (application == null)
-            throw new ArgumentNullException(nameof(application));
-
-        if (application.FacilityCycleId != Id)
-            throw new ArgumentException("Application does not belong to this cycle");
-
-        _applications.Add(application);
-        UsedQuota++;
-    }
-
-    /// <summary>
-    /// حذف درخواست از دوره
-    /// </summary>
-    public void RemoveApplication(FacilityRequest application)
-    {
-        if (application == null)
-            throw new ArgumentNullException(nameof(application));
-
-        if (_applications.Remove(application))
-        {
-            UsedQuota--;
-        }
-    }
 
     /// <summary>
     /// بررسی اینکه آیا دوره فعال است

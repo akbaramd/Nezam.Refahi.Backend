@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Nezam.Refahi.Finance.Presentation</name>
+    </assembly>
+    <members>
+        <member name="T:Nezam.Refahi.Finance.Presentation.Endpoints.CreateWalletDepositRequest">
+            <summary>
+            Request DTO for creating a wallet deposit
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.Finance.Presentation.Endpoints.CreateWalletDepositRequest.AmountRials">
+            <summary>
+            Amount to deposit in rials
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.Finance.Presentation.Endpoints.CreateWalletDepositRequest.Description">
+            <summary>
+            Description for the deposit
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.Finance.Presentation.Endpoints.CreateWalletDepositRequest.ExternalReference">
+            <summary>
+            External reference (e.g., bank transaction ID)
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.Finance.Presentation.Endpoints.CreateWalletDepositRequest.Metadata">
+            <summary>
+            Additional metadata for the deposit
+            </summary>
+        </member>
+        <member name="T:Nezam.Refahi.Finance.Presentation.Extensions.ApplicationResultExtensions">
+            <summary>
+            Extension methods for ApplicationResult to map to HTTP status codes
+            </summary>
+        </member>
+        <member name="M:Nezam.Refahi.Finance.Presentation.Extensions.ApplicationResultExtensions.ToResult(Nezam.Refahi.Shared.Application.Common.Models.ApplicationResult)">
+            <summary>
+            Maps ApplicationResult to appropriate HTTP status code result
+            </summary>
+        </member>
+        <member name="M:Nezam.Refahi.Finance.Presentation.Extensions.ApplicationResultExtensions.ToResult``1(Nezam.Refahi.Shared.Application.Common.Models.ApplicationResult{``0})">
+            <summary>
+            Maps ApplicationResult&lt;T&gt; to appropriate HTTP status code result
+            </summary>
+        </member>
+        <member name="T:Nezam.Refahi.Finance.Presentation.Extensions.ResultsExtensions">
+            <summary>
+            Extension methods for Results class to handle ApplicationResult with automatic status code mapping
+            </summary>
+        </member>
+        <member name="M:Nezam.Refahi.Finance.Presentation.Extensions.ResultsExtensions.FromApplicationResult(Nezam.Refahi.Shared.Application.Common.Models.ApplicationResult)">
+            <summary>
+            Returns an HTTP result based on ApplicationResult status, automatically handling the status code
+            </summary>
+            <param name="result">The application result to convert</param>
+            <returns>IResult with appropriate HTTP status code</returns>
+        </member>
+        <member name="M:Nezam.Refahi.Finance.Presentation.Extensions.ResultsExtensions.FromApplicationResult``1(Nezam.Refahi.Shared.Application.Common.Models.ApplicationResult{``0})">
+            <summary>
+            Returns an HTTP result based on ApplicationResult&lt;T&gt; status, automatically handling the status code
+            </summary>
+            <typeparam name="T">Type of the result data</typeparam>
+            <param name="result">The application result to convert</param>
+            <returns>IResult with appropriate HTTP status code</returns>
+        </member>
+        <member name="M:Nezam.Refahi.Finance.Presentation.Extensions.ResultsExtensions.FromApplicationResult(Nezam.Refahi.Shared.Application.Common.Models.ApplicationResult,System.Func{Nezam.Refahi.Shared.Application.Common.Models.ApplicationResult,Microsoft.AspNetCore.Http.IResult},System.Func{Nezam.Refahi.Shared.Application.Common.Models.ApplicationResult,Microsoft.AspNetCore.Http.IResult})">
+            <summary>
+            Returns an HTTP result based on ApplicationResult status with custom handling
+            </summary>
+            <param name="result">The application result to convert</param>
+            <param name="onSuccess">Optional custom handler for success case</param>
+            <param name="onFailure">Optional custom handler for failure case</param>
+            <returns>IResult with appropriate HTTP status code</returns>
+        </member>
+        <member name="M:Nezam.Refahi.Finance.Presentation.Extensions.ResultsExtensions.FromApplicationResult``1(Nezam.Refahi.Shared.Application.Common.Models.ApplicationResult{``0},System.Func{Nezam.Refahi.Shared.Application.Common.Models.ApplicationResult{``0},Microsoft.AspNetCore.Http.IResult},System.Func{Nezam.Refahi.Shared.Application.Common.Models.ApplicationResult{``0},Microsoft.AspNetCore.Http.IResult})">
+            <summary>
+            Returns an HTTP result based on ApplicationResult&lt;T&gt; status with custom handling
+            </summary>
+            <typeparam name="T">Type of the result data</typeparam>
+            <param name="result">The application result to convert</param>
+            <param name="onSuccess">Optional custom handler for success case</param>
+            <param name="onFailure">Optional custom handler for failure case</param>
+            <returns>IResult with appropriate HTTP status code</returns>
+        </member>
+        <member name="T:Nezam.Refahi.Finance.Presentation.Services.WalletSnapshotHostedService">
+            <summary>
+            Hosted service for managing wallet snapshot recurring jobs
+            </summary>
+        </member>
+        <member name="T:Nezam.Refahi.Finance.Presentation.Services.WalletSnapshotJob">
+            <summary>
+            Hangfire job for generating wallet snapshots
+            </summary>
+        </member>
+        <member name="M:Nezam.Refahi.Finance.Presentation.Services.WalletSnapshotJob.GenerateSnapshotsForYesterdayAsync">
+            <summary>
+            Generates wallet snapshots for yesterday
+            This method will be called by Hangfire recurring jobs
+            </summary>
+        </member>
+    </members>
+</doc>

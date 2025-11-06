@@ -20,19 +20,19 @@ public class GetFacilityRequestsByUserQueryHandler : IRequestHandler<GetFacility
     private readonly IMapper<Domain.Entities.FacilityRequest, FacilityRequestDto> _requestMapper;
     private readonly IValidator<GetFacilityRequestsByUserQuery> _validator;
     private readonly ILogger<GetFacilityRequestsByUserQueryHandler> _logger;
-    private readonly IMemberInfoService _memberInfoService;
+    private readonly IMemberService _memberService;
 
     public GetFacilityRequestsByUserQueryHandler(
         IFacilityRequestRepository requestRepository,
         IValidator<GetFacilityRequestsByUserQuery> validator,
         ILogger<GetFacilityRequestsByUserQueryHandler> logger,
-        IMemberInfoService memberInfoService,
+        IMemberService memberService,
         IMapper<Domain.Entities.FacilityRequest, FacilityRequestDto> requestMapper)
     {
         _requestRepository = requestRepository;
         _validator = validator;
         _logger = logger;
-        _memberInfoService = memberInfoService;
+        _memberService = memberService;
         _requestMapper = requestMapper;
     }
 
@@ -59,13 +59,13 @@ public class GetFacilityRequestsByUserQueryHandler : IRequestHandler<GetFacility
             if (!string.IsNullOrWhiteSpace(requestByUser.NationalNumber))
             {
                 var nationalId = new NationalId(requestByUser.NationalNumber);
-                var memberInfo = await _memberInfoService.GetMemberInfoAsync(nationalId);
-                if (memberInfo == null)
+                var memberDetail = await _memberService.GetMemberDetailByNationalCodeAsync(nationalId);
+                if (memberDetail == null)
                 {
                     return ApplicationResult<GetFacilityRequestsByUserQueryResult>.Failure(
                         "عضو یافت نشد");
                 }
-                memberId = memberInfo.Id;
+                memberId = memberDetail.Id;
             }
 
             var spec = new FacilityRequestPaginatedSpec(
@@ -82,8 +82,38 @@ public class GetFacilityRequestsByUserQueryHandler : IRequestHandler<GetFacility
             // Get requests (if repo supports spec, else fallback to parameters)
             var requests = await _requestRepository.GetPaginatedAsync(spec, cancellationToken);
 
+            // Determine which requests are the last request for their respective cycles
+            // Use the already-loaded requests to avoid N+1 queries
+            Dictionary<Guid, Guid> lastRequestByCycle = new();
+            if (memberId.HasValue && requests.Items.Any())
+            {
+                // Group by cycle and find the latest request for each cycle from the loaded data
+                var requestsByCycle = requests.Items
+                    .GroupBy(r => r.FacilityCycleId)
+                    .ToDictionary(g => g.Key, g => g.OrderByDescending(r => r.CreatedAt).First());
+
+                foreach (var kvp in requestsByCycle)
+                {
+                    lastRequestByCycle[kvp.Key] = kvp.Value.Id;
+                }
+            }
+
             // Map to DTOs via DI mapper
             var requestDtos = (await Task.WhenAll(requests.Items.Select(r => _requestMapper.MapAsync(r, cancellationToken)))).ToList();
+
+            // Mark requests as last request if they match
+            if (memberId.HasValue && requestDtos.Any() && lastRequestByCycle.Any())
+            {
+                foreach (var dto in requestDtos)
+                {
+                    // Get cycle ID from the source entity since mapper might not have populated Cycle yet
+                    var sourceRequest = requests.Items.FirstOrDefault(r => r.Id == dto.Id);
+                    if (sourceRequest != null && lastRequestByCycle.TryGetValue(sourceRequest.FacilityCycleId, out var lastRequestId) && dto.Id == lastRequestId)
+                    {
+                        dto.IsLastRequest = true;
+                    }
+                }
+            }
 
             _logger.LogInformation("Retrieved {Count} facility requests for page {Page}",
                 requestDtos.Count, requestByUser.Page);
@@ -100,7 +130,7 @@ public class GetFacilityRequestsByUserQueryHandler : IRequestHandler<GetFacility
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving facility requests");
-            return ApplicationResult<GetFacilityRequestsByUserQueryResult>.Failure(
+            return ApplicationResult<GetFacilityRequestsByUserQueryResult>.Failure(ex,
                 "خطای داخلی در دریافت لیست درخواست‌های تسهیلات");
         }
     }

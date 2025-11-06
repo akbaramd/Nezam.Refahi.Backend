@@ -17,10 +17,9 @@ public class FacilitiesDbContext : DbContext
     // DbSets
     public DbSet<Facility> Facilities { get; set; } = null!;
     public DbSet<FacilityCycle> FacilityCycles { get; set; } = null!;
+    public DbSet<FacilityCyclePriceOption> FacilityCyclePriceOptions { get; set; } = null!;
     public DbSet<FacilityCycleDependency> FacilityCycleDependencies { get; set; } = null!;
     public DbSet<FacilityRequest> FacilityRequests { get; set; } = null!;
-    public DbSet<FacilityFeature> FacilityFeatures { get; set; } = null!;
-    public DbSet<FacilityCapability> FacilityCapabilityPolicies { get; set; } = null!;
     public DbSet<FacilityRejection> FacilityRejections { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -30,10 +29,11 @@ public class FacilitiesDbContext : DbContext
         // Apply configurations
         modelBuilder.ApplyConfiguration(new FacilityConfiguration());
         modelBuilder.ApplyConfiguration(new FacilityCycleConfiguration());
+        modelBuilder.ApplyConfiguration(new FacilityCyclePriceOptionConfiguration());
+        modelBuilder.ApplyConfiguration(new FacilityCycleFeatureConfiguration());
+        modelBuilder.ApplyConfiguration(new FacilityCycleCapabilityConfiguration());
         modelBuilder.ApplyConfiguration(new FacilityCycleDependencyConfiguration());
         modelBuilder.ApplyConfiguration(new FacilityRequestConfiguration());
-        modelBuilder.ApplyConfiguration(new FacilityFeatureConfiguration());
-        modelBuilder.ApplyConfiguration(new FacilityCapabilityConfiguration());
         modelBuilder.ApplyConfiguration(new FacilityRejectionConfiguration());
 
         // Configure schema

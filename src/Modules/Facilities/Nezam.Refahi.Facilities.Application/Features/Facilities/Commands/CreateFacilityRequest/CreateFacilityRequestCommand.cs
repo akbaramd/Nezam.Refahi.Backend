@@ -15,9 +15,9 @@ public record CreateFacilityRequestCommand : IRequest<ApplicationResult<CreateFa
     public Guid FacilityCycleId { get; init; }
 
     /// <summary>
-    /// Requested amount in Rials
+    /// Selected price option ID from cycle's price options
     /// </summary>
-    public decimal RequestedAmountRials { get; init; }
+    public Guid PriceOptionId { get; init; }
 
     /// <summary>
     /// Request description (optional)

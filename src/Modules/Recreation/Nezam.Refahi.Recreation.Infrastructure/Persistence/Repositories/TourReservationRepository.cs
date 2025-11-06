@@ -77,7 +77,7 @@ public class TourReservationRepository : EfRepository<RecreationDbContext, TourR
         var currentTime = DateTime.UtcNow;
         return await PrepareQuery(_dbSet)
             .Where(r => r.TourId == tourId && 
-                       (r.Status == ReservationStatus.OnHold || r.Status == ReservationStatus.PendingConfirmation) && // شامل رزروهای در حال پرداخت
+                       r.Status == ReservationStatus.OnHold && // OnHold means waiting for payment and confirmation
                        (r.ExpiryDate == null || r.ExpiryDate > currentTime)) // حذف رزروهای منقضی شده
             .SelectMany(r => r.Participants)
             .CountAsync(cancellationToken);
@@ -110,9 +110,21 @@ public class TourReservationRepository : EfRepository<RecreationDbContext, TourR
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IEnumerable<TourReservation>> GetByTourIdsAndExternalUserIdAsync(IEnumerable<Guid> tourIds, Guid externalUserId, CancellationToken cancellationToken = default)
+    {
+        var tourIdsList = tourIds.ToList();
+        if (!tourIdsList.Any()) return Enumerable.Empty<TourReservation>();
+
+        return await PrepareQuery(_dbSet)
+            .Include(r => r.Tour)
+            .Where(r => tourIdsList.Contains(r.TourId) && r.ExternalUserId == externalUserId)
+            .OrderByDescending(r => r.ReservationDate)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<TourReservation?> GetByIdWithParticipantsAsync(Guid reservationId, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Set<TourReservation>()
+        return await  PrepareQuery(_dbSet)
             .Include(r => r.Participants)
             .Include(r => r.Tour)
             .FirstOrDefaultAsync(r => r.Id == reservationId, cancellationToken);
@@ -124,8 +136,7 @@ public class TourReservationRepository : EfRepository<RecreationDbContext, TourR
         return await PrepareQuery(_dbSet)
             .Where(r => r.CapacityId == capacityId &&
                        (r.Status == ReservationStatus.Confirmed || 
-                        r.Status == ReservationStatus.OnHold || 
-                        r.Status == ReservationStatus.PendingConfirmation) && // اضافه کردن رزروهای در حال پرداخت
+                        r.Status == ReservationStatus.OnHold) && // OnHold means waiting for payment and confirmation
                        (r.ExpiryDate == null || r.ExpiryDate > currentTime)) // چک انقضا
             .SelectMany(r => r.Participants)
             .CountAsync(cancellationToken);
@@ -137,8 +148,7 @@ public class TourReservationRepository : EfRepository<RecreationDbContext, TourR
         return await PrepareQuery(_dbSet)
             .Where(r => r.TourId == tourId &&
                        (r.Status == ReservationStatus.Confirmed || 
-                        r.Status == ReservationStatus.OnHold || 
-                        r.Status == ReservationStatus.PendingConfirmation) && // اضافه کردن رزروهای در حال پرداخت
+                        r.Status == ReservationStatus.OnHold) && // OnHold means waiting for payment and confirmation
                        (r.ExpiryDate == null || r.ExpiryDate > currentTime)) // چک انقضا
             .SelectMany(r => r.Participants)
             .CountAsync(cancellationToken);
@@ -149,7 +159,7 @@ public class TourReservationRepository : EfRepository<RecreationDbContext, TourR
         return await PrepareQuery(_dbSet)
             .Where(r => r.ExpiryDate.HasValue && 
                        r.ExpiryDate.Value <= cutoffTime &&
-                       (r.Status == ReservationStatus.OnHold || r.Status == ReservationStatus.PendingConfirmation))
+                       r.Status == ReservationStatus.OnHold) // OnHold means waiting for payment and confirmation
             .Include(r => r.Participants)
             .ToListAsync(cancellationToken);
     }
@@ -175,8 +185,7 @@ public class TourReservationRepository : EfRepository<RecreationDbContext, TourR
         var utilizations = await PrepareQuery(_dbSet)
             .Where(r => tourIdsList.Contains(r.TourId) &&
                        (r.Status == ReservationStatus.Confirmed || 
-                        r.Status == ReservationStatus.OnHold || 
-                        r.Status == ReservationStatus.PendingConfirmation) && // اضافه کردن رزروهای در حال پرداخت
+                        r.Status == ReservationStatus.OnHold) && // OnHold means waiting for payment and confirmation
                        (r.ExpiryDate == null || r.ExpiryDate > currentTime)) // حذف رزروهای منقضی شده
             .SelectMany(r => r.Participants)
             .GroupBy(p => p.Reservation.TourId)
@@ -203,8 +212,7 @@ public class TourReservationRepository : EfRepository<RecreationDbContext, TourR
             .Where(r => r.CapacityId.HasValue && 
                        capacityIdsList.Contains(r.CapacityId.Value) &&
                        (r.Status == ReservationStatus.Confirmed || 
-                        r.Status == ReservationStatus.OnHold || 
-                        r.Status == ReservationStatus.PendingConfirmation) && // اضافه کردن رزروهای در حال پرداخت
+                        r.Status == ReservationStatus.OnHold) && // OnHold means waiting for payment and confirmation
                        (r.ExpiryDate == null || r.ExpiryDate > currentTime)) // حذف رزروهای منقضی شده
             .SelectMany(r => r.Participants)
             .GroupBy(p => p.Reservation.CapacityId)
@@ -228,7 +236,8 @@ public class TourReservationRepository : EfRepository<RecreationDbContext, TourR
     {
       query = query.Include(x => x.Participants)
                    .Include(x => x.Capacity)
-                   .Include(x => x.Tour);
+                   .Include(x => x.Tour)
+                   .Include(x => x.PriceSnapshots);
       return base.PrepareQuery(query);
     }
 }

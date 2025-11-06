@@ -302,7 +302,7 @@ namespace Nezam.Refahi.Finance.Application.DTOs;
       public decimal AmountRials { get; set; }
 
 
-      /// <summary>Pending, Processing, Completed, Failed, Cancelled, Expired, ...</summary>
+      /// <summary>Requested, AwaitingBill, Completed, Failed, Cancelled, Expired, ...</summary>
       public string Status { get; set; } = string.Empty;
 
       /// <summary>Localized Persian status.</summary>
@@ -457,7 +457,7 @@ namespace Nezam.Refahi.Finance.Application.DTOs;
       public Guid RefundId { get; set; }
       public Guid BillId { get; set; }
       public decimal AmountRials { get; set; }
-      public string Status { get; set; } = string.Empty;     // Pending, Processing, Completed, Rejected, Failed
+      public string Status { get; set; } = string.Empty;     // Requested, AwaitingBill, Completed, Rejected, Failed
       public string StatusText { get; set; } = string.Empty; // Persian localized
       public string Reason { get; set; } = string.Empty;
       public Guid RequestedByExternalUserId { get; set; }

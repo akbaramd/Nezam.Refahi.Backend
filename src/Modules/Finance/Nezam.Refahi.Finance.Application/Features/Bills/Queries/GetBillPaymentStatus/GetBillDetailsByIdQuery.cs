@@ -11,4 +11,8 @@ public  class GetBillDetailsByIdQuery
 {
   public Guid BillId { get; init; }
 
+  /// <summary>
+  /// External User ID to ensure user can only access their own bills
+  /// </summary>
+  public Guid ExternalUserId { get; init; }
 }

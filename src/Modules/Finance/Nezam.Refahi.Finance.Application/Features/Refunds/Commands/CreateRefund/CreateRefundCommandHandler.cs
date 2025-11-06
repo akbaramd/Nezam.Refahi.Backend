@@ -21,14 +21,14 @@ public class CreateRefundCommandHandler : IRequestHandler<CreateRefundCommand, A
     private readonly IRefundRepository _refundRepository;
     private readonly IValidator<CreateRefundCommand> _validator;
     private readonly IFinanceUnitOfWork _unitOfWork;
-    private readonly IPublishEndpoint _publishEndpoint;
+    private readonly IBus _publishEndpoint;
 
     public CreateRefundCommandHandler(
         IBillRepository billRepository,
         IRefundRepository refundRepository,
         IValidator<CreateRefundCommand> validator,
         IFinanceUnitOfWork unitOfWork,
-        IPublishEndpoint publishEndpoint)
+        IBus publishEndpoint)
     {
         _billRepository = billRepository ?? throw new ArgumentNullException(nameof(billRepository));
         _refundRepository = refundRepository ?? throw new ArgumentNullException(nameof(refundRepository));

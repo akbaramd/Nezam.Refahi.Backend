@@ -129,9 +129,21 @@ public sealed class ReservationPriceSnapshot : Entity<Guid>
             throw new ArgumentNullException(nameof(pricing));
 
         var effectivePrice = pricing.GetEffectivePrice();
+        
+        // CRITICAL: Create new Money objects from AmountRials values to avoid EF Core tracking conflicts
+        // When Money objects are taken from tracked entities (TourPricing), EF Core may not properly
+        // establish ownership with the new snapshot entity. Creating new instances ensures clean ownership.
+        var basePriceValue = Money.FromRials(pricing.BasePrice.AmountRials);
+        var effectivePriceValue = Money.FromRials(effectivePrice.AmountRials);
+        
         var finalPrice = discountAmount != null 
-            ? effectivePrice.Subtract(discountAmount) 
-            : effectivePrice;
+            ? effectivePriceValue.Subtract(discountAmount) 
+            : effectivePriceValue;
+        
+        // Create new discount amount instance if provided
+        var discountAmountValue = discountAmount != null 
+            ? Money.FromRials(discountAmount.AmountRials) 
+            : null;
 
         var capabilityIds = pricing.Capabilities.Select(c => c.CapabilityId).ToList();
         var featureIds = pricing.Features.Select(f => f.FeatureId).ToList();
@@ -139,9 +151,9 @@ public sealed class ReservationPriceSnapshot : Entity<Guid>
         var snapshot = new ReservationPriceSnapshot(
             reservationId: reservationId,
             participantType: participantType,
-            basePrice: pricing.BasePrice,
+            basePrice: basePriceValue,
             finalPrice: finalPrice,
-            discountAmount: discountAmount,
+            discountAmount: discountAmountValue,
             discountCode: discountCode,
             discountDescription: discountDescription,
             tenantId: tenantId)

@@ -75,6 +75,11 @@ public interface ITourReservationRepository : IRepository<TourReservation, Guid>
     Task<IEnumerable<TourReservation>> GetByTourIdsAndNationalNumberAsync(IEnumerable<Guid> tourIds, string nationalNumber, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets reservations by multiple tour IDs and the reservation owner (ExternalUserId)
+    /// </summary>
+    Task<IEnumerable<TourReservation>> GetByTourIdsAndExternalUserIdAsync(IEnumerable<Guid> tourIds, Guid externalUserId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Gets a reservation by ID including its participants
     /// </summary>
     Task<TourReservation?> GetByIdWithParticipantsAsync(Guid reservationId, CancellationToken cancellationToken = default);

@@ -16,7 +16,6 @@ public class NezamRefahiFacilitiesDomainModule : BonModule
   public override Task OnConfigureAsync(BonConfigurationContext context)
   {
     // Domain module - no services to register
-    context.Services.AddScoped<FacilityEligibilityDomainService>();
     return base.OnConfigureAsync(context);
   }
 }

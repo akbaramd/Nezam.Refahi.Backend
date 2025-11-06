@@ -30,8 +30,6 @@ public static class FacilityEndpoints
                 [FromServices] IMediator mediator,
                 [FromQuery] int page = 1,
                 [FromQuery] int pageSize = 10,
-                [FromQuery] string? type = null,
-                [FromQuery] string? status = null,
                 [FromQuery] string? searchTerm = null,
                 [FromQuery] bool onlyActive = true) =>
             {
@@ -39,8 +37,6 @@ public static class FacilityEndpoints
                 {
                     Page = page,
                     PageSize = pageSize,
-                    Type = type,
-                    Status = status,
                     SearchTerm = searchTerm,
                     OnlyActive = onlyActive
                 };

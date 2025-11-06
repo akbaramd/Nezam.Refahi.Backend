@@ -20,55 +20,52 @@ public class FacilityRequestRepository : EfRepository<FacilitiesDbContext, Facil
     {
         return query
             .Include(r => r.Facility)
-                .ThenInclude(f => f.Features)
-            .Include(r => r.Facility)
-                .ThenInclude(f => f.CapabilityPolicies)
             .Include(r => r.FacilityCycle)
-                .ThenInclude(c => c.Dependencies);
+                .ThenInclude(c => c.Facility)
+            .Include(r => r.FacilityCycle)
+                .ThenInclude(c => c.Dependencies)
+            .Include(r => r.FacilityCycle)
+                .ThenInclude(c => c.PriceOptions)
+            .Include(r => r.FacilityCycle)
+                .ThenInclude(c => c.Features)
+            .Include(r => r.FacilityCycle)
+                .ThenInclude(c => c.Capabilities);
     }
 
     public async Task<IEnumerable<FacilityRequest>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        return await PrepareQuery(_dbSet)
-            .Where(r => r.MemberId == userId)
-            .OrderByDescending(r => r.CreatedAt)
-            .ToListAsync(cancellationToken);
+        var requests = (await FindAsync(r => r.MemberId == userId, cancellationToken: cancellationToken)).ToList();
+        return requests.OrderByDescending(r => r.CreatedAt);
     }
 
     public async Task<IEnumerable<FacilityRequest>> GetByCycleIdAsync(Guid cycleId, CancellationToken cancellationToken = default)
     {
-        return await PrepareQuery(_dbSet)
-            .Where(r => r.FacilityCycleId == cycleId)
-            .OrderByDescending(r => r.CreatedAt)
-            .ToListAsync(cancellationToken);
+        var requests = (await FindAsync(r => r.FacilityCycleId == cycleId, cancellationToken: cancellationToken)).ToList();
+        return requests.OrderByDescending(r => r.CreatedAt);
     }
 
     public async Task<IEnumerable<FacilityRequest>> GetByFacilityIdAsync(Guid facilityId, CancellationToken cancellationToken = default)
     {
-        return await PrepareQuery(_dbSet)
-            .Where(r => r.FacilityId == facilityId)
-            .OrderByDescending(r => r.CreatedAt)
-            .ToListAsync(cancellationToken);
+        var requests = (await FindAsync(r => r.FacilityId == facilityId, cancellationToken: cancellationToken)).ToList();
+        return requests.OrderByDescending(r => r.CreatedAt);
     }
 
     public async Task<IEnumerable<FacilityRequest>> GetByStatusAsync(FacilityRequestStatus status, CancellationToken cancellationToken = default)
     {
-        return await PrepareQuery(_dbSet)
-            .Where(r => r.Status == status)
-            .OrderByDescending(r => r.CreatedAt)
-            .ToListAsync(cancellationToken);
+        var requests = (await FindAsync(r => r.Status == status, cancellationToken: cancellationToken)).ToList();
+        return requests.OrderByDescending(r => r.CreatedAt);
     }
 
     public async Task<IEnumerable<FacilityRequest>> GetPendingBankProcessingAsync(CancellationToken cancellationToken = default)
     {
-        return await PrepareQuery(_dbSet)
-            .Where(r => r.Status == FacilityRequestStatus.Approved)
-            .OrderBy(r => r.ApprovedAt)
-            .ToListAsync(cancellationToken);
+        var requests = (await FindAsync(r => r.Status == FacilityRequestStatus.Approved, cancellationToken: cancellationToken)).ToList();
+        return requests.OrderBy(r => r.ApprovedAt);
     }
 
     public async Task<IEnumerable<FacilityRequest>> GetWithBankAppointmentsAsync(DateTime date, CancellationToken cancellationToken = default)
     {
+        // This requires a complex query with date comparison that can't be easily expressed as a simple predicate
+        // So we use PrepareQuery for this complex check
         return await PrepareQuery(_dbSet)
             .Where(r => r.BankAppointmentDate.HasValue && 
                        r.BankAppointmentDate.Value.Date == date.Date)
@@ -78,56 +75,46 @@ public class FacilityRequestRepository : EfRepository<FacilitiesDbContext, Facil
 
     public async Task<IEnumerable<FacilityRequest>> GetCompletedApplicationsAsync(CancellationToken cancellationToken = default)
     {
-        return await PrepareQuery(_dbSet)
-            .Where(r => r.Status == FacilityRequestStatus.Completed)
-            .OrderByDescending(r => r.CompletedAt)
-            .ToListAsync(cancellationToken);
+        var requests = (await FindAsync(r => r.Status == FacilityRequestStatus.Completed, cancellationToken: cancellationToken)).ToList();
+        return requests.OrderByDescending(r => r.CompletedAt);
     }
 
     public async Task<IEnumerable<FacilityRequest>> GetRejectedApplicationsAsync(CancellationToken cancellationToken = default)
     {
-        return await PrepareQuery(_dbSet)
-            .Where(r => r.Status == FacilityRequestStatus.Rejected)
-            .OrderByDescending(r => r.RejectedAt)
-            .ToListAsync(cancellationToken);
+        var requests = (await FindAsync(r => r.Status == FacilityRequestStatus.Rejected, cancellationToken: cancellationToken)).ToList();
+        return requests.OrderByDescending(r => r.RejectedAt);
     }
 
     public async Task<bool> HasActiveApplicationAsync(Guid userId, Guid facilityId, CancellationToken cancellationToken = default)
     {
-        return await PrepareQuery(_dbSet)
-            .AnyAsync(r => r.MemberId == userId && 
-                          r.FacilityId == facilityId && 
-                          (r.Status == FacilityRequestStatus.PendingApproval || 
-                           r.Status == FacilityRequestStatus.UnderReview || 
-                           r.Status == FacilityRequestStatus.Approved), cancellationToken);
+        return await ExistsAsync(r => r.MemberId == userId && 
+                                    r.FacilityId == facilityId && 
+                                    (r.Status == FacilityRequestStatus.PendingApproval || 
+                                     r.Status == FacilityRequestStatus.UnderReview || 
+                                     r.Status == FacilityRequestStatus.Approved), 
+                                    cancellationToken: cancellationToken);
     }
 
     public async Task<FacilityRequest?> GetByApplicationNumberAsync(string applicationNumber, CancellationToken cancellationToken = default)
     {
-        return await PrepareQuery(_dbSet)
-            .FirstOrDefaultAsync(r => r.RequestNumber == applicationNumber, cancellationToken);
+        return await FindOneAsync(r => r.RequestNumber == applicationNumber, cancellationToken: cancellationToken);
     }
 
     public async Task<FacilityRequest?> GetByIdempotencyKeyAsync(string idempotencyKey, CancellationToken cancellationToken = default)
     {
-        return await PrepareQuery(_dbSet)
-            .FirstOrDefaultAsync(r => r.IdempotencyKey == idempotencyKey, cancellationToken);
+        return await FindOneAsync(r => r.IdempotencyKey == idempotencyKey, cancellationToken: cancellationToken);
     }
 
     public async Task<IEnumerable<FacilityRequest>> GetByCorrelationIdAsync(string correlationId, CancellationToken cancellationToken = default)
     {
-        return await PrepareQuery(_dbSet)
-            .Where(r => r.CorrelationId == correlationId)
-            .OrderByDescending(r => r.CreatedAt)
-            .ToListAsync(cancellationToken);
+        var requests = (await FindAsync(r => r.CorrelationId == correlationId, cancellationToken: cancellationToken)).ToList();
+        return requests.OrderByDescending(r => r.CreatedAt);
     }
 
     public async Task<IEnumerable<FacilityRequest>> GetByDateRangeAsync(DateTime startDate, DateTime endDate, CancellationToken cancellationToken = default)
     {
-        return await PrepareQuery(_dbSet)
-            .Where(r => r.CreatedAt >= startDate && r.CreatedAt <= endDate)
-            .OrderByDescending(r => r.CreatedAt)
-            .ToListAsync(cancellationToken);
+        var requests = (await FindAsync(r => r.CreatedAt >= startDate && r.CreatedAt <= endDate, cancellationToken: cancellationToken)).ToList();
+        return requests.OrderByDescending(r => r.CreatedAt);
     }
 
     public async Task<ApplicationStatistics> GetApplicationStatisticsAsync(Guid? facilityId = null, Guid? cycleId = null, CancellationToken cancellationToken = default)
@@ -261,37 +248,29 @@ public class FacilityRequestRepository : EfRepository<FacilitiesDbContext, Facil
 
     public async Task<FacilityRequest?> GetByIdWithDetailsAsync(Guid requestId, bool includeFacility = true, bool includeCycle = true, CancellationToken cancellationToken = default)
     {
-        // Since PrepareQuery already includes all relationships, we can use it directly
+        // Since PrepareQuery already includes all relationships, we can use FindOneAsync
         // The parameters are kept for API compatibility but don't affect the query
-        return await PrepareQuery(_dbSet)
-            .FirstOrDefaultAsync(r => r.Id == requestId, cancellationToken);
+        return await FindOneAsync(r => r.Id == requestId, cancellationToken: cancellationToken);
     }
 
     public async Task<bool> HasUserRequestForCycleAsync(Guid userId, Guid cycleId, CancellationToken cancellationToken = default)
     {
-        return await _dbSet
-            .Where(r => r.MemberId == userId && r.FacilityCycleId == cycleId)
-            .AnyAsync(cancellationToken);
+        return await ExistsAsync(r => r.MemberId == userId && r.FacilityCycleId == cycleId, cancellationToken: cancellationToken);
     }
 
     public async Task<FacilityRequest?> GetUserLastRequestForCycleAsync(Guid userId, Guid cycleId, CancellationToken cancellationToken = default)
     {
-        return await PrepareQuery(_dbSet)
-            .Where(r => r.MemberId == userId && r.FacilityCycleId == cycleId)
-            .OrderByDescending(r => r.CreatedAt)
-            .FirstOrDefaultAsync(cancellationToken);
+        var requests = (await FindAsync(r => r.MemberId == userId && r.FacilityCycleId == cycleId, cancellationToken: cancellationToken)).ToList();
+        return requests.OrderByDescending(r => r.CreatedAt).FirstOrDefault();
     }
 
-    public async Task<Dictionary<Guid, FacilityRequest>> GetUserRequestsForCycleAsync(Guid userId, Guid cycleId  , CancellationToken cancellationToken = default)
+    public async Task<Dictionary<Guid, FacilityRequest>> GetUserRequestsForCycleAsync(Guid userId, Guid cycleId, CancellationToken cancellationToken = default)
     {
-
-        var requests = await PrepareQuery(_dbSet)
-            .Where(r => r.MemberId == userId && r.FacilityCycleId == cycleId)
-            .OrderByDescending(r => r.CreatedAt)
-            .ToListAsync(cancellationToken);
+        var requests = (await FindAsync(r => r.MemberId == userId && r.FacilityCycleId == cycleId, cancellationToken: cancellationToken)).ToList();
 
         // Group by cycle and take the most recent request for each cycle
         return requests
+            .OrderByDescending(r => r.CreatedAt)
             .GroupBy(r => r.FacilityCycleId)
             .ToDictionary(g => g.Key, g => g.First());
     }
@@ -302,7 +281,9 @@ public class FacilityRequestRepository : EfRepository<FacilitiesDbContext, Facil
         if (!cycleIdsList.Any())
             return new HashSet<Guid>();
 
-        var cycleIdsWithRequests = await _dbSet
+        // This requires a complex query with Select and Distinct that can't be expressed as a simple predicate
+        // So we use PrepareQuery for this complex check
+        var cycleIdsWithRequests = await PrepareQuery(_dbSet)
             .Where(r => r.MemberId == userId && cycleIdsList.Contains(r.FacilityCycleId))
             .Select(r => r.FacilityCycleId)
             .Distinct()

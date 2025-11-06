@@ -91,6 +91,10 @@ public class FacilityCycleWithUserDto
   public string? Description { get; set; }
 
   /// <summary>
+  /// Approval message for this cycle
+  /// </summary>
+  public string? ApprovalMessage { get; set; }
+  /// <summary>
   /// Financial terms for this cycle
   /// </summary>
   public FinancialTermsDto FinancialTerms { get; set; } = null!;
@@ -100,6 +104,15 @@ public class FacilityCycleWithUserDto
   /// </summary>
   public CycleRulesDto Rules { get; set; } = null!;
 
+  /// <summary>
+  /// Required feature IDs for this cycle
+  /// </summary>
+  public List<string> RequiredFeatureIds { get; set; } = new();
+
+  /// <summary>
+  /// Required capability IDs for this cycle
+  /// </summary>
+  public List<string> RequiredCapabilityIds { get; set; } = new();
   /// <summary>
   /// User eligibility information (if NationalNumber provided)
   /// </summary>

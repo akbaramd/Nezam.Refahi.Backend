@@ -27,6 +27,9 @@ public class FacilityRequestConfiguration : IEntityTypeConfiguration<FacilityReq
         builder.Property(r => r.MemberId)
             .IsRequired();
 
+        builder.Property(r => r.SelectedPriceOptionId)
+            .IsRequired();
+
         builder.Property(r => r.UserFullName)
             .HasMaxLength(200);
 
@@ -99,6 +102,7 @@ public class FacilityRequestConfiguration : IEntityTypeConfiguration<FacilityReq
         builder.HasIndex(r => r.FacilityId);
         builder.HasIndex(r => r.FacilityCycleId);
         builder.HasIndex(r => r.MemberId);
+        builder.HasIndex(r => r.SelectedPriceOptionId);
         builder.HasIndex(r => r.Status);
         builder.HasIndex(r => r.RequestNumber).IsUnique();
         builder.HasIndex(r => r.IdempotencyKey).IsUnique();
@@ -113,8 +117,10 @@ public class FacilityRequestConfiguration : IEntityTypeConfiguration<FacilityReq
             .HasForeignKey(r => r.FacilityId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // Note: FacilityRequest and FacilityCycle are separate Aggregate Roots
+        // Navigation property is included for querying purposes only (read-only access)
         builder.HasOne(r => r.FacilityCycle)
-            .WithMany(c => c.Applications)
+            .WithMany(c => c.Requests)
             .HasForeignKey(r => r.FacilityCycleId)
             .OnDelete(DeleteBehavior.Restrict);
 

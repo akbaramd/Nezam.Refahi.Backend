@@ -48,15 +48,19 @@ namespace Nezam.Refahi.Finance.Application.Features.Bills.Queries.GetBillPayment
 
             var validation = await _byIdValidator.ValidateAsync(request, ct);
             if (!validation.IsValid)
-                return ApplicationResult<BillDetailDto>.Failure(validation.Errors.Select(e => e.ErrorMessage).ToList(), "Validation failed.");
+                return ApplicationResult<BillDetailDto>.ValidationFailed("اعتبارسنجی ناموفق بود");
 
             // Load aggregate with relations once (no N+1)
             var bill = await _billRepository.GetWithAllDataAsync(request.BillId, ct);
             if (bill is null)
-                return ApplicationResult<BillDetailDto>.Failure("Bill not found.");
+                return ApplicationResult<BillDetailDto>.NotFound("صورت حساب مورد نظر یافت نشد.");
+
+            // Check ownership: ensure the bill belongs to the requesting user
+            if (bill.ExternalUserId != request.ExternalUserId)
+                return ApplicationResult<BillDetailDto>.Forbidden("شما دسترسی به این صورت حساب ندارید.");
 
             var dto = await _billDetailMapper.MapAsync(bill, ct);
-            return ApplicationResult<BillDetailDto>.Success(dto, "Bill details retrieved.");
+            return ApplicationResult<BillDetailDto>.Success(dto, "جزئیات صورت حساب دریافت شد.");
         }
 
         // --------------------- by BillNumber -------------------
@@ -66,16 +70,16 @@ namespace Nezam.Refahi.Finance.Application.Features.Bills.Queries.GetBillPayment
 
             var validation = await _byNumberValidator.ValidateAsync(request, ct);
             if (!validation.IsValid)
-                return ApplicationResult<BillDetailDto>.Failure(validation.Errors.Select(e => e.ErrorMessage).ToList(), "Validation failed.");
+                return ApplicationResult<BillDetailDto>.ValidationFailed("اعتبارسنجی ناموفق بود");
 
             // First find id by number (indexed/light), then load full graph by id
             var basic = await _billRepository.GetByBillNumberAsync(request.BillNumber, ct);
             if (basic is null)
-                return ApplicationResult<BillDetailDto>.Failure("Bill not found.");
+                return ApplicationResult<BillDetailDto>.NotFound("صورت حساب یافت نشد.");
 
             var bill = await _billRepository.GetWithAllDataAsync(basic.Id, ct);
             if (bill is null)
-                return ApplicationResult<BillDetailDto>.Failure("Bill data not found.");
+                return ApplicationResult<BillDetailDto>.NotFound("داده‌های صورت حساب یافت نشد.");
 
             var dto = await _billDetailMapper.MapAsync(bill, ct);
             return ApplicationResult<BillDetailDto>.Success(dto, "Bill details retrieved.");
@@ -88,16 +92,16 @@ namespace Nezam.Refahi.Finance.Application.Features.Bills.Queries.GetBillPayment
 
             var validation = await _byTrackValidator.ValidateAsync(request, ct);
             if (!validation.IsValid)
-                return ApplicationResult<BillDetailDto>.Failure(validation.Errors.Select(e => e.ErrorMessage).ToList(), "Validation failed.");
+                return ApplicationResult<BillDetailDto>.ValidationFailed("اعتبارسنجی ناموفق بود");
 
             // Resolve bill id by reference(TrackingCode) + ReferenceType; then load full graph
             var basic = await _billRepository.GetByReferenceTrackingCodeAsync(request.TrackingCode,  ct);
             if (basic is null)
-                return ApplicationResult<BillDetailDto>.Failure("Bill not found for the given tracking code.");
+                return ApplicationResult<BillDetailDto>.NotFound("صورت حساب با کد رهگیری داده شده یافت نشد.");
 
             var bill = await _billRepository.GetWithAllDataAsync(basic.Id, ct);
             if (bill is null)
-                return ApplicationResult<BillDetailDto>.Failure("Bill data not found.");
+                return ApplicationResult<BillDetailDto>.NotFound("داده‌های صورت حساب یافت نشد.");
 
             var dto = await _billDetailMapper.MapAsync(bill, ct);
             return ApplicationResult<BillDetailDto>.Success(dto, "Bill details retrieved.");

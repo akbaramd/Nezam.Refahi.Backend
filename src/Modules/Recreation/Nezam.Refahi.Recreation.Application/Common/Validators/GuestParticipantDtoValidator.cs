@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Nezam.Refahi.Recreation.Contracts.Dtos;
 using Nezam.Refahi.Recreation.Domain.Enums;
 
@@ -59,9 +59,6 @@ public class GuestParticipantDtoValidator : AbstractValidator<GuestParticipantDt
             .MaximumLength(1000)
             .WithMessage("یادداشت نمی‌تواند بیش از 1000 کاراکتر باشد");
 
-        RuleFor(x => x.ParticipantType)
-            .IsInEnum()
-            .WithMessage("نوع شرکت‌کننده معتبر نیست");
     }
 
     private static bool BeValidNationalNumber(string nationalNumber)

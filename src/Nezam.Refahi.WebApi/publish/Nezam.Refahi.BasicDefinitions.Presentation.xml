@@ -1,0 +1,263 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Nezam.Refahi.BasicDefinitions.Presentation</name>
+    </assembly>
+    <members>
+        <member name="T:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.CreateCapabilityRequest">
+            <summary>
+            Request DTO for creating a new Capability
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.CreateCapabilityRequest.Key">
+            <summary>
+            Unique key for the capability
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.CreateCapabilityRequest.Name">
+            <summary>
+            Name of the capability
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.CreateCapabilityRequest.Description">
+            <summary>
+            Description of the capability
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.CreateCapabilityRequest.ValidFrom">
+            <summary>
+            Date from which the capability is valid
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.CreateCapabilityRequest.ValidTo">
+            <summary>
+            Date until which the capability is valid
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.CreateCapabilityRequest.FeatureIds">
+            <summary>
+            List of feature IDs to associate with this capability
+            </summary>
+        </member>
+        <member name="T:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.CreateFeaturesRequest">
+            <summary>
+            Request DTO for creating a new Features
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.CreateFeaturesRequest.Key">
+            <summary>
+            Unique key for the feature
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.CreateFeaturesRequest.Title">
+            <summary>
+            Title of the feature
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.CreateFeaturesRequest.Type">
+            <summary>
+            Type of the feature
+            </summary>
+        </member>
+        <member name="T:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.CreateAgencyRequest">
+            <summary>
+            Request DTO for creating a new Agency
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.CreateAgencyRequest.Code">
+            <summary>
+            Unique code for the office (e.g., "URM001", "TBR002")
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.CreateAgencyRequest.ExternalCode">
+            <summary>
+            External code used in organizations (e.g., "ORG001", "BRANCH_001")
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.CreateAgencyRequest.Name">
+            <summary>
+            Display name of the office
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.CreateAgencyRequest.Address">
+            <summary>
+            Physical address of the office
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.CreateAgencyRequest.ManagerName">
+            <summary>
+            Name of the office manager
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.CreateAgencyRequest.ManagerPhone">
+            <summary>
+            Phone number of the office manager
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.CreateAgencyRequest.EstablishedDate">
+            <summary>
+            Date when the office was established
+            </summary>
+        </member>
+        <member name="T:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.AgencyResponse">
+            <summary>
+            Response DTO for Agency API operations
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.AgencyResponse.Success">
+            <summary>
+            Indicates if the operation was successful
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.AgencyResponse.Message">
+            <summary>
+            Response message
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.AgencyResponse.Data">
+            <summary>
+            The office data (null if operation failed)
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.AgencyResponse.Errors">
+            <summary>
+            List of validation errors (if any)
+            </summary>
+        </member>
+        <member name="M:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.AgencyResponse.SuccessResult(Nezam.Refahi.BasicDefinitions.Contracts.DTOs.AgencyDto,System.String)">
+            <summary>
+            Creates a successful response
+            </summary>
+        </member>
+        <member name="M:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.AgencyResponse.FailureResult(System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+            Creates a failed response
+            </summary>
+        </member>
+        <member name="T:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.UpdateCapabilityRequest">
+            <summary>
+            Request DTO for updating an existing Capability
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.UpdateCapabilityRequest.Id">
+            <summary>
+            Unique identifier of the capability
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.UpdateCapabilityRequest.Name">
+            <summary>
+            Name of the capability
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.UpdateCapabilityRequest.Description">
+            <summary>
+            Description of the capability
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.UpdateCapabilityRequest.IsActive">
+            <summary>
+            Whether the capability is currently active
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.UpdateCapabilityRequest.ValidFrom">
+            <summary>
+            Date from which the capability is valid
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.UpdateCapabilityRequest.ValidTo">
+            <summary>
+            Date until which the capability is valid
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.UpdateCapabilityRequest.FeatureIds">
+            <summary>
+            List of feature IDs to associate with this capability
+            </summary>
+        </member>
+        <member name="T:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.UpdateFeaturesRequest">
+            <summary>
+            Request DTO for updating an existing Features
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.UpdateFeaturesRequest.Id">
+            <summary>
+            Unique identifier of the feature
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.UpdateFeaturesRequest.Title">
+            <summary>
+            Title of the feature
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.UpdateFeaturesRequest.Type">
+            <summary>
+            Type of the feature
+            </summary>
+        </member>
+        <member name="T:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.UpdateAgencyRequest">
+            <summary>
+            Request DTO for updating an existing Agency
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.UpdateAgencyRequest.Id">
+            <summary>
+            Unique identifier of the office
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.UpdateAgencyRequest.Code">
+            <summary>
+            Unique code for the office (e.g., "URM001", "TBR002")
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.UpdateAgencyRequest.ExternalCode">
+            <summary>
+            External code used in organizations (e.g., "ORG001", "BRANCH_001")
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.UpdateAgencyRequest.Name">
+            <summary>
+            Display name of the office
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.UpdateAgencyRequest.Address">
+            <summary>
+            Physical address of the office
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.UpdateAgencyRequest.ManagerName">
+            <summary>
+            Name of the office manager
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.UpdateAgencyRequest.ManagerPhone">
+            <summary>
+            Phone number of the office manager
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.UpdateAgencyRequest.IsActive">
+            <summary>
+            Whether the office is currently active
+            </summary>
+        </member>
+        <member name="P:Nezam.Refahi.BasicDefinitions.Presentation.DTOs.UpdateAgencyRequest.EstablishedDate">
+            <summary>
+            Date when the office was established
+            </summary>
+        </member>
+        <member name="T:Nezam.Refahi.BasicDefinitions.Presentation.Endpoints.CapabilityEndpoints">
+            <summary>
+            Endpoints for Capability management
+            </summary>
+        </member>
+        <member name="T:Nezam.Refahi.BasicDefinitions.Presentation.Endpoints.FeaturesEndpoints">
+            <summary>
+            Endpoints for Features management
+            </summary>
+        </member>
+        <member name="T:Nezam.Refahi.BasicDefinitions.Presentation.Endpoints.AgencyEndpoints">
+            <summary>
+            Endpoints for Agency management
+            </summary>
+        </member>
+    </members>
+</doc>

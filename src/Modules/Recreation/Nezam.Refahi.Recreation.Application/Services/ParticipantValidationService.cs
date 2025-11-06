@@ -1,69 +1,69 @@
 using Microsoft.Extensions.Logging;
 using Nezam.Refahi.Membership.Contracts.Dtos;
 using Nezam.Refahi.Membership.Contracts.Services;
-using Nezam.Refahi.Recreation.Contracts.Dtos;
+using Nezam.Refahi.Recreation.Contracts.Services;
 using Nezam.Refahi.Recreation.Domain.Enums;
-using Nezam.Refahi.Shared.Application.Common.Models;
 using Nezam.Refahi.Shared.Domain.ValueObjects;
 
 namespace Nezam.Refahi.Recreation.Application.Services;
 
 /// <summary>
-/// Service for validating participants and their membership status
+/// Implementation of participant validation service
+/// Validates participants and checks membership status if required
 /// </summary>
-public class ParticipantValidationService
+public class ParticipantValidationService : IParticipantValidationService
 {
-    private readonly IMemberInfoService _memberInfoService;
+    private readonly IMemberService _memberService;
     private readonly ILogger<ParticipantValidationService> _logger;
 
     public ParticipantValidationService(
-        IMemberInfoService memberInfoService,
+        IMemberService memberService,
         ILogger<ParticipantValidationService> logger)
     {
-        _memberInfoService = memberInfoService ?? throw new ArgumentNullException(nameof(memberInfoService));
+        _memberService = memberService ?? throw new ArgumentNullException(nameof(memberService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     /// <summary>
     /// Validates a participant and checks membership status if required
     /// </summary>
-    /// <param name="participant">The participant to validate</param>
+    /// <param name="request">The participant validation request</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Validation result with member information if applicable</returns>
+    /// <returns>Validation result with participant type and member information if applicable</returns>
     public async Task<ParticipantValidationResult> ValidateParticipantAsync(
-        GuestParticipantDto participant, 
+        ParticipantValidationRequest request,
         CancellationToken cancellationToken = default)
     {
-        if (participant == null)
+        if (request == null)
         {
             return ParticipantValidationResult.Failed("شرکت‌کننده نمی‌تواند خالی باشد");
         }
 
         // If participant type is Member, validate membership
-        if (participant.ParticipantType == ParticipantType.Member.ToString())
+        if (request.ParticipantType == ParticipantType.Member.ToString())
         {
-            return await ValidateMembershipAsync(participant, cancellationToken);
+            return await ValidateMembershipAsync(request, cancellationToken);
         }
 
-        // For guests, no additional validation needed beyond basic DTO validation
-        return ParticipantValidationResult.Success(ParticipantType.Guest);
+        // For guests, no additional validation needed beyond basic validation
+        return ParticipantValidationResult.Success(ParticipantType.Guest.ToString());
     }
 
     /// <summary>
     /// Validates multiple participants
     /// </summary>
-    /// <param name="participants">List of participants to validate</param>
+    /// <param name="requests">List of participant validation requests</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>List of validation results</returns>
     public async Task<List<ParticipantValidationResult>> ValidateParticipantsAsync(
-        IEnumerable<GuestParticipantDto> participants,
+        IEnumerable<ParticipantValidationRequest> requests,
         CancellationToken cancellationToken = default)
     {
         var results = new List<ParticipantValidationResult>();
-        
-        foreach (var participant in participants)
+
+        foreach (var request in requests)
         {
-            var result = await ValidateParticipantAsync(participant, cancellationToken);
+            var result = await ValidateParticipantAsync(request, cancellationToken);
             results.Add(result);
         }
 
@@ -71,67 +71,38 @@ public class ParticipantValidationService
     }
 
     private async Task<ParticipantValidationResult> ValidateMembershipAsync(
-        GuestParticipantDto participant,
+        ParticipantValidationRequest request,
         CancellationToken cancellationToken)
     {
         try
         {
-            _logger.LogInformation("Validating membership for national number: {NationalNumber}", 
-                participant.NationalNumber);
+            _logger.LogInformation("Validating membership for national number: {NationalNumber}",
+                request.NationalNumber);
 
-            var nationalId = new NationalId(participant.NationalNumber);
-            var memberInfo = await _memberInfoService.GetMemberInfoAsync(nationalId);
+            var nationalId = new NationalId(request.NationalNumber);
+            var memberDetail = await _memberService.GetMemberDetailByNationalCodeAsync(nationalId);
 
-            if (memberInfo == null)
+            if (memberDetail == null)
             {
-                _logger.LogWarning("Member not found for national number: {NationalNumber}", 
-                    participant.NationalNumber);
-                
+                _logger.LogWarning("Member not found for national number: {NationalNumber}",
+                    request.NationalNumber);
+
                 return ParticipantValidationResult.Failed(
-                    $"شخص با کد ملی {participant.NationalNumber} عضو نظام نیست و می‌تواند به عنوان مهمان اضافه شود");
+                    $"شخص با کد ملی {request.NationalNumber} عضو نظام نیست و می‌تواند به عنوان مهمان اضافه شود");
             }
 
-            _logger.LogInformation("Member found: {MemberName} ({MembershipNumber}) with {CapabilityCount} capabilities and {FeatureCount} features", 
-                memberInfo.FullName, memberInfo.MembershipNumber, memberInfo.Capabilities.Count, memberInfo.Features.Count);
+            _logger.LogInformation("Member found: {MemberName} ({MembershipNumber}) with {CapabilityCount} capabilities and {FeatureCount} features",
+                memberDetail.FullName, memberDetail.MembershipNumber, memberDetail.Capabilities?.Count ?? 0, memberDetail.Features?.Count ?? 0);
 
-            return ParticipantValidationResult.Success(ParticipantType.Member, memberInfo);
+            return ParticipantValidationResult.Success(ParticipantType.Member.ToString());
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error validating membership for national number: {NationalNumber}", 
-                participant.NationalNumber);
-            
+            _logger.LogError(ex, "Error validating membership for national number: {NationalNumber}",
+                request.NationalNumber);
+
             return ParticipantValidationResult.Failed(
                 "خطا در بررسی عضویت. لطفاً دوباره تلاش کنید یا به عنوان مهمان اضافه کنید");
         }
-    }
-}
-
-/// <summary>
-/// Result of participant validation
-/// </summary>
-public class ParticipantValidationResult
-{
-    public bool IsValid { get; private set; }
-    public ParticipantType ParticipantType { get; private set; }
-    public string? ErrorMessage { get; private set; }
-    public MemberInfoDto? MemberInfo { get; private set; }
-
-    private ParticipantValidationResult(bool isValid, ParticipantType participantType, string? errorMessage = null, MemberInfoDto? memberInfo = null)
-    {
-        IsValid = isValid;
-        ParticipantType = participantType;
-        ErrorMessage = errorMessage;
-        MemberInfo = memberInfo;
-    }
-
-    public static ParticipantValidationResult Success(ParticipantType participantType, MemberInfoDto? memberInfo = null)
-    {
-        return new ParticipantValidationResult(true, participantType, null, memberInfo);
-    }
-
-    public static ParticipantValidationResult Failed(string errorMessage)
-    {
-        return new ParticipantValidationResult(false, ParticipantType.Guest, errorMessage);
     }
 }

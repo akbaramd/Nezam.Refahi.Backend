@@ -23,8 +23,7 @@ public class GetFacilityCycleDetailsQueryHandler : IRequestHandler<GetFacilityCy
     private readonly IFacilityCycleRepository _cycleRepository;
     private readonly IFacilityRepository _facilityRepository;
     private readonly IFacilityRequestRepository _requestRepository;
-    private readonly IMemberInfoService _memberInfoService;
-    private readonly FacilityEligibilityDomainService _eligibilityService;
+    private readonly IMemberService _memberService;
     private readonly IValidator<GetFacilityCycleDetailsQuery> _validator;
     private readonly IMapper<Domain.Entities.FacilityCycle, FacilityCycleWithUserDetailDto> _cycleDetailsMapper;
     private readonly IMapper<Domain.Entities.Facility, FacilityInfoDto> _facilityInfoMapper;
@@ -35,8 +34,7 @@ public class GetFacilityCycleDetailsQueryHandler : IRequestHandler<GetFacilityCy
         IFacilityCycleRepository cycleRepository,
         IFacilityRepository facilityRepository,
         IFacilityRequestRepository requestRepository,
-        IMemberInfoService memberInfoService,
-        FacilityEligibilityDomainService eligibilityService,
+        IMemberService memberService,
         IValidator<GetFacilityCycleDetailsQuery> validator,
         ILogger<GetFacilityCycleDetailsQueryHandler> logger,
         IMapper<Domain.Entities.FacilityCycle, FacilityCycleWithUserDetailDto> cycleDetailsMapper,
@@ -46,8 +44,7 @@ public class GetFacilityCycleDetailsQueryHandler : IRequestHandler<GetFacilityCy
         _cycleRepository = cycleRepository;
         _facilityRepository = facilityRepository;
         _requestRepository = requestRepository;
-        _memberInfoService = memberInfoService;
-        _eligibilityService = eligibilityService;
+        _memberService = memberService;
         _validator = validator;
         _logger = logger;
         _cycleDetailsMapper = cycleDetailsMapper;

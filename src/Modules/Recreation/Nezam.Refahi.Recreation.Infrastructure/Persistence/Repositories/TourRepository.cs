@@ -120,6 +120,9 @@ public class TourRepository : EfRepository<RecreationDbContext, Tour, Guid>, ITo
         .Include(v => v.MemberCapabilities)
         .Include(c => c.MemberFeatures)
         .Include(c => c.Pricing)
+        .ThenInclude(c => c.Capabilities)
+        .Include(c => c.Pricing)
+        .ThenInclude(c => c.Features)
         .Include(c => c.Capacities)
         .Include(c => c.Reservations)
         .Include(x => x.TourFeatures).ThenInclude(x=>x.Feature);

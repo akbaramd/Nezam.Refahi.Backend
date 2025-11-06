@@ -22,7 +22,9 @@ public class TourConfiguration : IEntityTypeConfiguration<Tour>
 
         builder.Property(t => t.Difficulty)
           .IsRequired()
+          .HasConversion<string>()
           .HasDefaultValue(TourDifficulty.Easy);
+
         builder.Property(t => t.Description)
             .IsRequired()
             .HasMaxLength(2000);
@@ -34,6 +36,12 @@ public class TourConfiguration : IEntityTypeConfiguration<Tour>
         builder.Property(t => t.TourEnd)
             .IsRequired()
             .HasColumnType("datetime2");
+
+        builder.Property(t => t.Status)
+            .IsRequired()
+            .HasConversion<string>()
+            .HasMaxLength(50)
+            .HasDefaultValue(TourStatus.Draft);
 
 
 

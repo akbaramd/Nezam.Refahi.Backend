@@ -10,6 +10,8 @@ using Nezam.Refahi.Recreation.Application.Services.Contracts;
 using Nezam.Refahi.Recreation.Contracts;
 using Nezam.Refahi.Shared.Application;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
+using Nezam.Refahi.Recreation.Contracts.Services;
+using MassTransit;
 
 namespace Nezam.Refahi.Recreation.Application;
 
@@ -21,6 +23,12 @@ public class NezamRefahiRecreationApplicationModule : BonModule
     DependOn<NezamRefahiRecreationContractsModule>();
   }
   
+  public override Task OnPreConfigureAsync(BonConfigurationContext context)
+  {
+    
+    
+    return base.OnPreConfigureAsync(context);
+  }
   
   public override Task OnConfigureAsync(BonConfigurationContext context)
   {
@@ -36,10 +44,10 @@ public class NezamRefahiRecreationApplicationModule : BonModule
     context.Services.AddValidatorsFromAssembly(typeof(NezamRefahiRecreationApplicationModule).Assembly);
 
     // Register application services
-    context.Services.AddScoped<ParticipantValidationService>();
-    context.Services.AddScoped<MemberValidationService>();
+    context.Services.AddScoped<IParticipantValidationService, ParticipantValidationService>();
     context.Services.AddScoped<IValidationService, ValidationService>();
     context.Services.AddScoped<IDisplayNameService, DisplayNameService>();
+    context.Services.AddScoped<Nezam.Refahi.Recreation.Contracts.Services.IReservationPricingService, Nezam.Refahi.Recreation.Application.Services.ReservationPricingService>();
 
     var confguration = context.GetRequireService<IConfiguration>();
     // Register configuration

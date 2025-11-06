@@ -56,7 +56,9 @@ public class OrchestratorDbContext : DbContext
             entity.Property(x => x.Description).HasMaxLength(1000);
             entity.Property(x => x.TrackingCode).HasMaxLength(100);
             entity.Property(x => x.BillNumber).HasMaxLength(100);
-            entity.Property(x => x.AmountRials).HasPrecision(18, 2);
+            entity.Property(x => x.BillCreationTimeoutTokenId);
+            entity.Property(x => x.PaymentTimeoutTokenId);
+            entity.Property(x => x.AmountRials).HasPrecision(18, 0);
         });
     }
 }

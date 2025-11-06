@@ -1,4 +1,5 @@
 using MediatR;
+using MassTransit;
 using Microsoft.Extensions.Logging;
 using Nezam.Refahi.Finance.Contracts.IntegrationEvents;
 using Nezam.Refahi.Recreation.Application.Features.TourReservations.Commands.CancelReservation;
@@ -12,7 +13,7 @@ namespace Nezam.Refahi.Recreation.Application.EventConsumers;
 /// Handles BillCancelledIntegrationEvent to cancel tour reservations
 /// When a bill is cancelled, the associated tour reservation should be cancelled
 /// </summary>
-public class BillCancelledEventConsumer : INotificationHandler<BillCancelledIntegrationEvent>
+public class BillCancelledEventConsumer : IConsumer<BillCancelledIntegrationEvent>
 {
     private readonly ITourReservationRepository _reservationRepository;
     private readonly IRecreationUnitOfWork _unitOfWork;
@@ -31,8 +32,10 @@ public class BillCancelledEventConsumer : INotificationHandler<BillCancelledInte
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task Handle(BillCancelledIntegrationEvent notification, CancellationToken cancellationToken)
+    public async Task Consume(ConsumeContext<BillCancelledIntegrationEvent> context)
     {
+        var notification = context.Message;
+        var cancellationToken = context.CancellationToken;
         try
         {
             _logger.LogInformation("AwaitingBill BillCancelledEvent for Bill {BillId}, ReferenceId: {ReferenceId}", 

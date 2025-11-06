@@ -15,116 +15,52 @@ public class MemberFeatureRepository : EfRepository<MembershipDbContext, MemberF
     {
     }
 
-    public async Task<IEnumerable<MemberFeature>> GetByMemberIdAsync(Guid memberId, CancellationToken cancellationToken = default)
+    protected override IQueryable<MemberFeature> PrepareQuery(IQueryable<MemberFeature> query)
     {
-        return await PrepareQuery(_dbSet)
-            .Where(mf => mf.MemberId == memberId)
-            .ToListAsync(cancellationToken);
+        return query.Include(mf => mf.Member);
     }
 
-    public async Task<IEnumerable<MemberFeature>> GetValidFeaturesByMemberIdAsync(Guid memberId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<MemberFeature>> GetByMemberIdAsync(Guid memberId, CancellationToken cancellationToken = default)
     {
-        var now = DateTimeOffset.UtcNow;
-        
-        return await PrepareQuery(_dbSet)
-            .Where(mf => mf.MemberId == memberId &&
-                        mf.IsActive &&
-                        (mf.ValidFrom == null || mf.ValidFrom <= now) &&
-                        (mf.ValidTo == null || mf.ValidTo > now))
-            .ToListAsync(cancellationToken);
+        return await FindAsync(mf => mf.MemberId == memberId, cancellationToken: cancellationToken);
     }
 
     public async Task<IEnumerable<MemberFeature>> GetByFeatureKeyAsync(string featureKey, CancellationToken cancellationToken = default)
     {
-        return await PrepareQuery(_dbSet)
-            .Where(mf => mf.FeatureKey == featureKey)
-            .OrderByDescending(mf => mf.AssignedAt)
-            .ToListAsync(cancellationToken);
+        return await FindAsync(mf => mf.FeatureKey == featureKey, cancellationToken: cancellationToken);
     }
 
     public async Task<IEnumerable<MemberFeature>> GetByFeatureKeysAsync(IEnumerable<string> featureKeys, CancellationToken cancellationToken = default)
     {
         var featureKeyList = featureKeys.ToList();
-        
-        return await PrepareQuery(_dbSet)
-            .Where(mf => featureKeyList.Contains(mf.FeatureKey))
-            .OrderByDescending(mf => mf.AssignedAt)
-            .ToListAsync(cancellationToken);
+        return await FindAsync(mf => featureKeyList.Contains(mf.FeatureKey), cancellationToken: cancellationToken);
     }
 
     public async Task<IEnumerable<MemberFeature>> GetByMemberIdsAsync(IEnumerable<Guid> memberIds, CancellationToken cancellationToken = default)
     {
         var memberIdList = memberIds.ToList();
-        
-        return await PrepareQuery(_dbSet)
-            .Where(mf => memberIdList.Contains(mf.MemberId))
-            .OrderByDescending(mf => mf.AssignedAt)
-            .ToListAsync(cancellationToken);
+        return await FindAsync(mf => memberIdList.Contains(mf.MemberId), cancellationToken: cancellationToken);
     }
 
     public async Task<bool> HasFeatureAsync(Guid memberId, string featureKey, CancellationToken cancellationToken = default)
     {
-        var now = DateTimeOffset.UtcNow;
-        
-        return await PrepareQuery(_dbSet)
-            .AnyAsync(mf => mf.MemberId == memberId &&
-                           mf.FeatureKey == featureKey &&
-                           mf.IsActive &&
-                           (mf.ValidFrom == null || mf.ValidFrom <= now) &&
-                           (mf.ValidTo == null || mf.ValidTo > now), cancellationToken);
+        return await ExistsAsync(mf => mf.MemberId == memberId && mf.FeatureKey == featureKey, cancellationToken: cancellationToken);
     }
 
-    public async Task<IEnumerable<MemberFeature>> GetExpiringFeaturesByMemberIdAsync(Guid memberId, TimeSpan timeThreshold, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<string>> GetFeatureKeysByMemberIdAsync(Guid memberId, CancellationToken cancellationToken = default)
     {
-        var cutoffTime = DateTimeOffset.UtcNow.Add(timeThreshold);
-        
-        return await PrepareQuery(_dbSet)
-            .Where(mf => mf.MemberId == memberId &&
-                        mf.IsActive &&
-                        mf.ValidTo.HasValue &&
-                        mf.ValidTo.Value <= cutoffTime &&
-                        mf.ValidTo.Value > DateTimeOffset.UtcNow)
-            .OrderByDescending(mf => mf.AssignedAt)
-            .ToListAsync(cancellationToken);
+        return (await FindAsync(mf => mf.MemberId == memberId, cancellationToken: cancellationToken))
+            .Select(mf => mf.FeatureKey)
+            .ToList();
     }
 
-    public async Task<IEnumerable<MemberFeature>> GetExpiringFeaturesAsync(TimeSpan timeThreshold, CancellationToken cancellationToken = default)
+    public async Task RemoveAllMemberFeaturesAsync(Guid memberId, CancellationToken cancellationToken = default)
     {
-        var cutoffTime = DateTimeOffset.UtcNow.Add(timeThreshold);
-        
-        return await PrepareQuery(_dbSet)
-            .Where(mf => mf.IsActive &&
-                        mf.ValidTo.HasValue &&
-                        mf.ValidTo.Value <= cutoffTime &&
-                        mf.ValidTo.Value > DateTimeOffset.UtcNow)
-            .OrderByDescending(mf => mf.AssignedAt)
-            .ToListAsync(cancellationToken);
-    }
+        var memberFeatures = (await FindAsync(mf => mf.MemberId == memberId, cancellationToken: cancellationToken)).ToList();
 
-    public async Task<IEnumerable<MemberFeature>> GetByAssignedByAsync(string assignedBy, CancellationToken cancellationToken = default)
-    {
-        return await PrepareQuery(_dbSet)
-            .Where(mf => mf.AssignedBy == assignedBy)
-            .OrderByDescending(mf => mf.AssignedAt)
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<IEnumerable<MemberFeature>> GetByDateRangeAsync(DateTime? fromDate, DateTime? toDate, CancellationToken cancellationToken = default)
-    {
-        var query = PrepareQuery(_dbSet).AsQueryable();
-
-        if (fromDate.HasValue)
+        if (memberFeatures.Any())
         {
-            query = query.Where(mf => mf.AssignedAt >= fromDate.Value);
+            await DeleteRangeAsync(memberFeatures, cancellationToken: cancellationToken);
         }
-
-        if (toDate.HasValue)
-        {
-            query = query.Where(mf => mf.AssignedAt <= toDate.Value);
-        }
-
-        return await query
-            .OrderByDescending(mf => mf.AssignedAt)
-            .ToListAsync(cancellationToken);
     }
 }

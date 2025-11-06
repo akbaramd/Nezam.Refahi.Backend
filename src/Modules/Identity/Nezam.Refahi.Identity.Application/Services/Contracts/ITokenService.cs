@@ -106,4 +106,10 @@ public interface ITokenService
   /// Cleans up expired tokens and performs maintenance
   /// </summary>
   Task<int> CleanupExpiredTokensAsync();
+
+  /// <summary>
+  /// Prunes excess active tokens globally based on configured or provided limits.
+  /// Returns total number of tokens revoked during pruning.
+  /// </summary>
+  Task<int> PruneActiveTokensAsync(int? maxActiveAccessTokens = null, int? maxActiveRefreshTokens = null);
 }

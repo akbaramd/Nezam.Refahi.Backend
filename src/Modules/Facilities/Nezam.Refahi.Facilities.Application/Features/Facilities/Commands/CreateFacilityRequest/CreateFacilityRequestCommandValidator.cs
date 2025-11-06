@@ -22,9 +22,9 @@ public class CreateFacilityRequestCommandValidator : AbstractValidator<CreateFac
             .Matches("^[0-9]{10}$")
             .WithMessage("شماره ملی باید فقط شامل اعداد باشد");
 
-        RuleFor(x => x.RequestedAmountRials)
-            .GreaterThan(0)
-            .WithMessage("مبلغ درخواستی باید بیشتر از صفر باشد");
+        RuleFor(x => x.PriceOptionId)
+            .NotEmpty()
+            .WithMessage("شناسه گزینه قیمت الزامی است");
 
         RuleFor(x => x.Description)
             .MaximumLength(1000)

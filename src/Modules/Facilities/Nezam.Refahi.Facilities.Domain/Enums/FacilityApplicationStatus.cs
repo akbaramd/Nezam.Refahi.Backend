@@ -49,47 +49,52 @@ public enum FacilityRequestStatus
     Rejected = 8,
 
     /// <summary>
+    /// نیاز به حضور - کاربر باید حضوری مراجعه کند
+    /// </summary>
+    RequiresPresence = 9,
+
+    /// <summary>
     /// لغو شده - درخواست لغو شده
     /// </summary>
-    Cancelled = 9,
+    Cancelled = 10,
 
     /// <summary>
     /// در صف اعزام - آماده اعزام به بانک
     /// </summary>
-    QueuedForDispatch = 10,
+    QueuedForDispatch = 11,
 
     /// <summary>
     /// اعزام شده به بانک - به بانک ارسال شده
     /// </summary>
-    SentToBank = 11,
+    SentToBank = 12,
 
     /// <summary>
     /// زمان‌بندی شده در بانک - قرار ملاقات تنظیم شده
     /// </summary>
-    BankScheduled = 12,
+    BankScheduled = 13,
 
     /// <summary>
     /// پردازش شده توسط بانک - بانک پردازش کرده
     /// </summary>
-    ProcessedByBank = 13,
+    ProcessedByBank = 14,
 
     /// <summary>
     /// تکمیل شده - فرآیند کامل شده
     /// </summary>
-    Completed = 14,
+    Completed = 15,
 
     /// <summary>
     /// پرداخت شده - مبلغ پرداخت شده
     /// </summary>
-    Disbursed = 15,
+    Disbursed = 16,
 
     /// <summary>
     /// منقضی شده - قرار ملاقات منقضی شده
     /// </summary>
-    Expired = 16,
+    Expired = 17,
 
     /// <summary>
     /// لغو شده توسط بانک - بانک لغو کرده
     /// </summary>
-    BankCancelled = 17
+    BankCancelled = 18
 }

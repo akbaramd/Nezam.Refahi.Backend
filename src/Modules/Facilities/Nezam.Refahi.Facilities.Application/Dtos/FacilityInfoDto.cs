@@ -21,26 +21,6 @@ public record FacilityInfoDto
   public string Code { get; init; } = null!;
 
   /// <summary>
-  /// Facility type
-  /// </summary>
-  public string Type { get; init; } = null!;
-
-  /// <summary>
-  /// Human-readable facility type text
-  /// </summary>
-  public string TypeText { get; init; } = null!;
-
-  /// <summary>
-  /// Facility status
-  /// </summary>
-  public string Status { get; init; } = null!;
-
-  /// <summary>
-  /// Human-readable status text
-  /// </summary>
-  public string StatusText { get; init; } = null!;
-
-  /// <summary>
   /// Facility description
   /// </summary>
   public string? Description { get; init; }
@@ -49,9 +29,4 @@ public record FacilityInfoDto
   /// Bank information
   /// </summary>
   public BankInfoDto? BankInfo { get; init; }
-
-  /// <summary>
-  /// Indicates if facility is active
-  /// </summary>
-  public bool IsActive { get; init; }
 }

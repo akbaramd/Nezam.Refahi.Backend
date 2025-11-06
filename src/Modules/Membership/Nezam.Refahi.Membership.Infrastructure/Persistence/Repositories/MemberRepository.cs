@@ -138,19 +138,11 @@ public class MemberRepository : EfRepository<MembershipDbContext, Member, Guid>,
             .FirstOrDefaultAsync(m => m.NationalCode != null && m.NationalCode.Value == nationalCode.Value);
     }
 
-    public async Task<IEnumerable<Member>> GetMembersWithExpiringCapabilitiesAsync(int days)
+    public Task<IEnumerable<Member>> GetMembersWithExpiringCapabilitiesAsync(int days)
     {
-        var cutoffDate = DateTime.UtcNow.AddDays(days);
-        return await this.PrepareQuery(this._dbSet)
-            .Include(m => m.Capabilities)
-            .Include(m => m.Roles)
-                .ThenInclude(mr => mr.Role)
-            .Where(m => m.Capabilities.Any(mc =>
-                mc.ValidTo.HasValue &&
-                mc.ValidTo.Value <= cutoffDate))
-            .OrderBy(m => m.FullName.FirstName)
-            .ThenBy(m => m.FullName.LastName)
-            .ToListAsync();
+        // MemberCapability no longer has ValidTo property
+        // This method is no longer applicable with simplified entity
+        return Task.FromResult(Enumerable.Empty<Member>());
     }
 
     public async Task<IEnumerable<Member>> GetMembersByCapabilityAsync(string capabilityId)
@@ -159,9 +151,7 @@ public class MemberRepository : EfRepository<MembershipDbContext, Member, Guid>,
             .Include(m => m.Capabilities)
             .Include(m => m.Roles)
                 .ThenInclude(mr => mr.Role)
-            .Where(m => m.Capabilities.Any(mc =>
-                mc.CapabilityKey == capabilityId &&
-                mc.IsValid()))
+            .Where(m => m.Capabilities.Any(mc => mc.CapabilityKey == capabilityId))
             .OrderBy(m => m.FullName.FirstName)
             .ThenBy(m => m.FullName.LastName)
             .ToListAsync();
@@ -193,7 +183,7 @@ public class MemberRepository : EfRepository<MembershipDbContext, Member, Guid>,
     public async Task<IEnumerable<Member>> GetMembersWithoutCapabilitiesAsync()
     {
         return await this.PrepareQuery(this._dbSet)
-            .Where(m => !m.Capabilities.Any(mc => mc.IsActive))
+            .Where(m => !m.Capabilities.Any())
             .OrderBy(m => m.FullName.FirstName)
             .ThenBy(m => m.FullName.LastName)
             .ToListAsync();
@@ -205,8 +195,7 @@ public class MemberRepository : EfRepository<MembershipDbContext, Member, Guid>,
         return await this.PrepareQuery(this._dbSet)
             .Include(m => m.Capabilities)
             .Where(m => capabilityIdsList.All(capId =>
-                m.Capabilities.Any(mc =>
-                    mc.CapabilityKey == capId && mc.IsValid())))
+                m.Capabilities.Any(mc => mc.CapabilityKey == capId)))
             .OrderBy(m => m.FullName.FirstName)
             .ThenBy(m => m.FullName.LastName)
             .ToListAsync();
@@ -216,8 +205,7 @@ public class MemberRepository : EfRepository<MembershipDbContext, Member, Guid>,
     {
         return await this.PrepareQuery(this._dbSet)
             .Include(m => m.Capabilities)
-            .Where(m => m.Capabilities.Any(mc =>
-                capabilityIds.Contains(mc.CapabilityKey) && mc.IsValid()))
+            .Where(m => m.Capabilities.Any(mc => capabilityIds.Contains(mc.CapabilityKey)))
             .OrderBy(m => m.FullName.FirstName)
             .ThenBy(m => m.FullName.LastName)
             .ToListAsync();

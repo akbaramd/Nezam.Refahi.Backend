@@ -52,7 +52,7 @@ public record FacilityCycleDto
   public int AvailableQuota { get; init; }
 
   /// <summary>
-  /// Cycle status (Draft, Active, Closed, Completed, Cancelled)
+  /// Cycle status (Draft, Active, Closed, UnderReview, Completed, Cancelled)
   /// </summary>
   public string Status { get; init; } = null!;
 
@@ -62,24 +62,29 @@ public record FacilityCycleDto
   public string StatusText { get; init; } = null!;
 
   /// <summary>
-  /// Minimum amount for this cycle
+  /// Cycle description
   /// </summary>
-  public decimal MinAmountRials { get; init; }
+  public string? Description { get; init; }
 
   /// <summary>
-  /// Maximum amount for this cycle
+  /// List of available price options for this cycle
   /// </summary>
-  public decimal MaxAmountRials { get; init; }
+  public List<FacilityCyclePriceOptionDto> PriceOptions { get; init; } = new();
 
   /// <summary>
-  /// Number of payment months
+  /// Number of payment months (optional)
   /// </summary>
-  public int PaymentMonths { get; init; }
+  public int? PaymentMonths { get; init; }
 
   /// <summary>
-  /// Cooldown period in days
+  /// Annual interest rate (as decimal, e.g., 0.18 for 18%)
   /// </summary>
-  public int CooldownDays { get; init; }
+  public decimal? InterestRate { get; init; }
+
+  /// <summary>
+  /// Interest rate as percentage (e.g., 18.00 for 18%)
+  /// </summary>
+  public decimal? InterestRatePercentage { get; init; }
 
   /// <summary>
   /// Cycle creation timestamp

@@ -13,7 +13,12 @@ public sealed class GetBillDetailsByIdQueryValidator : AbstractValidator<GetBill
   public GetBillDetailsByIdQueryValidator()
   {
     RuleFor(x => x.BillId)
-      .NotEmpty().WithMessage("BillId is required.");
+      .NotEmpty().WithMessage("شناسه صورت حساب الزامی است.")
+      .NotEqual(Guid.Empty).WithMessage("شناسه صورت حساب معتبر نیست.");
+
+    RuleFor(x => x.ExternalUserId)
+      .NotEmpty().WithMessage("شناسه کاربر خارجی الزامی است.")
+      .NotEqual(Guid.Empty).WithMessage("شناسه کاربر خارجی معتبر نیست.");
   }
 }
 

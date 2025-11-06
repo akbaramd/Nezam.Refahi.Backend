@@ -4,6 +4,7 @@ using Nezam.Refahi.Finance.Application.Commands.Wallets;
 using Nezam.Refahi.Finance.Application.Queries.Wallets;
 using Nezam.Refahi.Shared.Application.Common.Interfaces;
 using Nezam.Refahi.Shared.Application.Common.Models;
+using Nezam.Refahi.Finance.Presentation.Extensions;
 
 namespace Nezam.Refahi.Finance.Presentation.Endpoints;
 
@@ -48,16 +49,13 @@ public static class WalletEndpoints
                 [FromServices] ICurrentUserService currentUserService) =>
             {
                 // Get user information from current user service
-                var externalUserId = currentUserService.UserId;
-                if (externalUserId == null)
-                {
+                if (!currentUserService.IsAuthenticated || !currentUserService.UserId.HasValue)
                     return Results.Unauthorized();
-                }
 
                 // Create command with user information
                 var command = new CreateWalletDepositCommand
                 {
-                    ExternalUserId = externalUserId.Value,
+                    ExternalUserId = currentUserService.UserId.Value,
                     UserFullName = currentUserService.UserFullName ?? string.Empty,
                     AmountRials = request.AmountRials,
                     Description = request.Description,
@@ -66,7 +64,9 @@ public static class WalletEndpoints
                 };
 
                 var result = await mediator.Send(command);
-                return result.IsSuccess ? Results.Created($"/api/v1/wallets/deposits/{result.Data!.DepositId}", result) : Results.BadRequest(result);
+                if (result.IsSuccess && result.Data != null)
+                    return Results.Created($"/api/v1/me/wallets/deposits/{result.Data.DepositId}", result);
+                return result.ToResult();
             })
             .WithName("CreateWalletDeposit")
             .Produces<ApplicationResult<CreateWalletDepositResponse>>(201)
@@ -79,9 +79,12 @@ public static class WalletEndpoints
                 [FromServices] ICurrentUserService currentUserService,
                 [FromServices] IMediator mediator) =>
             {
-                var query = new GetUserWalletBalanceQuery { ExternalUserId = currentUserService.UserId!.Value };
+                if (!currentUserService.IsAuthenticated || !currentUserService.UserId.HasValue)
+                    return Results.Unauthorized();
+                
+                var query = new GetUserWalletBalanceQuery { ExternalUserId = currentUserService.UserId.Value };
                 var result = await mediator.Send(query);
-                return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
+                return result.ToResult();
             }) 
             .WithName("GetUserWalletBalance")
             .Produces<ApplicationResult<WalletBalanceResponse>>(200)
@@ -98,9 +101,12 @@ public static class WalletEndpoints
                 [FromQuery] DateTime? fromDate = null,
                 [FromQuery] DateTime? toDate = null) =>
             {
+                if (!currentUserService.IsAuthenticated || !currentUserService.UserId.HasValue)
+                    return Results.Unauthorized();
+                
                 var query = new ListUserWalletTransactionsQuery
                 {
-                    ExternalUserId = currentUserService.UserId!.Value,
+                    ExternalUserId = currentUserService.UserId.Value,
                     PageNumber = pageNumber,
                     PageSize = pageSize,
                     TransactionType = transactionType,
@@ -109,7 +115,7 @@ public static class WalletEndpoints
                     ToDate = toDate
                 };
                 var result = await mediator.Send(query);
-                return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
+                return result.ToResult();
             })
             .WithName("ListUserWalletTransactions")
             .Produces<ApplicationResult<WalletTransactionsResponse>>(200)
@@ -125,9 +131,12 @@ public static class WalletEndpoints
                 [FromQuery] DateTime? fromDate = null,
                 [FromQuery] DateTime? toDate = null) =>
             {
+                if (!currentUserService.IsAuthenticated || !currentUserService.UserId.HasValue)
+                    return Results.Unauthorized();
+                
                 var query = new ListUserWalletDepositsQuery
                 {
-                    ExternalUserId = currentUserService.UserId!.Value,
+                    ExternalUserId = currentUserService.UserId.Value,
                     Page = page,
                     PageSize = pageSize,
                     Status = status,
@@ -135,7 +144,7 @@ public static class WalletEndpoints
                     ToDate = toDate
                 };
                 var result = await mediator.Send(query);
-                return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
+                return result.ToResult();
             })
             .WithName("ListUserWalletDeposits")
             .Produces<ApplicationResult<WalletDepositsResponse>>(200)
@@ -147,28 +156,24 @@ public static class WalletEndpoints
                 [FromServices] ICurrentUserService currentUserService,
                 [FromServices] IMediator mediator) =>
             {
-                var externalUserId = currentUserService.UserId;
-                if (externalUserId == null)
+                if (!currentUserService.IsAuthenticated || !currentUserService.UserId.HasValue)
                     return Results.Unauthorized();
 
                 var query = new Nezam.Refahi.Finance.Application.Features.Wallets.Queries.GetWalletDepositsDetails.GetWalletDepositsDetailsQuery
                 {
                     DepositIds = new List<Guid> { depositId },
-                    ExternalUserId = externalUserId.Value
+                    ExternalUserId = currentUserService.UserId.Value
                 };
 
                 var result = await mediator.Send(query);
-
+                
                 if (!result.IsSuccess)
-                {
-                    if (string.Equals(result.Message, "FORBIDDEN", StringComparison.OrdinalIgnoreCase))
-                        return Results.Forbid();
-                    return Results.BadRequest(result);
-                }
+                    return result.ToResult();
 
                 var item = result.Data?.FirstOrDefault();
                 if (item == null)
-                    return Results.NotFound();
+                    return ResultsExtensions.FromApplicationResult(
+                        ApplicationResult<Nezam.Refahi.Finance.Contracts.Dtos.WalletDepositDetailsDto>.NotFound("واریز مورد نظر یافت نشد."));
 
                 return Results.Ok(ApplicationResult<Nezam.Refahi.Finance.Contracts.Dtos.WalletDepositDetailsDto>.Success(item));
             })
